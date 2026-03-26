@@ -1,0 +1,142 @@
+
+import React, { useState } from 'react';
+import { usePOS } from './hooks/usePOS';
+import { POSCatalog } from './components/POSCatalog';
+import { POSCart } from './components/POSCart';
+import { PaymentModal } from './components/PaymentModal';
+import { ItemEditorModal, ServiceVariantModal, ReceiptModal } from './components/POSModals';
+import { Service, Product, ServiceVariant, Transaction, CartItem } from '../../types';
+
+export const POSModule: React.FC = () => {
+  const {
+    viewMode, setViewMode,
+    searchTerm, setSearchTerm,
+    selectedCategory, setSelectedCategory,
+    selectedClient, setSelectedClient,
+    cart,
+    services, serviceCategories,
+    products, productCategories,
+    transactions,
+    clients,
+    filteredItems,
+    totals,
+    addToCart,
+    updateCartItem,
+    updateQuantity,
+    removeFromCart,
+    processTransaction
+  } = usePOS();
+
+  // Modal States
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<CartItem | null>(null);
+  const [variantModalData, setVariantModalData] = useState<{service: Service} | null>(null);
+  const [receiptTransaction, setReceiptTransaction] = useState<Transaction | null>(null);
+
+  // Handlers
+  const handleServiceClick = (service: Service) => {
+    if (service.variants.length > 1) {
+      setVariantModalData({ service });
+    } else {
+      const variant = service.variants[0];
+      addVariantToCart(variant, service.name);
+    }
+  };
+
+  const addVariantToCart = (variant: ServiceVariant, serviceName: string) => {
+    addToCart({
+      id: `cart-${Date.now()}`,
+      referenceId: variant.id,
+      type: 'SERVICE',
+      name: serviceName,
+      variantName: variant.name,
+      price: variant.price,
+      originalPrice: variant.price,
+      quantity: 1
+    });
+    setVariantModalData(null);
+  };
+
+  const handleProductClick = (product: Product) => {
+    addToCart({
+      id: `cart-${Date.now()}`,
+      referenceId: product.id,
+      type: 'PRODUCT',
+      name: product.name,
+      price: product.price,
+      originalPrice: product.price,
+      quantity: 1
+    });
+  };
+
+  const handleCompletePayment = (payments: any[]) => {
+    processTransaction(payments);
+    setShowPaymentModal(false);
+  };
+
+  return (
+    <div className="flex h-[calc(100vh-6rem)] w-full bg-slate-100 overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+      
+      <POSCatalog 
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        serviceCategories={serviceCategories}
+        productCategories={productCategories}
+        filteredItems={filteredItems}
+        transactions={transactions}
+        onServiceClick={handleServiceClick}
+        onProductClick={handleProductClick}
+        onReceiptClick={setReceiptTransaction}
+      />
+
+      <POSCart 
+        cart={cart}
+        clients={clients}
+        selectedClient={selectedClient}
+        onSelectClient={setSelectedClient}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeFromCart}
+        onEditItem={setEditingItem}
+        totals={totals}
+        onCheckout={() => setShowPaymentModal(true)}
+      />
+
+      {/* Modals */}
+      {showPaymentModal && (
+        <PaymentModal 
+          total={totals.total}
+          onClose={() => setShowPaymentModal(false)}
+          onComplete={handleCompletePayment}
+        />
+      )}
+
+      {editingItem && (
+        <ItemEditorModal 
+          item={editingItem}
+          onClose={() => setEditingItem(null)}
+          onSave={(updated) => updateCartItem(updated.id, updated)}
+        />
+      )}
+
+      {variantModalData && (
+        <ServiceVariantModal 
+          service={variantModalData.service}
+          onClose={() => setVariantModalData(null)}
+          onSelect={(variant) => addVariantToCart(variant, variantModalData.service.name)}
+        />
+      )}
+
+      {receiptTransaction && (
+        <ReceiptModal 
+          transaction={receiptTransaction}
+          onClose={() => setReceiptTransaction(null)}
+        />
+      )}
+
+    </div>
+  );
+};

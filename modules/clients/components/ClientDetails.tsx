@@ -1,0 +1,396 @@
+
+import React from 'react';
+import { 
+  MapPin, 
+  ArrowLeft, 
+  Phone, 
+  Mail, 
+  AlertCircle,
+  MessageCircle,
+  Instagram,
+  Globe,
+  Star,
+  Shield,
+  Check,
+  X as XIcon,
+  Briefcase,
+  UserPlus,
+  Calendar,
+  Edit,
+  Clock,
+  ShoppingBag
+} from 'lucide-react';
+import { Client, AppointmentStatus } from '../../../types';
+import { useAppContext } from '../../../context/AppContext';
+
+interface ClientDetailsProps {
+  client: Client;
+  onBack: () => void;
+  onEdit: () => void;
+}
+
+export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, onEdit }) => {
+  const { appointments, formatPrice, team } = useAppContext();
+  const initials = `${client.firstName[0]}${client.lastName[0]}`;
+
+  const preferredStaff = team.find(t => t.id === client.preferredStaffId);
+
+  // Filter appointments for this client
+  const clientAppointments = appointments.filter(apt => apt.clientId === client.id)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const PermissionItem = ({ label, value, detail }: { label: string, value?: boolean, detail?: string }) => (
+    <div className="flex items-start justify-between text-sm py-2 border-b border-slate-50 last:border-0">
+      <span className="text-slate-600">{label}</span>
+      <div className="flex flex-col items-end">
+        {value ? (
+          <span className="flex items-center gap-1 text-emerald-700 font-medium">
+            <Check size={14} /> Oui
+          </span>
+        ) : (
+          <span className="flex items-center gap-1 text-slate-400">
+            <XIcon size={14} /> Non
+          </span>
+        )}
+        {value && detail && <span className="text-xs text-slate-500 mt-0.5">{detail}</span>}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 pb-10">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-6">
+        <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
+          <ArrowLeft size={20} />
+        </button>
+        <h1 className="text-xl font-bold text-slate-900">Profil Client</h1>
+        <div className="ml-auto">
+           <button 
+              onClick={onEdit}
+              className="px-4 py-2 bg-slate-900 text-white rounded-lg font-medium text-sm hover:bg-slate-800 shadow-sm transition-all flex items-center gap-2"
+            >
+              <Edit size={16} />
+              Modifier
+            </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* --- LEFT SIDEBAR --- */}
+        <div className="space-y-6">
+          
+          {/* Profile Card */}
+          <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col items-center text-center">
+            <div className="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center text-2xl font-bold text-slate-600 mb-4 border border-slate-200 relative overflow-hidden">
+                {client.photoUrl ? (
+                  <img src={client.photoUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  initials
+                )}
+            </div>
+            <h2 className="text-lg font-bold text-slate-900">{client.firstName} {client.lastName}</h2>
+            <p className="text-sm text-slate-500 mb-4 flex items-center gap-1">
+               <MapPin size={12} />
+               {client.city || 'Ville non renseignée'}
+            </p>
+            
+            <div className="mb-6">
+               {client.status === 'VIP' && <span className="px-3 py-1 bg-purple-100 text-purple-700 border border-purple-200 rounded-full text-xs font-bold">VIP</span>}
+               {(!client.status || client.status === 'ACTIF') && <span className="px-3 py-1 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-full text-xs font-medium">Client Actif</span>}
+               {client.status === 'INACTIF' && <span className="px-3 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-full text-xs font-medium">Inactif</span>}
+            </div>
+
+            <div className="w-full pt-4 border-t border-slate-100 flex justify-around">
+              <div className="text-center">
+                <div className="text-xs text-slate-500 uppercase font-semibold mb-1">Visites</div>
+                <div className="font-bold text-slate-900 text-lg">{client.totalVisits}</div>
+              </div>
+              <div className="h-10 w-px bg-slate-200"></div>
+              <div className="text-center">
+                 <div className="text-xs text-slate-500 uppercase font-semibold mb-1">Total</div>
+                 <div className="font-bold text-slate-900 text-lg">{formatPrice(client.totalSpent)}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact & Preferences */}
+          <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-5">
+            
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Coordonnées</h3>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                     <Phone size={14} />
+                  </div>
+                  <div className="overflow-hidden">
+                    <div className="text-sm font-medium text-slate-900">{client.phone}</div>
+                    <div className="text-xs text-slate-500">Mobile</div>
+                  </div>
+                </li>
+                <li className="flex items-center gap-3">
+                   <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                     <Mail size={14} />
+                  </div>
+                  <div className="overflow-hidden">
+                     <div className="text-sm font-medium text-slate-900 truncate">{client.email}</div>
+                     <div className="text-xs text-slate-500">Email</div>
+                  </div>
+                </li>
+                {client.whatsapp && (
+                  <li className="flex items-center gap-3">
+                     <div className="w-8 h-8 rounded bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                       <MessageCircle size={14} />
+                    </div>
+                    <div className="overflow-hidden">
+                       <div className="text-sm font-medium text-slate-900">{client.whatsapp}</div>
+                       <div className="text-xs text-slate-500">WhatsApp</div>
+                    </div>
+                  </li>
+                )}
+                {client.instagram && (
+                  <li className="flex items-center gap-3">
+                     <div className="w-8 h-8 rounded bg-pink-50 flex items-center justify-center text-pink-600 shrink-0">
+                       <Instagram size={14} />
+                    </div>
+                    <div className="overflow-hidden">
+                       <div className="text-sm font-medium text-slate-900">{client.instagram}</div>
+                       <div className="text-xs text-slate-500">Instagram</div>
+                    </div>
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100">
+               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Préférences</h3>
+               <ul className="space-y-3">
+                 <li className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 text-slate-600">
+                       <Globe size={14} />
+                       <span>Langue</span>
+                    </div>
+                    <span className="font-medium text-slate-900">{client.preferredLanguage || 'Non spécifié'}</span>
+                 </li>
+                 <li className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 text-slate-600">
+                       <MessageCircle size={14} />
+                       <span>Canal favori</span>
+                    </div>
+                    <span className="font-medium text-slate-900">
+                      {client.preferredChannel || 'Non spécifié'}
+                      {client.preferredChannel === 'Autre' && client.otherChannelDetail && ` (${client.otherChannelDetail})`}
+                    </span>
+                 </li>
+               </ul>
+            </div>
+
+            {preferredStaff && (
+               <div className="pt-4 border-t border-slate-100">
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Praticien Favori</h3>
+                  <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-lg border border-slate-100">
+                     {preferredStaff.photoUrl ? (
+                       <img src={preferredStaff.photoUrl} className="w-8 h-8 rounded-full object-cover" alt="" />
+                     ) : (
+                       <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+                         {preferredStaff.firstName[0]}{preferredStaff.lastName[0]}
+                       </div>
+                     )}
+                     <div>
+                        <div className="text-sm font-bold text-slate-900">{preferredStaff.firstName} {preferredStaff.lastName}</div>
+                        <div className="text-xs text-slate-500">{preferredStaff.role}</div>
+                     </div>
+                     <div className="ml-auto text-amber-400">
+                        <Star size={16} fill="currentColor" />
+                     </div>
+                  </div>
+               </div>
+            )}
+
+          </div>
+
+        </div>
+
+        {/* --- MAIN CONTENT --- */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* Medical / Allergies Alert */}
+          {client.allergies && (
+             <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex gap-3 items-start">
+                <AlertCircle className="text-red-600 shrink-0 mt-0.5" size={20} />
+                <div>
+                  <h3 className="text-sm font-bold text-red-800">Allergies & Contre-indications</h3>
+                  <p className="text-sm text-red-700 mt-1">{client.allergies}</p>
+                </div>
+             </div>
+          )}
+
+          {/* Info Grid (Demographics / Professional / Acquisition) */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+             <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                <h3 className="font-bold text-slate-900 text-sm">Détails du Profil</h3>
+             </div>
+             <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
+                
+                {/* Identity / Demo */}
+                <div className="space-y-4">
+                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                      <MapPin size={12} /> Identité
+                   </h4>
+                   <div className="grid grid-cols-2 gap-4">
+                      <div>
+                         <div className="text-xs text-slate-500 mb-1">Genre</div>
+                         <div className="text-sm font-medium text-slate-900">{client.gender || '-'}</div>
+                      </div>
+                      <div>
+                         <div className="text-xs text-slate-500 mb-1">Tranche d'âge</div>
+                         <div className="text-sm font-medium text-slate-900">{client.ageGroup || '-'}</div>
+                      </div>
+                   </div>
+                </div>
+
+                {/* Professional */}
+                <div className="space-y-4">
+                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                      <Briefcase size={12} /> Professionnel
+                   </h4>
+                   <div className="grid grid-cols-2 gap-4">
+                      <div>
+                         <div className="text-xs text-slate-500 mb-1">Métier</div>
+                         <div className="text-sm font-medium text-slate-900">{client.profession || '-'}</div>
+                      </div>
+                      <div>
+                         <div className="text-xs text-slate-500 mb-1">Société</div>
+                         <div className="text-sm font-medium text-slate-900">{client.company || '-'}</div>
+                      </div>
+                   </div>
+                </div>
+
+                {/* Acquisition */}
+                <div className="space-y-4 sm:col-span-2 pt-4 border-t border-slate-100">
+                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                      <UserPlus size={12} /> Acquisition & Origine
+                   </h4>
+                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                         <div className="text-xs text-slate-500 mb-1">Premier Contact</div>
+                         <div className="text-sm font-medium text-slate-900 flex items-center gap-1">
+                            {client.contactDate ? new Date(client.contactDate).toLocaleDateString('fr-FR') : '-'}
+                         </div>
+                      </div>
+                      <div>
+                         <div className="text-xs text-slate-500 mb-1">Méthode</div>
+                         <div className="text-sm font-medium text-slate-900">
+                            {client.contactMethod || '-'}
+                            {client.contactMethod === 'Message' && client.messageChannel && ` (${client.messageChannel})`}
+                         </div>
+                      </div>
+                      <div>
+                         <div className="text-xs text-slate-500 mb-1">Source</div>
+                         <div className="text-sm font-medium text-slate-900">
+                            {client.acquisitionSource || '-'}
+                            {(client.acquisitionSource === 'Influenceur' || client.acquisitionSource === 'Autre') && client.acquisitionDetail && (
+                               <span className="text-slate-500 text-xs block">{client.acquisitionDetail}</span>
+                            )}
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+             </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+             {/* Permissions Box */}
+             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-3">
+                   <Shield size={16} className="text-slate-400" />
+                   <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Autorisations</h3>
+                </div>
+                <div className="space-y-1">
+                  <PermissionItem label="Réseaux Sociaux" value={client.permissions?.socialMedia} />
+                  <PermissionItem label="Marketing" value={client.permissions?.marketing} />
+                  <PermissionItem label="Autres" value={client.permissions?.other} detail={client.permissions?.otherDetail} />
+                </div>
+             </div>
+
+             {/* Notes */}
+             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col">
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Notes Internes</h3>
+                <div className="text-sm text-slate-600 leading-relaxed bg-amber-50 p-4 rounded-lg border border-amber-100 italic whitespace-pre-wrap flex-1">
+                  {client.notes || "Aucune note enregistrée pour ce client."}
+                </div>
+             </div>
+          </div>
+
+          {/* Timeline / History */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+              <h3 className="font-bold text-slate-900 text-sm">Historique & Activité</h3>
+              <div className="text-xs font-medium bg-slate-100 px-2 py-1 rounded-md text-slate-600">
+                 {clientAppointments.length} visites
+              </div>
+            </div>
+            
+            <div className="p-6 bg-slate-50/30 max-h-[500px] overflow-y-auto custom-scrollbar">
+              {clientAppointments.length > 0 ? (
+                  <div className="relative border-l-2 border-slate-200 ml-3 space-y-8 py-2">
+                    {clientAppointments.map((appt) => {
+                      const isCompleted = appt.status === AppointmentStatus.COMPLETED;
+                      const date = new Date(appt.date);
+                      return (
+                        <div key={appt.id} className="relative pl-8 group">
+                           {/* Timeline Dot */}
+                           <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${isCompleted ? 'bg-emerald-500' : 'bg-slate-400'}`}></div>
+                           
+                           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all group-hover:border-slate-300">
+                              <div className="flex justify-between items-start mb-2">
+                                 <div>
+                                    <div className="text-xs font-bold text-slate-400 uppercase mb-0.5">
+                                      {date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                    </div>
+                                    <h4 className="text-sm font-bold text-slate-900">{appt.serviceName}</h4>
+                                 </div>
+                                 <span className="text-sm font-bold text-slate-900">{formatPrice(appt.price)}</span>
+                              </div>
+                              
+                              <div className="flex items-center justify-between pt-3 border-t border-slate-50 mt-3">
+                                 <div className="flex items-center gap-3 text-xs text-slate-500">
+                                    <span className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                                      <Clock size={12} /> {date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}
+                                    </span>
+                                    <span>•</span>
+                                    <span>{appt.staffName}</span>
+                                 </div>
+                                 <div className="flex items-center gap-1 text-xs font-medium">
+                                    {isCompleted ? (
+                                      <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Terminé</span>
+                                    ) : (
+                                      <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Planifié</span>
+                                    )}
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+              ) : (
+                <div className="py-12 text-center">
+                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
+                     <ShoppingBag size={24} />
+                  </div>
+                  <p className="text-slate-500 text-sm font-medium">Aucune activité récente.</p>
+                  <p className="text-slate-400 text-xs mt-1">L'historique des rendez-vous et achats apparaîtra ici.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+};
