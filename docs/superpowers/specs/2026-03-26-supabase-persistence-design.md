@@ -78,6 +78,28 @@ CREATE FUNCTION get_active_salon() RETURNS uuid AS $$
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
 ```
 
+The active user's role is also set per-request to avoid repeated subqueries in RLS:
+
+```sql
+SELECT set_config('app.user_role', :role, true);
+
+CREATE FUNCTION get_user_role() RETURNS text AS $$
+  SELECT current_setting('app.user_role', true);
+$$ LANGUAGE sql STABLE SECURITY DEFINER;
+```
+
+**Request wrapper:** The Supabase client is wrapped with a helper that calls both `set_config` RPCs before every query:
+
+```typescript
+// lib/supabase.ts
+async function withSalonContext<T>(salonId: string, role: string, fn: () => Promise<T>): Promise<T> {
+  await supabase.rpc('set_session_context', { salon_id: salonId, user_role: role });
+  return fn();
+}
+```
+
+This is integrated into TanStack Query's `queryFn` wrapper so every query automatically sets the context.
+
 ### 2.2 Common Column Patterns
 
 Every business data table includes these columns for audit and soft-delete:
@@ -377,7 +399,8 @@ HR/payroll data. Linked to `salon_memberships` when the staff member has an app 
 
 **No denormalized name columns** (`clientName`, `staffName`, `serviceName`). These are resolved via joins or a database view `appointment_details` (see Appendix C).
 
-**Double-booking prevention:** Postgres exclusion constraint using `tstzrange`:
+**Double-booking prevention:** Postgres exclusion constraint using `tstzrange`.
+**Prerequisite:** `CREATE EXTENSION IF NOT EXISTS btree_gist;` (required for GiST index on UUID + range combination).
 
 ```sql
 ALTER TABLE appointments
@@ -520,6 +543,15 @@ CREATE INDEX idx_transaction_items_txn ON transaction_items(transaction_id);
    - Creates a `salon_memberships` row with `role = 'owner'`
    - Seeds default data: service categories, expense categories, schedule template
 5. User lands in the dashboard
+
+**Seed data created by `create_salon()`:**
+- 5 expense categories: Loyer, Salaires, Stock, Marketing, Divers (matching current app defaults)
+- Default schedule: Mon-Fri 9:00-19:00, Sat 10:00-18:00, Sun closed
+- No service categories or products — salon owner creates these (every salon is different)
+
+**Global seed data (in migration, not per-salon):**
+- `plans` table: Free (max 2 staff, 50 clients), Pro (max 10 staff, unlimited clients), Enterprise (unlimited)
+- Default plan assignment: new salons start on `trial` tier with 14-day expiry, then fall to Free
 
 ### 3.2 Invitation Flow (Adding Staff)
 
@@ -1123,21 +1155,26 @@ This app handles personal data (names, phones, emails, medical allergies, staff 
 ### Helper Functions
 
 ```sql
--- Get the active salon for the current request
+-- Set session context (called once per request by the client wrapper)
+CREATE FUNCTION set_session_context(salon_id uuid, user_role text) RETURNS void AS $$
+BEGIN
+  PERFORM set_config('app.active_salon_id', salon_id::text, true);
+  PERFORM set_config('app.user_role', user_role, true);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Get the active salon for the current request (reads from session variable — no subquery)
 CREATE FUNCTION get_active_salon() RETURNS uuid AS $$
   SELECT current_setting('app.active_salon_id', true)::uuid;
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
 
--- Get the current user's role in the active salon
+-- Get the current user's role (reads from session variable — no subquery)
 CREATE FUNCTION get_user_role() RETURNS text AS $$
-  SELECT role FROM salon_memberships
-  WHERE salon_id = get_active_salon()
-    AND profile_id = auth.uid()
-    AND status = 'active'
-    AND deleted_at IS NULL
-  LIMIT 1;
+  SELECT current_setting('app.user_role', true);
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
 ```
+
+Both role and salon are set once per request via `set_session_context()`, then read cheaply by RLS policies via `current_setting()`. No per-row subqueries on `salon_memberships`.
 
 ### Policy Patterns
 
@@ -1259,25 +1296,28 @@ Implemented via column-level security or a separate restricted view that only th
 
 ### Postgres Functions
 
-| Function | Type | Called By | Purpose |
-|----------|------|----------|---------|
-| `create_salon(name, timezone, currency, owner_id)` | RPC | Signup flow | Creates salon + owner membership + seeds defaults |
-| `accept_invitation(token)` | RPC | Invitation flow | Validates, creates membership, links staff |
-| `create_transaction(salon_id, client_id, items[], payments[])` | RPC | POS module | Atomic multi-table insert + stock update |
-| `book_appointment(salon_id, client_id, variant_id, staff_id, date, duration)` | RPC | Appointments module | Validates availability + inserts |
-| `transfer_ownership(salon_id, new_owner_id)` | RPC | Settings | Atomic role swap |
-| `revoke_membership(membership_id)` | RPC | Team module | Soft-delete + prevents last-owner removal |
-| `gdpr_delete_client(client_id)` | RPC | Client module | Anonymizes across all tables |
-| `get_dashboard_stats(salon_id, date_from, date_to)` | RPC | Dashboard | Aggregated KPIs in single query |
-| `get_client_stats(client_id)` | RPC | Client detail | Computed visits/spending/last visit |
-| `get_staff_performance(salon_id, staff_id, date_from, date_to)` | RPC | Team / Dashboard | Revenue + commission per staff |
-| `check_slot_availability(staff_id, date, duration)` | RPC | Appointment form | Advisory availability check (not authoritative) |
-| `get_active_salon()` | Helper | RLS policies | Returns current salon from session variable |
-| `get_user_role()` | Helper | RLS policies | Returns current role from memberships |
-| `update_updated_at()` | Trigger | All tables | Auto-sets `updated_at` on UPDATE |
-| `audit_trigger()` | Trigger | All business tables | Writes to audit_log on INSERT/UPDATE/DELETE |
-| `create_profile_on_signup()` | Trigger | auth.users INSERT | Creates profiles row for new user |
-| `protect_last_owner()` | Trigger | salon_memberships | Prevents removal/demotion of last owner |
+**Security model:** Functions that perform multi-table writes bypassing RLS use `SECURITY DEFINER` with explicit permission checks inside. Functions that should respect RLS use `SECURITY INVOKER`. Helper functions used by RLS policies are `SECURITY DEFINER` (they need to read `salon_memberships` regardless of the caller's RLS context).
+
+| Function | Type | Security | Called By | Purpose |
+|----------|------|----------|----------|---------|
+| `set_session_context(salon_id, user_role)` | RPC | INVOKER | Request wrapper | Sets `app.active_salon_id` and `app.user_role` per-request |
+| `create_salon(name, timezone, currency, owner_id)` | RPC | DEFINER | Signup flow | Creates salon + owner membership + seeds defaults |
+| `accept_invitation(token)` | RPC | DEFINER | Invitation flow | Validates, creates membership, links staff |
+| `create_transaction(salon_id, client_id, items[], payments[])` | RPC | DEFINER | POS module | Atomic multi-table insert + stock update. Checks role internally. |
+| `book_appointment(salon_id, client_id, variant_id, staff_id, date, duration)` | RPC | DEFINER | Appointments module | Validates availability + inserts. Checks role internally. |
+| `transfer_ownership(salon_id, new_owner_id)` | RPC | DEFINER | Settings | Atomic role swap. Owner-only check inside. |
+| `revoke_membership(membership_id)` | RPC | DEFINER | Team module | Soft-delete + prevents last-owner removal |
+| `gdpr_delete_client(client_id)` | RPC | DEFINER | Client module | Anonymizes across all tables. Owner-only. |
+| `get_dashboard_stats(salon_id, date_from, date_to)` | RPC | INVOKER | Dashboard | Aggregated KPIs in single query. Respects RLS. |
+| `get_client_stats(client_id)` | RPC | INVOKER | Client detail | Computed visits/spending/last visit. Respects RLS. |
+| `get_staff_performance(salon_id, staff_id, date_from, date_to)` | RPC | INVOKER | Team / Dashboard | Revenue + commission per staff. Respects RLS. |
+| `check_slot_availability(staff_id, date, duration)` | RPC | INVOKER | Appointment form | Advisory availability check (not authoritative) |
+| `get_active_salon()` | Helper | DEFINER | RLS policies | Returns current salon from session variable |
+| `get_user_role()` | Helper | DEFINER | RLS policies | Returns current role from session variable |
+| `update_updated_at()` | Trigger | DEFINER | All tables | Auto-sets `updated_at` on UPDATE |
+| `audit_trigger()` | Trigger | DEFINER | All business tables | Writes to audit_log on INSERT/UPDATE/DELETE |
+| `create_profile_on_signup()` | Trigger | DEFINER | auth.users INSERT | Creates profiles row for new user |
+| `protect_last_owner()` | Trigger | DEFINER | salon_memberships | Prevents removal/demotion of last owner |
 
 ### Edge Functions (Deno)
 
