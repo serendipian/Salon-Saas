@@ -66,6 +66,31 @@ npm run build        # Production build
 npm run preview      # Preview production build
 ```
 
+## Database
+
+- **Backend**: Supabase (PostgreSQL 15, Auth, Realtime, Storage)
+- **Local dev**: `npm run db:start` / `npm run db:stop` (requires Docker Desktop)
+- **Migrations**: `supabase/migrations/` — 13 migration files, applied in order
+- **Seed data**: `supabase/seed.sql` — subscription plans (Free, Pro, Enterprise)
+- **Types**: Auto-generated via `npm run db:types` → `lib/database.types.ts`
+- **Reset**: `npm run db:reset` — drops and recreates everything
+- **Studio**: http://127.0.0.1:54323 (local Supabase dashboard)
+
+### Schema Overview
+- 20 tables + 3 views
+- RLS enabled on every table
+- Session-variable-based RLS via `set_session_context()` RPC
+- 17 custom Postgres functions (see `supabase/migrations/` files 00011-00013)
+- Audit logging on all business tables via triggers
+
+### Key Patterns
+- `salon_id` on every business table for multi-tenancy
+- Soft-delete via `deleted_at` column (NULL = active)
+- `updated_at` auto-set by trigger on every table
+- Immutable transactions (no UPDATE policy)
+- Price snapshotting on transaction_items
+- Computed client stats via `client_stats` view (not denormalized)
+
 ## Code Conventions
 
 - **Language**: UI text is in French. Code (variables, comments) in English.
@@ -93,5 +118,7 @@ npm run preview      # Preview production build
 ## Environment Variables
 
 ```
-GEMINI_API_KEY=     # Google Gemini API key (in .env.local)
+GEMINI_API_KEY=                # Google Gemini API key (in .env.local)
+VITE_SUPABASE_URL=             # Supabase API URL (in .env.local)
+VITE_SUPABASE_ANON_KEY=        # Supabase anon key (in .env.local)
 ```
