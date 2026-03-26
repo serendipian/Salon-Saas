@@ -23,5 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
+# Supabase local
+supabase/.branches
+supabase/.temp
+.env.local
+.env.staging
+.env.production
+
 # Worktrees
 .worktrees/
