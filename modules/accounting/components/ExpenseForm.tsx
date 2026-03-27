@@ -5,6 +5,8 @@ import { Expense, ExpenseCategory } from '../../../types';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
+import { useFormValidation } from '../../../hooks/useFormValidation';
+import { expenseSchema } from '../schemas';
 
 interface ExpenseFormProps {
   onSave: (e: Expense) => void;
@@ -14,7 +16,8 @@ interface ExpenseFormProps {
 export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
   const { expenseCategories, salonSettings } = useSettings();
   const { allSuppliers: suppliers } = useSuppliers();
-  
+  const { errors, validate, clearFieldError } = useFormValidation(expenseSchema);
+
   const [formData, setFormData] = useState<Partial<Expense>>({
     description: '',
     amount: 0,
@@ -27,20 +30,21 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) =>
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
 
   const handleSubmit = () => {
-    if (formData.description && formData.amount) {
-        const selectedSupplier = !isCustomSupplier
-          ? suppliers.find(s => s.id === formData.supplier)
-          : undefined;
-        onSave({
-            id: crypto.randomUUID(),
-            description: formData.description!,
-            amount: Number(formData.amount),
-            date: formData.date || new Date().toISOString(),
-            category: (formData.category || expenseCategories[0]?.id) as ExpenseCategory,
-            supplier: selectedSupplier?.name ?? formData.supplier,
-            supplierId: selectedSupplier?.id,
-        });
-    }
+    const validated = validate(formData);
+    if (!validated) return;
+
+    const selectedSupplier = !isCustomSupplier
+      ? suppliers.find(s => s.id === formData.supplier)
+      : undefined;
+    onSave({
+      id: crypto.randomUUID(),
+      description: formData.description!,
+      amount: Number(formData.amount),
+      date: formData.date || new Date().toISOString(),
+      category: (formData.category || expenseCategories[0]?.id) as ExpenseCategory,
+      supplier: selectedSupplier?.name ?? formData.supplier,
+      supplierId: selectedSupplier?.id,
+    });
   };
 
   return (
@@ -66,30 +70,33 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) =>
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
            <Section title="Détails de la dépense">
-              <Input 
+              <Input
                  label="Description"
                  value={formData.description}
-                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                 placeholder="Ex: Facture EDF, Achat Stock..." 
+                 onChange={(e) => { clearFieldError('description'); setFormData({...formData, description: e.target.value}); }}
+                 placeholder="Ex: Facture EDF, Achat Stock..."
                  required
+                 error={errors.description}
               />
               
               <div className="grid grid-cols-2 gap-4">
-                 <Input 
+                 <Input
                     label="Montant"
                     type="number"
                     prefix={currencySymbol}
                     value={formData.amount}
-                    onChange={(e) => setFormData({...formData, amount: parseFloat(e.target.value)})}
+                    onChange={(e) => { clearFieldError('amount'); setFormData({...formData, amount: parseFloat(e.target.value)}); }}
                     placeholder="0.00"
                     required
+                    error={errors.amount}
                  />
-                 <Input 
+                 <Input
                     label="Date"
-                    type="date" 
+                    type="date"
                     value={formData.date}
-                    onChange={(e) => setFormData({...formData, date: e.target.value})}
+                    onChange={(e) => { clearFieldError('date'); setFormData({...formData, date: e.target.value}); }}
                     required
+                    error={errors.date}
                  />
               </div>
            </Section>
@@ -140,10 +147,11 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) =>
         {/* Right Column */}
         <div className="lg:col-span-1 space-y-6">
            <Section title="Catégorisation">
-              <Select 
+              <Select
                  label="Catégorie"
                  value={formData.category}
-                 onChange={(val) => setFormData({...formData, category: val as string})}
+                 onChange={(val) => { clearFieldError('category'); setFormData({...formData, category: val as string}); }}
+                 error={errors.category}
                  options={expenseCategories.map((cat) => ({
                     value: cat.id,
                     label: cat.name,
