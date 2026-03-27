@@ -1,19 +1,16 @@
 
 import { useState, useMemo } from 'react';
-import { useAppContext } from '../../../context/AppContext';
+import { useTransactions } from '../../../hooks/useTransactions';
 import { useProducts } from '../../products/hooks/useProducts';
 import { useServices } from '../../services/hooks/useServices';
 import { useClients } from '../../clients/hooks/useClients';
 import { useSettings } from '../../settings/hooks/useSettings';
-import { CartItem, Client, Service, Product, ServiceVariant, Transaction, PaymentEntry } from '../../../types';
+import { CartItem, Client, Service, Product, ServiceVariant, PaymentEntry } from '../../../types';
 
 export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'HISTORY';
 
 export const usePOS = () => {
-  const {
-    transactions,
-    addTransaction,
-  } = useAppContext();
+  const { transactions, addTransaction } = useTransactions();
   const { salonSettings } = useSettings();
 
   const { allClients: clients } = useClients();
@@ -73,20 +70,8 @@ export const usePOS = () => {
 
   // --- Transaction Processing ---
 
-  const processTransaction = (payments: PaymentEntry[]) => {
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    const newTransaction: Transaction = {
-      id: `trx-${Date.now()}`,
-      date: new Date().toISOString(),
-      total: subtotal,
-      clientName: selectedClient ? `${selectedClient.firstName} ${selectedClient.lastName}` : undefined,
-      clientId: selectedClient?.id,
-      items: [...cart],
-      payments: payments
-    };
-
-    addTransaction(newTransaction);
+  const processTransaction = async (payments: PaymentEntry[]) => {
+    await addTransaction(cart, payments, selectedClient?.id);
     clearCart();
     setViewMode('HISTORY');
   };
