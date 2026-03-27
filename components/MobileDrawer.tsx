@@ -31,10 +31,14 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  // Focus trap + Escape key
+  // Focus trap + Escape key + focus restoration
   useEffect(() => {
     if (!isOpen) return;
+
+    // Save the element that had focus before opening
+    previousFocusRef.current = document.activeElement as HTMLElement;
 
     // Focus the close button on open
     closeButtonRef.current?.focus();
@@ -65,7 +69,11 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      // Restore focus to the element that triggered the drawer
+      previousFocusRef.current?.focus();
+    };
   }, [isOpen, onClose]);
 
   // Set inert on main content
