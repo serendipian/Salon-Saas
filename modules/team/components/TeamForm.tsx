@@ -3,10 +3,12 @@ import { ArrowLeft, Save, User, Camera, Check, CreditCard, FileText, HeartPulse 
 import { StaffMember, WorkSchedule } from '../../../types';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { DatePicker } from '../../../components/DatePicker';
-import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor'; 
+import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
 import { BonusSystemEditor } from '../../../components/BonusSystemEditor';
 import { useServices } from '../../services/hooks/useServices';
 import { useSettings } from '../../settings/hooks/useSettings';
+import { useFormValidation } from '../../../hooks/useFormValidation';
+import { staffMemberSchema } from '../schemas';
 
 interface TeamFormProps {
   existingMember?: StaffMember;
@@ -36,7 +38,8 @@ const DEFAULT_SCHEDULE: WorkSchedule = {
 export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCancel }) => {
   const { serviceCategories } = useServices();
   const { salonSettings } = useSettings();
-  
+  const { errors, validate, clearFieldError } = useFormValidation(staffMemberSchema);
+
   const [formData, setFormData] = useState<StaffMember>(existingMember || {
     id: '',
     firstName: '',
@@ -64,6 +67,8 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const validated = validate(formData);
+    if (!validated) return;
     onSave(formData);
   };
 
@@ -111,24 +116,27 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
                     </div>
                  </div>
                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input 
-                      label="Prénom" 
+                    <Input
+                      label="Prénom"
                       required
-                      value={formData.firstName} 
-                      onChange={e => setFormData({...formData, firstName: e.target.value})} 
+                      value={formData.firstName}
+                      onChange={e => { clearFieldError('firstName'); setFormData({...formData, firstName: e.target.value}); }}
+                      error={errors.firstName}
                     />
-                    <Input 
-                      label="Nom" 
+                    <Input
+                      label="Nom"
                       required
-                      value={formData.lastName} 
-                      onChange={e => setFormData({...formData, lastName: e.target.value})} 
+                      value={formData.lastName}
+                      onChange={e => { clearFieldError('lastName'); setFormData({...formData, lastName: e.target.value}); }}
+                      error={errors.lastName}
                     />
-                    <Input 
-                      label="Email" 
+                    <Input
+                      label="Email"
                       type="email"
                       required
-                      value={formData.email} 
-                      onChange={e => setFormData({...formData, email: e.target.value})} 
+                      value={formData.email}
+                      onChange={e => { clearFieldError('email'); setFormData({...formData, email: e.target.value}); }}
+                      error={errors.email}
                     />
                     <Input 
                       label="Téléphone" 
@@ -223,10 +231,11 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
                      <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${formData.active ? 'left-5' : 'left-0.5'}`} />
                   </button>
               </div>
-              <Select 
+              <Select
                  label="Rôle"
                  value={formData.role}
-                 onChange={(val) => setFormData({...formData, role: val as any})}
+                 onChange={(val) => { clearFieldError('role'); setFormData({...formData, role: val as any}); }}
+                 error={errors.role}
                  options={[
                    { value: 'Manager', label: 'Manager' },
                    { value: 'Stylist', label: 'Stylist' },
