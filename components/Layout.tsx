@@ -20,6 +20,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
+import { ConnectionStatusDot, ConnectionBanner } from './ConnectionStatus';
 import type { AuthResource } from '../lib/auth.types';
 
 interface LayoutProps {
@@ -259,6 +260,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
           </div>
 
           <div className="flex items-center gap-5 ml-auto">
+            <ConnectionStatusDot />
             <button className="relative p-2 text-slate-500 hover:bg-slate-50 hover:text-slate-700 rounded-full transition-all">
               <Bell size={20} strokeWidth={1.5} />
             </button>
@@ -283,6 +285,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
             </div>
           </div>
         </header>
+
+        <ConnectionBanner />
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-auto relative p-6 scroll-smooth custom-scrollbar">
