@@ -20,6 +20,18 @@
   --color-slate-850: #1e293b;
 }
 
+/* z-index scale for consistent layering */
+:root {
+  --z-content: 0;
+  --z-peek-bar: 10;
+  --z-topbar: 20;
+  --z-sidebar: 30;
+  --z-drawer-backdrop: 40;
+  --z-drawer-panel: 50;
+  --z-modal: 60;
+  --z-toast: 70;
+}
+
 /* Base styles */
 body {
   background-color: #f8fafc;
