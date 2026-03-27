@@ -1,7 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronDown, ArrowRight, Check, X } from 'lucide-react';
 import { DateRange } from '../types';
+import { useMediaQuery } from '../context/MediaQueryContext';
 
 interface DateRangePickerProps {
   dateRange: DateRange;
@@ -12,13 +14,20 @@ interface DateRangePickerProps {
 
 const PRESETS = [
   { label: "Aujourd'hui", getValue: () => {
-      const now = new Date();
-      return { from: new Date(now.setHours(0,0,0,0)), to: new Date(now.setHours(23,59,59,999)) };
+      const from = new Date();
+      from.setHours(0, 0, 0, 0);
+      const to = new Date();
+      to.setHours(23, 59, 59, 999);
+      return { from, to };
   }},
   { label: "Hier", getValue: () => {
-      const d = new Date();
-      d.setDate(d.getDate() - 1);
-      return { from: new Date(d.setHours(0,0,0,0)), to: new Date(d.setHours(23,59,59,999)) };
+      const from = new Date();
+      from.setDate(from.getDate() - 1);
+      from.setHours(0, 0, 0, 0);
+      const to = new Date();
+      to.setDate(to.getDate() - 1);
+      to.setHours(23, 59, 59, 999);
+      return { from, to };
   }},
   { label: "7 derniers jours", getValue: () => {
       const to = new Date();
@@ -54,9 +63,9 @@ const getDaysInMonth = (date: Date) => {
   const year = date.getFullYear();
   const month = date.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstDayOfWeek = new Date(year, month, 1).getDay(); 
+  const firstDayOfWeek = new Date(year, month, 1).getDay();
   const startingBlankDays = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
-  
+
   const days = [];
   for (let i = 0; i < startingBlankDays; i++) days.push(null);
   for (let i = 1; i <= daysInMonth; i++) days.push(i);
@@ -70,21 +79,21 @@ const formatDateDisplay = (date: Date) => {
 
 // --- Sub-Components ---
 
-const PresetSidebar: React.FC<{ 
-  currentLabel?: string, 
-  onSelect: (preset: typeof PRESETS[0]) => void 
+const PresetSidebar: React.FC<{
+  currentLabel?: string,
+  onSelect: (preset: typeof PRESETS[0]) => void
 }> = ({ currentLabel, onSelect }) => (
   <div className="w-48 bg-slate-50 border-r border-slate-200 p-2 flex flex-col gap-1 shrink-0">
     <div className="px-3 pt-2 pb-2 text-[10px] font-bold uppercase text-slate-400 tracking-wider">
       Période
     </div>
-    
+
     {/* Custom Button */}
     <button
       type="button"
       className={`text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-between ${
-        currentLabel === 'Personnalisé' 
-        ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' 
+        currentLabel === 'Personnalisé'
+        ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
         : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
       }`}
       onClick={(e) => {
@@ -109,8 +118,8 @@ const PresetSidebar: React.FC<{
           onSelect(preset);
         }}
         className={`text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-between ${
-          currentLabel === preset.label 
-          ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' 
+          currentLabel === preset.label
+          ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
           : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
         }`}
       >
@@ -132,14 +141,14 @@ const DayCell: React.FC<{
   const currentDayDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
   currentDayDate.setHours(0,0,0,0);
   const currentDayTime = currentDayDate.getTime();
-  
+
   const fromTime = new Date(tempRange.from).setHours(0,0,0,0);
   const toTime = new Date(tempRange.to).setHours(0,0,0,0);
-  
+
   const isSelected = currentDayTime >= fromTime && currentDayTime <= toTime;
   const isStart = currentDayTime === fromTime;
   const isEnd = currentDayTime === toTime;
-  
+
   let roundedClass = 'rounded-lg';
   if (isStart && isEnd) roundedClass = 'rounded-lg';
   else if (isStart) roundedClass = 'rounded-l-lg rounded-r-none';
@@ -147,7 +156,7 @@ const DayCell: React.FC<{
   else if (isSelected) roundedClass = 'rounded-none';
 
   return (
-    <div className="relative p-[1px]"> 
+    <div className="relative p-[1px]">
       <button
         type="button"
         onClick={(e) => {
@@ -183,7 +192,7 @@ const MonthGrid: React.FC<{
 
       <div className="grid grid-cols-7 gap-y-1 gap-x-0">
         {getDaysInMonth(monthDate).map((day, idx) => (
-          <DayCell 
+          <DayCell
             key={day ? `day-${day}` : `blank-${idx}`}
             day={day}
             monthDate={monthDate}
@@ -201,14 +210,15 @@ const MonthGrid: React.FC<{
 export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+  const { isMobile } = useMediaQuery();
+
   // State
   // Normalize initial viewDate to the 1st of the month to avoid 31st->Next Month skips
   const [viewDate, setViewDate] = useState(() => {
     const d = new Date(dateRange.from);
     d.setDate(1);
     return d;
-  }); 
+  });
   const [tempRange, setTempRange] = useState<DateRange>(dateRange);
   const [editMode, setEditMode] = useState<'START' | 'END' | null>(null);
 
@@ -228,7 +238,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
     }
   }, [dateRange, isOpen]);
 
+  // Click outside — desktop only
   useEffect(() => {
+    if (isMobile) return;
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -237,20 +249,47 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isMobile]);
+
+  // Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setIsOpen(false); setEditMode(null); }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
+  // Body scroll lock — mobile only
+  useEffect(() => {
+    if (!isMobile || !isOpen) return;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobile, isOpen]);
 
   const handlePresetSelect = (preset: typeof PRESETS[0]) => {
     const range = preset.getValue();
     const newRange = { ...range, label: preset.label };
     setTempRange(newRange);
-    
+
     // Update view
     const d = new Date(newRange.from);
     d.setDate(1);
     setViewDate(d);
-    
-    onChange(newRange); 
+
+    onChange(newRange);
     setIsOpen(false);
+  };
+
+  // For mobile: set range but don't close
+  const handleMobilePresetSelect = (preset: typeof PRESETS[0]) => {
+    const range = preset.getValue();
+    const newRange = { ...range, label: preset.label };
+    setTempRange(newRange);
+    const d = new Date(newRange.from);
+    d.setDate(1);
+    setViewDate(d);
   };
 
   const changeMonth = (delta: number) => {
@@ -264,12 +303,12 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
     let nextFrom = new Date(tempRange.from);
     let nextTo = new Date(tempRange.to);
     let nextEditMode = editMode;
-    
+
     if (editMode === 'START') {
       nextFrom = clickedDate;
       if (nextFrom.getTime() > nextTo.getTime()) nextTo = new Date(nextFrom);
       nextTo.setHours(23,59,59,999);
-      nextEditMode = 'END'; 
+      nextEditMode = 'END';
     } else if (editMode === 'END') {
       nextTo = clickedDate;
       nextTo.setHours(23,59,59,999);
@@ -315,7 +354,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
 
   return (
     <div className="relative" ref={containerRef}>
-      <button 
+      <button
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -329,25 +368,26 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
         <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 ring-1 ring-black/5 z-50 flex overflow-hidden w-[800px] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-          
+      {/* Desktop dropdown */}
+      {isOpen && !isMobile && (
+        <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 ring-1 ring-black/5 flex overflow-hidden w-[800px] animate-in fade-in zoom-in-95 duration-200 origin-top-right" style={{ zIndex: 'var(--z-drawer-panel)' }}>
+
           <PresetSidebar currentLabel={dateRange.label} onSelect={handlePresetSelect} />
 
           <div className="flex-1 p-5 flex flex-col">
-            
+
             {/* Header Inputs */}
             <div className="flex items-center gap-4 mb-6 pb-4 border-b border-slate-100">
                {/* Start Button */}
                <div className="flex-1 relative">
                   <label className="block text-[10px] font-bold uppercase mb-1 text-slate-400">Du (Début)</label>
-                  <button 
+                  <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleEditMode('START'); }}
                     className={`
                       w-full pl-3 pr-3 py-2.5 text-sm border rounded-lg font-medium flex items-center justify-between transition-all shadow-sm
-                      ${editMode === 'START' 
-                        ? 'border-slate-900 ring-2 ring-slate-900 text-slate-900 bg-slate-50' 
+                      ${editMode === 'START'
+                        ? 'border-slate-900 ring-2 ring-slate-900 text-slate-900 bg-slate-50'
                         : 'border-slate-200 hover:border-slate-400 text-slate-700 bg-white'
                       }
                     `}
@@ -362,13 +402,13 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
                {/* End Button */}
                <div className="flex-1 relative">
                   <label className="block text-[10px] font-bold uppercase mb-1 text-slate-400">Au (Fin)</label>
-                  <button 
+                  <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleEditMode('END'); }}
                     className={`
                       w-full pl-3 pr-3 py-2.5 text-sm border rounded-lg font-medium flex items-center justify-between transition-all shadow-sm
-                      ${editMode === 'END' 
-                        ? 'border-slate-900 ring-2 ring-slate-900 text-slate-900 bg-slate-50' 
+                      ${editMode === 'END'
+                        ? 'border-slate-900 ring-2 ring-slate-900 text-slate-900 bg-slate-50'
                         : 'border-slate-200 hover:border-slate-400 text-slate-700 bg-white'
                       }
                     `}
@@ -381,13 +421,13 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
 
             {/* Dual Calendar Grid Layout */}
             <div className="grid grid-cols-2 gap-8 relative">
-               
+
                {/* Left Calendar */}
                <div className="relative">
                   <div className="flex items-center justify-center mb-4 relative">
-                     <button 
-                        type="button" 
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); changeMonth(-1); }} 
+                     <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); changeMonth(-1); }}
                         className="absolute left-0 p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"
                       >
                         <ChevronLeft size={20}/>
@@ -408,9 +448,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
                      <span className="font-bold text-slate-800 capitalize text-sm">
                        {nextMonthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
                      </span>
-                     <button 
-                        type="button" 
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); changeMonth(1); }} 
+                     <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); changeMonth(1); }}
                         className="absolute right-0 p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"
                       >
                         <ChevronRight size={20}/>
@@ -423,16 +463,16 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
 
             {/* Footer Actions */}
             <div className="mt-auto pt-5 border-t border-slate-100 flex justify-end gap-3">
-               <button 
-                 type="button" 
-                 onClick={() => setIsOpen(false)} 
+               <button
+                 type="button"
+                 onClick={() => setIsOpen(false)}
                  className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-all shadow-sm"
                >
                  Annuler
                </button>
-               <button 
-                  type="button" 
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onChange(tempRange); setIsOpen(false); }} 
+               <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onChange(tempRange); setIsOpen(false); }}
                   className="px-5 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-all"
                >
                  Appliquer
@@ -441,6 +481,86 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
 
           </div>
         </div>
+      )}
+
+      {/* Mobile fullscreen bottom-sheet */}
+      {isOpen && isMobile && createPortal(
+        <div className="fixed inset-0 bg-black/40 flex items-end justify-center" style={{ zIndex: 'var(--z-modal)' }}>
+          <div className="bg-white w-full rounded-t-2xl max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-300"
+               role="dialog" aria-modal="true" aria-label="Sélectionner une période">
+
+            {/* Sticky header */}
+            <div className="sticky top-0 bg-white border-b border-slate-200 px-5 py-4 flex items-center justify-between z-10">
+              <h2 className="text-base font-bold text-slate-900">Période</h2>
+              <button type="button" onClick={() => { setIsOpen(false); setEditMode(null); }} className="p-2 -mr-2 text-slate-400 hover:text-slate-900 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Horizontal preset strip */}
+            <div className="px-5 py-3 border-b border-slate-100 overflow-x-auto flex gap-2" style={{ scrollbarWidth: 'none' }}>
+              {PRESETS.map(preset => (
+                <button key={preset.label} type="button"
+                  onClick={() => handleMobilePresetSelect(preset)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap border transition-colors shrink-0 ${
+                    dateRange.label === preset.label
+                      ? 'bg-slate-900 text-white border-slate-900'
+                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}>
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Two-tap indicator */}
+            <div className="px-5 py-3 flex items-center gap-3">
+              <button type="button" onClick={() => toggleEditMode('START')}
+                className={`flex-1 px-3 py-2 border rounded-lg text-sm font-medium text-left ${
+                  editMode === 'START' ? 'border-slate-900 ring-2 ring-slate-900 bg-slate-50' : 'border-slate-200'
+                }`}>
+                <div className="text-[10px] text-slate-400 uppercase font-bold mb-0.5">1. Date de début</div>
+                {tempRange.from.toLocaleDateString('fr-FR')}
+              </button>
+              <ArrowRight size={14} className="text-slate-300 shrink-0" />
+              <button type="button" onClick={() => toggleEditMode('END')}
+                className={`flex-1 px-3 py-2 border rounded-lg text-sm font-medium text-left ${
+                  editMode === 'END' ? 'border-slate-900 ring-2 ring-slate-900 bg-slate-50' : 'border-slate-200'
+                }`}>
+                <div className="text-[10px] text-slate-400 uppercase font-bold mb-0.5">2. Date de fin</div>
+                {tempRange.to.toLocaleDateString('fr-FR')}
+              </button>
+            </div>
+
+            {/* Single calendar with month nav */}
+            <div className="px-5 py-4">
+              <div className="flex items-center justify-between mb-4">
+                <button type="button" onClick={() => changeMonth(-1)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
+                  <ChevronLeft size={18} />
+                </button>
+                <span className="font-bold text-slate-800 capitalize text-sm">
+                  {viewDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                </span>
+                <button type="button" onClick={() => changeMonth(1)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+              <MonthGrid monthDate={viewDate} tempRange={tempRange} onDayClick={handleDayClick} />
+            </div>
+
+            {/* Sticky footer */}
+            <div className="sticky bottom-0 bg-white border-t border-slate-200 px-5 py-4 flex gap-3">
+              <button type="button" onClick={() => { setIsOpen(false); setEditMode(null); }}
+                className="flex-1 px-4 py-3 border border-slate-300 rounded-xl text-sm font-medium text-slate-700">
+                Annuler
+              </button>
+              <button type="button" onClick={() => { onChange(tempRange); setIsOpen(false); setEditMode(null); }}
+                className="flex-1 px-4 py-3 bg-slate-900 text-white rounded-xl text-sm font-bold">
+                Appliquer
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );
