@@ -11,6 +11,8 @@ import { Client, ClientPermissions } from '../../../types';
 import { useTeam } from '../../team/hooks/useTeam';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { DatePicker } from '../../../components/DatePicker';
+import { useFormValidation } from '../../../hooks/useFormValidation';
+import { clientSchema } from '../schemas';
 
 interface ClientFormProps {
   existingClient?: Client;
@@ -61,9 +63,12 @@ export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, 
     createdAt: new Date().toISOString()
   });
 
+  const { errors, validate, clearFieldError } = useFormValidation(clientSchema);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.firstName && formData.lastName) {
+    const validated = validate(formData);
+    if (validated) {
       onSave(formData as Client);
     }
   };
@@ -141,23 +146,25 @@ export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, 
 
                 {/* Col 2: First Name */}
                 <div className="sm:col-span-1 flex flex-col justify-end">
-                   <Input 
-                     label="Prénom" 
+                   <Input
+                     label="Prénom"
                      required
                      value={formData.firstName}
-                     onChange={e => setFormData({...formData, firstName: e.target.value})}
+                     onChange={e => { setFormData({...formData, firstName: e.target.value}); clearFieldError('firstName'); }}
                      placeholder="Ex: Sophie"
+                     error={errors.firstName}
                    />
                 </div>
 
                 {/* Col 3: Last Name */}
                 <div className="sm:col-span-1 flex flex-col justify-end">
-                   <Input 
-                     label="Nom" 
+                   <Input
+                     label="Nom"
                      required
                      value={formData.lastName}
-                     onChange={e => setFormData({...formData, lastName: e.target.value})}
+                     onChange={e => { setFormData({...formData, lastName: e.target.value}); clearFieldError('lastName'); }}
                      placeholder="Ex: Martin"
+                     error={errors.lastName}
                    />
                 </div>
              </div>
@@ -303,13 +310,14 @@ export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, 
                   placeholder="06 12 34 56 78"
                />
 
-               <Input 
+               <Input
                   label="Email"
                   required
                   type="email"
                   value={formData.email}
-                  onChange={e => setFormData({...formData, email: e.target.value})}
+                  onChange={e => { setFormData({...formData, email: e.target.value}); clearFieldError('email'); }}
                   placeholder="exemple@email.com"
+                  error={errors.email}
                />
 
                <Input 
