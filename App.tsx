@@ -1,6 +1,8 @@
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
+import { ToastContainer } from './components/Toast';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -70,25 +72,28 @@ const AppContent = () => {
 export default function App() {
   return (
     <AuthProvider>
-      <HashRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+      <ToastProvider>
+        <HashRouter>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
 
-          {/* Auth-required, no-salon routes */}
-          <Route path="/create-salon" element={<CreateSalonPage />} />
-          <Route path="/select-salon" element={<SalonPickerPage />} />
+            {/* Auth-required, no-salon routes */}
+            <Route path="/create-salon" element={<CreateSalonPage />} />
+            <Route path="/select-salon" element={<SalonPickerPage />} />
 
-          {/* Protected app routes */}
-          <Route path="/*" element={
-            <ProtectedRoute>
-              <AppContent />
-            </ProtectedRoute>
-          } />
-        </Routes>
-      </HashRouter>
+            {/* Protected app routes */}
+            <Route path="/*" element={
+              <ProtectedRoute>
+                <AppContent />
+              </ProtectedRoute>
+            } />
+          </Routes>
+        </HashRouter>
+        <ToastContainer />
+      </ToastProvider>
     </AuthProvider>
   );
 }
