@@ -2,11 +2,11 @@
 import React from 'react';
 import { Trash2, Tag, AlertCircle } from 'lucide-react';
 import { Expense } from '../../../types';
-import { useAppContext } from '../../../context/AppContext';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
 
 export const AccountingExpenses: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
-  const { expenseCategories } = useAppContext();
+  const { expenseCategories } = useSettings();
 
   // Helper to get category details (Label + Color) from ID
   const getCategoryDetails = (id: string) => {

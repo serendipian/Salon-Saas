@@ -7,7 +7,6 @@ import { AccountingLedger } from './components/AccountingLedger';
 import { AccountingExpenses } from './components/AccountingExpenses';
 import { ExpenseForm } from './components/ExpenseForm';
 import { Expense } from '../../types';
-import { useAppContext } from '../../context/AppContext';
 import { DateRangePicker } from '../../components/DateRangePicker';
 
 export const AccountingModule: React.FC = () => {

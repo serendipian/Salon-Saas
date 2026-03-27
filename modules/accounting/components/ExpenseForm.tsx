@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Expense, ExpenseCategory } from '../../../types';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
-import { useAppContext } from '../../../context/AppContext';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
 
 interface ExpenseFormProps {
@@ -12,7 +12,7 @@ interface ExpenseFormProps {
 }
 
 export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
-  const { expenseCategories, salonSettings } = useAppContext();
+  const { expenseCategories, salonSettings } = useSettings();
   const { allSuppliers: suppliers } = useSuppliers();
   
   const [formData, setFormData] = useState<Partial<Expense>>({
@@ -28,13 +28,17 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) =>
 
   const handleSubmit = () => {
     if (formData.description && formData.amount) {
+        const selectedSupplier = !isCustomSupplier
+          ? suppliers.find(s => s.id === formData.supplier)
+          : undefined;
         onSave({
-            id: `exp-${Date.now()}`,
+            id: crypto.randomUUID(),
             description: formData.description!,
             amount: Number(formData.amount),
             date: formData.date || new Date().toISOString(),
             category: (formData.category || expenseCategories[0]?.id) as ExpenseCategory,
-            supplier: formData.supplier
+            supplier: selectedSupplier?.name ?? formData.supplier,
+            supplierId: selectedSupplier?.id,
         });
     }
   };
@@ -109,7 +113,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) =>
                     options={[
                        { value: '', label: 'Non spécifié' },
                        ...suppliers.map(s => ({
-                          value: s.name,
+                          value: s.id,
                           label: s.name,
                           subtitle: s.category,
                           initials: s.name.substring(0, 2).toUpperCase()
