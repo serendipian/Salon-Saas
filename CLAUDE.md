@@ -118,6 +118,20 @@ modules/{module}/
 - resetKey pattern forces full subtree remount → fresh queries → fresh data
 - Layout (sidebar, header, connection status) survives any module crash
 
+### Mobile Responsiveness (Plan 5A)
+- `context/MediaQueryContext.tsx` — singleton provider with breakpoint flags (isMobile/isTablet/isDesktop)
+- `hooks/useSidebar.ts` — drawer/collapsed/expanded mode management
+- `hooks/useViewMode.ts` — card/table toggle with localStorage persistence per module
+- `components/BottomTabBar.tsx` — 5-tab mobile nav (Accueil, Agenda, Caisse, Clients, Plus)
+- `components/MobileDrawer.tsx` — slide-in overlay with focus trap and ARIA
+- `components/MobileSelect.tsx` — fullscreen select overlay for mobile
+- `components/ViewToggle.tsx` — card/table switch button pair
+- Layout.tsx refactored: sidebar hidden on mobile, bottom tabs + drawer shown
+- FormElements: 44px touch targets, dir="auto", fullscreen Select on mobile
+- WorkScheduleEditor: horizontal scroll with snap on mobile
+- BonusSystemEditor: card layout on mobile
+- z-index scale defined in CSS custom properties (--z-content through --z-toast)
+
 ### Dead Code (DO NOT USE)
 These files in `components/` are old monolithic versions replaced by `modules/`:
 - `components/AccountingModule.tsx`
@@ -215,7 +229,7 @@ AuthContext calls this automatically on salon selection. The `get_active_salon()
 7. Dashboard KPI trends are hardcoded percentages
 8. ~~No form validation~~ (DONE — Plan 4, Zod schemas)
 9. ~~No error boundaries~~ (DONE — Plan 4, module-level ErrorBoundary)
-10. Not responsive for mobile
+10. ~~Not responsive for mobile~~ (DONE — Plan 5A infrastructure + nav + forms)
 
 ## Environment Variables
 
