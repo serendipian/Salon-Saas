@@ -39,6 +39,7 @@ export interface ServiceCategory {
   id: string;
   name: string;
   color: string;
+  sortOrder?: number;
 }
 
 export interface Service {
@@ -55,6 +56,7 @@ export interface ProductCategory {
   id: string;
   name: string;
   color: string;
+  sortOrder?: number;
 }
 
 export interface Product {
