@@ -21,7 +21,7 @@ Salon management SaaS application for beauty salons. Built with React 19, TypeSc
 modules/
   {module}/
     {Module}Module.tsx    # Container component, manages view state
-    hooks/use{Module}.ts  # Custom hook wrapping useAppContext()
+    hooks/use{Module}.ts  # TanStack Query hooks (useQuery + useMutation)
     components/           # Presentational components
     data.ts               # Mock/initial data (where applicable)
 ```
@@ -51,9 +51,9 @@ pages/
 ```
 
 ### State Management
-- `AppContext` in `context/AppContext.tsx` provides unmigrated state (transactions, expenses)
-- Migrated modules use TanStack Query + Supabase (see Data Layer below)
-- `useAppContext()` hook only used by POS and Accounting modules
+- All modules use TanStack Query + Supabase for data fetching and persistence
+- No global state context — each module has co-located hooks
+- Shared `useTransactions` hook at `hooks/useTransactions.ts` (consumed by POS, Dashboard, Accounting)
 
 ### Data Layer (Supabase + TanStack Query)
 
@@ -65,8 +65,7 @@ modules/{module}/
   hooks/use{Module}.ts    # TanStack Query hooks (useQuery + useMutation)
 ```
 
-**Migrated modules (Plan 2A + 2B):** suppliers, products, services, clients, settings, team, appointments
-**Still in AppContext:** transactions, expenses (Plan 2C targets)
+**All 10 modules migrated:** suppliers, products, services, clients, settings, team, appointments, pos/transactions, accounting/expenses, dashboard
 
 **Query key convention:** `['resource', salonId]` — ensures auto-refetch on salon switch.
 
@@ -162,13 +161,13 @@ AuthContext calls this automatically on salon selection. The `get_active_salon()
 - **Components**: Functional components with hooks. No class components.
 - **Types**: All domain types in `types.ts`. Use proper TypeScript types, avoid `any`.
 - **IDs**: Use `crypto.randomUUID()` for generating IDs (not `Date.now()`).
-- **State**: Access shared state via `useAppContext()`. Local UI state (view, search, selection) stays in the component.
+- **State**: Each module uses TanStack Query hooks for server state. Local UI state (view, search, selection) stays in the component.
 - **Forms**: Use controlled React state. Never use `document.getElementById()`.
 - **File naming**: PascalCase for components, camelCase for hooks/utilities.
 
 ## Known Issues to Fix
 
-1. ~~No data persistence~~ PARTIAL — 7 modules migrated to Supabase (Plan 2A + 2B), POS/Accounting remaining in Plan 2C
+1. ~~No data persistence~~ DONE — all modules on Supabase
 2. Tailwind via CDN (needs proper PostCSS setup)
 3. Import maps in index.html point to aistudiocdn.com (not needed with Vite)
 4. Gemini API key exposed client-side
