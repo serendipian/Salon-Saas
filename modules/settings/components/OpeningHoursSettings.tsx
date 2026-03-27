@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { ArrowLeft, Save, Clock } from 'lucide-react';
-import { useAppContext } from '../../../context/AppContext';
+import { useSettings } from '../hooks/useSettings';
 import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
 import { Section } from '../../../components/FormElements';
 import { WorkSchedule } from '../../../types';
@@ -18,7 +18,7 @@ const DEFAULT_SCHEDULE: WorkSchedule = {
 };
 
 export const OpeningHoursSettings: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-  const { salonSettings, updateSalonSettings } = useAppContext();
+  const { salonSettings, updateSalonSettings } = useSettings();
   const [schedule, setSchedule] = useState<WorkSchedule>(salonSettings.schedule || DEFAULT_SCHEDULE);
 
   const handleSave = () => {

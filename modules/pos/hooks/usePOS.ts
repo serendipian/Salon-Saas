@@ -4,6 +4,7 @@ import { useAppContext } from '../../../context/AppContext';
 import { useProducts } from '../../products/hooks/useProducts';
 import { useServices } from '../../services/hooks/useServices';
 import { useClients } from '../../clients/hooks/useClients';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { CartItem, Client, Service, Product, ServiceVariant, Transaction, PaymentEntry } from '../../../types';
 
 export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'HISTORY';
@@ -12,8 +13,8 @@ export const usePOS = () => {
   const {
     transactions,
     addTransaction,
-    salonSettings
   } = useAppContext();
+  const { salonSettings } = useSettings();
 
   const { allClients: clients } = useClients();
 

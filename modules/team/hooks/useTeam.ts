@@ -1,38 +1,75 @@
-
 import { useState, useMemo } from 'react';
-import { useAppContext } from '../../../context/AppContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../../../lib/supabase';
+import { useAuth } from '../../../context/AuthContext';
+import { toStaffMember, toStaffMemberInsert } from '../mappers';
+import type { StaffMember } from '../../../types';
 
 export const useTeam = () => {
-  const { team, addStaffMember, updateStaffMember, appointments } = useAppContext();
+  const { activeSalon } = useAuth();
+  const salonId = activeSalon?.id ?? '';
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredTeam = useMemo(() => {
-    return team.filter(member => 
-      member.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.lastName.toLowerCase().includes(searchTerm.toLowerCase())
+  const { data: staff = [], isLoading } = useQuery({
+    queryKey: ['staff_members', salonId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('staff_members')
+        .select('*')
+        .eq('salon_id', salonId)
+        .is('deleted_at', null)
+        .order('last_name');
+      if (error) throw error;
+      return (data ?? []).map(toStaffMember);
+    },
+    enabled: !!salonId,
+  });
+
+  const addStaffMemberMutation = useMutation({
+    mutationFn: async (member: StaffMember) => {
+      const { error } = await supabase
+        .from('staff_members')
+        .insert(toStaffMemberInsert(member, salonId));
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });
+    },
+    onError: (error) => console.error('Failed to add staff member:', error.message),
+  });
+
+  const updateStaffMemberMutation = useMutation({
+    mutationFn: async (member: StaffMember) => {
+      const { id, salon_id, ...updateData } = toStaffMemberInsert(member, salonId);
+      const { error } = await supabase
+        .from('staff_members')
+        .update(updateData)
+        .eq('id', member.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });
+    },
+    onError: (error) => console.error('Failed to update staff member:', error.message),
+  });
+
+  const filteredStaff = useMemo(() => {
+    if (!searchTerm) return staff;
+    const term = searchTerm.toLowerCase();
+    return staff.filter(m =>
+      m.firstName.toLowerCase().includes(term) ||
+      m.lastName.toLowerCase().includes(term)
     );
-  }, [team, searchTerm]);
-
-  // Helper to calculate stats per member
-  const getMemberStats = (memberId: string) => {
-    const memberAppointments = appointments.filter(a => a.staffId === memberId);
-    const today = new Date().toISOString().slice(0, 10);
-    const todaysAppointments = memberAppointments.filter(a => a.date.startsWith(today));
-    const totalRevenue = memberAppointments.reduce((sum, a) => sum + a.price, 0);
-
-    return {
-      totalAppointments: memberAppointments.length,
-      todayCount: todaysAppointments.length,
-      totalRevenue
-    };
-  };
+  }, [staff, searchTerm]);
 
   return {
-    team: filteredTeam,
+    team: filteredStaff,
+    allStaff: staff,
+    isLoading,
     searchTerm,
     setSearchTerm,
-    addStaffMember,
-    updateStaffMember,
-    getMemberStats
+    addStaffMember: (member: StaffMember) => addStaffMemberMutation.mutate(member),
+    updateStaffMember: (member: StaffMember) => updateStaffMemberMutation.mutate(member),
   };
 };

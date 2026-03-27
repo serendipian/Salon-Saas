@@ -27,6 +27,7 @@ interface AuthContextType {
 
   // Salon actions
   switchSalon: (salonId: string) => Promise<void>;
+  refreshActiveSalon: (updates: Partial<ActiveSalon>) => void;
   createSalon: (name: string, timezone?: string, currency?: string) => Promise<{ salonId: string | null; error: string | null }>;
 }
 
@@ -283,6 +284,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
   }, []);
 
+  const refreshActiveSalon = useCallback((updates: Partial<ActiveSalon>) => {
+    setActiveSalon(prev => prev ? { ...prev, ...updates } : prev);
+  }, []);
+
   const createSalon = useCallback(async (name: string, timezone = 'Europe/Paris', currency = 'EUR') => {
     const { data, error } = await supabase.rpc('create_salon', {
       p_name: name,
@@ -324,6 +329,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithMagicLink,
     signOut,
     switchSalon,
+    refreshActiveSalon,
     createSalon,
   };
 

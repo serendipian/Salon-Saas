@@ -1,29 +1,89 @@
-
 import { useState, useMemo } from 'react';
-import { useAppContext } from '../../../context/AppContext';
-import { Appointment, AppointmentStatus } from '../../../types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../../../lib/supabase';
+import { useAuth } from '../../../context/AuthContext';
+import { toAppointment, toAppointmentInsert } from '../mappers';
+import type { Appointment } from '../../../types';
 
 export const useAppointments = () => {
-  const { appointments, addAppointment, updateAppointment } = useAppContext();
+  const { activeSalon } = useAuth();
+  const salonId = activeSalon?.id ?? '';
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
+  const { data: appointments = [], isLoading } = useQuery({
+    queryKey: ['appointments', salonId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*, clients(first_name, last_name), services(name), staff_members(first_name, last_name)')
+        .eq('salon_id', salonId)
+        .is('deleted_at', null)
+        .order('date', { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map(toAppointment);
+    },
+    enabled: !!salonId,
+  });
+
+  const addAppointmentMutation = useMutation({
+    mutationFn: async (appt: Appointment) => {
+      const { error } = await supabase
+        .from('appointments')
+        .insert(toAppointmentInsert(appt, salonId));
+      if (error) {
+        // Surface double-booking constraint violation
+        if (error.code === '23P01') {
+          throw new Error('Ce créneau est déjà occupé pour ce praticien. Veuillez choisir un autre horaire.');
+        }
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
+    },
+    onError: (error) => console.error('Failed to add appointment:', error.message),
+  });
+
+  const updateAppointmentMutation = useMutation({
+    mutationFn: async (appt: Appointment) => {
+      const { id, salon_id, ...updateData } = toAppointmentInsert(appt, salonId);
+      const { error } = await supabase
+        .from('appointments')
+        .update(updateData)
+        .eq('id', appt.id);
+      if (error) {
+        if (error.code === '23P01') {
+          throw new Error('Ce créneau est déjà occupé pour ce praticien. Veuillez choisir un autre horaire.');
+        }
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
+    },
+    onError: (error) => console.error('Failed to update appointment:', error.message),
+  });
+
   const filteredAppointments = useMemo(() => {
     return appointments.filter(a => {
-      const matchesSearch = a.clientName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      const matchesSearch = a.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             a.serviceName.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'ALL' || a.status === statusFilter;
       return matchesSearch && matchesStatus;
-    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    });
   }, [appointments, searchTerm, statusFilter]);
 
   return {
     appointments: filteredAppointments,
+    allAppointments: appointments,
+    isLoading,
     searchTerm,
     setSearchTerm,
     statusFilter,
     setStatusFilter,
-    addAppointment,
-    updateAppointment
+    addAppointment: (appt: Appointment) => addAppointmentMutation.mutate(appt),
+    updateAppointment: (appt: Appointment) => updateAppointmentMutation.mutate(appt),
   };
 };

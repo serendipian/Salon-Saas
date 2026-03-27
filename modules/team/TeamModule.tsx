@@ -2,11 +2,13 @@
 import React, { useState } from 'react';
 import { ViewState, StaffMember } from '../../types';
 import { useTeam } from './hooks/useTeam';
+import { useAppointments } from '../appointments/hooks/useAppointments';
 import { TeamList } from './components/TeamList';
 import { TeamForm } from './components/TeamForm';
 
 export const TeamModule: React.FC = () => {
-  const { team, searchTerm, setSearchTerm, addStaffMember, updateStaffMember, getMemberStats } = useTeam();
+  const { team, allStaff, searchTerm, setSearchTerm, addStaffMember, updateStaffMember } = useTeam();
+  const { allAppointments: appointments } = useAppointments();
   const [view, setView] = useState<ViewState>('LIST');
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
@@ -32,18 +34,18 @@ export const TeamModule: React.FC = () => {
   return (
     <div className="w-full">
       {view === 'LIST' && (
-        <TeamList 
-          team={team} 
+        <TeamList
+          team={team}
+          appointments={appointments}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
-          onAdd={handleAdd} 
+          onAdd={handleAdd}
           onEdit={handleEdit}
-          getStats={getMemberStats}
         />
       )}
       {(view === 'ADD' || view === 'EDIT') && (
-        <TeamForm 
-          existingMember={team.find(m => m.id === selectedMemberId)} 
+        <TeamForm
+          existingMember={allStaff.find(m => m.id === selectedMemberId)}
           onSave={handleSave}
           onCancel={() => setView('LIST')}
         />
