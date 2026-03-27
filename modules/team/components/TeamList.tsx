@@ -13,20 +13,31 @@ import {
   List,
   ChevronRight
 } from 'lucide-react';
-import { StaffMember } from '../../../types';
-import { useAppContext } from '../../../context/AppContext';
+import { StaffMember, Appointment } from '../../../types';
 
 interface TeamListProps {
   team: StaffMember[];
+  appointments: Appointment[];
   searchTerm: string;
   onSearchChange: (val: string) => void;
   onAdd: () => void;
   onEdit: (id: string) => void;
-  getStats: (id: string) => { totalAppointments: number, todayCount: number, totalRevenue: number };
 }
 
-export const TeamList: React.FC<TeamListProps> = ({ team, searchTerm, onSearchChange, onAdd, onEdit, getStats }) => {
+export const TeamList: React.FC<TeamListProps> = ({ team, appointments, searchTerm, onSearchChange, onAdd, onEdit }) => {
   const [viewMode, setViewMode] = useState<'GRID' | 'LIST'>('LIST');
+
+  const getMemberStats = (memberId: string) => {
+    const memberAppointments = appointments.filter(a => a.staffId === memberId);
+    const today = new Date().toISOString().slice(0, 10);
+    const todaysAppointments = memberAppointments.filter(a => a.date.startsWith(today));
+    const totalRevenue = memberAppointments.reduce((sum, a) => sum + a.price, 0);
+    return {
+      totalAppointments: memberAppointments.length,
+      todayCount: todaysAppointments.length,
+      totalRevenue,
+    };
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in">
@@ -75,7 +86,7 @@ export const TeamList: React.FC<TeamListProps> = ({ team, searchTerm, onSearchCh
       {viewMode === 'GRID' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {team.map((member) => {
-            const stats = getStats(member.id);
+            const stats = getMemberStats(member.id);
             const initials = `${member.firstName[0]}${member.lastName[0]}`;
             
             return (
@@ -149,7 +160,7 @@ export const TeamList: React.FC<TeamListProps> = ({ team, searchTerm, onSearchCh
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {team.map((member) => {
-                  const stats = getStats(member.id);
+                  const stats = getMemberStats(member.id);
                   const initials = `${member.firstName[0]}${member.lastName[0]}`;
                   
                   return (
