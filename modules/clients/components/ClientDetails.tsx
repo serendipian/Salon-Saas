@@ -21,7 +21,8 @@ import {
   ShoppingBag
 } from 'lucide-react';
 import { Client, AppointmentStatus } from '../../../types';
-import { useAppContext } from '../../../context/AppContext';
+import { useAppointments } from '../../appointments/hooks/useAppointments';
+import { useTeam } from '../../team/hooks/useTeam';
 import { formatPrice } from '../../../lib/format';
 
 interface ClientDetailsProps {
@@ -31,7 +32,8 @@ interface ClientDetailsProps {
 }
 
 export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, onEdit }) => {
-  const { appointments, team } = useAppContext();
+  const { allAppointments: appointments } = useAppointments();
+  const { allStaff: team } = useTeam();
   const initials = `${client.firstName[0]}${client.lastName[0]}`;
 
   const preferredStaff = team.find(t => t.id === client.preferredStaffId);

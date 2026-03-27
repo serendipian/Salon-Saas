@@ -8,7 +8,7 @@ import {
   Instagram
 } from 'lucide-react';
 import { Client, ClientPermissions } from '../../../types';
-import { useAppContext } from '../../../context/AppContext';
+import { useTeam } from '../../team/hooks/useTeam';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { DatePicker } from '../../../components/DatePicker';
 
@@ -19,7 +19,7 @@ interface ClientFormProps {
 }
 
 export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, onCancel }) => {
-  const { team } = useAppContext();
+  const { allStaff: team } = useTeam();
   
   const [formData, setFormData] = useState<Partial<Client>>(existingClient || {
     firstName: '',
