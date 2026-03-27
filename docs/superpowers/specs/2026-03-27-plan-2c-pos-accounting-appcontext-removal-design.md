@@ -62,10 +62,14 @@ Fields:
 - Maps via `toTransaction()`
 
 **Mutation (`addTransaction`):**
-- Calls `supabase.rpc('create_transaction', payload)` where payload is built by `toTransactionRpcPayload()`
+- Signature: `addTransaction(items: CartItem[], payments: PaymentEntry[], clientId?: string)`
+- Internally builds RPC payload via `toTransactionRpcPayload()` and calls `supabase.rpc('create_transaction', payload)`
 - The RPC atomically: validates payment total = item total, inserts transaction + items + payments, decrements product stock
 - `onSuccess`: invalidates `['transactions', salonId]` and `['products', salonId]` (stock changed)
-- `onError`: surfaces RPC exceptions (payment mismatch, permission denied)
+- `onError`: maps known RPC exceptions to French UI messages:
+  - `"Payment total (%) does not match"` → `"Le total des paiements ne correspond pas au montant de la transaction."`
+  - `"You do not have permission"` → `"Vous n'avez pas la permission de créer des transactions."`
+  - Other errors: log to console
 
 **Returns:** `{ transactions, isLoading, addTransaction }`
 
@@ -90,9 +94,9 @@ const { transactions, addTransaction } = useAppContext();
 const { transactions, addTransaction } = useTransactions();
 ```
 
-**`processTransaction()`** changes:
-- Remove `id: \`trx-${Date.now()}\`` — let DB generate UUID via RPC
-- Call `addTransaction(cart, selectedClient?.id, salonId)` which internally calls the RPC
+**`processTransaction(payments)`** changes:
+- Remove `id: \`trx-${Date.now()}\`` and manual `Transaction` object construction — let DB generate UUID via RPC
+- Call `addTransaction(cart, payments, selectedClient?.id)` — the shared hook handles RPC payload building
 - Cart state stays local (useState) — not persisted
 
 ### Consumer Fixes
@@ -151,7 +155,7 @@ value: s.id, label: s.name
 
 On submit, set `supplierId` to the selected supplier ID. For custom/manual suppliers, `supplierId` stays undefined (null in DB), and `supplier` is not stored in the DB (it's derived from the JOIN on read, or empty for manual entries).
 
-**Note:** Manual supplier entries ("Autre / Saisir manuellement") will have `supplier_id = null` in the DB. The supplier name will not be stored for manual entries — this is a data loss tradeoff. If the user wants to track a supplier, they should create it in the Suppliers module first. This matches the normalized data model.
+**Note:** Manual supplier entries ("Autre / Saisir manuellement") will have `supplier_id = null` in the DB. The supplier name will not be stored for manual entries — this is a data loss tradeoff. In the ledger/expense list, expenses with no `supplier_id` will show "-" in the supplier column. If the user wants to track a supplier, they should create it in the Suppliers module first. This matches the normalized data model.
 
 ### Hook Rewrite (`useAccounting.ts`)
 
@@ -215,7 +219,7 @@ Remove `useAppContext` import entirely — Dashboard will have zero AppContext d
 
 ### Verification
 
-After deletion, run `npm run build`. If any file still imports `useAppContext`, TypeScript will catch it.
+After deletion, run `npm run build` to verify no import resolution errors. Note: Vite uses esbuild which strips types without checking — `npm run build` catches missing modules and syntax errors but NOT type errors. The tsconfig does not have `"strict": true`, so destructuring nonexistent properties silently returns `undefined` at runtime rather than failing at build time. Full type verification would require `npx tsc --noEmit` (currently 7 pre-existing type errors from Plan 2B `Json` vs concrete type mismatches — not blocking but worth noting).
 
 ### CLAUDE.md Updates
 
@@ -234,7 +238,7 @@ After deletion, run `npm run build`. If any file still imports `useAppContext`, 
 5. Dashboard consumer update
 6. AppContext deletion + App.tsx cleanup + CLAUDE.md
 
-This order ensures each step can be verified independently via `npm run build`.
+This order ensures each step can be verified independently via `npm run build` (bundling) with the caveat that Vite/esbuild does not type-check.
 
 ## Key Decisions
 
