@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Trash2, CreditCard, Banknote, Gift, Tag, CheckCircle } from 'lucide-react';
 import { PaymentEntry } from '../../../types';
-import { useAppContext } from '../../../context/AppContext';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
 
 interface PaymentModalProps {
@@ -12,7 +12,7 @@ interface PaymentModalProps {
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({ total, onClose, onComplete }) => {
-  const { salonSettings } = useAppContext();
+  const { salonSettings } = useSettings();
   const [payments, setPayments] = useState<PaymentEntry[]>([]);
   const [currentAmount, setCurrentAmount] = useState<string>(total.toFixed(2));
   

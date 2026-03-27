@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { X, Clock, Receipt, Printer, Mail } from 'lucide-react';
 import { CartItem, Service, ServiceVariant, Transaction } from '../../../types';
-import { useAppContext } from '../../../context/AppContext';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
 import { Input } from '../../../components/FormElements';
 
@@ -12,7 +12,7 @@ export const ItemEditorModal: React.FC<{
   onClose: () => void;
   onSave: (updatedItem: CartItem) => void;
 }> = ({ item, onClose, onSave }) => {
-  const { salonSettings } = useAppContext();
+  const { salonSettings } = useSettings();
   const [price, setPrice] = useState<number>(item.price);
   const [quantity, setQuantity] = useState<number>(item.quantity);
   const [note, setNote] = useState<string>(item.note || '');
@@ -141,7 +141,7 @@ export const ReceiptModal: React.FC<{
   transaction: Transaction;
   onClose: () => void;
 }> = ({ transaction, onClose }) => {
-  const { salonSettings } = useAppContext();
+  const { salonSettings } = useSettings();
   const totalPaid = transaction.payments.reduce((acc, p) => acc + p.amount, 0);
   const change = Math.max(0, totalPaid - transaction.total);
   
