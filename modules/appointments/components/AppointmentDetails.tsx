@@ -2,7 +2,7 @@
 import React from 'react';
 import { ArrowLeft, Calendar, User, Scissors, Printer } from 'lucide-react';
 import { Appointment, AppointmentStatus } from '../../../types';
-import { useAppContext } from '../../../context/AppContext';
+import { formatPrice } from '../../../lib/format';
 
 interface AppointmentDetailsProps {
   appointment: Appointment;
@@ -33,7 +33,6 @@ const StatusBadge = ({ status }: { status: AppointmentStatus }) => {
 };
 
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, onBack, onEdit }) => {
-  const { formatPrice } = useAppContext();
   const date = new Date(appointment.date);
 
   return (

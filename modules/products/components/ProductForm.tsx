@@ -5,16 +5,18 @@ import { Product, ProductCategory } from '../../../types';
 import { generateServiceDescription } from '../../../services/geminiService';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { useAppContext } from '../../../context/AppContext';
+import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
 
 interface ProductFormProps {
   existingProduct?: Product;
   categories: ProductCategory[];
-  onSave: (p: Product) => void;
+  onSave: (p: Product, supplierId?: string | null) => void;
   onCancel: () => void;
 }
 
 export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categories, onSave, onCancel }) => {
   const { salonSettings } = useAppContext();
+  const { allSuppliers } = useSuppliers();
   const [formData, setFormData] = useState<Product>(existingProduct || {
     id: '',
     name: '',
@@ -28,6 +30,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
     supplier: '',
     active: true
   });
+
+  const [supplierId, setSupplierId] = useState<string>(
+    existingProduct?.supplier
+      ? allSuppliers.find(s => s.name === existingProduct.supplier)?.id ?? ''
+      : ''
+  );
 
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
@@ -135,7 +143,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
         <div className="lg:col-span-1 space-y-6">
            <div className="flex flex-col gap-3 sticky top-6 z-10">
              <button 
-              onClick={() => onSave(formData)}
+              onClick={() => onSave(formData, supplierId || null)}
               className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
             >
                <Save size={16} />
@@ -156,10 +164,18 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
                onChange={(val) => setFormData({...formData, categoryId: val as string})}
                options={categories.map(c => ({ value: c.id, label: c.name, initials: c.name.substring(0,2).toUpperCase() }))}
              />
-             <Input 
+             <Select
                label="Fournisseur"
-               value={formData.supplier || ''}
-               onChange={e => setFormData({...formData, supplier: e.target.value})}
+               value={supplierId}
+               onChange={(val) => {
+                 setSupplierId(val as string);
+                 const supplierName = allSuppliers.find(s => s.id === val)?.name ?? '';
+                 setFormData({...formData, supplier: supplierName});
+               }}
+               options={[
+                 { value: '', label: 'Aucun fournisseur', initials: '--' },
+                 ...allSuppliers.map(s => ({ value: s.id, label: s.name, initials: s.name.substring(0, 2).toUpperCase() }))
+               ]}
              />
            </Section>
 

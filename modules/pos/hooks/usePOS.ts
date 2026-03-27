@@ -1,21 +1,24 @@
 
 import { useState, useMemo } from 'react';
 import { useAppContext } from '../../../context/AppContext';
+import { useProducts } from '../../products/hooks/useProducts';
+import { useServices } from '../../services/hooks/useServices';
+import { useClients } from '../../clients/hooks/useClients';
 import { CartItem, Client, Service, Product, ServiceVariant, Transaction, PaymentEntry } from '../../../types';
 
 export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'HISTORY';
 
 export const usePOS = () => {
-  const { 
-    services, 
-    serviceCategories, 
-    products, 
-    productCategories, 
+  const {
     transactions,
-    clients, 
     addTransaction,
     salonSettings
   } = useAppContext();
+
+  const { allClients: clients } = useClients();
+
+  const { allServices: services, serviceCategories } = useServices();
+  const { products, productCategories } = useProducts();
 
   const [viewMode, setViewMode] = useState<POSViewMode>('SERVICES');
   const [searchTerm, setSearchTerm] = useState('');

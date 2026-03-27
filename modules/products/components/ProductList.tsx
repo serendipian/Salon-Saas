@@ -2,7 +2,7 @@
 import React from 'react';
 import { Plus, Search, Filter, Layers, ChevronRight, Package } from 'lucide-react';
 import { Product, ProductCategory } from '../../../types';
-import { useAppContext } from '../../../context/AppContext';
+import { formatPrice } from '../../../lib/format';
 
 interface ProductListProps {
   products: Product[];
@@ -23,7 +23,6 @@ export const ProductList: React.FC<ProductListProps> = ({
   onEdit,
   onManageCategories
 }) => {
-  const { formatPrice } = useAppContext();
 
   return (
     <div className="space-y-6 animate-in fade-in">

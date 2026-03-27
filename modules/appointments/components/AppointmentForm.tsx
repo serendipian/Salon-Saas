@@ -4,6 +4,8 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { Appointment, AppointmentStatus } from '../../../types';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { useAppContext } from '../../../context/AppContext';
+import { useClients } from '../../clients/hooks/useClients';
+import { useServices } from '../../services/hooks/useServices';
 
 interface AppointmentFormProps {
   existingAppointment?: Appointment;
@@ -12,7 +14,9 @@ interface AppointmentFormProps {
 }
 
 export const AppointmentForm: React.FC<AppointmentFormProps> = ({ existingAppointment, onSave, onCancel }) => {
-  const { salonSettings, services, clients, team } = useAppContext();
+  const { salonSettings, team } = useAppContext();
+  const { allClients: clients } = useClients();
+  const { allServices: services } = useServices();
   const [formData, setFormData] = useState<Partial<Appointment>>(existingAppointment || {
     date: new Date().toISOString().slice(0, 16),
     clientId: '',

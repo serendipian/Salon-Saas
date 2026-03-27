@@ -1,15 +1,9 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  Client, 
-  Service, 
-  ServiceCategory, 
-  Product, 
-  ProductCategory, 
-  Appointment, 
-  Transaction, 
-  Expense, 
-  Supplier,
+import {
+  Appointment,
+  Transaction,
+  Expense,
   StaffMember,
   RecurringExpense,
   ExpenseCategorySetting,
@@ -17,15 +11,11 @@ import {
 } from '../types';
 
 // Modular Data Imports
-import { MOCK_CLIENTS } from '../modules/clients/data';
-import { INITIAL_SERVICES, INITIAL_SERVICE_CATEGORIES } from '../modules/services/data';
-import { INITIAL_PRODUCTS, INITIAL_PRODUCT_CATEGORIES } from '../modules/products/data';
 import { MOCK_APPOINTMENTS } from '../modules/appointments/data';
-import { MOCK_SUPPLIERS } from '../modules/suppliers/data';
 import { INITIAL_TEAM } from '../modules/team/data';
 
 // --- Mock Generators (Internal to Context now) ---
-const generateMockTransactions = (clients: Client[]): Transaction[] => {
+const generateMockTransactions = (): Transaction[] => {
   const transactions: Transaction[] = [];
   const today = new Date();
   for (let i = 0; i < 90; i++) {
@@ -35,21 +25,20 @@ const generateMockTransactions = (clients: Client[]): Transaction[] => {
     const dailyCount = Math.floor(Math.random() * 4) + 1;
     for (let j = 0; j < dailyCount; j++) {
       const amount = Math.floor(Math.random() * 150) + 40;
-      const finalAmount = Math.random() > 0.95 ? amount * 5 : amount; 
+      const finalAmount = Math.random() > 0.95 ? amount * 5 : amount;
       const cost = finalAmount * (Math.random() * 0.15 + 0.1);
       transactions.push({
         id: `trx-${i}-${j}`,
         date: date.toISOString(),
         total: finalAmount,
-        clientName: clients[j % clients.length]?.lastName || 'Client Passage',
-        clientId: clients[j % clients.length]?.id,
+        clientName: 'Client Passage',
         items: [
-          { 
-            id: 'item1', 
-            referenceId: 'ref1', 
-            type: 'SERVICE', 
-            name: Math.random() > 0.5 ? 'Coupe Brushing' : 'Coloration', 
-            price: finalAmount, 
+          {
+            id: 'item1',
+            referenceId: 'ref1',
+            type: 'SERVICE',
+            name: Math.random() > 0.5 ? 'Coupe Brushing' : 'Coloration',
+            price: finalAmount,
             quantity: 1,
             cost: cost
           }
@@ -76,35 +65,10 @@ const generateMockExpenses = (): Expense[] => {
 };
 
 interface AppContextType {
-  // Clients
-  clients: Client[];
-  addClient: (client: Client) => void;
-  updateClient: (client: Client) => void;
-  deleteClient: (id: string) => void;
-
-  // Services
-  services: Service[];
-  serviceCategories: ServiceCategory[];
-  addService: (service: Service) => void;
-  updateService: (service: Service) => void;
-  updateServiceCategories: (categories: ServiceCategory[]) => void;
-
-  // Products
-  products: Product[];
-  productCategories: ProductCategory[];
-  addProduct: (product: Product) => void;
-  updateProduct: (product: Product) => void;
-  updateProductCategories: (categories: ProductCategory[]) => void;
-
   // Appointments
   appointments: Appointment[];
   addAppointment: (appt: Appointment) => void;
   updateAppointment: (appt: Appointment) => void;
-
-  // Suppliers
-  suppliers: Supplier[];
-  addSupplier: (supplier: Supplier) => void;
-  updateSupplier: (supplier: Supplier) => void;
 
   // Team
   team: StaffMember[];
@@ -124,22 +88,13 @@ interface AppContextType {
   recurringExpenses: RecurringExpense[];
   updateExpenseCategories: (cats: ExpenseCategorySetting[]) => void;
   updateRecurringExpenses: (exps: RecurringExpense[]) => void;
-  
-  // Helper
-  formatPrice: (amount: number) => string;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // --- State Initialization ---
-  const [clients, setClients] = useState<Client[]>(MOCK_CLIENTS);
-  const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
-  const [serviceCategories, setServiceCategories] = useState<ServiceCategory[]>(INITIAL_SERVICE_CATEGORIES);
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
-  const [productCategories, setProductCategories] = useState<ProductCategory[]>(INITIAL_PRODUCT_CATEGORIES);
   const [appointments, setAppointments] = useState<Appointment[]>(MOCK_APPOINTMENTS);
-  const [suppliers, setSuppliers] = useState<Supplier[]>(MOCK_SUPPLIERS);
   const [team, setTeam] = useState<StaffMember[]>(INITIAL_TEAM);
   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -179,50 +134,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Initialize History
   useEffect(() => {
-    setTransactions(generateMockTransactions(clients));
+    setTransactions(generateMockTransactions());
     setExpenses(generateMockExpenses());
   }, []);
 
-  // --- Helper ---
-  const formatPrice = (amount: number) => {
-    try {
-      return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: salonSettings.currency
-      }).format(amount);
-    } catch (error) {
-      // Fallback to EUR if currency code is invalid to prevent crash
-      return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR'
-      }).format(amount);
-    }
-  };
-
   // --- Actions ---
-
-  // Clients
-  const addClient = (c: Client) => setClients(prev => [...prev, { ...c, id: c.id || `c${Date.now()}` }]);
-  const updateClient = (c: Client) => setClients(prev => prev.map(item => item.id === c.id ? c : item));
-  const deleteClient = (id: string) => setClients(prev => prev.filter(item => item.id !== id));
-
-  // Services
-  const addService = (s: Service) => setServices(prev => [...prev, { ...s, id: s.id || `srv${Date.now()}` }]);
-  const updateService = (s: Service) => setServices(prev => prev.map(item => item.id === s.id ? s : item));
-  const updateServiceCategories = (cats: ServiceCategory[]) => setServiceCategories(cats);
-
-  // Products
-  const addProduct = (p: Product) => setProducts(prev => [...prev, { ...p, id: p.id || `prd${Date.now()}` }]);
-  const updateProduct = (p: Product) => setProducts(prev => prev.map(item => item.id === p.id ? p : item));
-  const updateProductCategories = (cats: ProductCategory[]) => setProductCategories(cats);
 
   // Appointments
   const addAppointment = (a: Appointment) => setAppointments(prev => [...prev, { ...a, id: a.id || `apt${Date.now()}` }]);
   const updateAppointment = (a: Appointment) => setAppointments(prev => prev.map(item => item.id === a.id ? a : item));
-
-  // Suppliers
-  const addSupplier = (s: Supplier) => setSuppliers(prev => [...prev, { ...s, id: s.id || `sup${Date.now()}` }]);
-  const updateSupplier = (s: Supplier) => setSuppliers(prev => prev.map(item => item.id === s.id ? s : item));
 
   // Team
   const addStaffMember = (s: StaffMember) => setTeam(prev => [...prev, { ...s, id: s.id || `st${Date.now()}` }]);
@@ -232,36 +152,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addTransaction = (t: Transaction) => {
     setTransactions(prev => [t, ...prev]);
     
-    // Logic: Update Stock if products sold
-    t.items.forEach(item => {
-      if (item.type === 'PRODUCT') {
-        setProducts(currentProducts => 
-          currentProducts.map(p => {
-            if (p.id === item.referenceId) {
-              return { ...p, stock: Math.max(0, p.stock - item.quantity) };
-            }
-            return p;
-          })
-        );
-      }
-    });
-    
-    // Logic: Update Client Spending
-    if (t.clientId) {
-       setClients(currentClients => 
-         currentClients.map(c => {
-           if (c.id === t.clientId) {
-             return { 
-               ...c, 
-               totalSpent: c.totalSpent + t.total,
-               totalVisits: c.totalVisits + 1,
-               lastVisitDate: t.date.split('T')[0]
-             };
-           }
-           return c;
-         })
-       );
-    }
+    // Note: Product stock updates moved to Supabase in Plan 2C (transaction migration)
+    // Note: Client stats now computed by client_stats DB view, auto-updated on query refetch
   };
 
   const addExpense = (e: Expense) => setExpenses(prev => [...prev, e]);
@@ -272,16 +164,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateRecurringExpenses = (exps: RecurringExpense[]) => setRecurringExpenses(exps);
 
   const value = {
-    clients, addClient, updateClient, deleteClient,
-    services, serviceCategories, addService, updateService, updateServiceCategories,
-    products, productCategories, addProduct, updateProduct, updateProductCategories,
     appointments, addAppointment, updateAppointment,
-    suppliers, addSupplier, updateSupplier,
     team, addStaffMember, updateStaffMember,
     transactions, expenses, addTransaction, addExpense,
     salonSettings, updateSalonSettings,
-    expenseCategories, recurringExpenses, updateExpenseCategories, updateRecurringExpenses,
-    formatPrice
+    expenseCategories, recurringExpenses, updateExpenseCategories, updateRecurringExpenses
   };
 
   return (
