@@ -51,9 +51,9 @@ pages/
 ```
 
 ### State Management
-- `AppContext` in `context/AppContext.tsx` provides unmigrated state (appointments, team, transactions, expenses, settings)
-- Migrated modules (suppliers, products, services, clients) use TanStack Query + Supabase (see Data Layer below)
-- `useAppContext()` hook still used by unmigrated modules
+- `AppContext` in `context/AppContext.tsx` provides unmigrated state (transactions, expenses)
+- Migrated modules use TanStack Query + Supabase (see Data Layer below)
+- `useAppContext()` hook only used by POS and Accounting modules
 
 ### Data Layer (Supabase + TanStack Query)
 
@@ -65,8 +65,8 @@ modules/{module}/
   hooks/use{Module}.ts    # TanStack Query hooks (useQuery + useMutation)
 ```
 
-**Migrated modules (Plan 2A):** suppliers, products, services, clients
-**Still in AppContext:** appointments, team, transactions, expenses, settings
+**Migrated modules (Plan 2A + 2B):** suppliers, products, services, clients, settings, team, appointments
+**Still in AppContext:** transactions, expenses (Plan 2C targets)
 
 **Query key convention:** `['resource', salonId]` — ensures auto-refetch on salon switch.
 
@@ -168,7 +168,7 @@ AuthContext calls this automatically on salon selection. The `get_active_salon()
 
 ## Known Issues to Fix
 
-1. ~~No data persistence~~ PARTIAL — 4 modules migrated to Supabase (Plan 2A), remaining in Plan 2B/2C
+1. ~~No data persistence~~ PARTIAL — 7 modules migrated to Supabase (Plan 2A + 2B), POS/Accounting remaining in Plan 2C
 2. Tailwind via CDN (needs proper PostCSS setup)
 3. Import maps in index.html point to aistudiocdn.com (not needed with Vite)
 4. Gemini API key exposed client-side
