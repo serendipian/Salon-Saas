@@ -124,9 +124,6 @@ interface AppContextType {
   recurringExpenses: RecurringExpense[];
   updateExpenseCategories: (cats: ExpenseCategorySetting[]) => void;
   updateRecurringExpenses: (exps: RecurringExpense[]) => void;
-  
-  // Helper
-  formatPrice: (amount: number) => string;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -182,22 +179,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTransactions(generateMockTransactions(clients));
     setExpenses(generateMockExpenses());
   }, []);
-
-  // --- Helper ---
-  const formatPrice = (amount: number) => {
-    try {
-      return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: salonSettings.currency
-      }).format(amount);
-    } catch (error) {
-      // Fallback to EUR if currency code is invalid to prevent crash
-      return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR'
-      }).format(amount);
-    }
-  };
 
   // --- Actions ---
 
@@ -280,8 +261,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     team, addStaffMember, updateStaffMember,
     transactions, expenses, addTransaction, addExpense,
     salonSettings, updateSalonSettings,
-    expenseCategories, recurringExpenses, updateExpenseCategories, updateRecurringExpenses,
-    formatPrice
+    expenseCategories, recurringExpenses, updateExpenseCategories, updateRecurringExpenses
   };
 
   return (

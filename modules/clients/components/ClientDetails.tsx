@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Client, AppointmentStatus } from '../../../types';
 import { useAppContext } from '../../../context/AppContext';
+import { formatPrice } from '../../../lib/format';
 
 interface ClientDetailsProps {
   client: Client;
@@ -30,7 +31,7 @@ interface ClientDetailsProps {
 }
 
 export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, onEdit }) => {
-  const { appointments, formatPrice, team } = useAppContext();
+  const { appointments, team } = useAppContext();
   const initials = `${client.firstName[0]}${client.lastName[0]}`;
 
   const preferredStaff = team.find(t => t.id === client.preferredStaffId);

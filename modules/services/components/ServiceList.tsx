@@ -2,7 +2,7 @@
 import React from 'react';
 import { Plus, Search, Filter, Layers, ChevronRight } from 'lucide-react';
 import { Service, ServiceCategory } from '../../../types';
-import { useAppContext } from '../../../context/AppContext';
+import { formatPrice } from '../../../lib/format';
 
 interface ServiceListProps {
   services: Service[];
@@ -23,7 +23,6 @@ export const ServiceList: React.FC<ServiceListProps> = ({
   onEdit,
   onManageCategories
 }) => {
-  const { formatPrice } = useAppContext();
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">

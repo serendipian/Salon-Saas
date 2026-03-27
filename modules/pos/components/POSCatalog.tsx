@@ -3,7 +3,7 @@ import React from 'react';
 import { Search, Scissors, ShoppingBag, History, Plus, Receipt } from 'lucide-react';
 import { Service, Product, ServiceCategory, ProductCategory, Transaction } from '../../../types';
 import { POSViewMode } from '../hooks/usePOS';
-import { useAppContext } from '../../../context/AppContext';
+import { formatPrice } from '../../../lib/format';
 
 interface POSCatalogProps {
   viewMode: POSViewMode;
@@ -32,7 +32,6 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
   onProductClick,
   onReceiptClick
 }) => {
-  const { formatPrice } = useAppContext();
   
   return (
     <div className="flex-1 flex flex-col border-r border-slate-200 h-full">

@@ -3,12 +3,11 @@ import React, { useState, useMemo } from 'react';
 import { ArrowUpRight, ArrowDownRight, ShoppingBag, Receipt } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
 import { Transaction, Expense } from '../../../types';
-import { useAppContext } from '../../../context/AppContext';
+import { formatPrice } from '../../../lib/format';
 
 // --- Internal Components ---
 
 const MetricCard = ({ title, value, trend, isPositive, subtitle }: any) => {
-  const { formatPrice } = useAppContext();
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col justify-between">
       <div>
@@ -90,7 +89,6 @@ export const AccountingOverview: React.FC<AccountingOverviewProps> = ({
   filteredTransactions, 
   filteredExpenses 
 }) => {
-  const { formatPrice } = useAppContext();
 
   return (
     <div className="space-y-6 animate-in fade-in">

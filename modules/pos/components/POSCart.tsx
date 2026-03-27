@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { User, ShoppingBag, Trash2, Minus, Plus, Edit3, CreditCard, X, ChevronDown, Tag } from 'lucide-react';
 import { CartItem, Client } from '../../../types';
-import { useAppContext } from '../../../context/AppContext';
+import { formatPrice } from '../../../lib/format';
 
 interface POSCartProps {
   cart: CartItem[];
@@ -27,7 +27,6 @@ export const POSCart: React.FC<POSCartProps> = ({
   totals,
   onCheckout
 }) => {
-  const { formatPrice } = useAppContext();
   const [isClientSelectorOpen, setIsClientSelectorOpen] = useState(false);
   const [clientSearch, setClientSearch] = useState('');
 

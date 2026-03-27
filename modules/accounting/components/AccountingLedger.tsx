@@ -3,9 +3,10 @@ import React from 'react';
 import { ArrowUpRight, ArrowDownRight, Filter, Search } from 'lucide-react';
 import { LedgerEntry } from '../../../types';
 import { useAppContext } from '../../../context/AppContext';
+import { formatPrice } from '../../../lib/format';
 
 export const AccountingLedger: React.FC<{ data: LedgerEntry[] }> = ({ data }) => {
-  const { expenseCategories, formatPrice } = useAppContext();
+  const { expenseCategories } = useAppContext();
 
   const getCategoryName = (idOrName: string) => {
     const cat = expenseCategories.find(c => c.id === idOrName);

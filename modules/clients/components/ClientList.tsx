@@ -10,7 +10,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { Client } from '../../../types';
-import { useAppContext } from '../../../context/AppContext';
+import { formatPrice } from '../../../lib/format';
 
 interface ClientListProps {
   clients: Client[];
@@ -27,7 +27,6 @@ export const ClientList: React.FC<ClientListProps> = ({
   onEdit, 
   onSchedule 
 }) => {
-  const { formatPrice } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredClients = clients.filter(c => 

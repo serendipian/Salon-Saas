@@ -2,7 +2,7 @@
 import React from 'react';
 import { Plus, Search, ChevronRight, User } from 'lucide-react';
 import { Appointment, AppointmentStatus } from '../../../types';
-import { useAppContext } from '../../../context/AppContext';
+import { formatPrice } from '../../../lib/format';
 
 interface AppointmentListProps {
   appointments: Appointment[];
@@ -45,7 +45,6 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
   onAdd,
   onDetails
 }) => {
-  const { formatPrice } = useAppContext();
 
   return (
     <div className="space-y-6 animate-in fade-in">
