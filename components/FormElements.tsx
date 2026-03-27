@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { LucideIcon, ChevronDown, Check, Search } from 'lucide-react';
+import { useMediaQuery } from '../context/MediaQueryContext';
+import { MobileSelect } from './MobileSelect';
 
 // --- Types ---
 interface BaseInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -93,6 +95,7 @@ export const Select: React.FC<SelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const { isMobile } = useMediaQuery();
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -153,13 +156,14 @@ export const Select: React.FC<SelectProps> = ({
           <ChevronDown size={16} className={`text-slate-400 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
         </button>
 
-        {isOpen && (
-          <div className="absolute z-[100] top-[calc(100%+4px)] left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-2xl ring-1 ring-black/5 max-h-80 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200 origin-top">
+        {/* Desktop dropdown */}
+        {!isMobile && isOpen && (
+          <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-2xl ring-1 ring-black/5 max-h-80 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200 origin-top" style={{ zIndex: 'var(--z-drawer-panel)' }}>
             {searchable && (
                <div className="p-3 border-b border-slate-100 sticky top-0 bg-white z-10">
                  <div className="relative">
                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                   <input 
+                   <input
                      ref={searchInputRef}
                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-400 focus:bg-white focus:ring-0 transition-colors placeholder:text-slate-400 text-slate-700"
                      placeholder="Rechercher..."
@@ -197,7 +201,7 @@ export const Select: React.FC<SelectProps> = ({
                            {option.initials}
                          </div>
                        ) : null}
-                       
+
                        <div className="flex flex-col min-w-0 flex-1">
                          <div className={`text-sm leading-tight ${isSelected ? 'font-medium' : 'font-normal'}`}>
                            {option.label}
@@ -209,7 +213,7 @@ export const Select: React.FC<SelectProps> = ({
                          )}
                        </div>
                     </div>
-                    
+
                     {isSelected && (
                       <div className="text-slate-900 shrink-0 ml-3">
                         <Check size={18} strokeWidth={2.5} />
@@ -225,6 +229,19 @@ export const Select: React.FC<SelectProps> = ({
               )}
             </div>
           </div>
+        )}
+
+        {/* Mobile fullscreen select */}
+        {isMobile && (
+          <MobileSelect
+            isOpen={isOpen}
+            onClose={() => { setIsOpen(false); setSearchTerm(''); }}
+            value={value}
+            onChange={(val) => { onChange(val); setIsOpen(false); setSearchTerm(''); }}
+            options={options}
+            searchable={searchable}
+            placeholder={placeholder}
+          />
         )}
       </div>
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
