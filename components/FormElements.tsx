@@ -62,12 +62,13 @@ export const Input: React.FC<BaseInputProps> = ({ label, error, icon: Icon, pref
       )}
       <input
         className={`
-          w-full bg-white border rounded-lg text-sm shadow-sm transition-all
+          w-full bg-white border rounded-lg text-sm shadow-sm transition-all min-h-[44px]
           focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none
-          ${Icon || prefix ? 'pl-9' : 'pl-3'} ${suffix ? 'pr-8' : 'pr-3'} py-2
+          ${Icon || prefix ? 'pl-9' : 'pl-3'} ${suffix ? 'pr-8' : 'pr-3'} py-2.5
           ${error ? 'border-red-300 focus:ring-red-500' : 'border-slate-300'}
           disabled:bg-slate-50 disabled:text-slate-500
         `}
+        dir="auto"
         {...props}
       />
       {suffix && (
@@ -128,9 +129,9 @@ export const Select: React.FC<SelectProps> = ({
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           className={`
-            w-full bg-white border rounded-lg text-sm shadow-sm transition-all
+            w-full bg-white border rounded-lg text-sm shadow-sm transition-all min-h-[44px]
             focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none
-            px-3 py-2 text-left flex items-center justify-between
+            px-3 py-2.5 text-left flex items-center justify-between
             ${error ? 'border-red-300 focus:ring-red-500' : 'border-slate-300'}
             ${isOpen ? 'ring-2 ring-slate-900 border-transparent' : ''}
           `}
@@ -181,9 +182,9 @@ export const Select: React.FC<SelectProps> = ({
                       setSearchTerm('');
                     }}
                     className={`
-                      w-full text-left px-3 py-3 rounded-lg flex items-center justify-between transition-all duration-150 group mb-1 last:mb-0
-                      ${isSelected 
-                        ? 'bg-slate-100 text-slate-900' 
+                      w-full text-left px-3 py-3 rounded-lg flex items-center justify-between transition-all duration-150 group mb-1 last:mb-0 min-h-[44px]
+                      ${isSelected
+                        ? 'bg-slate-100 text-slate-900'
                         : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
                       }
                     `}
@@ -236,9 +237,9 @@ export const TextArea: React.FC<TextAreaProps> = ({ label, error, className, ...
     {label && <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>}
     <textarea
       className={`
-        w-full bg-white border rounded-lg text-sm shadow-sm transition-all resize-none
+        w-full bg-white border rounded-lg text-sm shadow-sm transition-all resize-none min-h-[44px]
         focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none
-        px-3 py-2
+        px-3 py-2.5
         ${error ? 'border-red-300 focus:ring-red-500' : 'border-slate-300'}
       `}
       {...props}
