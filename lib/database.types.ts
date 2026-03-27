@@ -1074,7 +1074,7 @@ export type Database = {
         Row: {
           active: boolean
           address: string | null
-          base_salary: number | null
+          base_salary: string | null
           bio: string | null
           birth_date: string | null
           bonus_tiers: Json | null
@@ -1109,7 +1109,7 @@ export type Database = {
         Insert: {
           active?: boolean
           address?: string | null
-          base_salary?: number | null
+          base_salary?: string | null
           bio?: string | null
           birth_date?: string | null
           bonus_tiers?: Json | null
@@ -1144,7 +1144,7 @@ export type Database = {
         Update: {
           active?: boolean
           address?: string | null
-          base_salary?: number | null
+          base_salary?: string | null
           bio?: string | null
           birth_date?: string | null
           bonus_tiers?: Json | null
@@ -1590,6 +1590,8 @@ export type Database = {
         }
         Returns: string
       }
+      decrypt_pii: { Args: { ciphertext: string }; Returns: string }
+      encrypt_pii: { Args: { plaintext: string }; Returns: string }
       gdpr_delete_client: { Args: { p_client_id: string }; Returns: undefined }
       get_active_salon: { Args: never; Returns: string }
       get_client_stats: { Args: { p_client_id: string }; Returns: Json }
@@ -1597,6 +1599,7 @@ export type Database = {
         Args: { p_date_from: string; p_date_to: string; p_salon_id: string }
         Returns: Json
       }
+      get_staff_id: { Args: never; Returns: string }
       get_staff_performance: {
         Args: {
           p_date_from: string
@@ -1751,3 +1754,5 @@ export const Constants = {
     Enums: {},
   },
 } as const
+A new version of Supabase CLI is available: v2.84.2 (currently installed v2.34.3)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
