@@ -51,9 +51,34 @@ pages/
 ```
 
 ### State Management
-- Single `AppContext` in `context/AppContext.tsx` provides all state
-- Each module accesses state via `useAppContext()` hook
-- No persistence - all state is in-memory (useState)
+- `AppContext` in `context/AppContext.tsx` provides unmigrated state (appointments, team, transactions, expenses, settings)
+- Migrated modules (suppliers, products, services, clients) use TanStack Query + Supabase (see Data Layer below)
+- `useAppContext()` hook still used by unmigrated modules
+
+### Data Layer (Supabase + TanStack Query)
+
+Migrated modules use TanStack Query for data fetching and Supabase for persistence:
+
+```
+modules/{module}/
+  mappers.ts              # DB Row ↔ Frontend type translation
+  hooks/use{Module}.ts    # TanStack Query hooks (useQuery + useMutation)
+```
+
+**Migrated modules (Plan 2A):** suppliers, products, services, clients
+**Still in AppContext:** appointments, team, transactions, expenses, settings
+
+**Query key convention:** `['resource', salonId]` — ensures auto-refetch on salon switch.
+
+**Pattern:**
+- `useQuery` for reads → calls `supabase.from('table').select()`
+- `useMutation` for writes → calls insert/update + `invalidateQueries`
+- Co-located mappers handle snake_case ↔ camelCase conversion
+- RLS via `set_session_context()` scopes all reads automatically
+- Writes include `salon_id` explicitly
+
+**Standalone utilities:**
+- `lib/format.ts` — `formatPrice()` (extracted from AppContext)
 
 ### Dead Code (DO NOT USE)
 These files in `components/` are old monolithic versions replaced by `modules/`:
@@ -143,7 +168,7 @@ AuthContext calls this automatically on salon selection. The `get_active_salon()
 
 ## Known Issues to Fix
 
-1. No data persistence (needs localStorage or backend)
+1. ~~No data persistence~~ PARTIAL — 4 modules migrated to Supabase (Plan 2A), remaining in Plan 2B/2C
 2. Tailwind via CDN (needs proper PostCSS setup)
 3. Import maps in index.html point to aistudiocdn.com (not needed with Vite)
 4. Gemini API key exposed client-side
