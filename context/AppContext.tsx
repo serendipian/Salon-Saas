@@ -4,8 +4,6 @@ import {
   Client,
   Service,
   ServiceCategory,
-  Product,
-  ProductCategory,
   Appointment,
   Transaction,
   Expense,
@@ -18,7 +16,6 @@ import {
 // Modular Data Imports
 import { MOCK_CLIENTS } from '../modules/clients/data';
 import { INITIAL_SERVICES, INITIAL_SERVICE_CATEGORIES } from '../modules/services/data';
-import { INITIAL_PRODUCTS, INITIAL_PRODUCT_CATEGORIES } from '../modules/products/data';
 import { MOCK_APPOINTMENTS } from '../modules/appointments/data';
 import { INITIAL_TEAM } from '../modules/team/data';
 
@@ -87,13 +84,6 @@ interface AppContextType {
   updateService: (service: Service) => void;
   updateServiceCategories: (categories: ServiceCategory[]) => void;
 
-  // Products
-  products: Product[];
-  productCategories: ProductCategory[];
-  addProduct: (product: Product) => void;
-  updateProduct: (product: Product) => void;
-  updateProductCategories: (categories: ProductCategory[]) => void;
-
   // Appointments
   appointments: Appointment[];
   addAppointment: (appt: Appointment) => void;
@@ -126,8 +116,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [clients, setClients] = useState<Client[]>(MOCK_CLIENTS);
   const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
   const [serviceCategories, setServiceCategories] = useState<ServiceCategory[]>(INITIAL_SERVICE_CATEGORIES);
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
-  const [productCategories, setProductCategories] = useState<ProductCategory[]>(INITIAL_PRODUCT_CATEGORIES);
   const [appointments, setAppointments] = useState<Appointment[]>(MOCK_APPOINTMENTS);
   const [team, setTeam] = useState<StaffMember[]>(INITIAL_TEAM);
   
@@ -184,11 +172,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateService = (s: Service) => setServices(prev => prev.map(item => item.id === s.id ? s : item));
   const updateServiceCategories = (cats: ServiceCategory[]) => setServiceCategories(cats);
 
-  // Products
-  const addProduct = (p: Product) => setProducts(prev => [...prev, { ...p, id: p.id || `prd${Date.now()}` }]);
-  const updateProduct = (p: Product) => setProducts(prev => prev.map(item => item.id === p.id ? p : item));
-  const updateProductCategories = (cats: ProductCategory[]) => setProductCategories(cats);
-
   // Appointments
   const addAppointment = (a: Appointment) => setAppointments(prev => [...prev, { ...a, id: a.id || `apt${Date.now()}` }]);
   const updateAppointment = (a: Appointment) => setAppointments(prev => prev.map(item => item.id === a.id ? a : item));
@@ -201,20 +184,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addTransaction = (t: Transaction) => {
     setTransactions(prev => [t, ...prev]);
     
-    // Logic: Update Stock if products sold
-    t.items.forEach(item => {
-      if (item.type === 'PRODUCT') {
-        setProducts(currentProducts => 
-          currentProducts.map(p => {
-            if (p.id === item.referenceId) {
-              return { ...p, stock: Math.max(0, p.stock - item.quantity) };
-            }
-            return p;
-          })
-        );
-      }
-    });
-    
+    // Note: Product stock updates moved to Supabase in Plan 2C (transaction migration)
+
     // Logic: Update Client Spending
     if (t.clientId) {
        setClients(currentClients => 
@@ -243,7 +214,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const value = {
     clients, addClient, updateClient, deleteClient,
     services, serviceCategories, addService, updateService, updateServiceCategories,
-    products, productCategories, addProduct, updateProduct, updateProductCategories,
     appointments, addAppointment, updateAppointment,
     team, addStaffMember, updateStaffMember,
     transactions, expenses, addTransaction, addExpense,
