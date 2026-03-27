@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ViewState, ProductCategory } from '../../types';
+import { ViewState, ProductCategory, Product } from '../../types';
 import { useProducts } from './hooks/useProducts';
 import { ProductList } from './components/ProductList';
 import { ProductForm } from './components/ProductForm';
@@ -115,7 +115,7 @@ export const ProductsModule: React.FC = () => {
     setView('EDIT');
   };
 
-  const handleSaveProduct = (product: any, supplierId?: string | null) => {
+  const handleSaveProduct = (product: Product, supplierId?: string | null) => {
     if (selectedProductId) {
       updateProduct(product, supplierId);
     } else {

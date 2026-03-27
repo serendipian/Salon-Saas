@@ -130,6 +130,7 @@ export const useProducts = () => {
   }, [products, searchTerm]);
 
   return {
+    allProducts: products,
     products: filteredProducts,
     productCategories,
     isLoading: isLoadingProducts || isLoadingCategories,
