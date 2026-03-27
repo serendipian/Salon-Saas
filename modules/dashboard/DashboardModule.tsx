@@ -21,17 +21,17 @@ import { DateRangePicker } from '../../components/DateRangePicker';
 
 const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon }: any) => {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 h-full flex flex-col justify-between group">
+    <div className="bg-white border border-slate-200 rounded-xl p-4 md:p-5 shadow-sm hover:shadow-md transition-all duration-200 h-full flex flex-col justify-between group">
       <div>
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-sm font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">{title}</h3>
-          {Icon && <Icon size={16} className="text-slate-400 group-hover:text-slate-600 transition-colors" />}
+          <h3 className="text-xs md:text-sm font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">{title}</h3>
+          {Icon && <Icon size={16} className="text-slate-400 group-hover:text-slate-600 transition-colors shrink-0" />}
         </div>
-        <div className="text-2xl font-bold text-slate-900 tracking-tight">
+        <div className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight break-words">
           {typeof value === 'number' ? formatPrice(value) : value}
         </div>
       </div>
-      <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-50">
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-2 mt-3 md:mt-4 pt-2 md:pt-3 border-t border-slate-50">
           {trend !== null && (
              <span className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${isPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
                {isPositive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
@@ -199,7 +199,7 @@ export const DashboardModule: React.FC = () => {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard 
           title="Chiffre d'Affaires" 
           value={stats.revenue}
