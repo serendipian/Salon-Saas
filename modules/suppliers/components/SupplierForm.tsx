@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Supplier } from '../../../types';
 import { Section, Input, TextArea, Select } from '../../../components/FormElements';
+import { useFormValidation } from '../../../hooks/useFormValidation';
+import { supplierSchema } from '../schemas';
 
 interface SupplierFormProps {
   existingSupplier?: Supplier;
@@ -11,6 +13,7 @@ interface SupplierFormProps {
 }
 
 export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, onSave, onCancel }) => {
+  const { errors, validate, clearFieldError } = useFormValidation(supplierSchema);
   const [formData, setFormData] = useState<Supplier>(existingSupplier || {
     id: '',
     name: '',
@@ -27,6 +30,8 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const validated = validate(formData);
+    if (!validated) return;
     onSave(formData);
   };
 
@@ -46,12 +51,13 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
            
            <Section title="Informations Entreprise">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <Input 
+                <Input
                   label="Nom de l'entreprise"
                   required
                   value={formData.name}
-                  onChange={e => setFormData({...formData, name: e.target.value})}
+                  onChange={e => { clearFieldError('name'); setFormData({...formData, name: e.target.value}); }}
                   placeholder="Ex: L'Oréal Pro"
+                  error={errors.name}
                 />
                 <Input 
                   label="Site Web"
@@ -78,13 +84,14 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
                 placeholder="Ex: Jean Dupont"
               />
               <div className="grid grid-cols-2 gap-5">
-                <Input 
+                <Input
                   label="Email"
                   type="email"
                   required
                   value={formData.email}
-                  onChange={e => setFormData({...formData, email: e.target.value})}
+                  onChange={e => { clearFieldError('email'); setFormData({...formData, email: e.target.value}); }}
                   placeholder="contact@email.com"
+                  error={errors.email}
                 />
                 <Input 
                   label="Téléphone"
@@ -128,10 +135,11 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
                   </button>
               </div>
 
-              <Select 
+              <Select
                  label="Catégorie"
                  value={formData.category}
-                 onChange={(val) => setFormData({...formData, category: val as string})}
+                 onChange={(val) => { clearFieldError('category'); setFormData({...formData, category: val as string}); }}
+                 error={errors.category}
                  options={[
                    { value: "Produits Coiffure", label: "Produits Coiffure" },
                    { value: "Produits Esthétique", label: "Produits Esthétique" },
