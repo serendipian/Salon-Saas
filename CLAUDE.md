@@ -79,6 +79,26 @@ modules/{module}/
 **Standalone utilities:**
 - `lib/format.ts` — `formatPrice()` (extracted from AppContext)
 
+### Real-Time Sync
+- `hooks/useRealtimeSync.ts` — shared hook with ref-counted subscription manager
+- Each module hook calls `useRealtimeSync('tableName')` to subscribe to Postgres changes
+- On any INSERT/UPDATE/DELETE: invalidates TanStack Query cache for that table
+- Subscription manager avoids duplicate channels when multiple components sync the same table
+- Optional `onEvent` callback for per-module reactions (e.g., toast on new appointment)
+
+### Toast Notifications
+- `context/ToastContext.tsx` — split dispatch/state contexts (prevents consumer re-renders)
+- `components/Toast.tsx` — portal-rendered to `#toast-root`, top-right position
+- `useToast()` hook provides `addToast({ type, message, duration? })` and `removeToast(id)`
+- Types: success (green), error (red), warning (amber), info (blue)
+- Errors don't auto-dismiss; all others dismiss after 5s
+
+### Connection Status
+- `hooks/useConnectionStatus.ts` — monitors Supabase Realtime WebSocket state
+- `components/ConnectionStatus.tsx` — dot indicator in top bar + disconnect banner
+- States: connected (green), reconnecting (orange), disconnected after 30s (red + banner)
+- On reconnect: invalidates active queries, shows "Connexion rétablie" toast
+
 ### Dead Code (DO NOT USE)
 These files in `components/` are old monolithic versions replaced by `modules/`:
 - `components/AccountingModule.tsx`
