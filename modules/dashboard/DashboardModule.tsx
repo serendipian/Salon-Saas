@@ -12,7 +12,7 @@ import {
   Area
 } from 'recharts';
 import { ArrowUpRight, ArrowDownRight, Calendar, Users, DollarSign, ChevronRight } from 'lucide-react';
-import { useAppContext } from '../../context/AppContext';
+import { useTransactions } from '../../hooks/useTransactions';
 import { useClients } from '../clients/hooks/useClients';
 import { useAppointments } from '../appointments/hooks/useAppointments';
 import { formatPrice } from '../../lib/format';
@@ -45,7 +45,7 @@ const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon }: a
 };
 
 export const DashboardModule: React.FC = () => {
-  const { transactions } = useAppContext();
+  const { transactions } = useTransactions();
   const { allAppointments: appointments } = useAppointments();
   const { allClients: clients } = useClients();
 
