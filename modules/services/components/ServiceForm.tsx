@@ -5,6 +5,8 @@ import { Service, ServiceCategory, ServiceVariant } from '../../../types';
 import { generateServiceDescription } from '../../../services/geminiService';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { useSettings } from '../../settings/hooks/useSettings';
+import { useFormValidation } from '../../../hooks/useFormValidation';
+import { serviceSchema } from '../schemas';
 
 interface ServiceFormProps {
   existingService?: Service;
@@ -25,6 +27,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
   });
 
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const { errors, validate, clearFieldError } = useFormValidation(serviceSchema);
 
   // Helper for dynamic currency display
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
@@ -43,6 +46,12 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
       ...prev,
       variants: prev.variants.map(v => v.id === id ? { ...v, [field]: value } : v)
     }));
+  };
+
+  const handleSave = () => {
+    const validated = validate(formData);
+    if (!validated) return;
+    onSave(formData);
   };
 
   const addVariant = () => {
@@ -68,17 +77,19 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
           
           <Section title="Informations Générales">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <Input 
+              <Input
                 label="Nom du service"
                 value={formData.name}
-                onChange={e => setFormData({...formData, name: e.target.value})}
+                onChange={e => { setFormData({...formData, name: e.target.value}); clearFieldError('name'); }}
                 placeholder="Ex: Balayage Californien"
+                error={errors.name}
               />
-              <Select 
+              <Select
                 label="Catégorie"
                 value={formData.categoryId}
-                onChange={(val) => setFormData({...formData, categoryId: val as string})}
+                onChange={(val) => { setFormData({...formData, categoryId: val as string}); clearFieldError('categoryId'); }}
                 options={categories.map(c => ({ value: c.id, label: c.name, initials: c.name.substring(0, 2).toUpperCase() }))}
+                error={errors.categoryId}
               />
             </div>
             <div>
@@ -177,7 +188,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
 
            <div className="flex flex-col gap-3 sticky top-6">
              <button 
-              onClick={() => onSave(formData)}
+              onClick={handleSave}
               className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
             >
                <Save size={16} />
