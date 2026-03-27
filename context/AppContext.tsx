@@ -1,15 +1,14 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  Client, 
-  Service, 
-  ServiceCategory, 
-  Product, 
-  ProductCategory, 
-  Appointment, 
-  Transaction, 
-  Expense, 
-  Supplier,
+import {
+  Client,
+  Service,
+  ServiceCategory,
+  Product,
+  ProductCategory,
+  Appointment,
+  Transaction,
+  Expense,
   StaffMember,
   RecurringExpense,
   ExpenseCategorySetting,
@@ -21,7 +20,6 @@ import { MOCK_CLIENTS } from '../modules/clients/data';
 import { INITIAL_SERVICES, INITIAL_SERVICE_CATEGORIES } from '../modules/services/data';
 import { INITIAL_PRODUCTS, INITIAL_PRODUCT_CATEGORIES } from '../modules/products/data';
 import { MOCK_APPOINTMENTS } from '../modules/appointments/data';
-import { MOCK_SUPPLIERS } from '../modules/suppliers/data';
 import { INITIAL_TEAM } from '../modules/team/data';
 
 // --- Mock Generators (Internal to Context now) ---
@@ -101,11 +99,6 @@ interface AppContextType {
   addAppointment: (appt: Appointment) => void;
   updateAppointment: (appt: Appointment) => void;
 
-  // Suppliers
-  suppliers: Supplier[];
-  addSupplier: (supplier: Supplier) => void;
-  updateSupplier: (supplier: Supplier) => void;
-
   // Team
   team: StaffMember[];
   addStaffMember: (staff: StaffMember) => void;
@@ -136,7 +129,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [productCategories, setProductCategories] = useState<ProductCategory[]>(INITIAL_PRODUCT_CATEGORIES);
   const [appointments, setAppointments] = useState<Appointment[]>(MOCK_APPOINTMENTS);
-  const [suppliers, setSuppliers] = useState<Supplier[]>(MOCK_SUPPLIERS);
   const [team, setTeam] = useState<StaffMember[]>(INITIAL_TEAM);
   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -201,10 +193,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addAppointment = (a: Appointment) => setAppointments(prev => [...prev, { ...a, id: a.id || `apt${Date.now()}` }]);
   const updateAppointment = (a: Appointment) => setAppointments(prev => prev.map(item => item.id === a.id ? a : item));
 
-  // Suppliers
-  const addSupplier = (s: Supplier) => setSuppliers(prev => [...prev, { ...s, id: s.id || `sup${Date.now()}` }]);
-  const updateSupplier = (s: Supplier) => setSuppliers(prev => prev.map(item => item.id === s.id ? s : item));
-
   // Team
   const addStaffMember = (s: StaffMember) => setTeam(prev => [...prev, { ...s, id: s.id || `st${Date.now()}` }]);
   const updateStaffMember = (s: StaffMember) => setTeam(prev => prev.map(item => item.id === s.id ? s : item));
@@ -257,7 +245,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     services, serviceCategories, addService, updateService, updateServiceCategories,
     products, productCategories, addProduct, updateProduct, updateProductCategories,
     appointments, addAppointment, updateAppointment,
-    suppliers, addSupplier, updateSupplier,
     team, addStaffMember, updateStaffMember,
     transactions, expenses, addTransaction, addExpense,
     salonSettings, updateSalonSettings,

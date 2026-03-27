@@ -4,6 +4,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { Expense, ExpenseCategory } from '../../../types';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { useAppContext } from '../../../context/AppContext';
+import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
 
 interface ExpenseFormProps {
   onSave: (e: Expense) => void;
@@ -11,7 +12,8 @@ interface ExpenseFormProps {
 }
 
 export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
-  const { expenseCategories, suppliers, salonSettings } = useAppContext();
+  const { expenseCategories, salonSettings } = useAppContext();
+  const { allSuppliers: suppliers } = useSuppliers();
   
   const [formData, setFormData] = useState<Partial<Expense>>({
     description: '',
