@@ -7,12 +7,14 @@ import { useTransactions } from '../../../hooks/useTransactions';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { toExpense, toExpenseInsert, ExpenseRow } from '../mappers';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { Expense, LedgerEntry, DateRange } from '../../../types';
 
 export const useAccounting = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
+  const { toastOnError } = useMutationToast();
   useRealtimeSync('expenses');
 
   const { transactions } = useTransactions();
@@ -44,9 +46,7 @@ export const useAccounting = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses', salonId] });
     },
-    onError: (error: Error) => {
-      console.error('Failed to add expense:', error.message);
-    },
+    onError: toastOnError("Impossible d'ajouter la dépense"),
   });
 
   const addExpense = (expense: Omit<Expense, 'id'>) =>

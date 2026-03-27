@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { useMutationToast } from '../../../hooks/useMutationToast';
 import {
   toSalonSettings,
   toSalonUpdate,
@@ -18,6 +19,7 @@ export const useSettings = () => {
   const { activeSalon, refreshActiveSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
+  const { toastOnError, toastOnSuccess } = useMutationToast();
 
   const handleSalonChange = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['salon_settings', salonId] });
@@ -54,8 +56,9 @@ export const useSettings = () => {
       queryClient.invalidateQueries({ queryKey: ['salon_settings', salonId] });
       // Sync AuthContext so sidebar/header reflect updated name etc.
       refreshActiveSalon({ name: settings.name, currency: settings.currency });
+      toastOnSuccess('Paramètres enregistrés')();
     },
-    onError: (error) => console.error('Failed to update salon settings:', error.message),
+    onError: toastOnError("Impossible de modifier les paramètres du salon"),
   });
 
   // --- Expense Categories ---
@@ -118,7 +121,7 @@ export const useSettings = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expense_categories', salonId] });
     },
-    onError: (error) => console.error('Failed to update expense categories:', error.message),
+    onError: toastOnError("Impossible de modifier les catégories de dépenses"),
   });
 
   // --- Recurring Expenses ---
@@ -180,7 +183,7 @@ export const useSettings = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recurring_expenses', salonId] });
     },
-    onError: (error) => console.error('Failed to update recurring expenses:', error.message),
+    onError: toastOnError("Impossible de modifier les dépenses récurrentes"),
   });
 
   // Default settings fallback while loading
