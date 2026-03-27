@@ -1,10 +1,18 @@
-
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
 import { Layout } from './components/Layout';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
-// Modular Imports
+// Auth pages
+import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
+import { CreateSalonPage } from './pages/CreateSalonPage';
+import { SalonPickerPage } from './pages/SalonPickerPage';
+import { AcceptInvitationPage } from './pages/AcceptInvitationPage';
+
+// Module imports (unchanged)
 import { DashboardModule } from './modules/dashboard/DashboardModule';
 import { ServicesModule } from './modules/services/ServicesModule';
 import { ClientsModule } from './modules/clients/ClientsModule';
@@ -19,8 +27,6 @@ import { POSModule } from './modules/pos/POSModule';
 const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // Extract current module from path for sidebar highlighting
   const currentModule = location.pathname.substring(1) || 'dashboard';
 
   return (
@@ -33,10 +39,16 @@ const AppContent = () => {
         <Route path="/team" element={<TeamModule />} />
         <Route path="/calendar" element={<AppointmentsModule />} />
         <Route path="/products" element={<ProductsModule />} />
-        <Route path="/suppliers" element={<SuppliersModule />} />
-        <Route path="/settings" element={<SettingsModule />} />
+        <Route path="/suppliers" element={
+          <ProtectedRoute action="view" resource="suppliers"><SuppliersModule /></ProtectedRoute>
+        } />
+        <Route path="/settings" element={
+          <ProtectedRoute action="view" resource="settings"><SettingsModule /></ProtectedRoute>
+        } />
         <Route path="/pos" element={<POSModule />} />
-        <Route path="/accounting" element={<AccountingModule />} />
+        <Route path="/accounting" element={
+          <ProtectedRoute action="view" resource="accounting"><AccountingModule /></ProtectedRoute>
+        } />
       </Routes>
     </Layout>
   );
@@ -44,10 +56,28 @@ const AppContent = () => {
 
 export default function App() {
   return (
-    <AppProvider>
-      <HashRouter>
-        <AppContent />
-      </HashRouter>
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <HashRouter>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+
+            {/* Auth-required, no-salon routes */}
+            <Route path="/create-salon" element={<CreateSalonPage />} />
+            <Route path="/select-salon" element={<SalonPickerPage />} />
+
+            {/* Protected app routes */}
+            <Route path="/*" element={
+              <ProtectedRoute>
+                <AppContent />
+              </ProtectedRoute>
+            } />
+          </Routes>
+        </HashRouter>
+      </AppProvider>
+    </AuthProvider>
   );
 }
