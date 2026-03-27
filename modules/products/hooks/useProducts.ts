@@ -5,12 +5,14 @@ import { useAuth } from '../../../context/AuthContext';
 import { toProduct, toProductInsert, toProductCategory, toProductCategoryInsert } from '../mappers';
 import type { Product, ProductCategory } from '../../../types';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { useMutationToast } from '../../../hooks/useMutationToast';
 
 export const useProducts = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const { toastOnError } = useMutationToast();
   useRealtimeSync('products');
   useRealtimeSync('product_categories');
 
@@ -57,7 +59,7 @@ export const useProducts = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
     },
-    onError: (error) => console.error('Failed to add product:', error.message),
+    onError: toastOnError("Impossible d'ajouter le produit"),
   });
 
   // Update product
@@ -72,7 +74,7 @@ export const useProducts = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
     },
-    onError: (error) => console.error('Failed to update product:', error.message),
+    onError: toastOnError("Impossible de modifier le produit"),
   });
 
   // Update product categories (upsert with soft-delete)
@@ -119,7 +121,7 @@ export const useProducts = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product_categories', salonId] });
     },
-    onError: (error) => console.error('Failed to update product categories:', error.message),
+    onError: toastOnError("Impossible de modifier les catégories de produits"),
   });
 
   // Filtering

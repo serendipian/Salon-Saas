@@ -6,12 +6,14 @@ import { useAuth } from '../../../context/AuthContext';
 import { toClient, toClientInsert } from '../mappers';
 import type { Client } from '../../../types';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { useMutationToast } from '../../../hooks/useMutationToast';
 
 export const useClients = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const { toastOnError } = useMutationToast();
   useRealtimeSync('clients');
 
   const { data: clients = [], isLoading } = useQuery({
@@ -54,7 +56,7 @@ export const useClients = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients', salonId] });
     },
-    onError: (error) => console.error('Failed to add client:', error.message),
+    onError: toastOnError("Impossible d'ajouter le client"),
   });
 
   const updateClientMutation = useMutation({
@@ -68,7 +70,7 @@ export const useClients = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients', salonId] });
     },
-    onError: (error) => console.error('Failed to update client:', error.message),
+    onError: toastOnError("Impossible de modifier le client"),
   });
 
   const deleteClientMutation = useMutation({
@@ -83,7 +85,7 @@ export const useClients = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients', salonId] });
     },
-    onError: (error) => console.error('Failed to delete client:', error.message),
+    onError: toastOnError("Impossible de supprimer le client"),
   });
 
   const filteredClients = useMemo(() => {

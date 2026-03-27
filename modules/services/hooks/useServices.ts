@@ -8,12 +8,14 @@ import {
 } from '../mappers';
 import type { Service, ServiceCategory } from '../../../types';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { useMutationToast } from '../../../hooks/useMutationToast';
 
 export const useServices = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const { toastOnError } = useMutationToast();
   useRealtimeSync('services');
   useRealtimeSync('service_categories');
 
@@ -73,7 +75,7 @@ export const useServices = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
     },
-    onError: (error) => console.error('Failed to add service:', error.message),
+    onError: toastOnError("Impossible d'ajouter le service"),
   });
 
   // Update Service (+ upsert/delete variants)
@@ -133,7 +135,7 @@ export const useServices = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
     },
-    onError: (error) => console.error('Failed to update service:', error.message),
+    onError: toastOnError("Impossible de modifier le service"),
   });
 
   // Update Service Categories (upsert with soft-delete)
@@ -178,7 +180,7 @@ export const useServices = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service_categories', salonId] });
     },
-    onError: (error) => console.error('Failed to update service categories:', error.message),
+    onError: toastOnError("Impossible de modifier les catégories de services"),
   });
 
   // Filtering
