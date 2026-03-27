@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
-  Client,
   Appointment,
   Transaction,
   Expense,
@@ -12,12 +11,11 @@ import {
 } from '../types';
 
 // Modular Data Imports
-import { MOCK_CLIENTS } from '../modules/clients/data';
 import { MOCK_APPOINTMENTS } from '../modules/appointments/data';
 import { INITIAL_TEAM } from '../modules/team/data';
 
 // --- Mock Generators (Internal to Context now) ---
-const generateMockTransactions = (clients: Client[]): Transaction[] => {
+const generateMockTransactions = (): Transaction[] => {
   const transactions: Transaction[] = [];
   const today = new Date();
   for (let i = 0; i < 90; i++) {
@@ -27,21 +25,20 @@ const generateMockTransactions = (clients: Client[]): Transaction[] => {
     const dailyCount = Math.floor(Math.random() * 4) + 1;
     for (let j = 0; j < dailyCount; j++) {
       const amount = Math.floor(Math.random() * 150) + 40;
-      const finalAmount = Math.random() > 0.95 ? amount * 5 : amount; 
+      const finalAmount = Math.random() > 0.95 ? amount * 5 : amount;
       const cost = finalAmount * (Math.random() * 0.15 + 0.1);
       transactions.push({
         id: `trx-${i}-${j}`,
         date: date.toISOString(),
         total: finalAmount,
-        clientName: clients[j % clients.length]?.lastName || 'Client Passage',
-        clientId: clients[j % clients.length]?.id,
+        clientName: 'Client Passage',
         items: [
-          { 
-            id: 'item1', 
-            referenceId: 'ref1', 
-            type: 'SERVICE', 
-            name: Math.random() > 0.5 ? 'Coupe Brushing' : 'Coloration', 
-            price: finalAmount, 
+          {
+            id: 'item1',
+            referenceId: 'ref1',
+            type: 'SERVICE',
+            name: Math.random() > 0.5 ? 'Coupe Brushing' : 'Coloration',
+            price: finalAmount,
             quantity: 1,
             cost: cost
           }
@@ -68,12 +65,6 @@ const generateMockExpenses = (): Expense[] => {
 };
 
 interface AppContextType {
-  // Clients
-  clients: Client[];
-  addClient: (client: Client) => void;
-  updateClient: (client: Client) => void;
-  deleteClient: (id: string) => void;
-
   // Appointments
   appointments: Appointment[];
   addAppointment: (appt: Appointment) => void;
@@ -103,7 +94,6 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // --- State Initialization ---
-  const [clients, setClients] = useState<Client[]>(MOCK_CLIENTS);
   const [appointments, setAppointments] = useState<Appointment[]>(MOCK_APPOINTMENTS);
   const [team, setTeam] = useState<StaffMember[]>(INITIAL_TEAM);
   
@@ -144,16 +134,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Initialize History
   useEffect(() => {
-    setTransactions(generateMockTransactions(clients));
+    setTransactions(generateMockTransactions());
     setExpenses(generateMockExpenses());
   }, []);
 
   // --- Actions ---
-
-  // Clients
-  const addClient = (c: Client) => setClients(prev => [...prev, { ...c, id: c.id || `c${Date.now()}` }]);
-  const updateClient = (c: Client) => setClients(prev => prev.map(item => item.id === c.id ? c : item));
-  const deleteClient = (id: string) => setClients(prev => prev.filter(item => item.id !== id));
 
   // Appointments
   const addAppointment = (a: Appointment) => setAppointments(prev => [...prev, { ...a, id: a.id || `apt${Date.now()}` }]);
@@ -168,23 +153,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTransactions(prev => [t, ...prev]);
     
     // Note: Product stock updates moved to Supabase in Plan 2C (transaction migration)
-
-    // Logic: Update Client Spending
-    if (t.clientId) {
-       setClients(currentClients => 
-         currentClients.map(c => {
-           if (c.id === t.clientId) {
-             return { 
-               ...c, 
-               totalSpent: c.totalSpent + t.total,
-               totalVisits: c.totalVisits + 1,
-               lastVisitDate: t.date.split('T')[0]
-             };
-           }
-           return c;
-         })
-       );
-    }
+    // Note: Client stats now computed by client_stats DB view, auto-updated on query refetch
   };
 
   const addExpense = (e: Expense) => setExpenses(prev => [...prev, e]);
@@ -195,7 +164,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateRecurringExpenses = (exps: RecurringExpense[]) => setRecurringExpenses(exps);
 
   const value = {
-    clients, addClient, updateClient, deleteClient,
     appointments, addAppointment, updateAppointment,
     team, addStaffMember, updateStaffMember,
     transactions, expenses, addTransaction, addExpense,

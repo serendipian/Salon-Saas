@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { ArrowUpRight, ArrowDownRight, Calendar, Users, DollarSign, ChevronRight } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
+import { useClients } from '../clients/hooks/useClients';
 import { formatPrice } from '../../lib/format';
 import { DateRange } from '../../types';
 import { DateRangePicker } from '../../components/DateRangePicker';
@@ -43,7 +44,8 @@ const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon }: a
 };
 
 export const DashboardModule: React.FC = () => {
-  const { transactions, appointments, clients } = useAppContext();
+  const { transactions, appointments } = useAppContext();
+  const { allClients: clients } = useClients();
 
   // State for Date Range (Default: This Month)
   const [dateRange, setDateRange] = useState<DateRange>(() => {
