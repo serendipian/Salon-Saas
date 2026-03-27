@@ -18,9 +18,9 @@ CREATE INDEX idx_transactions_salon_date ON transactions(salon_id, date DESC);
 CREATE INDEX idx_appointments_salon_date ON appointments(salon_id, date);
 CREATE INDEX idx_expenses_salon_date ON expenses(salon_id, date);
 
--- GiST for appointment range queries
+-- GiST for appointment range queries (uses immutable helper from scheduling migration)
 CREATE INDEX idx_appointments_staff_date ON appointments
-  USING gist(staff_id, tstzrange(date, date + (duration_minutes || ' minutes')::interval));
+  USING gist(staff_id, appointment_range(date, duration_minutes));
 
 -- Lookup patterns
 CREATE INDEX idx_clients_salon_name ON clients(salon_id, last_name, first_name) WHERE deleted_at IS NULL;

@@ -21,10 +21,17 @@ CREATE TRIGGER appointments_updated_at
   BEFORE UPDATE ON appointments
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+-- Immutable helper for exclusion constraint (Postgres requires IMMUTABLE in index expressions)
+CREATE OR REPLACE FUNCTION appointment_range(start_at TIMESTAMPTZ, dur_min INTEGER)
+RETURNS tstzrange
+LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT tstzrange(start_at, start_at + make_interval(mins => dur_min));
+$$;
+
 ALTER TABLE appointments
   ADD CONSTRAINT no_double_booking
   EXCLUDE USING gist (
     staff_id WITH =,
-    tstzrange(date, date + (duration_minutes || ' minutes')::interval) WITH &&
+    appointment_range(date, duration_minutes) WITH &&
   )
   WHERE (status NOT IN ('CANCELLED'));
