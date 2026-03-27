@@ -6,6 +6,8 @@ import { generateServiceDescription } from '../../../services/geminiService';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
+import { useFormValidation } from '../../../hooks/useFormValidation';
+import { productSchema } from '../schemas';
 
 interface ProductFormProps {
   existingProduct?: Product;
@@ -38,6 +40,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
   );
 
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const { errors, validate, clearFieldError } = useFormValidation(productSchema);
 
   const handleAiGenerate = async () => {
     if (!formData.name) return;
@@ -46,6 +49,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
     const desc = await generateServiceDescription(formData.name, catName, "vente, produit, avantages, utilisation");
     setFormData(prev => ({ ...prev, description: desc }));
     setIsGeneratingAi(false);
+  };
+
+  const handleSave = () => {
+    const validated = validate(formData);
+    if (!validated) return;
+    onSave(formData, supplierId || null);
   };
 
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
@@ -64,10 +73,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Section title="Détails du Produit">
-             <Input 
+             <Input
                label="Titre"
                value={formData.name}
-               onChange={e => setFormData({...formData, name: e.target.value})}
+               onChange={e => { setFormData({...formData, name: e.target.value}); clearFieldError('name'); }}
+               error={errors.name}
              />
              <div>
                 <div className="flex justify-between items-center mb-1.5">
@@ -92,12 +102,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
 
           <Section title="Prix & Coûts">
              <div className="grid grid-cols-2 gap-4">
-                <Input 
+                <Input
                   label="Prix Public"
                   type="number"
                   prefix={currencySymbol}
                   value={formData.price}
-                  onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})}
+                  onChange={e => { setFormData({...formData, price: parseFloat(e.target.value)}); clearFieldError('price'); }}
+                  error={errors.price}
                 />
                 <Input 
                   label="Coût d'achat"
@@ -123,12 +134,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
                 />
              </div>
              <div className="flex items-center gap-4">
-                <Input 
+                <Input
                    label="Quantité en stock"
                    type="number"
                    value={formData.stock}
-                   onChange={e => setFormData({...formData, stock: parseInt(e.target.value)})}
+                   onChange={e => { setFormData({...formData, stock: parseInt(e.target.value)}); clearFieldError('stock'); }}
                    className="w-32"
+                   error={errors.stock}
                 />
                 {formData.stock <= 5 && (
                    <div className="flex items-center gap-2 text-amber-700 text-xs bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100 mt-6">
@@ -143,7 +155,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
         <div className="lg:col-span-1 space-y-6">
            <div className="flex flex-col gap-3 sticky top-6 z-10">
              <button 
-              onClick={() => onSave(formData, supplierId || null)}
+              onClick={handleSave}
               className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
             >
                <Save size={16} />
@@ -158,11 +170,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
            </div>
 
            <Section title="Organisation">
-             <Select 
+             <Select
                label="Catégorie"
                value={formData.categoryId}
-               onChange={(val) => setFormData({...formData, categoryId: val as string})}
+               onChange={(val) => { setFormData({...formData, categoryId: val as string}); clearFieldError('categoryId'); }}
                options={categories.map(c => ({ value: c.id, label: c.name, initials: c.name.substring(0,2).toUpperCase() }))}
+               error={errors.categoryId}
              />
              <Select
                label="Fournisseur"
