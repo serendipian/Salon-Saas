@@ -2,8 +2,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   Client,
-  Service,
-  ServiceCategory,
   Appointment,
   Transaction,
   Expense,
@@ -15,7 +13,6 @@ import {
 
 // Modular Data Imports
 import { MOCK_CLIENTS } from '../modules/clients/data';
-import { INITIAL_SERVICES, INITIAL_SERVICE_CATEGORIES } from '../modules/services/data';
 import { MOCK_APPOINTMENTS } from '../modules/appointments/data';
 import { INITIAL_TEAM } from '../modules/team/data';
 
@@ -77,13 +74,6 @@ interface AppContextType {
   updateClient: (client: Client) => void;
   deleteClient: (id: string) => void;
 
-  // Services
-  services: Service[];
-  serviceCategories: ServiceCategory[];
-  addService: (service: Service) => void;
-  updateService: (service: Service) => void;
-  updateServiceCategories: (categories: ServiceCategory[]) => void;
-
   // Appointments
   appointments: Appointment[];
   addAppointment: (appt: Appointment) => void;
@@ -114,8 +104,6 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // --- State Initialization ---
   const [clients, setClients] = useState<Client[]>(MOCK_CLIENTS);
-  const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
-  const [serviceCategories, setServiceCategories] = useState<ServiceCategory[]>(INITIAL_SERVICE_CATEGORIES);
   const [appointments, setAppointments] = useState<Appointment[]>(MOCK_APPOINTMENTS);
   const [team, setTeam] = useState<StaffMember[]>(INITIAL_TEAM);
   
@@ -167,11 +155,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateClient = (c: Client) => setClients(prev => prev.map(item => item.id === c.id ? c : item));
   const deleteClient = (id: string) => setClients(prev => prev.filter(item => item.id !== id));
 
-  // Services
-  const addService = (s: Service) => setServices(prev => [...prev, { ...s, id: s.id || `srv${Date.now()}` }]);
-  const updateService = (s: Service) => setServices(prev => prev.map(item => item.id === s.id ? s : item));
-  const updateServiceCategories = (cats: ServiceCategory[]) => setServiceCategories(cats);
-
   // Appointments
   const addAppointment = (a: Appointment) => setAppointments(prev => [...prev, { ...a, id: a.id || `apt${Date.now()}` }]);
   const updateAppointment = (a: Appointment) => setAppointments(prev => prev.map(item => item.id === a.id ? a : item));
@@ -213,7 +196,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const value = {
     clients, addClient, updateClient, deleteClient,
-    services, serviceCategories, addService, updateService, updateServiceCategories,
     appointments, addAppointment, updateAppointment,
     team, addStaffMember, updateStaffMember,
     transactions, expenses, addTransaction, addExpense,
