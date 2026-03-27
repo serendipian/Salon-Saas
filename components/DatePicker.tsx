@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
+import { useMediaQuery } from '../context/MediaQueryContext';
 
 interface DatePickerProps {
   label?: string;
@@ -29,9 +31,73 @@ const getDaysInMonth = (date: Date) => {
   return days;
 };
 
+const DAY_LABELS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+
+const CalendarGrid: React.FC<{
+  viewDate: Date;
+  value?: string;
+  onDayClick: (day: number) => void;
+  onChangeMonth: (delta: number) => void;
+}> = ({ viewDate, value, onDayClick, onChangeMonth }) => {
+  return (
+    <>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <button type="button" onClick={() => onChangeMonth(-1)} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
+          <ChevronLeft size={18} />
+        </button>
+        <span className="font-bold text-slate-800 capitalize text-sm">
+          {viewDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+        </span>
+        <button type="button" onClick={() => onChangeMonth(1)} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
+          <ChevronRight size={18} />
+        </button>
+      </div>
+
+      {/* Day labels */}
+      <div className="grid grid-cols-7 gap-1 text-center mb-2">
+        {DAY_LABELS.map((d, i) => (
+          <div key={`${d}-${i}`} className="text-[10px] font-bold text-slate-400 uppercase">{d}</div>
+        ))}
+      </div>
+
+      {/* Day cells */}
+      <div className="grid grid-cols-7 gap-1">
+        {getDaysInMonth(viewDate).map((day, idx) => {
+          if (!day) return <div key={`blank-${idx}`} />;
+
+          const currentDayStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const isSelected = value === currentDayStr;
+          const isToday = new Date().toISOString().slice(0, 10) === currentDayStr;
+
+          return (
+            <button
+              key={day}
+              type="button"
+              onClick={() => onDayClick(day)}
+              className={`
+                h-10 w-10 sm:h-8 sm:w-8 rounded-lg text-sm sm:text-xs flex items-center justify-center transition-all relative
+                ${isSelected
+                  ? 'bg-slate-900 text-white font-bold shadow-md scale-105 z-10'
+                  : 'hover:bg-slate-100 text-slate-700 hover:text-slate-900'
+                }
+                ${isToday && !isSelected ? 'text-slate-900 font-bold ring-1 ring-slate-200 bg-slate-50' : ''}
+              `}
+            >
+              {day}
+              {isToday && !isSelected && <div className="absolute bottom-1 w-1 h-1 rounded-full bg-slate-400"></div>}
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+};
+
 export const DatePicker: React.FC<DatePickerProps> = ({ label, value, onChange, error, placeholder = "Sélectionner date" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { isMobile } = useMediaQuery();
 
   // View state tracks the month being displayed
   const [viewDate, setViewDate] = useState(parseDate(value));
@@ -42,7 +108,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({ label, value, onChange, 
     }
   }, [isOpen, value]);
 
+  // Click-outside only on desktop
   useEffect(() => {
+    if (isMobile) return;
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -50,7 +118,24 @@ export const DatePicker: React.FC<DatePickerProps> = ({ label, value, onChange, 
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isMobile]);
+
+  // Escape key closes
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
+  // Body scroll lock on mobile
+  useEffect(() => {
+    if (!isMobile || !isOpen) return;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobile, isOpen]);
 
   const handleDayClick = (day: number) => {
     const year = viewDate.getFullYear();
@@ -99,61 +184,38 @@ export const DatePicker: React.FC<DatePickerProps> = ({ label, value, onChange, 
           <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
         </button>
 
-        {isOpen && (
-          <div className="absolute z-[100] top-[calc(100%+4px)] left-0 bg-white border border-slate-200 rounded-xl shadow-2xl p-4 w-[300px] animate-in fade-in slide-in-from-top-2 duration-200 origin-top-left">
-            
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <button onClick={() => changeMonth(-1)} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
-                <ChevronLeft size={18} />
-              </button>
-              <span className="font-bold text-slate-800 capitalize text-sm">
-                {viewDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
-              </span>
-              <button onClick={() => changeMonth(1)} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
-                <ChevronRight size={18} />
-              </button>
-            </div>
-
-            {/* Grid */}
-            <div className="grid grid-cols-7 gap-1 text-center mb-2">
-              {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d => (
-                <div key={d} className="text-[10px] font-bold text-slate-400 uppercase">{d}</div>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 gap-1">
-              {getDaysInMonth(viewDate).map((day, idx) => {
-                if (!day) return <div key={`blank-${idx}`} />;
-                
-                // Check if selected
-                const currentDayStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-                const isSelected = value === currentDayStr;
-                const isToday = new Date().toISOString().slice(0,10) === currentDayStr;
-
-                return (
-                  <button
-                    key={day}
-                    type="button"
-                    onClick={() => handleDayClick(day)}
-                    className={`
-                      h-8 w-8 rounded-lg text-xs flex items-center justify-center transition-all relative
-                      ${isSelected 
-                        ? 'bg-slate-900 text-white font-bold shadow-md scale-105 z-10' 
-                        : 'hover:bg-slate-100 text-slate-700 hover:text-slate-900'
-                      }
-                      ${isToday && !isSelected ? 'text-slate-900 font-bold ring-1 ring-slate-200 bg-slate-50' : ''}
-                    `}
-                  >
-                    {day}
-                    {isToday && !isSelected && <div className="absolute bottom-1 w-1 h-1 rounded-full bg-slate-400"></div>}
-                  </button>
-                );
-              })}
-            </div>
+        {/* Desktop dropdown */}
+        {isOpen && !isMobile && (
+          <div
+            className="absolute top-[calc(100%+4px)] left-0 bg-white border border-slate-200 rounded-xl shadow-2xl p-4 w-[300px] animate-in fade-in slide-in-from-top-2 duration-200 origin-top-left"
+            style={{ zIndex: 'var(--z-drawer-panel)' }}
+          >
+            <CalendarGrid viewDate={viewDate} value={value} onDayClick={handleDayClick} onChangeMonth={changeMonth} />
           </div>
         )}
       </div>
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+
+      {/* Mobile fullscreen modal */}
+      {isOpen && isMobile && createPortal(
+        <div className="fixed inset-0 bg-black/40 flex items-end justify-center" style={{ zIndex: 'var(--z-modal)' }}>
+          <div
+            className="bg-white w-full rounded-t-2xl p-5 pb-8 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Sélectionner une date"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-slate-900">{label || 'Date'}</h2>
+              <button type="button" onClick={() => setIsOpen(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-900 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <CalendarGrid viewDate={viewDate} value={value} onDayClick={handleDayClick} onChangeMonth={changeMonth} />
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };
