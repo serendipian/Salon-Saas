@@ -4,7 +4,7 @@ import { ArrowLeft, Save, Sparkles, Clock, Trash2 } from 'lucide-react';
 import { Service, ServiceCategory, ServiceVariant } from '../../../types';
 import { generateServiceDescription } from '../../../services/geminiService';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
-import { useAppContext } from '../../../context/AppContext';
+import { useSettings } from '../../settings/hooks/useSettings';
 
 interface ServiceFormProps {
   existingService?: Service;
@@ -14,7 +14,7 @@ interface ServiceFormProps {
 }
 
 export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categories, onSave, onCancel }) => {
-  const { salonSettings } = useAppContext();
+  const { salonSettings } = useSettings();
   const [formData, setFormData] = useState<Service>(existingService || {
     id: '',
     name: '',

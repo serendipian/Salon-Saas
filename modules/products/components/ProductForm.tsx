@@ -4,7 +4,7 @@ import { ArrowLeft, Save, Sparkles, Box, AlertTriangle } from 'lucide-react';
 import { Product, ProductCategory } from '../../../types';
 import { generateServiceDescription } from '../../../services/geminiService';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
-import { useAppContext } from '../../../context/AppContext';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
 
 interface ProductFormProps {
@@ -15,7 +15,7 @@ interface ProductFormProps {
 }
 
 export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categories, onSave, onCancel }) => {
-  const { salonSettings } = useAppContext();
+  const { salonSettings } = useSettings();
   const { allSuppliers } = useSuppliers();
   const [formData, setFormData] = useState<Product>(existingProduct || {
     id: '',

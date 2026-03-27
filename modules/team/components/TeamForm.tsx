@@ -5,7 +5,8 @@ import { Section, Input, Select, TextArea } from '../../../components/FormElemen
 import { DatePicker } from '../../../components/DatePicker';
 import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor'; 
 import { BonusSystemEditor } from '../../../components/BonusSystemEditor';
-import { useAppContext } from '../../../context/AppContext';
+import { useServices } from '../../services/hooks/useServices';
+import { useSettings } from '../../settings/hooks/useSettings';
 
 interface TeamFormProps {
   existingMember?: StaffMember;
@@ -33,7 +34,8 @@ const DEFAULT_SCHEDULE: WorkSchedule = {
 };
 
 export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCancel }) => {
-  const { serviceCategories, salonSettings } = useAppContext();
+  const { serviceCategories } = useServices();
+  const { salonSettings } = useSettings();
   
   const [formData, setFormData] = useState<StaffMember>(existingMember || {
     id: '',
