@@ -2,13 +2,13 @@
 import React, { useState } from 'react';
 import { ViewState, StaffMember } from '../../types';
 import { useTeam } from './hooks/useTeam';
-import { useAppContext } from '../../context/AppContext';
+import { useAppointments } from '../appointments/hooks/useAppointments';
 import { TeamList } from './components/TeamList';
 import { TeamForm } from './components/TeamForm';
 
 export const TeamModule: React.FC = () => {
   const { team, allStaff, searchTerm, setSearchTerm, addStaffMember, updateStaffMember } = useTeam();
-  const { appointments } = useAppContext();
+  const { allAppointments: appointments } = useAppointments();
   const [view, setView] = useState<ViewState>('LIST');
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
