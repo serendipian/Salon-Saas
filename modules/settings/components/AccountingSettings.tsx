@@ -32,7 +32,7 @@ export const AccountingSettings: React.FC<{ onBack: () => void }> = ({ onBack })
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
     
     updateExpenseCategories([...expenseCategories, {
-      id: `cat-${Date.now()}`,
+      id: crypto.randomUUID(),
       name: newCatName,
       color: randomColor
     }]);
@@ -47,7 +47,7 @@ export const AccountingSettings: React.FC<{ onBack: () => void }> = ({ onBack })
     if (!newRecExpense.name || !newRecExpense.amount) return;
     
     updateRecurringExpenses([...recurringExpenses, {
-      id: `rec-${Date.now()}`,
+      id: crypto.randomUUID(),
       name: newRecExpense.name!,
       amount: Number(newRecExpense.amount),
       frequency: newRecExpense.frequency as any,
