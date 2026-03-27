@@ -99,6 +99,25 @@ modules/{module}/
 - States: connected (green), reconnecting (orange), disconnected after 30s (red + banner)
 - On reconnect: invalidates active queries, shows "Connexion rétablie" toast
 
+### Form Validation
+- `hooks/useFormValidation.ts` — generic hook wrapping Zod schema validation
+- Per-module schemas at `modules/{module}/schemas.ts`
+- Validates on submit, clears individual field errors on change
+- French error messages defined inline in Zod schemas
+- FormElements accept `error` prop to display field-level errors
+
+### Mutation Error Handling
+- `hooks/useMutationToast.ts` — callback factory for mutation `onError`
+- `toastOnError(fallbackMessage)` — inspects Supabase error codes, falls back to provided French message
+- Known codes: RLS violation, unique constraint, network error
+- All 18+ mutations across 9 hooks use toastOnError (no more console.error)
+
+### Error Boundaries
+- `components/ErrorBoundary.tsx` — React class component wrapping each module route
+- On crash: shows French error card with "Réessayer" (remount) and "Tableau de bord" (escape)
+- resetKey pattern forces full subtree remount → fresh queries → fresh data
+- Layout (sidebar, header, connection status) survives any module crash
+
 ### Dead Code (DO NOT USE)
 These files in `components/` are old monolithic versions replaced by `modules/`:
 - `components/AccountingModule.tsx`
@@ -194,8 +213,8 @@ AuthContext calls this automatically on salon selection. The `get_active_salon()
 5. ~~No authentication system~~ (DONE — Plan 1B)
 6. Appointment form uses hardcoded staff names instead of team data
 7. Dashboard KPI trends are hardcoded percentages
-8. No form validation
-9. No error boundaries
+8. ~~No form validation~~ (DONE — Plan 4, Zod schemas)
+9. ~~No error boundaries~~ (DONE — Plan 4, module-level ErrorBoundary)
 10. Not responsive for mobile
 
 ## Environment Variables
