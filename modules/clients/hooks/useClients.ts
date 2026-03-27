@@ -5,12 +5,14 @@ import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { toClient, toClientInsert } from '../mappers';
 import type { Client } from '../../../types';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 
 export const useClients = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  useRealtimeSync('clients');
 
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ['clients', salonId],

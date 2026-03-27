@@ -7,12 +7,15 @@ import {
   toServiceCategory, toServiceCategoryInsert,
 } from '../mappers';
 import type { Service, ServiceCategory } from '../../../types';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 
 export const useServices = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  useRealtimeSync('services');
+  useRealtimeSync('service_categories');
 
   // Services query (with nested variants)
   const { data: services = [], isLoading: isLoadingServices } = useQuery({

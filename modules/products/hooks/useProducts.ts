@@ -4,12 +4,15 @@ import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { toProduct, toProductInsert, toProductCategory, toProductCategoryInsert } from '../mappers';
 import type { Product, ProductCategory } from '../../../types';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 
 export const useProducts = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  useRealtimeSync('products');
+  useRealtimeSync('product_categories');
 
   // Products query (with supplier name via relation)
   const { data: products = [], isLoading: isLoadingProducts } = useQuery({

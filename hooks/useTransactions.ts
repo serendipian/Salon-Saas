@@ -4,11 +4,13 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { toTransaction, toTransactionRpcPayload, TransactionRow } from '../modules/pos/mappers';
 import type { CartItem, PaymentEntry } from '../types';
+import { useRealtimeSync } from './useRealtimeSync';
 
 export const useTransactions = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
+  useRealtimeSync('transactions');
 
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ['transactions', salonId],
