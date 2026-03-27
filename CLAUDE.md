@@ -37,6 +37,17 @@ components/
   DateRangePicker.tsx     # Range picker with presets
   WorkScheduleEditor.tsx  # Weekly schedule grid
   BonusSystemEditor.tsx   # Tiered bonus configuration
+  ProtectedRoute.tsx      # Auth/salon/permission route guard
+```
+
+### Auth Pages
+```
+pages/
+  LoginPage.tsx           # Email+password + magic link login
+  SignupPage.tsx           # Registration form
+  CreateSalonPage.tsx      # Post-signup salon creation
+  SalonPickerPage.tsx      # Multi-salon user selection
+  AcceptInvitationPage.tsx # Token-based invitation acceptance
 ```
 
 ### State Management
@@ -91,6 +102,34 @@ npm run preview      # Preview production build
 - Price snapshotting on transaction_items
 - Computed client stats via `client_stats` view (not denormalized)
 
+## Authentication & Authorization
+
+- **Auth Provider**: Supabase Auth (email+password, magic link)
+- **Auth Context**: `context/AuthContext.tsx` — provides user, session, profile, activeSalon, role, memberships
+- **Access Hook**: `useAuth()` — access auth state from any component
+- **Permissions**: `hooks/usePermissions.ts` — static role-based permission matrix (UX only, RLS is authoritative)
+- **Route Guards**: `components/ProtectedRoute.tsx` — redirects unauthorized users
+- **Supabase Client**: `lib/supabase.ts` — typed singleton, uses `Database` from `lib/database.types.ts`
+- **Auth Types**: `lib/auth.types.ts` — Role, Profile, SalonMembership, permission types
+
+### Auth Flow
+1. Unauthenticated → `/login` or `/signup`
+2. Authenticated, no salon → `/create-salon`
+3. Authenticated, multiple salons → `/select-salon`
+4. Authenticated + active salon → main app (Layout + modules)
+
+### Role-Based Sidebar Visibility
+- **owner/manager**: All items visible
+- **stylist**: No accounting, suppliers, settings
+- **receptionist**: No accounting, suppliers, settings
+
+### Session Context
+Every Supabase query requires salon context set first:
+```typescript
+await supabase.rpc('set_session_context', { p_salon_id: salonId, p_user_role: role });
+```
+AuthContext calls this automatically on salon selection. The `get_active_salon()` and `get_user_role()` Postgres functions read these session variables for RLS.
+
 ## Code Conventions
 
 - **Language**: UI text is in French. Code (variables, comments) in English.
@@ -108,7 +147,7 @@ npm run preview      # Preview production build
 2. Tailwind via CDN (needs proper PostCSS setup)
 3. Import maps in index.html point to aistudiocdn.com (not needed with Vite)
 4. Gemini API key exposed client-side
-5. No authentication system
+5. ~~No authentication system~~ (DONE — Plan 1B)
 6. Appointment form uses hardcoded staff names instead of team data
 7. Dashboard KPI trends are hardcoded percentages
 8. No form validation
