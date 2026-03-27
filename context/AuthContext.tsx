@@ -26,7 +26,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 
   // Salon actions
-  switchSalon: (salonId: string) => void;
+  switchSalon: (salonId: string) => Promise<void>;
   createSalon: (name: string, timezone?: string, currency?: string) => Promise<{ salonId: string | null; error: string | null }>;
 }
 
@@ -102,18 +102,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Switch active salon
-  const switchSalon = useCallback((salonId: string) => {
+  const switchSalon = useCallback(async (salonId: string) => {
     const membership = memberships.find(m => m.salon_id === salonId);
     if (!membership) {
       console.error('No membership found for salon:', salonId);
       return;
     }
+    // Set RLS context BEFORE updating state — ensures Supabase session
+    // is ready before TanStack Query refetches on the new salonId key
+    await setSalonContext(salonId, membership.role);
     setActiveSalon(membership.salon);
     setRole(membership.role);
-    // Persist last salon choice
     localStorage.setItem('lastSalonId', salonId);
-    // Set RLS context (fire-and-forget, next query will use it)
-    setSalonContext(salonId, membership.role);
   }, [memberships, setSalonContext]);
 
   // Initialize auth state on mount
