@@ -1,18 +1,18 @@
 
 import React, { useState } from 'react';
 import { Calculator, Users, RefreshCw, FileText, ArrowLeft, Plus, Trash2, Database } from 'lucide-react';
-import { useAppContext } from '../../../context/AppContext';
+import { useSettings } from '../hooks/useSettings';
 import { RecurringExpense } from '../../../types';
 import { Input, Select } from '../../../components/FormElements';
 
 export const AccountingSettings: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-  const { 
-    expenseCategories, 
-    recurringExpenses, 
-    updateExpenseCategories, 
+  const {
+    expenseCategories,
+    recurringExpenses,
+    updateExpenseCategories,
     updateRecurringExpenses,
     salonSettings
-  } = useAppContext();
+  } = useSettings();
 
   const [activeTab, setActiveTab] = useState<'TAXES' | 'CATEGORIES' | 'RECURRING' | 'EXPORT'>('TAXES');
   const [newCatName, setNewCatName] = useState('');

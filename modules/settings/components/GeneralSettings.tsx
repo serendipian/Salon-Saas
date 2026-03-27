@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
 import { ArrowLeft, Save, Store } from 'lucide-react';
-import { useAppContext } from '../../../context/AppContext';
+import { useSettings } from '../hooks/useSettings';
 import { Section, Input, Select } from '../../../components/FormElements';
 
 export const GeneralSettings: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-  const { salonSettings, updateSalonSettings } = useAppContext();
+  const { salonSettings, updateSalonSettings } = useSettings();
   const [formData, setFormData] = useState(salonSettings);
 
   const handleSave = () => {
