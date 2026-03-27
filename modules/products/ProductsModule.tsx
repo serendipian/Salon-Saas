@@ -115,11 +115,11 @@ export const ProductsModule: React.FC = () => {
     setView('EDIT');
   };
 
-  const handleSaveProduct = (product: any) => {
+  const handleSaveProduct = (product: any, supplierId?: string | null) => {
     if (selectedProductId) {
-      updateProduct(product);
+      updateProduct(product, supplierId);
     } else {
-      addProduct(product);
+      addProduct(product, supplierId);
     }
     setView('LIST');
   };
