@@ -7,6 +7,8 @@ import { useClients } from '../../clients/hooks/useClients';
 import { useServices } from '../../services/hooks/useServices';
 import { useTeam } from '../../team/hooks/useTeam';
 import { useSettings } from '../../settings/hooks/useSettings';
+import { useFormValidation } from '../../../hooks/useFormValidation';
+import { appointmentSchema } from '../schemas';
 
 interface AppointmentFormProps {
   existingAppointment?: Appointment;
@@ -19,6 +21,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({ existingAppoin
   const { allStaff: team } = useTeam();
   const { allClients: clients } = useClients();
   const { allServices: services } = useServices();
+  const { errors, validate, clearFieldError } = useFormValidation(appointmentSchema);
   const [formData, setFormData] = useState<Partial<Appointment>>(existingAppointment || {
     date: new Date().toISOString().slice(0, 16),
     clientId: '',
@@ -34,15 +37,17 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({ existingAppoin
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+    const validated = validate(formData);
+    if (!validated) return;
+
     // Ensure names are populated if using ID-based selection
     const finalData = { ...formData };
-    
+
     if (finalData.clientId) {
       const c = clients.find(cl => cl.id === finalData.clientId);
       if (c) finalData.clientName = `${c.firstName} ${c.lastName}`;
     }
-    
+
     if (finalData.serviceId) {
       const s = services.find(sv => sv.id === finalData.serviceId);
       if (s) finalData.serviceName = s.name;
@@ -57,6 +62,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({ existingAppoin
   };
 
   const handleServiceChange = (serviceId: string) => {
+    clearFieldError('serviceId');
     const service = services.find(s => s.id === serviceId);
     if (service) {
       // Auto-select first variant defaults
@@ -74,6 +80,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({ existingAppoin
   };
 
   const handleClientChange = (clientId: string) => {
+    clearFieldError('clientId');
     const client = clients.find(c => c.id === clientId);
     setFormData(prev => ({
       ...prev,
@@ -83,6 +90,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({ existingAppoin
   };
 
   const handleStaffChange = (staffId: string) => {
+    clearFieldError('staffId');
     const staff = team.find(s => s.id === staffId);
     setFormData(prev => ({
       ...prev,
@@ -107,12 +115,13 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({ existingAppoin
       <form onSubmit={handleSubmit}>
         <Section title="Détails de la réservation">
           <div className="grid grid-cols-2 gap-6">
-             <Input 
+             <Input
                label="Date & Heure"
                type="datetime-local"
                required
                value={formData.date ? new Date(formData.date).toISOString().slice(0, 16) : ''}
-               onChange={e => setFormData({...formData, date: new Date(e.target.value).toISOString()})}
+               onChange={e => { clearFieldError('date'); setFormData({...formData, date: new Date(e.target.value).toISOString()}); }}
+               error={errors.date}
              />
              <Select 
                label="Statut"
@@ -127,12 +136,13 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({ existingAppoin
              />
           </div>
 
-          <Select 
+          <Select
             label="Client"
             value={formData.clientId}
             onChange={(val) => handleClientChange(val as string)}
             searchable
             placeholder="Rechercher un client..."
+            error={errors.clientId}
             options={[
               ...clients.map(c => ({ 
                 value: c.id, 
@@ -145,12 +155,13 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({ existingAppoin
           />
 
           <div className="grid grid-cols-2 gap-6">
-             <Select 
+             <Select
                 label="Service"
                 value={formData.serviceId}
                 onChange={(val) => handleServiceChange(val as string)}
                 searchable
                 placeholder="Choisir un service..."
+                error={errors.serviceId}
                 options={[
                   ...services.map(s => ({ value: s.id, label: s.name }))
                 ]}
@@ -163,12 +174,13 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({ existingAppoin
              />
           </div>
 
-          <Select 
+          <Select
              label="Praticien / Staff"
              value={formData.staffId}
              onChange={(val) => handleStaffChange(val as string)}
              searchable
              placeholder="Assigner à..."
+             error={errors.staffId}
              options={[
                ...team.map(t => ({ 
                  value: t.id, 
