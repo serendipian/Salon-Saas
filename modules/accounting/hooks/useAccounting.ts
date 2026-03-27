@@ -6,12 +6,14 @@ import { useAuth } from '../../../context/AuthContext';
 import { useTransactions } from '../../../hooks/useTransactions';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { toExpense, toExpenseInsert, ExpenseRow } from '../mappers';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import type { Expense, LedgerEntry, DateRange } from '../../../types';
 
 export const useAccounting = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
+  useRealtimeSync('expenses');
 
   const { transactions } = useTransactions();
   const { salonSettings } = useSettings();

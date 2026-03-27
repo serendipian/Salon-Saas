@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { toStaffMember, toStaffMemberInsert } from '../mappers';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import type { StaffMember } from '../../../types';
 
 export const useTeam = () => {
@@ -10,6 +11,7 @@ export const useTeam = () => {
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  useRealtimeSync('staff_members');
 
   const { data: staff = [], isLoading } = useQuery({
     queryKey: ['staff_members', salonId],

@@ -1,7 +1,9 @@
 // modules/settings/hooks/useSettings.ts
+import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import {
   toSalonSettings,
   toSalonUpdate,
@@ -16,6 +18,13 @@ export const useSettings = () => {
   const { activeSalon, refreshActiveSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
+
+  const handleSalonChange = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['salon_settings', salonId] });
+  }, [queryClient, salonId]);
+
+  useRealtimeSync('salons', { onEvent: handleSalonChange });
+  useRealtimeSync('expense_categories');
 
   // --- Salon Settings (from salons table) ---
   const { data: salonSettings, isLoading: isLoadingSettings } = useQuery({

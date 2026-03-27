@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { toSupplier, toSupplierInsert } from '../mappers';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import type { Supplier } from '../../../types';
 
 export const useSuppliers = () => {
@@ -11,6 +12,7 @@ export const useSuppliers = () => {
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  useRealtimeSync('suppliers');
 
   const { data: suppliers = [], isLoading } = useQuery({
     queryKey: ['suppliers', salonId],
