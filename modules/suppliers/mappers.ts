@@ -36,17 +36,17 @@ export function toSupplier(row: SupplierRow): Supplier {
   };
 }
 
-export function toSupplierInsert(data: Partial<Supplier>, salonId: string) {
+export function toSupplierInsert(data: Supplier, salonId: string) {
   return {
     id: data.id || undefined,
     salon_id: salonId,
-    name: data.name!,
-    contact_name: data.contactName!,
-    email: data.email!,
-    phone: data.phone!,
+    name: data.name,
+    contact_name: data.contactName,
+    email: data.email,
+    phone: data.phone,
     website: data.website ?? null,
     address: data.address ?? null,
-    category: data.category!,
+    category: data.category,
     payment_terms: data.paymentTerms ?? null,
     active: data.active ?? true,
     notes: data.notes ?? null,

@@ -18,7 +18,9 @@ export const useSuppliers = () => {
       const { data, error } = await supabase
         .from('suppliers')
         .select('*')
-        .is('deleted_at', null);
+        .eq('salon_id', salonId)
+        .is('deleted_at', null)
+        .order('name');
       if (error) throw error;
       return (data ?? []).map(toSupplier);
     },
@@ -40,9 +42,10 @@ export const useSuppliers = () => {
 
   const updateSupplierMutation = useMutation({
     mutationFn: async (supplier: Supplier) => {
+      const { id, salon_id, ...updateData } = toSupplierInsert(supplier, salonId);
       const { error } = await supabase
         .from('suppliers')
-        .update(toSupplierInsert(supplier, salonId))
+        .update(updateData)
         .eq('id', supplier.id);
       if (error) throw error;
     },
@@ -57,7 +60,7 @@ export const useSuppliers = () => {
     const term = searchTerm.toLowerCase();
     return suppliers.filter(s =>
       s.name.toLowerCase().includes(term) ||
-      s.contactName.toLowerCase().includes(term)
+      (s.contactName ?? '').toLowerCase().includes(term)
     );
   }, [suppliers, searchTerm]);
 
