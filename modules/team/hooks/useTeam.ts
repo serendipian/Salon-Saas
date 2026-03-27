@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { toStaffMember, toStaffMemberInsert } from '../mappers';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { StaffMember } from '../../../types';
 
 export const useTeam = () => {
@@ -11,6 +12,7 @@ export const useTeam = () => {
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const { toastOnError } = useMutationToast();
   useRealtimeSync('staff_members');
 
   const { data: staff = [], isLoading } = useQuery({
@@ -38,7 +40,7 @@ export const useTeam = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });
     },
-    onError: (error) => console.error('Failed to add staff member:', error.message),
+    onError: toastOnError("Impossible d'ajouter le membre de l'équipe"),
   });
 
   const updateStaffMemberMutation = useMutation({
@@ -53,7 +55,7 @@ export const useTeam = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });
     },
-    onError: (error) => console.error('Failed to update staff member:', error.message),
+    onError: toastOnError("Impossible de modifier le membre de l'équipe"),
   });
 
   const filteredStaff = useMemo(() => {

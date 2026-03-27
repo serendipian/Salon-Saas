@@ -6,6 +6,7 @@ import { toAppointment, toAppointmentInsert } from '../mappers';
 import type { Appointment } from '../../../types';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useToast } from '../../../context/ToastContext';
+import { useMutationToast } from '../../../hooks/useMutationToast';
 
 export const useAppointments = () => {
   const { activeSalon } = useAuth();
@@ -15,6 +16,7 @@ export const useAppointments = () => {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
   const { addToast } = useToast();
+  const { toastOnError } = useMutationToast();
 
   const handleAppointmentEvent = useCallback((payload: { eventType: string }) => {
     if (payload.eventType === 'INSERT') {
@@ -55,7 +57,7 @@ export const useAppointments = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
     },
-    onError: (error) => console.error('Failed to add appointment:', error.message),
+    onError: toastOnError("Impossible d'ajouter le rendez-vous"),
   });
 
   const updateAppointmentMutation = useMutation({
@@ -75,7 +77,7 @@ export const useAppointments = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
     },
-    onError: (error) => console.error('Failed to update appointment:', error.message),
+    onError: toastOnError("Impossible de modifier le rendez-vous"),
   });
 
   const filteredAppointments = useMemo(() => {

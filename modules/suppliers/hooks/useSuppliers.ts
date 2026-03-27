@@ -5,6 +5,7 @@ import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { toSupplier, toSupplierInsert } from '../mappers';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { Supplier } from '../../../types';
 
 export const useSuppliers = () => {
@@ -12,6 +13,7 @@ export const useSuppliers = () => {
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const { toastOnError } = useMutationToast();
   useRealtimeSync('suppliers');
 
   const { data: suppliers = [], isLoading } = useQuery({
@@ -39,7 +41,7 @@ export const useSuppliers = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers', salonId] });
     },
-    onError: (error) => console.error('Failed to add supplier:', error.message),
+    onError: toastOnError("Impossible d'ajouter le fournisseur"),
   });
 
   const updateSupplierMutation = useMutation({
@@ -54,7 +56,7 @@ export const useSuppliers = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers', salonId] });
     },
-    onError: (error) => console.error('Failed to update supplier:', error.message),
+    onError: toastOnError("Impossible de modifier le fournisseur"),
   });
 
   const filteredSuppliers = useMemo(() => {
