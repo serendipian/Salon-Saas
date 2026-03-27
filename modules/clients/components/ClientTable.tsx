@@ -96,6 +96,7 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                       onClick={() => onViewDetails(client.id)}
                       className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors"
                       title="Voir"
+                      aria-label={`Voir ${client.firstName} ${client.lastName}`}
                     >
                       <Eye size={16} />
                     </button>
@@ -103,6 +104,7 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                       onClick={() => onEdit(client.id)}
                       className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
                       title="Modifier"
+                      aria-label={`Modifier ${client.firstName} ${client.lastName}`}
                     >
                       <Edit size={16} />
                     </button>
@@ -110,6 +112,7 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                       onClick={() => onSchedule(client.id)}
                       className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
                       title="Prendre RDV"
+                      aria-label={`Prendre RDV pour ${client.firstName} ${client.lastName}`}
                     >
                       <Calendar size={16} />
                     </button>

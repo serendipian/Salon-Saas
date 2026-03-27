@@ -59,9 +59,9 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
             className="px-3 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm shadow-sm cursor-pointer"
           >
             <option value="ALL">Tous les statuts</option>
-            <option value={AppointmentStatus.SCHEDULED}>Planifie</option>
-            <option value={AppointmentStatus.COMPLETED}>Termine</option>
-            <option value={AppointmentStatus.CANCELLED}>Annule</option>
+            <option value={AppointmentStatus.SCHEDULED}>Planifié</option>
+            <option value={AppointmentStatus.COMPLETED}>Terminé</option>
+            <option value={AppointmentStatus.CANCELLED}>Annulé</option>
           </select>
           <ViewToggle viewMode={viewMode} onChange={setViewMode} />
         </div>

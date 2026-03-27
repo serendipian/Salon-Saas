@@ -23,8 +23,7 @@ export const ExpenseTable: React.FC<{ expenses: Expense[] }> = ({ expenses }) =>
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in">
-      <div className="overflow-x-auto">
+    <div className="overflow-x-auto">
          <table className="w-full text-left border-collapse">
             <thead className="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-semibold">
                <tr>
@@ -63,7 +62,6 @@ export const ExpenseTable: React.FC<{ expenses: Expense[] }> = ({ expenses }) =>
                })}
             </tbody>
          </table>
-      </div>
     </div>
   );
 };

@@ -503,7 +503,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
                 <button key={preset.label} type="button"
                   onClick={() => handleMobilePresetSelect(preset)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap border transition-colors shrink-0 ${
-                    dateRange.label === preset.label
+                    tempRange.label === preset.label
                       ? 'bg-slate-900 text-white border-slate-900'
                       : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                   }`}>

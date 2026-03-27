@@ -10,8 +10,8 @@ export const AccountingExpenses: React.FC<{ expenses: Expense[] }> = ({ expenses
   const { viewMode, setViewMode } = useViewMode('expenses');
 
   return (
-    <div>
-      <div className="flex items-center justify-end mb-3">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in">
+      <div className="p-3 border-b border-slate-200 flex justify-end bg-white">
         <ViewToggle viewMode={viewMode} onChange={setViewMode} />
       </div>
       {viewMode === 'table' ? (
