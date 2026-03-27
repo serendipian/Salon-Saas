@@ -275,6 +275,7 @@ export interface Expense {
   category: ExpenseCategory; // ID of the category setting
   amount: number;
   supplier?: string;
+  supplierId?: string;
   proofUrl?: string; // For scanned receipt
 }
 
