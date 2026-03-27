@@ -33,19 +33,33 @@ const AppContent = () => {
     <Layout activeModule={currentModule} onNavigate={(path) => navigate(`/${path}`)}>
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<DashboardModule />} />
-        <Route path="/services" element={<ServicesModule />} />
-        <Route path="/clients" element={<ClientsModule />} />
-        <Route path="/team" element={<TeamModule />} />
-        <Route path="/calendar" element={<AppointmentsModule />} />
-        <Route path="/products" element={<ProductsModule />} />
+        <Route path="/dashboard" element={
+          <ProtectedRoute action="view" resource="dashboard"><DashboardModule /></ProtectedRoute>
+        } />
+        <Route path="/services" element={
+          <ProtectedRoute action="view" resource="services"><ServicesModule /></ProtectedRoute>
+        } />
+        <Route path="/clients" element={
+          <ProtectedRoute action="view" resource="clients"><ClientsModule /></ProtectedRoute>
+        } />
+        <Route path="/team" element={
+          <ProtectedRoute action="view" resource="team"><TeamModule /></ProtectedRoute>
+        } />
+        <Route path="/calendar" element={
+          <ProtectedRoute action="view" resource="appointments"><AppointmentsModule /></ProtectedRoute>
+        } />
+        <Route path="/products" element={
+          <ProtectedRoute action="view" resource="products"><ProductsModule /></ProtectedRoute>
+        } />
         <Route path="/suppliers" element={
           <ProtectedRoute action="view" resource="suppliers"><SuppliersModule /></ProtectedRoute>
         } />
         <Route path="/settings" element={
           <ProtectedRoute action="view" resource="settings"><SettingsModule /></ProtectedRoute>
         } />
-        <Route path="/pos" element={<POSModule />} />
+        <Route path="/pos" element={
+          <ProtectedRoute action="view" resource="pos"><POSModule /></ProtectedRoute>
+        } />
         <Route path="/accounting" element={
           <ProtectedRoute action="view" resource="accounting"><AccountingModule /></ProtectedRoute>
         } />

@@ -42,6 +42,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   const membershipChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const activeSalonRef = useRef(activeSalon);
+  const roleRef = useRef(role);
+  activeSalonRef.current = activeSalon;
+  roleRef.current = role;
 
   // Fetch profile from public.profiles
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
@@ -224,17 +228,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const updated = await fetchMemberships(user.id);
           setMemberships(updated);
 
+          // Use refs to avoid stale closures and unnecessary channel reconnections
+          const currentSalon = activeSalonRef.current;
+          const currentRole = roleRef.current;
+
           // If active salon membership was revoked, clear it
-          if (activeSalon) {
-            const stillMember = updated.find(m => m.salon_id === activeSalon.id);
+          if (currentSalon) {
+            const stillMember = updated.find(m => m.salon_id === currentSalon.id);
             if (!stillMember) {
               setActiveSalon(null);
               setRole(null);
               localStorage.removeItem('lastSalonId');
-            } else if (stillMember.role !== role) {
+            } else if (stillMember.role !== currentRole) {
               // Role changed
               setRole(stillMember.role);
-              await setSalonContext(activeSalon.id, stillMember.role);
+              await setSalonContext(currentSalon.id, stillMember.role);
             }
           }
         }
@@ -246,7 +254,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, activeSalon, role, fetchMemberships, setSalonContext]);
+  }, [user, fetchMemberships, setSalonContext]);
 
   // --- Auth Actions ---
 

@@ -17,6 +17,7 @@ import {
   LogOut,
   ChevronDown,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
 import type { AuthResource } from '../lib/auth.types';
@@ -30,12 +31,12 @@ interface LayoutProps {
 interface NavItem {
   id: string;
   label: string;
-  icon: any;
+  icon: LucideIcon;
   resource: AuthResource;
 }
 
 interface SidebarItemProps {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   active: boolean;
   onClick: () => void;

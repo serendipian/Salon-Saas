@@ -8,7 +8,11 @@ export const AcceptInvitationPage: React.FC = () => {
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const token = searchParams.get('token');
+  const rawToken = searchParams.get('token');
+  // Validate token format (UUID) to prevent injection
+  const token = rawToken && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawToken)
+    ? rawToken
+    : null;
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
