@@ -5,6 +5,7 @@ import { ToastProvider } from './context/ToastContext';
 import { ToastContainer } from './components/Toast';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Auth pages
 import { LoginPage } from './pages/LoginPage';
@@ -35,34 +36,54 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={
-          <ProtectedRoute action="view" resource="dashboard"><DashboardModule /></ProtectedRoute>
+          <ProtectedRoute action="view" resource="dashboard">
+            <ErrorBoundary moduleName="Tableau de bord"><DashboardModule /></ErrorBoundary>
+          </ProtectedRoute>
         } />
         <Route path="/services" element={
-          <ProtectedRoute action="view" resource="services"><ServicesModule /></ProtectedRoute>
+          <ProtectedRoute action="view" resource="services">
+            <ErrorBoundary moduleName="Services"><ServicesModule /></ErrorBoundary>
+          </ProtectedRoute>
         } />
         <Route path="/clients" element={
-          <ProtectedRoute action="view" resource="clients"><ClientsModule /></ProtectedRoute>
+          <ProtectedRoute action="view" resource="clients">
+            <ErrorBoundary moduleName="Clients"><ClientsModule /></ErrorBoundary>
+          </ProtectedRoute>
         } />
         <Route path="/team" element={
-          <ProtectedRoute action="view" resource="team"><TeamModule /></ProtectedRoute>
+          <ProtectedRoute action="view" resource="team">
+            <ErrorBoundary moduleName="Équipe"><TeamModule /></ErrorBoundary>
+          </ProtectedRoute>
         } />
         <Route path="/calendar" element={
-          <ProtectedRoute action="view" resource="appointments"><AppointmentsModule /></ProtectedRoute>
+          <ProtectedRoute action="view" resource="appointments">
+            <ErrorBoundary moduleName="Rendez-vous"><AppointmentsModule /></ErrorBoundary>
+          </ProtectedRoute>
         } />
         <Route path="/products" element={
-          <ProtectedRoute action="view" resource="products"><ProductsModule /></ProtectedRoute>
+          <ProtectedRoute action="view" resource="products">
+            <ErrorBoundary moduleName="Produits"><ProductsModule /></ErrorBoundary>
+          </ProtectedRoute>
         } />
         <Route path="/suppliers" element={
-          <ProtectedRoute action="view" resource="suppliers"><SuppliersModule /></ProtectedRoute>
+          <ProtectedRoute action="view" resource="suppliers">
+            <ErrorBoundary moduleName="Fournisseurs"><SuppliersModule /></ErrorBoundary>
+          </ProtectedRoute>
         } />
         <Route path="/settings" element={
-          <ProtectedRoute action="view" resource="settings"><SettingsModule /></ProtectedRoute>
+          <ProtectedRoute action="view" resource="settings">
+            <ErrorBoundary moduleName="Paramètres"><SettingsModule /></ErrorBoundary>
+          </ProtectedRoute>
         } />
         <Route path="/pos" element={
-          <ProtectedRoute action="view" resource="pos"><POSModule /></ProtectedRoute>
+          <ProtectedRoute action="view" resource="pos">
+            <ErrorBoundary moduleName="Caisse"><POSModule /></ErrorBoundary>
+          </ProtectedRoute>
         } />
         <Route path="/accounting" element={
-          <ProtectedRoute action="view" resource="accounting"><AccountingModule /></ProtectedRoute>
+          <ProtectedRoute action="view" resource="accounting">
+            <ErrorBoundary moduleName="Comptabilité"><AccountingModule /></ErrorBoundary>
+          </ProtectedRoute>
         } />
       </Routes>
     </Layout>
