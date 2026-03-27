@@ -1,9 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { toAppointment, toAppointmentInsert } from '../mappers';
 import type { Appointment } from '../../../types';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { useToast } from '../../../context/ToastContext';
 
 export const useAppointments = () => {
   const { activeSalon } = useAuth();
@@ -11,6 +13,16 @@ export const useAppointments = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+
+  const { addToast } = useToast();
+
+  const handleAppointmentEvent = useCallback((payload: { eventType: string }) => {
+    if (payload.eventType === 'INSERT') {
+      addToast({ type: 'info', message: 'Nouveau rendez-vous ajouté' });
+    }
+  }, [addToast]);
+
+  useRealtimeSync('appointments', { onEvent: handleAppointmentEvent });
 
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ['appointments', salonId],
