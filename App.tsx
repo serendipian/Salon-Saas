@@ -1,5 +1,6 @@
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { MediaQueryProvider } from './context/MediaQueryContext';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { ToastContainer } from './components/Toast';
@@ -92,29 +93,31 @@ const AppContent = () => {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <HashRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+    <MediaQueryProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <HashRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
 
-            {/* Auth-required, no-salon routes */}
-            <Route path="/create-salon" element={<CreateSalonPage />} />
-            <Route path="/select-salon" element={<SalonPickerPage />} />
+              {/* Auth-required, no-salon routes */}
+              <Route path="/create-salon" element={<CreateSalonPage />} />
+              <Route path="/select-salon" element={<SalonPickerPage />} />
 
-            {/* Protected app routes */}
-            <Route path="/*" element={
-              <ProtectedRoute>
-                <AppContent />
-              </ProtectedRoute>
-            } />
-          </Routes>
-        </HashRouter>
-        <ToastContainer />
-      </ToastProvider>
-    </AuthProvider>
+              {/* Protected app routes */}
+              <Route path="/*" element={
+                <ProtectedRoute>
+                  <AppContent />
+                </ProtectedRoute>
+              } />
+            </Routes>
+          </HashRouter>
+          <ToastContainer />
+        </ToastProvider>
+      </AuthProvider>
+    </MediaQueryProvider>
   );
 }
