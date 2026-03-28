@@ -6,6 +6,7 @@ interface TimePickerProps {
   onHourChange: (hour: number) => void;
   onMinuteChange: (minute: number) => void;
   unavailableHours?: Set<number>;
+  dateSelected?: boolean;
 }
 
 const MORNING_HOURS = [
@@ -34,24 +35,26 @@ export default function TimePicker({
   onHourChange,
   onMinuteChange,
   unavailableHours,
+  dateSelected = true,
 }: TimePickerProps) {
   const [isAM, setIsAM] = React.useState(hour === null || hour < 12);
 
   const renderHourButton = (h: { value: number; label: string; period: string }) => {
     const isUnavailable = unavailableHours?.has(h.value);
+    const isDisabled = !dateSelected || isUnavailable;
     const isSelected = h.value === hour;
     return (
       <button
         key={h.value}
         type="button"
-        disabled={isUnavailable}
+        disabled={isDisabled}
         onClick={() => onHourChange(h.value)}
         className={`
           rounded-md py-2 px-1 text-center transition-colors
           ${isSelected
             ? 'bg-pink-400 text-white'
-            : isUnavailable
-              ? 'bg-white border border-slate-200 text-slate-300 opacity-40 line-through cursor-not-allowed'
+            : isDisabled
+              ? 'bg-slate-100 border border-slate-200 text-slate-300 cursor-not-allowed'
               : 'bg-white border border-slate-200 text-slate-800 hover:bg-slate-100 cursor-pointer'
           }
         `}
@@ -62,51 +65,60 @@ export default function TimePicker({
     );
   };
 
+  const showMinutes = dateSelected && hour !== null;
+
   return (
     <div className="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
+      {!dateSelected && (
+        <div className="text-[10px] text-slate-400 text-center mb-2">Sélectionnez une date pour choisir l'heure</div>
+      )}
       <div className="grid grid-cols-6 gap-1 mb-1">
         {MORNING_HOURS.map(renderHourButton)}
       </div>
-      <div className="grid grid-cols-6 gap-1 mb-2">
+      <div className="grid grid-cols-6 gap-1">
         {AFTERNOON_HOURS.map(renderHourButton)}
       </div>
-      <div className="border-t border-slate-200 mb-2" />
-      <div className="grid grid-cols-6 gap-1">
-        {MINUTES.map((m) => (
-          <button
-            key={m}
-            type="button"
-            onClick={() => onMinuteChange(m)}
-            className={`
-              rounded-md py-2 px-1 text-center text-xs transition-colors
-              ${m === minute
-                ? 'bg-pink-400 text-white font-semibold'
-                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 cursor-pointer'
-              }
-            `}
-          >
-            :{String(m).padStart(2, '0')}
-          </button>
-        ))}
-        <button
-          type="button"
-          onClick={() => setIsAM(true)}
-          className={`rounded-md py-2 px-1 text-center text-sm transition-colors ${
-            isAM ? 'bg-pink-400' : 'bg-white border border-slate-200 hover:bg-slate-100 cursor-pointer'
-          }`}
-        >
-          ☀️
-        </button>
-        <button
-          type="button"
-          onClick={() => setIsAM(false)}
-          className={`rounded-md py-2 px-1 text-center text-sm transition-colors ${
-            !isAM ? 'bg-pink-400' : 'bg-white border border-slate-200 hover:bg-slate-100 cursor-pointer'
-          }`}
-        >
-          🌙
-        </button>
-      </div>
+      {showMinutes && (
+        <>
+          <div className="border-t border-slate-200 my-2" />
+          <div className="grid grid-cols-6 gap-1">
+            {MINUTES.map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => onMinuteChange(m)}
+                className={`
+                  rounded-md py-2 px-1 text-center text-xs transition-colors
+                  ${m === minute
+                    ? 'bg-pink-400 text-white font-semibold'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 cursor-pointer'
+                  }
+                `}
+              >
+                :{String(m).padStart(2, '0')}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setIsAM(true)}
+              className={`rounded-md py-2 px-1 text-center text-sm transition-colors ${
+                isAM ? 'bg-pink-400' : 'bg-white border border-slate-200 hover:bg-slate-100 cursor-pointer'
+              }`}
+            >
+              ☀️
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsAM(false)}
+              className={`rounded-md py-2 px-1 text-center text-sm transition-colors ${
+                !isAM ? 'bg-pink-400' : 'bg-white border border-slate-200 hover:bg-slate-100 cursor-pointer'
+              }`}
+            >
+              🌙
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

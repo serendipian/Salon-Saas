@@ -134,6 +134,44 @@ export const useAppointments = () => {
     onError: toastOnError('Erreur lors de la création du rendez-vous'),
   });
 
+  const deleteAppointmentMutation = useMutation({
+    mutationFn: async (appointmentId: string) => {
+      // Find the appointment to check if it belongs to a group
+      const appt = appointments.find((a) => a.id === appointmentId);
+      const groupId = appt?.groupId;
+
+      // Soft-delete the appointment(s)
+      if (groupId) {
+        // Delete all appointments in the group
+        const { error: apptError } = await supabase
+          .from('appointments')
+          .update({ deleted_at: new Date().toISOString() })
+          .eq('group_id', groupId)
+          .eq('salon_id', salonId);
+        if (apptError) throw apptError;
+
+        // Soft-delete the group too
+        const { error: groupError } = await supabase
+          .from('appointment_groups')
+          .update({ deleted_at: new Date().toISOString() })
+          .eq('id', groupId);
+        if (groupError) throw groupError;
+      } else {
+        const { error } = await supabase
+          .from('appointments')
+          .update({ deleted_at: new Date().toISOString() })
+          .eq('id', appointmentId)
+          .eq('salon_id', salonId);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
+      addToast({ type: 'success', message: 'Rendez-vous supprimé' });
+    },
+    onError: toastOnError('Erreur lors de la suppression du rendez-vous'),
+  });
+
   const filteredAppointments = useMemo(() => {
     return appointments.filter(a => {
       const matchesSearch = a.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -155,5 +193,7 @@ export const useAppointments = () => {
     updateAppointment: (appt: Appointment) => updateAppointmentMutation.mutate(appt),
     addAppointmentGroup: addAppointmentGroupMutation.mutateAsync,
     isAddingGroup: addAppointmentGroupMutation.isPending,
+    deleteAppointment: deleteAppointmentMutation.mutateAsync,
+    isDeleting: deleteAppointmentMutation.isPending,
   };
 };

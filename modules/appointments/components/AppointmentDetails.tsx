@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { ArrowLeft, Calendar, User, Scissors, Printer } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Calendar, User, Scissors, Printer, Trash2 } from 'lucide-react';
 import { Appointment, AppointmentStatus } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { StatusBadge } from './StatusBadge';
@@ -10,9 +10,11 @@ interface AppointmentDetailsProps {
   allAppointments?: Appointment[];
   onBack: () => void;
   onEdit: () => void;
+  onDelete?: (id: string) => void;
 }
 
-export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, allAppointments = [], onBack, onEdit }) => {
+export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, allAppointments = [], onBack, onEdit, onDelete }) => {
+  const [showConfirm, setShowConfirm] = useState(false);
   const date = new Date(appointment.date);
 
   const groupedAppointments = appointment.groupId
@@ -31,7 +33,16 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointm
              <Printer size={16} />
              Imprimer Ticket
            </button>
-           <button 
+           {onDelete && (
+             <button
+               onClick={() => setShowConfirm(true)}
+               className="px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg font-medium text-sm hover:bg-red-50 shadow-sm transition-all flex items-center gap-2"
+             >
+               <Trash2 size={16} />
+               Supprimer
+             </button>
+           )}
+           <button
             onClick={onEdit}
             className="px-4 py-2 bg-slate-900 text-white rounded-lg font-medium text-sm hover:bg-slate-800 shadow-sm transition-all"
           >
@@ -129,6 +140,34 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointm
           </div>
         )}
       </div>
+
+      {/* Delete confirmation */}
+      {showConfirm && onDelete && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowConfirm(false)}>
+          <div className="bg-white rounded-xl p-6 max-w-sm mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Supprimer ce rendez-vous ?</h3>
+            <p className="text-sm text-slate-600 mb-5">
+              {groupedAppointments.length > 1
+                ? `Ce rendez-vous contient ${groupedAppointments.length} services. Tous seront supprimés.`
+                : 'Cette action est irréversible.'}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => { onDelete(appointment.id); setShowConfirm(false); }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

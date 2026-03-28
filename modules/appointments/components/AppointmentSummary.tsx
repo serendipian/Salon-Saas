@@ -13,7 +13,6 @@ interface ServiceBlockSummary {
 
 interface AppointmentSummaryProps {
   serviceBlocks: ServiceBlockSummary[];
-  activeBlockIndex: number;
   services: Service[];
 }
 
@@ -23,8 +22,8 @@ function getVariant(services: Service[], serviceId: string | null, variantId: st
   return svc?.variants.find((v) => v.id === variantId) ?? null;
 }
 
-function getServiceName(services: Service[], serviceId: string | null): string {
-  return services.find((s) => s.id === serviceId)?.name ?? '';
+function getService(services: Service[], serviceId: string | null) {
+  return services.find((s) => s.id === serviceId) ?? null;
 }
 
 function formatTime(hour: number | null, minute: number, durationMinutes: number): string {
@@ -53,22 +52,19 @@ function formatBlockDate(dateStr: string): string {
 
 export default function AppointmentSummary({
   serviceBlocks,
-  activeBlockIndex,
   services,
 }: AppointmentSummaryProps) {
-  const activeBlock = serviceBlocks[activeBlockIndex];
-  const activeVariant = activeBlock
-    ? getVariant(services, activeBlock.serviceId, activeBlock.variantId)
-    : null;
-
   const blockDetails = serviceBlocks.map((block) => {
+    const svc = getService(services, block.serviceId);
     const variant = getVariant(services, block.serviceId, block.variantId);
+    const duration = variant?.durationMinutes ?? svc?.durationMinutes ?? 0;
+    const price = variant?.price ?? svc?.price ?? 0;
     return {
-      name: getServiceName(services, block.serviceId),
+      name: svc?.name ?? '',
       variantName: variant?.name ?? '',
-      duration: variant?.durationMinutes ?? 0,
-      price: variant?.price ?? 0,
-      time: formatTime(block.hour, block.minute, variant?.durationMinutes ?? 0),
+      duration,
+      price,
+      time: formatTime(block.hour, block.minute, duration),
       date: block.date,
       hour: block.hour,
       minute: block.minute,
@@ -78,44 +74,28 @@ export default function AppointmentSummary({
   const totalDuration = blockDetails.reduce((sum, b) => sum + b.duration, 0);
   const totalPrice = blockDetails.reduce((sum, b) => sum + b.price, 0);
 
+  if (serviceBlocks.length <= 1) return null;
+
   return (
-    <div>
-      {activeVariant && (
-        <div className="border-t border-slate-200 pt-3 mb-2">
-          <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">Ce service</div>
-          <div className="flex justify-between items-center text-xs">
-            <span className="text-slate-500">Durée : <strong className="text-slate-800">{formatDuration(activeVariant.durationMinutes)}</strong></span>
-            <span className="text-slate-500">Prix : <strong className="text-pink-600">{formatPrice(activeVariant.price)}</strong></span>
+    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 mt-2">
+      <div className="text-[10px] text-pink-600 uppercase tracking-wider font-semibold mb-1.5">Total rendez-vous</div>
+      {blockDetails.map((b, i) => (
+        <div key={i} className="mb-1">
+          <div className="flex justify-between text-xs">
+            <span className="text-slate-500">{'\u2460\u2461\u2462\u2463\u2464'[i]} {b.name}{b.variantName ? ` · ${b.variantName}` : ''}</span>
+            <span className="text-slate-800">{formatPrice(b.price)}</span>
           </div>
-          {activeBlock?.hour !== null && (
-            <div className="text-slate-400 text-[10px] mt-1">
-              {'\uD83D\uDCC5'} {formatTime(activeBlock.hour, activeBlock.minute, activeVariant.durationMinutes)}
+          {b.date && b.hour !== null && (
+            <div className="text-[10px] text-slate-400 mt-0.5 ml-4">
+              {'\uD83D\uDCC5'} {formatBlockDate(b.date)} · {formatTime(b.hour, b.minute, b.duration)}
             </div>
           )}
         </div>
-      )}
-      {serviceBlocks.length > 1 && (
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 mt-2">
-          <div className="text-[10px] text-pink-600 uppercase tracking-wider font-semibold mb-1.5">Total rendez-vous</div>
-          {blockDetails.map((b, i) => (
-            <div key={i} className="mb-1">
-              <div className="flex justify-between text-xs">
-                <span className="text-slate-500">{'\u2460\u2461\u2462\u2463\u2464'[i]} {b.name}{b.variantName ? ` · ${b.variantName}` : ''}</span>
-                <span className="text-slate-800">{formatPrice(b.price)}</span>
-              </div>
-              {b.date && b.hour !== null && (
-                <div className="text-[10px] text-slate-400 mt-0.5 ml-4">
-                  {'\uD83D\uDCC5'} {formatBlockDate(b.date)} · {formatTime(b.hour, b.minute, b.duration)}
-                </div>
-              )}
-            </div>
-          ))}
-          <div className="border-t border-slate-200 pt-1.5 mt-1.5 flex justify-between text-sm">
-            <span className="text-slate-500">Durée : <strong className="text-slate-800">{formatDuration(totalDuration)}</strong></span>
-            <strong className="text-pink-600">{formatPrice(totalPrice)}</strong>
-          </div>
-        </div>
-      )}
+      ))}
+      <div className="border-t border-slate-200 pt-1.5 mt-1.5 flex justify-between text-sm">
+        <span className="text-slate-500">Durée : <strong className="text-slate-800">{formatDuration(totalDuration)}</strong></span>
+        <strong className="text-pink-600">{formatPrice(totalPrice)}</strong>
+      </div>
     </div>
   );
 }

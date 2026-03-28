@@ -15,6 +15,8 @@ interface AppointmentListProps {
   onStatusFilterChange: (val: string) => void;
   onAdd: () => void;
   onDetails: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 export const AppointmentList: React.FC<AppointmentListProps> = ({
@@ -24,7 +26,9 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
   statusFilter,
   onStatusFilterChange,
   onAdd,
-  onDetails
+  onDetails,
+  onEdit,
+  onDelete,
 }) => {
   const { viewMode, setViewMode } = useViewMode('appointments');
 
@@ -67,9 +71,9 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
         </div>
 
         {viewMode === 'table' ? (
-          <AppointmentTable appointments={appointments} onDetails={onDetails} />
+          <AppointmentTable appointments={appointments} onDetails={onDetails} onEdit={onEdit} onDelete={onDelete} />
         ) : (
-          <AppointmentCardList appointments={appointments} onDetails={onDetails} />
+          <AppointmentCardList appointments={appointments} onDetails={onDetails} onDelete={onDelete} />
         )}
       </div>
     </div>

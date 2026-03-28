@@ -70,6 +70,7 @@ export default function SchedulingPanel({
             onHourChange={onHourChange}
             onMinuteChange={onMinuteChange}
             unavailableHours={unavailableHours}
+            dateSelected={activeDate !== null}
           />
         </div>
 

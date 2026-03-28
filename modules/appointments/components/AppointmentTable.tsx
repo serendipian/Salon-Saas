@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ChevronRight, User } from 'lucide-react';
+import { Pencil, Trash2, User } from 'lucide-react';
 import { Appointment, AppointmentStatus } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
@@ -9,9 +9,11 @@ import { StatusBadge } from './StatusBadge';
 interface AppointmentTableProps {
   appointments: Appointment[];
   onDetails: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
-export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments, onDetails }) => {
+export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments, onDetails, onEdit, onDelete }) => {
   if (appointments.length === 0) {
     return <EmptyState title="Aucun rendez-vous" description="Aucun rendez-vous ne correspond aux filtres." />;
   }
@@ -62,9 +64,26 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                   {formatPrice(appt.price)}
                 </td>
                 <td className="px-6 py-4 align-top text-right">
-                  <button className="p-1 text-slate-300 hover:text-slate-900 transition-colors">
-                    <ChevronRight size={16} />
-                  </button>
+                  <div className="flex items-center justify-end gap-1">
+                    {onEdit && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onEdit(appt.id); }}
+                        className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors rounded-md hover:bg-slate-100"
+                        title="Modifier"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onDelete(appt.id); }}
+                        className="p-1.5 text-slate-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50"
+                        title="Supprimer"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             );

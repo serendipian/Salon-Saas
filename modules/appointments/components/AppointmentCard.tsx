@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Scissors, User } from 'lucide-react';
+import { Scissors, Trash2, User } from 'lucide-react';
 import { Appointment, AppointmentStatus } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
@@ -9,9 +9,10 @@ import { StatusBadge } from './StatusBadge';
 interface AppointmentCardListProps {
   appointments: Appointment[];
   onDetails: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
-export const AppointmentCardList: React.FC<AppointmentCardListProps> = ({ appointments, onDetails }) => {
+export const AppointmentCardList: React.FC<AppointmentCardListProps> = ({ appointments, onDetails, onDelete }) => {
   if (appointments.length === 0) {
     return <EmptyState title="Aucun rendez-vous" description="Aucun rendez-vous ne correspond aux filtres." />;
   }
@@ -49,8 +50,18 @@ export const AppointmentCardList: React.FC<AppointmentCardListProps> = ({ appoin
                 <span>{appt.staffName}</span>
               </div>
             </div>
-            <div className="mt-3 text-sm font-semibold text-slate-900">
-              {formatPrice(appt.price)}
+            <div className="mt-3 flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-900">{formatPrice(appt.price)}</span>
+              {onDelete && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onDelete(appt.id); }}
+                  className="p-1.5 text-slate-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50"
+                  title="Supprimer"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
             </div>
           </button>
         );

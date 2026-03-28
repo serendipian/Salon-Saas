@@ -37,9 +37,9 @@ interface AppointmentBuilderProps {
       durationMinutes: number;
       price: number;
     }>;
-  }) => void;
+  }) => Promise<void> | void;
   onCancel: () => void;
-  isSaving?: boolean;
+  onDelete?: () => void;
   // For edit mode
   initialData?: {
     clientId: string;
@@ -71,9 +71,10 @@ export default function AppointmentBuilder({
   appointments,
   onSave,
   onCancel,
-  isSaving,
+  onDelete,
   initialData,
 }: AppointmentBuilderProps) {
+  const [isSaving, setIsSaving] = useState(false);
   // Client state
   const [clientId, setClientId] = useState<string | null>(initialData?.clientId ?? null);
   const [newClient, setNewClient] = useState<{
@@ -174,7 +175,7 @@ export default function AppointmentBuilder({
   };
 
   // Submit
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const effectiveClientId = newClient ? 'pending-new-client' : (clientId ?? '');
 
     const formData = {
@@ -199,7 +200,6 @@ export default function AppointmentBuilder({
     if (newClient) {
       const clientResult = newClientSchema.safeParse(newClient);
       if (!clientResult.success) {
-        // TODO: show client-specific errors
         return;
       }
     }
@@ -230,7 +230,14 @@ export default function AppointmentBuilder({
       }),
     };
 
-    onSave(payload);
+    setIsSaving(true);
+    try {
+      await onSave(payload);
+    } catch {
+      // Error handled by caller's onError
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -243,6 +250,15 @@ export default function AppointmentBuilder({
             {initialData ? 'Modifier le rendez-vous' : 'Nouveau Rendez-vous'}
           </h3>
           <div className="flex gap-2">
+            {onDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                className="bg-white border border-red-300 text-red-600 px-3.5 py-1.5 rounded-md text-xs hover:bg-red-50"
+              >
+                Supprimer
+              </button>
+            )}
             <button
               type="button"
               onClick={onCancel}
@@ -321,7 +337,6 @@ export default function AppointmentBuilder({
           <div className="mt-4">
             <AppointmentSummary
               serviceBlocks={serviceBlocks}
-              activeBlockIndex={activeBlockIndex}
               services={services}
             />
           </div>

@@ -23,7 +23,7 @@ export const AppointmentsModule: React.FC = () => {
     statusFilter,
     setStatusFilter,
     addAppointmentGroup,
-    isAddingGroup,
+    deleteAppointment,
   } = useAppointments();
 
   const { allClients: clients } = useClients();
@@ -41,6 +41,20 @@ export const AppointmentsModule: React.FC = () => {
   const handleDetails = (id: string) => {
     setSelectedApptId(id);
     setView('DETAILS');
+  };
+
+  const handleEdit = (id: string) => {
+    setSelectedApptId(id);
+    setView('EDIT');
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteAppointment(id);
+      if (view !== 'LIST') setView('LIST');
+    } catch {
+      // Error toast handled by mutation's onError
+    }
   };
 
   const selectedAppt = allAppointments.find(a => a.id === selectedApptId) ?? appointments.find(a => a.id === selectedApptId);
@@ -96,6 +110,8 @@ export const AppointmentsModule: React.FC = () => {
           onStatusFilterChange={setStatusFilter}
           onAdd={handleAdd}
           onDetails={handleDetails}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
         />
       )}
 
@@ -105,6 +121,7 @@ export const AppointmentsModule: React.FC = () => {
           allAppointments={allAppointments}
           onBack={() => setView('LIST')}
           onEdit={() => setView('EDIT')}
+          onDelete={handleDelete}
         />
       )}
 
@@ -131,19 +148,15 @@ export const AppointmentsModule: React.FC = () => {
 
               if (clientError) {
                 addToast({ type: 'error', message: 'Erreur lors de la création du client' });
-                return;
+                throw clientError;
               }
               payload.clientId = newClientRow.id;
             }
-            try {
-              await addAppointmentGroup(payload);
-              setView('LIST');
-            } catch {
-              // Error toast handled by mutation's onError
-            }
+            await addAppointmentGroup(payload);
+            setView('LIST');
           }}
           onCancel={() => view === 'EDIT' ? setView('DETAILS') : setView('LIST')}
-          isSaving={isAddingGroup}
+          onDelete={view === 'EDIT' && selectedApptId ? () => handleDelete(selectedApptId) : undefined}
         />
       )}
     </div>
