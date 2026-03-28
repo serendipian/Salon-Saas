@@ -164,7 +164,7 @@ export default function ServiceBlock({
               }
             `}
           >
-            <CategoryIcon categoryName={cat.name} size={12} className="shrink-0" />
+            <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={12} className="shrink-0" />
             {cat.name}
           </button>
         ))}

@@ -54,7 +54,7 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
                 <td className="px-6 py-4 align-top">
                   {category ? (
                     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium border ${category.color}`}>
-                      <CategoryIcon categoryName={category.name} size={12} />
+                      <CategoryIcon categoryName={category.name} iconName={category.icon} size={12} />
                       {category.name}
                     </span>
                   ) : (

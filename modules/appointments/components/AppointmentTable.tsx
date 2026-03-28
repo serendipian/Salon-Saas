@@ -154,7 +154,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                                 const cat = svc ? categoryMap.get(svc.categoryId) : undefined;
                                 return (
                                   <span className="flex items-center gap-1.5 text-sm text-slate-800">
-                                    {cat && <CategoryIcon categoryName={cat.name} size={14} className="text-slate-400 shrink-0" />}
+                                    {cat && <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={14} className="text-slate-400 shrink-0" />}
                                     {appt.serviceName || '—'}
                                   </span>
                                 );

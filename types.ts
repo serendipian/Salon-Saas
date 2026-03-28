@@ -39,6 +39,7 @@ export interface ServiceCategory {
   id: string;
   name: string;
   color: string;
+  icon?: string;
   sortOrder?: number;
 }
 

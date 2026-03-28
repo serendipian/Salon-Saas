@@ -34,6 +34,7 @@ interface ServiceCategoryRow {
   salon_id: string;
   name: string;
   color: string;
+  icon: string | null;
   sort_order: number | null;
   created_at: string;
   updated_at: string;
@@ -90,6 +91,7 @@ export function toServiceCategory(row: ServiceCategoryRow): ServiceCategory {
     id: row.id,
     name: row.name,
     color: row.color,
+    icon: row.icon ?? undefined,
     sortOrder: row.sort_order ?? undefined,
   };
 }
@@ -100,6 +102,7 @@ export function toServiceCategoryInsert(cat: ServiceCategory, salonId: string) {
     salon_id: salonId,
     name: cat.name,
     color: cat.color,
+    icon: cat.icon ?? null,
     sort_order: cat.sortOrder ?? null,
   };
 }

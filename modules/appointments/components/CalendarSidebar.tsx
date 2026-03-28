@@ -4,6 +4,7 @@ import { ServiceCategory, StaffMember } from '../../../types';
 import InlineCalendar from './InlineCalendar';
 import { getCategoryCalendarColors } from './calendarColors';
 import { StaffAvatar } from '../../../components/StaffAvatar';
+import { CategoryIcon } from '../../../lib/categoryIcons';
 
 interface CalendarSidebarProps {
   currentDate: Date;
@@ -78,7 +79,8 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                         </svg>
                       )}
                     </span>
-                    <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                    <span className="text-sm text-slate-700 group-hover:text-slate-900 flex items-center gap-1.5">
+                      <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={14} className="text-slate-400" />
                       {cat.name}
                     </span>
                   </label>
