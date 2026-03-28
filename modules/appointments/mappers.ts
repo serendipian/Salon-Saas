@@ -10,6 +10,7 @@ interface AppointmentRow {
   service_id: string | null;
   service_variant_id: string | null;
   staff_id: string | null;
+  group_id: string | null;
   date: string;
   duration_minutes: number;
   status: string;
@@ -44,6 +45,7 @@ export function toAppointment(row: AppointmentRow): Appointment {
     status: row.status as AppointmentStatus,
     price: row.price,
     notes: row.notes ?? undefined,
+    groupId: row.group_id ?? null,
   };
 }
 

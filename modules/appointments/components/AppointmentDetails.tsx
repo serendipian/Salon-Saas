@@ -7,12 +7,17 @@ import { StatusBadge } from './StatusBadge';
 
 interface AppointmentDetailsProps {
   appointment: Appointment;
+  allAppointments?: Appointment[];
   onBack: () => void;
   onEdit: () => void;
 }
 
-export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, onBack, onEdit }) => {
+export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, allAppointments = [], onBack, onEdit }) => {
   const date = new Date(appointment.date);
+
+  const groupedAppointments = appointment.groupId
+    ? allAppointments.filter((a) => a.groupId === appointment.groupId)
+    : [appointment];
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4">
@@ -94,6 +99,35 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointm
              </p>
           </div>
         </div>
+
+        {/* Grouped services (if multi-service booking) */}
+        {groupedAppointments.length > 1 && (
+          <div className="px-8 pb-6">
+            <h4 className="text-sm font-semibold text-slate-700 mb-3">
+              Services dans ce rendez-vous ({groupedAppointments.length})
+            </h4>
+            <div className="space-y-2">
+              {groupedAppointments.map((appt, i) => (
+                <div
+                  key={appt.id}
+                  className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 flex justify-between items-center"
+                >
+                  <div>
+                    <span className="text-slate-800 text-sm font-medium">
+                      {'\u2460\u2461\u2462\u2463\u2464'[i]} {appt.serviceName}
+                    </span>
+                    <span className="text-slate-500 text-xs ml-2">
+                      {appt.staffName} · {appt.durationMinutes} min
+                    </span>
+                  </div>
+                  <span className="text-pink-600 text-sm font-semibold">
+                    {formatPrice(appt.price)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

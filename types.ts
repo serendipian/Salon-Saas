@@ -216,6 +216,7 @@ export interface Appointment {
   status: AppointmentStatus;
   price: number;
   notes?: string;
+  groupId?: string | null;
 }
 
 export interface AppointmentGroup {

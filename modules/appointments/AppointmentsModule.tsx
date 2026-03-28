@@ -62,6 +62,7 @@ export const AppointmentsModule: React.FC = () => {
       {view === 'DETAILS' && selectedAppt && (
         <AppointmentDetails
           appointment={selectedAppt}
+          allAppointments={allAppointments}
           onBack={() => setView('LIST')}
           onEdit={() => setView('EDIT')}
         />
