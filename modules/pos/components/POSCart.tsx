@@ -12,7 +12,7 @@ interface POSCartProps {
   onUpdateQuantity: (id: string, delta: number) => void;
   onRemoveItem: (id: string) => void;
   onEditItem: (item: CartItem) => void;
-  totals: { subtotal: number; tax: number; total: number };
+  totals: { subtotal: number; tax: number; total: number; vatRate: number };
   onCheckout: () => void;
 }
 
@@ -181,7 +181,7 @@ export const POSCart: React.FC<POSCartProps> = ({
                <span>{formatPrice(totals.subtotal)}</span>
              </div>
              <div className="flex justify-between text-slate-500 text-sm">
-               <span>TVA (20%)</span>
+               <span>TVA ({totals.vatRate}%)</span>
                <span>{formatPrice(totals.tax)}</span>
              </div>
              <div className="flex justify-between text-slate-900 font-bold text-xl pt-2 border-t border-slate-200">

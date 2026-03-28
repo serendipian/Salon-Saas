@@ -147,7 +147,7 @@ export const ReceiptModal: React.FC<{
   
   // Use dynamic VAT from settings
   const vatRate = salonSettings.vatRate || 20;
-  const vatAmount = transaction.total * (vatRate / 100);
+  const vatAmount = transaction.total * (vatRate / 100) / (1 + vatRate / 100);
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">

@@ -98,8 +98,8 @@ export const usePOS = () => {
   const totals = useMemo(() => {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const taxRate = (salonSettings.vatRate || 20) / 100;
-    const tax = subtotal * taxRate;
-    return { subtotal, tax, total: subtotal };
+    const tax = subtotal * taxRate / (1 + taxRate);
+    return { subtotal, tax, total: subtotal, vatRate: salonSettings.vatRate || 20 };
   }, [cart, salonSettings.vatRate]);
 
   return {
