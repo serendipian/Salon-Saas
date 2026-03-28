@@ -46,15 +46,15 @@ export default function InlineCalendar({ value, onChange, disabledDates }: Inlin
   };
 
   return (
-    <div className="bg-slate-950 border border-slate-700 rounded-lg p-3">
+    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
       <div className="flex justify-between items-center mb-2">
-        <button type="button" onClick={prevMonth} className="text-slate-400 hover:text-white p-1">◀</button>
-        <span className="text-slate-200 text-sm font-semibold">{MONTHS_FR[viewMonth]} {viewYear}</span>
-        <button type="button" onClick={nextMonth} className="text-slate-400 hover:text-white p-1">▶</button>
+        <button type="button" onClick={prevMonth} className="text-slate-500 hover:text-slate-800 p-1">◀</button>
+        <span className="text-slate-800 text-sm font-semibold">{MONTHS_FR[viewMonth]} {viewYear}</span>
+        <button type="button" onClick={nextMonth} className="text-slate-500 hover:text-slate-800 p-1">▶</button>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center mb-1">
         {DAYS_FR.map((d) => (
-          <span key={d} className="text-slate-500 text-[10px] font-semibold py-1">{d}</span>
+          <span key={d} className="text-slate-400 text-[10px] font-semibold py-1">{d}</span>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1 text-center">
@@ -73,10 +73,10 @@ export default function InlineCalendar({ value, onChange, disabledDates }: Inlin
               onClick={() => onChange(dateStr)}
               className={`
                 text-xs p-1.5 rounded-md transition-colors
-                ${isSelected ? 'bg-pink-500 text-white font-semibold'
-                  : isToday ? 'text-pink-400 ring-1 ring-pink-500/50'
-                  : isPast ? 'text-slate-600'
-                  : 'text-slate-200 hover:bg-slate-800'}
+                ${isSelected ? 'bg-pink-400 text-white font-semibold'
+                  : isToday ? 'text-pink-400 ring-1 ring-pink-400/50'
+                  : isPast ? 'text-slate-300'
+                  : 'text-slate-800 hover:bg-slate-100'}
                 ${isDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
               `}
             >

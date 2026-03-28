@@ -49,28 +49,28 @@ export default function TimePicker({
         className={`
           rounded-md py-2 px-1 text-center transition-colors
           ${isSelected
-            ? 'bg-pink-500 text-white'
+            ? 'bg-pink-400 text-white'
             : isUnavailable
-              ? 'bg-slate-800 border border-slate-700 text-slate-600 opacity-40 line-through cursor-not-allowed'
-              : 'bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 cursor-pointer'
+              ? 'bg-white border border-slate-200 text-slate-300 opacity-40 line-through cursor-not-allowed'
+              : 'bg-white border border-slate-200 text-slate-800 hover:bg-slate-100 cursor-pointer'
           }
         `}
       >
         <span className={`text-xs font-medium ${isSelected ? 'font-semibold' : ''}`}>{h.label}</span>
-        <span className={`text-[9px] ml-0.5 ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>{h.period}</span>
+        <span className={`text-[9px] ml-0.5 ${isSelected ? 'text-white/70' : 'text-slate-500'}`}>{h.period}</span>
       </button>
     );
   };
 
   return (
-    <div className="bg-slate-950 border border-slate-700 rounded-lg p-2.5">
+    <div className="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
       <div className="grid grid-cols-6 gap-1 mb-1">
         {MORNING_HOURS.map(renderHourButton)}
       </div>
       <div className="grid grid-cols-6 gap-1 mb-2">
         {AFTERNOON_HOURS.map(renderHourButton)}
       </div>
-      <div className="border-t border-slate-700 mb-2" />
+      <div className="border-t border-slate-200 mb-2" />
       <div className="grid grid-cols-6 gap-1">
         {MINUTES.map((m) => (
           <button
@@ -80,8 +80,8 @@ export default function TimePicker({
             className={`
               rounded-md py-2 px-1 text-center text-xs transition-colors
               ${m === minute
-                ? 'bg-pink-500 text-white font-semibold'
-                : 'bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 cursor-pointer'
+                ? 'bg-pink-400 text-white font-semibold'
+                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 cursor-pointer'
               }
             `}
           >
@@ -92,7 +92,7 @@ export default function TimePicker({
           type="button"
           onClick={() => setIsAM(true)}
           className={`rounded-md py-2 px-1 text-center text-sm transition-colors ${
-            isAM ? 'bg-pink-500' : 'bg-slate-800 border border-slate-700 hover:bg-slate-700 cursor-pointer'
+            isAM ? 'bg-pink-400' : 'bg-white border border-slate-200 hover:bg-slate-100 cursor-pointer'
           }`}
         >
           ☀️
@@ -101,7 +101,7 @@ export default function TimePicker({
           type="button"
           onClick={() => setIsAM(false)}
           className={`rounded-md py-2 px-1 text-center text-sm transition-colors ${
-            !isAM ? 'bg-pink-500' : 'bg-slate-800 border border-slate-700 hover:bg-slate-700 cursor-pointer'
+            !isAM ? 'bg-pink-400' : 'bg-white border border-slate-200 hover:bg-slate-100 cursor-pointer'
           }`}
         >
           🌙

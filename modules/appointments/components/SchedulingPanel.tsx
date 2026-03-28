@@ -56,9 +56,9 @@ export default function SchedulingPanel({
   };
 
   return (
-    <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
       {/* Service tabs */}
-      <div className="flex border-b-2 border-slate-700 bg-slate-950 overflow-x-auto">
+      <div className="flex border-b-2 border-slate-200 bg-slate-50 overflow-x-auto">
         {serviceBlocks.map((block, i) => {
           const tab = getTabLabel(block, i);
           const isActive = i === activeBlockIndex;
@@ -72,14 +72,14 @@ export default function SchedulingPanel({
               className={`
                 flex-1 min-w-0 px-4 py-2.5 text-center transition-colors
                 ${isActive
-                  ? 'text-pink-500 font-semibold border-b-2 border-pink-500 -mb-[2px]'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'text-pink-600 font-semibold border-b-2 border-pink-400 -mb-[2px]'
+                  : 'text-slate-500 hover:text-slate-700'
                 }
               `}
             >
               <div className="text-xs truncate">{circled} {tab.name}</div>
               {tab.subtitle && (
-                <div className={`text-[9px] mt-0.5 truncate ${isActive ? 'text-slate-400' : 'text-slate-500'}`}>
+                <div className={`text-[9px] mt-0.5 truncate ${isActive ? 'text-slate-500' : 'text-slate-400'}`}>
                   {tab.subtitle}
                 </div>
               )}
@@ -91,13 +91,13 @@ export default function SchedulingPanel({
       <div className="p-4">
         {/* Status */}
         <div className="mb-4">
-          <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold mb-1.5">
+          <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">
             Statut
           </div>
           <select
             value={status}
             onChange={(e) => onStatusChange(e.target.value as AppointmentStatus)}
-            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-slate-200 focus:border-pink-500 focus:outline-none min-h-[44px] appearance-none"
+            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-800 focus:border-pink-400 focus:outline-none min-h-[44px] appearance-none"
           >
             {STATUS_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -109,7 +109,7 @@ export default function SchedulingPanel({
 
         {/* Calendar */}
         <div className="mb-4">
-          <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold mb-1.5">
+          <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">
             Date *
           </div>
           <InlineCalendar
@@ -120,7 +120,7 @@ export default function SchedulingPanel({
 
         {/* Time Picker */}
         <div className="mb-4">
-          <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold mb-1.5">
+          <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">
             Heure *
           </div>
           <TimePicker
