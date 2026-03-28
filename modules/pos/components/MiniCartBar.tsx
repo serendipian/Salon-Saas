@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, ChevronRight } from 'lucide-react';
 import { formatPrice } from '../../../lib/format';
 
@@ -10,9 +10,14 @@ interface MiniCartBarProps {
 
 export const MiniCartBar: React.FC<MiniCartBarProps> = ({ itemCount, total, onOpen }) => {
   const [bounce, setBounce] = useState(false);
+  const isFirstRender = useRef(true);
 
-  // Trigger bounce animation when itemCount changes (and is > 0)
+  // Trigger bounce animation when itemCount changes (skip initial render)
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     if (itemCount > 0) {
       setBounce(true);
       const timer = setTimeout(() => setBounce(false), 300);

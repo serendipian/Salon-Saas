@@ -23,7 +23,7 @@
 /* z-index scale for consistent layering */
 :root {
   --z-content: 0;
-  --z-peek-bar: 10;
+  --z-peek-bar: 21;
   --z-topbar: 20;
   --z-sidebar: 30;
   --z-drawer-backdrop: 40;
