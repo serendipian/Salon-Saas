@@ -5,7 +5,7 @@ import { useServices } from './hooks/useServices';
 import { ServiceList } from './components/ServiceList';
 import { ServiceForm } from './components/ServiceForm';
 import { X, Plus, Trash2, ChevronDown } from 'lucide-react';
-import { CategoryIcon, ICON_PICKER_LIST, ICON_REGISTRY } from '../../lib/categoryIcons';
+import { CategoryIcon, RegistryIcon, ICON_PICKER_LIST, hasIcon } from '../../lib/categoryIcons';
 
 // --- Icon Picker Dropdown ---
 const IconPicker: React.FC<{
@@ -13,7 +13,7 @@ const IconPicker: React.FC<{
   onSelect: (iconName: string) => void;
 }> = ({ selectedIcon, onSelect }) => {
   const [open, setOpen] = useState(false);
-  const SelectedIconComponent = selectedIcon && ICON_REGISTRY[selectedIcon] ? ICON_REGISTRY[selectedIcon] : null;
+  const hasSelected = selectedIcon && hasIcon(selectedIcon);
 
   return (
     <div className="relative">
@@ -23,8 +23,8 @@ const IconPicker: React.FC<{
         className="flex items-center gap-1 p-2 border border-slate-300 rounded-lg hover:border-slate-400 bg-white transition-colors"
         title="Choisir une icône"
       >
-        {SelectedIconComponent ? (
-          <SelectedIconComponent size={16} className="text-slate-700" />
+        {hasSelected ? (
+          <RegistryIcon name={selectedIcon} size={16} className="text-slate-700" />
         ) : (
           <span className="w-4 h-4 rounded bg-slate-200" />
         )}
@@ -37,7 +37,6 @@ const IconPicker: React.FC<{
           <div className="absolute top-full left-0 mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-xl p-2 w-[260px]">
             <div className="grid grid-cols-5 gap-1">
               {ICON_PICKER_LIST.map(({ name, label }) => {
-                const Icon = ICON_REGISTRY[name];
                 const isActive = selectedIcon === name;
                 return (
                   <button
@@ -51,7 +50,7 @@ const IconPicker: React.FC<{
                     }`}
                     title={label}
                   >
-                    <Icon size={18} />
+                    <RegistryIcon name={name} size={18} />
                     <span className="text-[8px] leading-tight truncate w-full text-center">{label}</span>
                   </button>
                 );
