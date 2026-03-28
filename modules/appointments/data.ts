@@ -12,6 +12,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     staffId: 'st1',
     staffName: 'Marie Dupont',
     status: AppointmentStatus.COMPLETED,
+    variantName: '',
     price: 65,
     notes: 'Cliente en avance.'
   },
@@ -26,6 +27,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     staffId: 'st2',
     staffName: 'Julie Dubois',
     status: AppointmentStatus.SCHEDULED,
+    variantName: '',
     price: 90
   },
   {
@@ -39,6 +41,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     staffId: 'st1',
     staffName: 'Marie Dupont',
     status: AppointmentStatus.CANCELLED,
+    variantName: '',
     price: 45,
     notes: 'Annulé par téléphone.'
   }

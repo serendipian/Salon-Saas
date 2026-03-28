@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronRight, Layers } from 'lucide-react';
 import { Service, ServiceCategory } from '../../../types';
 import { formatPrice } from '../../../lib/format';
+import { CategoryIcon } from '../../../lib/categoryIcons';
 import { EmptyState } from '../../../components/EmptyState';
 
 interface ServiceTableProps {
@@ -52,7 +53,8 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
                 </td>
                 <td className="px-6 py-4 align-top">
                   {category ? (
-                    <span className={`inline-flex px-2.5 py-0.5 rounded text-xs font-medium border ${category.color}`}>
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium border ${category.color}`}>
+                      <CategoryIcon categoryName={category.name} size={12} />
                       {category.name}
                     </span>
                   ) : (

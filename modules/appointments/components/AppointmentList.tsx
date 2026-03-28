@@ -117,7 +117,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
         </div>
 
         {viewMode === 'table' ? (
-          <AppointmentTable appointments={appointments} onDetails={onDetails} onEdit={onEdit} onDelete={onDelete} />
+          <AppointmentTable appointments={appointments} team={allStaff} services={services} categories={serviceCategories} onDetails={onDetails} onEdit={onEdit} onDelete={onDelete} />
         ) : (
           <AppointmentCardList appointments={appointments} onDetails={onDetails} onDelete={onDelete} />
         )}

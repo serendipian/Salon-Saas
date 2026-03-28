@@ -2,6 +2,7 @@ import React from 'react';
 import { Layers } from 'lucide-react';
 import { Service, ServiceCategory } from '../../../types';
 import { formatPrice } from '../../../lib/format';
+import { CategoryIcon } from '../../../lib/categoryIcons';
 import { EmptyState } from '../../../components/EmptyState';
 
 interface ServiceCardProps {
@@ -47,7 +48,8 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
                 {service.name}
               </div>
               {category ? (
-                <span className={`inline-flex px-2.5 py-0.5 rounded text-xs font-medium border shrink-0 ${category.color}`}>
+                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium border shrink-0 ${category.color}`}>
+                  <CategoryIcon categoryName={category.name} size={12} />
                   {category.name}
                 </span>
               ) : (

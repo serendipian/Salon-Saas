@@ -24,6 +24,7 @@ interface AppointmentRow {
   // JOINed relations (nullable if FK is null)
   clients: { first_name: string; last_name: string } | null;
   services: { name: string } | null;
+  service_variants: { name: string } | null;
   staff_members: { first_name: string; last_name: string } | null;
 }
 
@@ -43,6 +44,7 @@ export function toAppointment(row: AppointmentRow): Appointment {
       ? `${row.staff_members.first_name} ${row.staff_members.last_name}`
       : '',
     status: row.status as AppointmentStatus,
+    variantName: row.service_variants?.name ?? '',
     price: row.price,
     notes: row.notes ?? undefined,
     groupId: row.group_id ?? null,

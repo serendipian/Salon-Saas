@@ -5,6 +5,7 @@ import { useServices } from './hooks/useServices';
 import { ServiceList } from './components/ServiceList';
 import { ServiceForm } from './components/ServiceForm';
 import { X, Plus, Trash2 } from 'lucide-react';
+import { CategoryIcon } from '../../lib/categoryIcons';
 
 // --- Category Manager Modal (Kept inline for now as it's specific) ---
 const CategoryManagerModal: React.FC<{
@@ -67,8 +68,8 @@ const CategoryManagerModal: React.FC<{
           <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
             {localCategories.map(cat => (
               <div key={cat.id} className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-slate-200 group hover:border-slate-300 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className={`w-2.5 h-2.5 rounded-full ${cat.color.split(' ')[0].replace('bg-', 'bg-')}`}></div>
+                <div className="flex items-center gap-2.5">
+                  <CategoryIcon categoryName={cat.name} size={16} className="text-slate-500 shrink-0" />
                   <span className="font-medium text-slate-700 text-sm">{cat.name}</span>
                 </div>
                 <button 

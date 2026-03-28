@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import type { StaffMember } from '../../../types';
+import { StaffAvatar } from '../../../components/StaffAvatar';
 
 interface StaffPillsProps {
   team: StaffMember[];
@@ -37,12 +38,19 @@ export default function StaffPills({ team, categoryId, selectedStaffId, onSelect
               key={member.id}
               type="button"
               onClick={() => onSelect(isSelected ? null : member.id)}
-              className={`px-3 py-1.5 rounded-full text-[11px] transition-colors flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-full text-[11px] transition-colors flex items-center gap-1.5 ${
                 isSelected
                   ? 'bg-pink-400 text-white font-medium'
                   : 'bg-slate-50 border border-slate-200 text-slate-500 hover:border-slate-400'
               }`}
             >
+              <StaffAvatar
+                firstName={member.firstName}
+                lastName={member.lastName}
+                photoUrl={member.photoUrl}
+                color={isSelected ? 'rgba(255,255,255,0.3)' : member.color}
+                size={18}
+              />
               {label}
               {isSelected && <span className="opacity-70 ml-0.5">✕</span>}
             </button>

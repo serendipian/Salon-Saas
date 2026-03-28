@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { ServiceCategory, StaffMember } from '../../../types';
 import InlineCalendar from './InlineCalendar';
-import { getCategoryCalendarColors, getStaffDotColor } from './calendarColors';
+import { getCategoryCalendarColors } from './calendarColors';
+import { StaffAvatar } from '../../../components/StaffAvatar';
 
 interface CalendarSidebarProps {
   currentDate: Date;
@@ -89,7 +90,6 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
 
             <div className="space-y-2">
               {allStaff.map(staff => {
-                const dotColor = getStaffDotColor(staff.color);
                 const checked = staffFilters.has(staff.id);
                 return (
                   <label
@@ -102,20 +102,19 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                       onChange={() => onToggleStaff(staff.id)}
                       className="sr-only"
                     />
-                    <span
-                      className={`w-4 h-4 rounded flex items-center justify-center border-2 transition-colors ${
-                        checked
-                          ? `${dotColor} border-transparent`
-                          : 'border-slate-300 bg-white'
-                      }`}
-                    >
+                    <span className={`relative shrink-0 ${!checked ? 'opacity-40 grayscale' : ''} transition-all`}>
+                      <StaffAvatar
+                        firstName={staff.firstName}
+                        lastName={staff.lastName}
+                        photoUrl={staff.photoUrl}
+                        color={staff.color}
+                        size={24}
+                      />
                       {checked && (
-                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
                       )}
                     </span>
-                    <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                    <span className={`text-sm group-hover:text-slate-900 transition-colors ${checked ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>
                       {staff.firstName} {staff.lastName}
                     </span>
                   </label>

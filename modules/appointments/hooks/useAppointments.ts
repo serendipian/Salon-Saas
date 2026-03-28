@@ -31,7 +31,7 @@ export const useAppointments = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('appointments')
-        .select('*, clients(first_name, last_name), services(name), staff_members(first_name, last_name)')
+        .select('*, clients(first_name, last_name), services(name), service_variants(name), staff_members(first_name, last_name)')
         .eq('salon_id', salonId)
         .is('deleted_at', null)
         .order('date', { ascending: false });
@@ -136,34 +136,10 @@ export const useAppointments = () => {
 
   const deleteAppointmentMutation = useMutation({
     mutationFn: async (appointmentId: string) => {
-      // Find the appointment to check if it belongs to a group
-      const appt = appointments.find((a) => a.id === appointmentId);
-      const groupId = appt?.groupId;
-
-      // Soft-delete the appointment(s)
-      if (groupId) {
-        // Delete all appointments in the group
-        const { error: apptError } = await supabase
-          .from('appointments')
-          .update({ deleted_at: new Date().toISOString() })
-          .eq('group_id', groupId)
-          .eq('salon_id', salonId);
-        if (apptError) throw apptError;
-
-        // Soft-delete the group too
-        const { error: groupError } = await supabase
-          .from('appointment_groups')
-          .update({ deleted_at: new Date().toISOString() })
-          .eq('id', groupId);
-        if (groupError) throw groupError;
-      } else {
-        const { error } = await supabase
-          .from('appointments')
-          .update({ deleted_at: new Date().toISOString() })
-          .eq('id', appointmentId)
-          .eq('salon_id', salonId);
-        if (error) throw error;
-      }
+      const { error } = await supabase.rpc('soft_delete_appointment', {
+        p_appointment_id: appointmentId,
+      });
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });

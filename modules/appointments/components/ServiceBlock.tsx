@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import type { Service, ServiceCategory, StaffMember } from '../../../types';
 import type { ServiceBlockState } from '../../../types';
 import { formatPrice } from '../../../lib/format';
+import { CategoryIcon } from '../../../lib/categoryIcons';
 import ServiceGrid from './ServiceGrid';
 import StaffPills from './StaffPills';
 
@@ -156,13 +157,14 @@ export default function ServiceBlock({
             type="button"
             onClick={() => handleCategoryChange(cat.id)}
             className={`
-              px-3 py-1.5 text-[11px] whitespace-nowrap transition-colors
+              px-3 py-1.5 text-[11px] whitespace-nowrap transition-colors flex items-center gap-1
               ${cat.id === activeCategoryId
                 ? 'text-pink-600 border-b-2 border-pink-400 -mb-[2px] font-semibold'
                 : 'text-slate-500 hover:text-slate-700'
               }
             `}
           >
+            <CategoryIcon categoryName={cat.name} size={12} className="shrink-0" />
             {cat.name}
           </button>
         ))}

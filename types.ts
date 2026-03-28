@@ -216,6 +216,7 @@ export interface Appointment {
   staffId: string;
   staffName: string;
   status: AppointmentStatus;
+  variantName: string;
   price: number;
   notes?: string;
   groupId?: string | null;
