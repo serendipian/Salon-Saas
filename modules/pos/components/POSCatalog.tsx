@@ -36,7 +36,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
   const { isMobile } = useMediaQuery();
 
   return (
-    <div className="flex-1 flex flex-col border-r border-slate-200 h-full">
+    <div className={`flex-1 flex flex-col h-full ${isMobile ? '' : 'border-r border-slate-200'}`}>
       {/* Top Bar */}
       <div className="bg-white p-4 shadow-sm z-10">
         <div className="flex items-center gap-4 mb-4">
