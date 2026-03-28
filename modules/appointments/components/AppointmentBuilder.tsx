@@ -128,12 +128,15 @@ export default function AppointmentBuilder({
 
   const removeBlock = useCallback((index: number) => {
     setServiceBlocks((prev) => {
-      if (prev.length <= 1) return prev; // can't remove last block
-      const next = prev.filter((_, i) => i !== index);
-      return next;
+      if (prev.length <= 1) return prev;
+      return prev.filter((_, i) => i !== index);
     });
-    setActiveBlockIndex((prev) => Math.min(prev, serviceBlocks.length - 2));
-  }, [serviceBlocks.length]);
+    setActiveBlockIndex((prev) => {
+      if (index < prev) return prev - 1;
+      if (index === prev) return Math.max(0, prev - 1);
+      return prev;
+    });
+  }, []);
 
   const addBlock = useCallback(() => {
     const newBlock = createEmptyBlock();

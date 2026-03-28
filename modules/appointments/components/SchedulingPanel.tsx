@@ -145,7 +145,6 @@ export default function SchedulingPanel({
           serviceBlocks={serviceBlocks}
           activeBlockIndex={activeBlockIndex}
           services={services}
-          team={team}
         />
       </div>
     </div>

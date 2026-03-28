@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ServiceVariant } from '../../../types';
+import { formatPrice } from '../../../lib/format';
 
 interface VariantListProps {
   variants: ServiceVariant[];
@@ -26,7 +27,7 @@ export default function VariantList({ variants, selectedVariantId, onSelect }: V
             <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${isSelected ? 'bg-pink-500' : 'border border-slate-600'}`} />
             <span className={`text-[11px] flex-1 ${isSelected ? 'text-slate-200' : 'text-slate-300'}`}>{v.name}</span>
             <span className="text-slate-500 text-[10px]">{v.durationMinutes}m</span>
-            <span className={`text-[10px] font-semibold ${isSelected ? 'text-pink-500' : 'text-slate-500'}`}>{v.price}</span>
+            <span className={`text-[10px] font-semibold ${isSelected ? 'text-pink-500' : 'text-slate-500'}`}>{formatPrice(v.price)}</span>
           </button>
         );
       })}

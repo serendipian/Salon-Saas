@@ -1,6 +1,6 @@
 import React from 'react';
 import { formatPrice } from '../../../lib/format';
-import type { Service, ServiceVariant, StaffMember } from '../../../types';
+import type { Service, ServiceVariant } from '../../../types';
 
 interface ServiceBlockSummary {
   serviceId: string | null;
@@ -15,7 +15,6 @@ interface AppointmentSummaryProps {
   serviceBlocks: ServiceBlockSummary[];
   activeBlockIndex: number;
   services: Service[];
-  team: StaffMember[];
 }
 
 function getVariant(services: Service[], serviceId: string | null, variantId: string | null): ServiceVariant | null {
@@ -49,7 +48,6 @@ export default function AppointmentSummary({
   serviceBlocks,
   activeBlockIndex,
   services,
-  team,
 }: AppointmentSummaryProps) {
   const activeBlock = serviceBlocks[activeBlockIndex];
   const activeVariant = activeBlock

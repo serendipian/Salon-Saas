@@ -55,26 +55,26 @@ export function useStaffAvailability(
       })
       .sort((a, b) => a.start - b.start);
 
-    // Check each hour slot
+    // Check each hour slot — only mark unavailable if ALL 15-min slots are blocked
     for (let h = 9; h <= 20; h++) {
+      let allBlocked = true;
       for (const minute of [0, 15, 30, 45]) {
         const slotStart = h * 60 + minute;
         const slotEnd = slotStart + durationMinutes;
 
         // Outside working hours?
-        if (slotStart < workStart || slotEnd > workEnd) {
-          unavailable.add(h);
-          continue;
-        }
+        if (slotStart < workStart || slotEnd > workEnd) continue;
 
         // Overlaps with existing appointment?
         const hasConflict = dayAppointments.some(
           (a) => slotStart < a.end && slotEnd > a.start,
         );
-        if (hasConflict) {
-          unavailable.add(h);
+        if (!hasConflict) {
+          allBlocked = false;
+          break;
         }
       }
+      if (allBlocked) unavailable.add(h);
     }
 
     return unavailable;
