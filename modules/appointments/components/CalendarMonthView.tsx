@@ -1,6 +1,7 @@
 import React from 'react';
 import { Appointment, ServiceCategory } from '../../../types';
 import { CalendarEventBlock } from './CalendarEventBlock';
+import { isSameDay, isToday } from './calendarUtils';
 
 interface CalendarMonthViewProps {
   currentDate: Date;
@@ -13,14 +14,6 @@ interface CalendarMonthViewProps {
 
 const DAYS_HEADER = ['LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM', 'DIM'];
 const MAX_VISIBLE_EVENTS = 3;
-
-function isSameDay(d1: Date, d2: Date): boolean {
-  return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
-}
-
-function isToday(date: Date): boolean {
-  return isSameDay(date, new Date());
-}
 
 interface MonthCell {
   date: Date;

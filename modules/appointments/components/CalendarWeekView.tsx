@@ -1,6 +1,7 @@
 import React from 'react';
 import { Appointment, ServiceCategory } from '../../../types';
 import { CalendarEventBlock } from './CalendarEventBlock';
+import { isSameDay, isToday, formatHourLabel, layoutDayEvents, HOURS, ROW_HEIGHT } from './calendarUtils';
 
 interface CalendarWeekViewProps {
   currentDate: Date;
@@ -10,8 +11,6 @@ interface CalendarWeekViewProps {
   onEventClick: (appointment: Appointment, rect: DOMRect) => void;
 }
 
-const HOURS = Array.from({ length: 13 }, (_, i) => i + 8);
-const ROW_HEIGHT = 64;
 const DAYS_HEADER = ['LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM', 'DIM'];
 
 function getWeekDays(date: Date): Date[] {
@@ -24,70 +23,6 @@ function getWeekDays(date: Date): Date[] {
     const dd = new Date(monday);
     dd.setDate(monday.getDate() + i);
     return dd;
-  });
-}
-
-function isSameDay(d1: Date, d2: Date): boolean {
-  return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
-}
-
-function isToday(date: Date): boolean {
-  return isSameDay(date, new Date());
-}
-
-function formatHourLabel(hour: number): string {
-  if (hour === 0) return '12 AM';
-  if (hour < 12) return `${hour} AM`;
-  if (hour === 12) return '12 PM';
-  return `${hour - 12} PM`;
-}
-
-interface PositionedEvent {
-  appointment: Appointment;
-  top: number;
-  height: number;
-  left: string;
-  width: string;
-}
-
-function layoutDayEvents(dayAppointments: Appointment[]): PositionedEvent[] {
-  if (dayAppointments.length === 0) return [];
-
-  const sorted = [...dayAppointments].sort((a, b) => {
-    const aStart = new Date(a.date).getTime();
-    const bStart = new Date(b.date).getTime();
-    if (aStart !== bStart) return aStart - bStart;
-    return b.durationMinutes - a.durationMinutes;
-  });
-
-  const columns: Appointment[][] = [];
-  for (const appt of sorted) {
-    const apptStart = new Date(appt.date).getTime();
-    let placed = false;
-    for (const col of columns) {
-      const lastInCol = col[col.length - 1];
-      const lastEnd = new Date(lastInCol.date).getTime() + lastInCol.durationMinutes * 60000;
-      if (apptStart >= lastEnd) {
-        col.push(appt);
-        placed = true;
-        break;
-      }
-    }
-    if (!placed) columns.push([appt]);
-  }
-
-  const totalCols = columns.length;
-  return sorted.map(appt => {
-    const colIndex = columns.findIndex(col => col.includes(appt));
-    const startDate = new Date(appt.date);
-    const startMinutes = (startDate.getHours() - 8) * 60 + startDate.getMinutes();
-    return {
-      appointment: appt,
-      top: (startMinutes / 60) * ROW_HEIGHT,
-      height: Math.max((appt.durationMinutes / 60) * ROW_HEIGHT, 20),
-      left: `${(colIndex / totalCols) * 100}%`,
-      width: `${(1 / totalCols) * 100}%`,
-    };
   });
 }
 

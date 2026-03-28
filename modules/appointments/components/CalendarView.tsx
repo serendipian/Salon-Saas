@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Appointment, ServiceCategory, StaffMember, Service } from '../../../types';
 import { useCalendar } from './useCalendar';
 import { CalendarHeader } from './CalendarHeader';
@@ -49,7 +49,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     onEdit(id);
   }, [onEdit]);
 
-  const serviceData = services.map(s => ({ id: s.id, categoryId: s.categoryId }));
+  const serviceData = useMemo(() => services.map(s => ({ id: s.id, categoryId: s.categoryId })), [services]);
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 140px)' }}>

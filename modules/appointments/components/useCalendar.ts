@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Appointment, ServiceCategory, StaffMember } from '../../../types';
 
 export type CalendarViewMode = 'day' | 'week' | 'month';
@@ -33,6 +33,23 @@ export function useCalendar(
   const [staffFilters, setStaffFilters] = useState<Set<string>>(
     () => new Set(allStaff.map(s => s.id))
   );
+
+  // Sync filters when data arrives asynchronously
+  useEffect(() => {
+    setCategoryFilters(prev => {
+      const next = new Set(prev);
+      for (const c of serviceCategories) next.add(c.id);
+      return next.size !== prev.size ? next : prev;
+    });
+  }, [serviceCategories]);
+
+  useEffect(() => {
+    setStaffFilters(prev => {
+      const next = new Set(prev);
+      for (const s of allStaff) next.add(s.id);
+      return next.size !== prev.size ? next : prev;
+    });
+  }, [allStaff]);
 
   const goToday = useCallback(() => setCurrentDate(new Date()), []);
 
