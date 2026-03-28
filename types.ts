@@ -49,6 +49,8 @@ export interface Service {
   description: string;
   variants: ServiceVariant[];
   active: boolean;
+  price?: number;
+  durationMinutes?: number;
 }
 
 // Product Domain

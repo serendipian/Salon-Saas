@@ -29,16 +29,16 @@ export default function ClientField({
   );
 
   const filteredClients = useMemo(() => {
-    if (!searchTerm.trim()) return [];
-    const term = searchTerm.toLowerCase();
-    return clients
-      .filter(
-        (c) =>
-          c.firstName.toLowerCase().includes(term) ||
-          c.lastName.toLowerCase().includes(term) ||
-          c.phone?.toLowerCase().includes(term),
-      )
-      .slice(0, 8);
+    const term = searchTerm.toLowerCase().trim();
+    const list = term
+      ? clients.filter(
+          (c) =>
+            c.firstName.toLowerCase().includes(term) ||
+            c.lastName.toLowerCase().includes(term) ||
+            c.phone?.toLowerCase().includes(term),
+        )
+      : clients;
+    return list.slice(0, 20);
   }, [clients, searchTerm]);
 
   // Show "Nouveau" inline form
@@ -121,15 +121,15 @@ export default function ClientField({
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setIsSearchOpen(e.target.value.length > 0); }}
-            onFocus={() => searchTerm.length > 0 && setIsSearchOpen(true)}
+            onChange={(e) => { setSearchTerm(e.target.value); setIsSearchOpen(true); }}
+            onFocus={() => setIsSearchOpen(true)}
             onBlur={() => setTimeout(() => setIsSearchOpen(false), 200)}
             placeholder="Rechercher un client..."
             className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-800 focus:border-pink-400 focus:outline-none min-h-[44px] pl-9"
           />
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
           {isSearchOpen && filteredClients.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto">
               {filteredClients.map((client) => (
                 <button
                   key={client.id}

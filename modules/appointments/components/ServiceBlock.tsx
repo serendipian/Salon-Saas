@@ -47,11 +47,9 @@ export default function ServiceBlock({
   };
 
   const handleServiceSelect = (serviceId: string) => {
-    const svc = services.find((s) => s.id === serviceId);
-    const firstVariantId = svc?.variants[0]?.id ?? null;
     onChange({
       serviceId,
-      variantId: firstVariantId,
+      variantId: null,
       categoryId: activeCategoryId,
     });
   };
