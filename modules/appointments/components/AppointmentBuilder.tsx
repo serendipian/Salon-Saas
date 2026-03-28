@@ -227,17 +227,17 @@ export default function AppointmentBuilder({
   return (
     <div className="flex gap-4 max-md:flex-col">
       {/* LEFT PANEL */}
-      <div className="flex-[1.3] bg-slate-800 rounded-xl p-5 border border-slate-700">
+      <div className="flex-[1.3] bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
         {/* Header */}
         <div className="flex justify-between items-center mb-5">
-          <h3 className="text-base font-semibold text-slate-200">
+          <h3 className="text-base font-semibold text-slate-800">
             {initialData ? 'Modifier le rendez-vous' : 'Nouveau Rendez-vous'}
           </h3>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={onCancel}
-              className="bg-slate-950 border border-slate-700 text-slate-400 px-3.5 py-1.5 rounded-md text-xs"
+              className="bg-white border border-slate-200 text-slate-500 px-3.5 py-1.5 rounded-md text-xs"
             >
               Annuler
             </button>
@@ -245,7 +245,7 @@ export default function AppointmentBuilder({
               type="button"
               onClick={handleSubmit}
               disabled={isSaving}
-              className="bg-pink-500 text-white px-3.5 py-1.5 rounded-md text-xs font-semibold disabled:opacity-50"
+              className="bg-pink-400 text-white px-3.5 py-1.5 rounded-md text-xs font-semibold disabled:opacity-50"
             >
               {isSaving ? 'Enregistrement...' : 'Enregistrer'}
             </button>
@@ -263,7 +263,7 @@ export default function AppointmentBuilder({
           error={errors.clientId}
         />
 
-        <div className="border-t border-slate-700 mb-4" />
+        <div className="border-t border-slate-200 mb-4" />
 
         {/* Service blocks */}
         <div className="space-y-3 mb-3">
@@ -288,14 +288,14 @@ export default function AppointmentBuilder({
         <button
           type="button"
           onClick={addBlock}
-          className="w-full border border-dashed border-slate-600 rounded-xl py-3 text-slate-400 text-xs hover:border-slate-400 hover:text-slate-300 transition-colors flex items-center justify-center gap-1.5 mb-4"
+          className="w-full border border-dashed border-slate-300 rounded-xl py-3 text-slate-500 text-xs hover:border-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center gap-1.5 mb-4"
         >
-          <span className="text-pink-500 font-bold text-base">+</span> Ajouter un service
+          <span className="text-pink-600 font-bold text-base">+</span> Ajouter un service
         </button>
 
         {/* Notes */}
         <div>
-          <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold mb-1.5">
+          <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">
             Notes
           </div>
           <textarea
@@ -303,7 +303,7 @@ export default function AppointmentBuilder({
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Ajouter des notes..."
             rows={2}
-            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-slate-200 focus:border-pink-500 focus:outline-none resize-none min-h-[44px]"
+            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-800 focus:border-pink-400 focus:outline-none resize-none min-h-[44px]"
           />
         </div>
       </div>

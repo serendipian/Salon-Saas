@@ -16,15 +16,15 @@ export default function StaffPills({ team, categoryId, selectedStaffId, onSelect
 
   return (
     <div>
-      <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-1.5">Praticien</div>
+      <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">Praticien</div>
       <div className="flex gap-1.5 flex-wrap">
         <button
           type="button"
           onClick={() => onSelect(null)}
           className={`px-3 py-1.5 rounded-full text-[11px] transition-colors ${
             selectedStaffId === null
-              ? 'bg-pink-500 text-white font-semibold'
-              : 'bg-slate-950 border border-slate-600 text-slate-300 hover:border-slate-400'
+              ? 'bg-pink-400 text-white font-semibold'
+              : 'bg-slate-50 border border-slate-300 text-slate-700 hover:border-slate-400'
           }`}
         >
           N'importe qui
@@ -39,8 +39,8 @@ export default function StaffPills({ team, categoryId, selectedStaffId, onSelect
               onClick={() => onSelect(isSelected ? null : member.id)}
               className={`px-3 py-1.5 rounded-full text-[11px] transition-colors flex items-center gap-1 ${
                 isSelected
-                  ? 'bg-pink-500 text-white font-medium'
-                  : 'bg-slate-950 border border-slate-700 text-slate-400 hover:border-slate-500'
+                  ? 'bg-pink-400 text-white font-medium'
+                  : 'bg-slate-50 border border-slate-200 text-slate-500 hover:border-slate-400'
               }`}
             >
               {label}

@@ -68,7 +68,7 @@ export default function ServiceBlock({
   if (!isActive) {
     return (
       <div
-        className="border border-slate-600 rounded-xl p-3.5 cursor-pointer hover:border-slate-500 transition-colors"
+        className="border border-slate-300 rounded-xl p-3.5 cursor-pointer hover:border-slate-400 transition-colors"
         onClick={onActivate}
         role="button"
         tabIndex={0}
@@ -76,21 +76,21 @@ export default function ServiceBlock({
       >
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-2">
-            <span className="bg-slate-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold">
+            <span className="bg-slate-300 text-white w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold">
               {index + 1}
             </span>
-            <span className="text-slate-300 text-sm font-semibold">Service</span>
+            <span className="text-slate-700 text-sm font-semibold">Service</span>
           </div>
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onRemove(); }}
-            className="text-slate-500 hover:text-slate-300 text-sm"
+            className="text-slate-400 hover:text-slate-600 text-sm"
           >
             ✕
           </button>
         </div>
         {summaryText && (
-          <div className="bg-slate-950 rounded-md px-3 py-2 text-xs text-slate-300">
+          <div className="bg-slate-50 rounded-md px-3 py-2 text-xs text-slate-700">
             {summaryText}
           </div>
         )}
@@ -100,25 +100,25 @@ export default function ServiceBlock({
 
   // Expanded (active) state
   return (
-    <div className="border-2 border-pink-500 rounded-xl p-3.5 bg-pink-500/[0.02]">
+    <div className="border-2 border-pink-400 rounded-xl p-3.5 bg-pink-50">
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-2">
-          <span className="bg-pink-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold">
+          <span className="bg-pink-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold">
             {index + 1}
           </span>
-          <span className="text-slate-200 text-sm font-semibold">Service</span>
+          <span className="text-slate-800 text-sm font-semibold">Service</span>
         </div>
         <button
           type="button"
           onClick={onRemove}
-          className="text-slate-500 hover:text-slate-300 text-sm"
+          className="text-slate-400 hover:text-slate-600 text-sm"
         >
           ✕
         </button>
       </div>
 
       {/* Category tabs */}
-      <div className="flex gap-0 border-b-2 border-slate-700 mb-0 overflow-x-auto">
+      <div className="flex gap-0 border-b-2 border-slate-200 mb-0 overflow-x-auto">
         {categories.map((cat) => (
           <button
             key={cat.id}
@@ -127,8 +127,8 @@ export default function ServiceBlock({
             className={`
               px-3 py-1.5 text-[11px] whitespace-nowrap transition-colors
               ${cat.id === activeCategoryId
-                ? 'text-pink-500 border-b-2 border-pink-500 -mb-[2px] font-semibold'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'text-pink-600 border-b-2 border-pink-400 -mb-[2px] font-semibold'
+                : 'text-slate-500 hover:text-slate-700'
               }
             `}
           >
