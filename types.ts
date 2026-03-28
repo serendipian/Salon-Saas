@@ -218,6 +218,27 @@ export interface Appointment {
   notes?: string;
 }
 
+export interface AppointmentGroup {
+  id: string;
+  clientId: string;
+  clientName: string;
+  notes: string;
+  reminderMinutes: number | null;
+  status: AppointmentStatus;
+  appointments: Appointment[];
+}
+
+export interface ServiceBlockState {
+  id: string;
+  categoryId: string | null;
+  serviceId: string | null;
+  variantId: string | null;
+  staffId: string | null;
+  date: string | null;
+  hour: number | null;
+  minute: number;
+}
+
 // POS & Cart Domain
 export interface CartItem {
   id: string; // Unique ID for the cart line item
