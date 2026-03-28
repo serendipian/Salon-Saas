@@ -6,6 +6,9 @@ import { POSCart } from './components/POSCart';
 import { PaymentModal } from './components/PaymentModal';
 import { ItemEditorModal, ServiceVariantModal, ReceiptModal } from './components/POSModals';
 import { Service, Product, ServiceVariant, Transaction, CartItem } from '../../types';
+import { useMediaQuery } from '../../context/MediaQueryContext';
+import { MiniCartBar } from './components/MiniCartBar';
+import { CartBottomSheet } from './components/CartBottomSheet';
 
 export const POSModule: React.FC = () => {
   const {
@@ -32,6 +35,8 @@ export const POSModule: React.FC = () => {
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [variantModalData, setVariantModalData] = useState<{service: Service} | null>(null);
   const [receiptTransaction, setReceiptTransaction] = useState<Transaction | null>(null);
+  const { isMobile } = useMediaQuery();
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Handlers
   const handleServiceClick = (service: Service) => {
@@ -75,9 +80,9 @@ export const POSModule: React.FC = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-6rem)] w-full bg-slate-100 overflow-hidden rounded-xl border border-slate-200 shadow-sm">
-      
-      <POSCatalog 
+    <div className={`flex w-full bg-slate-100 overflow-hidden ${isMobile ? 'flex-col h-full' : 'h-[calc(100vh-6rem)] rounded-xl border border-slate-200 shadow-sm'}`}>
+
+      <POSCatalog
         viewMode={viewMode}
         setViewMode={setViewMode}
         searchTerm={searchTerm}
@@ -93,21 +98,48 @@ export const POSModule: React.FC = () => {
         onReceiptClick={setReceiptTransaction}
       />
 
-      <POSCart 
-        cart={cart}
-        clients={clients}
-        selectedClient={selectedClient}
-        onSelectClient={setSelectedClient}
-        onUpdateQuantity={updateQuantity}
-        onRemoveItem={removeFromCart}
-        onEditItem={setEditingItem}
-        totals={totals}
-        onCheckout={() => setShowPaymentModal(true)}
-      />
+      {/* Desktop: sidebar cart */}
+      {!isMobile && (
+        <POSCart
+          cart={cart}
+          clients={clients}
+          selectedClient={selectedClient}
+          onSelectClient={setSelectedClient}
+          onUpdateQuantity={updateQuantity}
+          onRemoveItem={removeFromCart}
+          onEditItem={setEditingItem}
+          totals={totals}
+          onCheckout={() => setShowPaymentModal(true)}
+        />
+      )}
 
-      {/* Modals */}
+      {/* Mobile: mini cart bar + bottom sheet */}
+      {isMobile && (
+        <>
+          <MiniCartBar
+            itemCount={cart.length}
+            total={totals.total}
+            onOpen={() => setIsCartOpen(true)}
+          />
+          <CartBottomSheet
+            isOpen={isCartOpen}
+            onClose={() => setIsCartOpen(false)}
+            cart={cart}
+            clients={clients}
+            selectedClient={selectedClient}
+            onSelectClient={setSelectedClient}
+            onUpdateQuantity={updateQuantity}
+            onRemoveItem={removeFromCart}
+            onEditItem={(item) => { setEditingItem(item); setIsCartOpen(false); }}
+            totals={totals}
+            onCheckout={() => setShowPaymentModal(true)}
+          />
+        </>
+      )}
+
+      {/* Modals (shared between mobile and desktop) */}
       {showPaymentModal && (
-        <PaymentModal 
+        <PaymentModal
           total={totals.total}
           onClose={() => setShowPaymentModal(false)}
           onComplete={handleCompletePayment}
@@ -115,7 +147,7 @@ export const POSModule: React.FC = () => {
       )}
 
       {editingItem && (
-        <ItemEditorModal 
+        <ItemEditorModal
           item={editingItem}
           onClose={() => setEditingItem(null)}
           onSave={(updated) => updateCartItem(updated.id, updated)}
@@ -123,7 +155,7 @@ export const POSModule: React.FC = () => {
       )}
 
       {variantModalData && (
-        <ServiceVariantModal 
+        <ServiceVariantModal
           service={variantModalData.service}
           onClose={() => setVariantModalData(null)}
           onSelect={(variant) => addVariantToCart(variant, variantModalData.service.name)}
@@ -131,12 +163,11 @@ export const POSModule: React.FC = () => {
       )}
 
       {receiptTransaction && (
-        <ReceiptModal 
+        <ReceiptModal
           transaction={receiptTransaction}
           onClose={() => setReceiptTransaction(null)}
         />
       )}
-
     </div>
   );
 };
