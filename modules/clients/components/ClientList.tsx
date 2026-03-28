@@ -13,6 +13,7 @@ interface ClientListProps {
   onViewDetails: (id: string) => void;
   onEdit: (id: string) => void;
   onSchedule: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 export const ClientList: React.FC<ClientListProps> = ({
@@ -20,7 +21,8 @@ export const ClientList: React.FC<ClientListProps> = ({
   onAdd,
   onViewDetails,
   onEdit,
-  onSchedule
+  onSchedule,
+  onDelete,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { viewMode, setViewMode } = useViewMode('clients');
@@ -67,6 +69,7 @@ export const ClientList: React.FC<ClientListProps> = ({
             onViewDetails={onViewDetails}
             onEdit={onEdit}
             onSchedule={onSchedule}
+            onDelete={onDelete}
           />
         ) : (
           <ClientCard
@@ -74,6 +77,7 @@ export const ClientList: React.FC<ClientListProps> = ({
             onViewDetails={onViewDetails}
             onEdit={onEdit}
             onSchedule={onSchedule}
+            onDelete={onDelete}
           />
         )}
       </div>

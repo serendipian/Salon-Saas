@@ -1,12 +1,29 @@
 
 import React, { useMemo } from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, User } from 'lucide-react';
 import { Appointment, StaffMember, Service, ServiceCategory } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import { EmptyState } from '../../../components/EmptyState';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { StatusBadge } from './StatusBadge';
+
+const ClientAvatar: React.FC<{ name: string }> = ({ name }) => {
+  const parts = name.trim().split(/\s+/);
+  const initials = parts.length >= 2
+    ? `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase()
+    : name.charAt(0).toUpperCase();
+
+  return (
+    <span
+      className="w-6 h-6 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center shrink-0 font-semibold"
+      style={{ fontSize: 10 }}
+      aria-label={name}
+    >
+      {initials || <User size={12} />}
+    </span>
+  );
+};
 
 interface AppointmentTableProps {
   appointments: Appointment[];
@@ -81,15 +98,15 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
       <table className="w-full text-left border-collapse">
         <thead className="bg-slate-50 border-b border-slate-200 shadow-sm">
           <tr className="text-slate-500 text-xs uppercase tracking-wider font-semibold">
-            <th className="px-4 py-3">Date</th>
-            <th className="px-4 py-3">Heure</th>
-            <th className="px-4 py-3">Client</th>
-            <th className="px-4 py-3">Service</th>
-            <th className="px-4 py-3 hidden lg:table-cell">Variante</th>
-            <th className="px-4 py-3 hidden md:table-cell">Durée</th>
-            <th className="px-4 py-3 hidden md:table-cell">Prix</th>
-            <th className="px-4 py-3 hidden lg:table-cell">Staff</th>
-            <th className="px-4 py-3">Statut</th>
+            <th className="px-4 py-3 border-r border-slate-200">Date</th>
+            <th className="px-4 py-3 border-r border-slate-200">Heure</th>
+            <th className="px-4 py-3 border-r border-slate-200">Client</th>
+            <th className="px-4 py-3 border-r border-slate-200">Service</th>
+            <th className="px-4 py-3 border-r border-slate-200 hidden lg:table-cell">Variante</th>
+            <th className="px-4 py-3 border-r border-slate-200 hidden md:table-cell">Durée</th>
+            <th className="px-4 py-3 border-r border-slate-200 hidden md:table-cell">Prix</th>
+            <th className="px-4 py-3 border-r border-slate-200 hidden lg:table-cell">Staff</th>
+            <th className="px-4 py-3 border-r border-slate-200">Statut</th>
             <th className="px-4 py-3 text-right"></th>
           </tr>
         </thead>
@@ -135,20 +152,23 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                             className="hover:bg-slate-50 transition-colors group cursor-pointer border-t border-slate-50"
                             onClick={() => onDetails(appt.id)}
                           >
-                            <td className="px-4 py-3 align-top">
+                            <td className="px-4 py-3 align-top border-r border-slate-100">
                               <span className="text-sm text-slate-500 capitalize">
                                 {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
                               </span>
                             </td>
-                            <td className="px-4 py-3 align-top">
+                            <td className="px-4 py-3 align-top border-r border-slate-100">
                               <span className="text-sm font-semibold text-slate-900">
                                 {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </td>
-                            <td className="px-4 py-3 align-top">
-                              <span className="text-sm font-medium text-slate-900">{appt.clientName || '—'}</span>
+                            <td className="px-4 py-3 align-top border-r border-slate-100">
+                              <span className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                                <ClientAvatar name={appt.clientName || '?'} />
+                                {appt.clientName || '—'}
+                              </span>
                             </td>
-                            <td className="px-4 py-3 align-top">
+                            <td className="px-4 py-3 align-top border-r border-slate-100">
                               {(() => {
                                 const svc = serviceMap.get(appt.serviceId);
                                 const cat = svc ? categoryMap.get(svc.categoryId) : undefined;
@@ -160,16 +180,16 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                                 );
                               })()}
                             </td>
-                            <td className="px-4 py-3 align-top hidden lg:table-cell">
+                            <td className="px-4 py-3 align-top border-r border-slate-100 hidden lg:table-cell">
                               <span className="text-sm text-slate-500">{appt.variantName || '—'}</span>
                             </td>
-                            <td className="px-4 py-3 align-top hidden md:table-cell">
+                            <td className="px-4 py-3 align-top border-r border-slate-100 hidden md:table-cell">
                               <span className="text-sm text-slate-500">{formatDuration(appt.durationMinutes)}</span>
                             </td>
-                            <td className="px-4 py-3 align-top text-sm font-medium text-slate-900 hidden md:table-cell">
+                            <td className="px-4 py-3 align-top border-r border-slate-100 text-sm font-medium text-slate-900 hidden md:table-cell">
                               {formatPrice(appt.price)}
                             </td>
-                            <td className="px-4 py-3 align-top hidden lg:table-cell">
+                            <td className="px-4 py-3 align-top border-r border-slate-100 hidden lg:table-cell">
                               {appt.staffId ? (() => {
                                 const staff = staffMap.get(appt.staffId);
                                 return (
@@ -186,7 +206,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                                 );
                               })() : <span className="text-sm text-slate-500">—</span>}
                             </td>
-                            <td className="px-4 py-3 align-top">
+                            <td className="px-4 py-3 align-top border-r border-slate-100">
                               <StatusBadge status={appt.status} />
                             </td>
                             <td className="px-4 py-3 align-top text-right">

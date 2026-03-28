@@ -94,7 +94,7 @@ export default function ClientField({
 
   // Show selected client chip
   if (selectedClient) {
-    const initials = `${selectedClient.firstName[0] ?? ''}${selectedClient.lastName[0] ?? ''}`.toUpperCase();
+    const initials = `${selectedClient.firstName?.[0] ?? ''}${selectedClient.lastName?.[0] ?? ''}`.toUpperCase();
     return (
       <div className="mb-4">
         <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">Client *</div>
@@ -102,7 +102,7 @@ export default function ClientField({
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-pink-400 rounded-full flex items-center justify-center text-white text-xs font-semibold">{initials}</div>
             <div>
-              <div className="text-slate-800 text-sm font-medium">{selectedClient.firstName} {selectedClient.lastName}</div>
+              <div className="text-slate-800 text-sm font-medium">{[selectedClient.firstName, selectedClient.lastName].filter(Boolean).join(' ')}</div>
               <div className="text-slate-400 text-[11px]">{selectedClient.phone ?? ''}</div>
             </div>
           </div>
@@ -138,10 +138,10 @@ export default function ClientField({
                   className="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2.5 text-sm"
                 >
                   <div className="w-7 h-7 bg-pink-500/20 text-pink-400 rounded-full flex items-center justify-center text-[10px] font-semibold">
-                    {client.firstName[0]}{client.lastName[0] ?? ''}
+                    {client.firstName?.[0] ?? ''}{client.lastName?.[0] ?? ''}
                   </div>
                   <div>
-                    <div className="text-slate-800">{client.firstName} {client.lastName}</div>
+                    <div className="text-slate-800">{[client.firstName, client.lastName].filter(Boolean).join(' ')}</div>
                     <div className="text-slate-400 text-[11px]">{client.phone ?? ''}</div>
                   </div>
                 </button>

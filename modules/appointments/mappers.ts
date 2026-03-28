@@ -33,7 +33,7 @@ export function toAppointment(row: AppointmentRow): Appointment {
     id: row.id,
     clientId: row.client_id ?? '',
     clientName: row.clients
-      ? `${row.clients.first_name} ${row.clients.last_name}`
+      ? [row.clients.first_name, row.clients.last_name].filter(Boolean).join(' ')
       : '',
     serviceId: row.service_id ?? '',
     serviceName: row.services?.name ?? '',
@@ -41,7 +41,7 @@ export function toAppointment(row: AppointmentRow): Appointment {
     durationMinutes: row.duration_minutes,
     staffId: row.staff_id ?? '',
     staffName: row.staff_members
-      ? `${row.staff_members.first_name} ${row.staff_members.last_name}`
+      ? [row.staff_members.first_name, row.staff_members.last_name].filter(Boolean).join(' ')
       : '',
     status: row.status as AppointmentStatus,
     variantName: row.service_variants?.name ?? '',
@@ -87,7 +87,7 @@ export function toAppointmentGroup(row: AppointmentGroupRow): AppointmentGroup {
     id: row.id,
     clientId: row.client_id ?? '',
     clientName: row.clients
-      ? `${row.clients.first_name} ${row.clients.last_name}`
+      ? [row.clients.first_name, row.clients.last_name].filter(Boolean).join(' ')
       : '',
     notes: row.notes ?? '',
     reminderMinutes: row.reminder_minutes,

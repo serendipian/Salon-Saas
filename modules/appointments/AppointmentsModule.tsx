@@ -144,7 +144,7 @@ export const AppointmentsModule: React.FC = () => {
                 .insert({
                   salon_id: activeSalon.id,
                   first_name: payload.newClient.firstName,
-                  last_name: payload.newClient.lastName,
+                  last_name: payload.newClient.lastName || null,
                   phone: payload.newClient.phone,
                 })
                 .select('id')

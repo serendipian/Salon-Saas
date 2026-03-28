@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Mail, Eye, Edit, Calendar, Users } from 'lucide-react';
+import { Phone, Mail, Eye, Edit, Calendar, Users, Trash2 } from 'lucide-react';
 import { Client } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
@@ -9,6 +9,7 @@ interface ClientCardProps {
   onViewDetails: (id: string) => void;
   onEdit: (id: string) => void;
   onSchedule: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 export const ClientCard: React.FC<ClientCardProps> = ({
@@ -16,6 +17,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   onViewDetails,
   onEdit,
   onSchedule,
+  onDelete,
 }) => {
   if (clients.length === 0) {
     return (
@@ -30,7 +32,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3">
       {clients.map((client) => {
-        const initials = `${client.firstName[0]}${client.lastName[0]}`;
+        const initials = `${client.firstName?.[0] ?? ''}${client.lastName?.[0] ?? ''}`.toUpperCase();
 
         return (
           <button
@@ -47,7 +49,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="font-semibold text-slate-900 text-sm truncate">
-                  {client.firstName} {client.lastName}
+                  {[client.firstName, client.lastName].filter(Boolean).join(' ')}
                 </div>
                 <div className="mt-0.5">
                   {client.status === 'VIP' && <span className="px-2 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded text-xs font-bold">VIP</span>}
@@ -111,6 +113,14 @@ export const ClientCard: React.FC<ClientCardProps> = ({
                 title="Prendre RDV"
               >
                 <Calendar size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(client.id)}
+                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                title="Supprimer"
+              >
+                <Trash2 size={16} />
               </button>
             </div>
           </button>

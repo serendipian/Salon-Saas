@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Eye, Edit, Calendar, Users } from 'lucide-react';
+import { Phone, Eye, Edit, Calendar, Users, Trash2 } from 'lucide-react';
 import { Client } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
@@ -9,6 +9,7 @@ interface ClientTableProps {
   onViewDetails: (id: string) => void;
   onEdit: (id: string) => void;
   onSchedule: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 export const ClientTable: React.FC<ClientTableProps> = ({
@@ -16,6 +17,7 @@ export const ClientTable: React.FC<ClientTableProps> = ({
   onViewDetails,
   onEdit,
   onSchedule,
+  onDelete,
 }) => {
   if (clients.length === 0) {
     return (
@@ -40,12 +42,13 @@ export const ClientTable: React.FC<ClientTableProps> = ({
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Visites</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Dépensé</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Panier Moyen</th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Date de Création</th>
             <th className="px-6 py-3"></th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
           {clients.map((client) => {
-            const initials = `${client.firstName[0]}${client.lastName[0]}`;
+            const initials = `${client.firstName?.[0] ?? ''}${client.lastName?.[0] ?? ''}`.toUpperCase();
             const avgBasket = client.totalVisits > 0 ? client.totalSpent / client.totalVisits : 0;
 
             return (
@@ -60,7 +63,7 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                       {initials}
                     </div>
                     <div>
-                      <div className="font-semibold text-slate-900 text-sm">{client.firstName} {client.lastName}</div>
+                      <div className="font-semibold text-slate-900 text-sm">{[client.firstName, client.lastName].filter(Boolean).join(' ')}</div>
                     </div>
                   </div>
                 </td>
@@ -76,7 +79,7 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap hidden lg:table-cell">
-                  {new Date(client.createdAt).toLocaleDateString('fr-FR')}
+                  {client.firstVisitDate ? new Date(client.firstVisitDate).toLocaleDateString('fr-FR') : '-'}
                 </td>
                 <td className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap hidden lg:table-cell">
                   {client.lastVisitDate ? new Date(client.lastVisitDate).toLocaleDateString('fr-FR') : '-'}
@@ -89,6 +92,9 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
                    <span className="text-slate-600 font-medium text-sm">{formatPrice(avgBasket)}</span>
+                </td>
+                <td className="px-6 py-4 text-sm text-slate-400 whitespace-nowrap hidden lg:table-cell">
+                  {new Date(client.createdAt).toLocaleDateString('fr-FR')}
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
@@ -115,6 +121,14 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                       aria-label={`Prendre RDV pour ${client.firstName} ${client.lastName}`}
                     >
                       <Calendar size={16} />
+                    </button>
+                    <button
+                      onClick={() => onDelete(client.id)}
+                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      title="Supprimer"
+                      aria-label={`Supprimer ${client.firstName} ${client.lastName}`}
+                    >
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </td>

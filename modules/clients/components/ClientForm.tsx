@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { 
-  ArrowLeft, 
+  ArrowLeft,
   Save,
   User,
   AlertCircle,
   Upload,
-  Instagram
+  Instagram,
+  Trash2
 } from 'lucide-react';
 import { Client, ClientPermissions } from '../../../types';
 import { useTeam } from '../../team/hooks/useTeam';
@@ -18,9 +19,10 @@ interface ClientFormProps {
   existingClient?: Client;
   onSave: (c: Client) => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }
 
-export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, onCancel }) => {
+export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, onCancel, onDelete }) => {
   const { allStaff: team } = useTeam();
   
   const [formData, setFormData] = useState<Partial<Client>>(existingClient || {
@@ -94,13 +96,24 @@ export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, 
           {existingClient ? 'Modifier le Client' : 'Nouveau Client'}
         </h1>
         <div className="ml-auto flex gap-3">
-          <button 
+          {onDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="px-4 py-2 bg-white text-red-600 border border-red-200 rounded-lg font-medium text-sm hover:bg-red-50 transition-all flex items-center gap-2"
+            >
+              <Trash2 size={16} />
+              Supprimer
+            </button>
+          )}
+          <button
+             type="button"
              onClick={onCancel}
              className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium transition-all text-sm"
            >
              Annuler
            </button>
-           <button 
+           <button
              onClick={handleSubmit}
              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
            >

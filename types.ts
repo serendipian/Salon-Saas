@@ -201,6 +201,7 @@ export interface Client {
   // Computed/System
   totalVisits: number;
   totalSpent: number;
+  firstVisitDate?: string;
   lastVisitDate?: string;
   createdAt: string;
 }

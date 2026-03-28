@@ -7,7 +7,7 @@ import { ClientDetails } from './components/ClientDetails';
 import { ClientForm } from './components/ClientForm';
 
 export const ClientsModule: React.FC = () => {
-  const { clients, addClient, updateClient } = useClients();
+  const { clients, addClient, updateClient, deleteClient } = useClients();
   const [view, setView] = useState<ViewState>('LIST');
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
@@ -32,6 +32,13 @@ export const ClientsModule: React.FC = () => {
     // In a full implementation, this would navigate to /calendar?clientId=id
   };
 
+  const handleDelete = (id: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce client ? Cette action est irréversible.')) {
+      deleteClient(id);
+      setView('LIST');
+    }
+  };
+
   const handleSave = (client: Client) => {
     if (selectedClientId && view === 'EDIT') {
       updateClient(client);
@@ -47,28 +54,31 @@ export const ClientsModule: React.FC = () => {
   return (
     <div className="w-full">
       {view === 'LIST' && (
-        <ClientList 
-          clients={clients} 
-          onAdd={handleAdd} 
+        <ClientList
+          clients={clients}
+          onAdd={handleAdd}
           onViewDetails={handleViewDetails}
           onEdit={handleEdit}
           onSchedule={handleSchedule}
+          onDelete={handleDelete}
         />
       )}
       
       {view === 'DETAILS' && selectedClient && (
-        <ClientDetails 
-          client={selectedClient} 
+        <ClientDetails
+          client={selectedClient}
           onBack={() => setView('LIST')}
           onEdit={() => setView('EDIT')}
+          onDelete={() => handleDelete(selectedClient.id)}
         />
       )}
 
       {(view === 'ADD' || view === 'EDIT') && (
-        <ClientForm 
+        <ClientForm
           existingClient={view === 'EDIT' ? selectedClient : undefined}
           onSave={handleSave}
           onCancel={() => view === 'EDIT' ? setView('DETAILS') : setView('LIST')}
+          onDelete={view === 'EDIT' && selectedClient ? () => handleDelete(selectedClient.id) : undefined}
         />
       )}
     </div>

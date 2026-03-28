@@ -17,6 +17,7 @@ import {
   UserPlus,
   Calendar,
   Edit,
+  Trash2,
   Clock,
   ShoppingBag
 } from 'lucide-react';
@@ -29,12 +30,13 @@ interface ClientDetailsProps {
   client: Client;
   onBack: () => void;
   onEdit: () => void;
+  onDelete: () => void;
 }
 
-export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, onEdit }) => {
+export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, onEdit, onDelete }) => {
   const { allAppointments: appointments } = useAppointments();
   const { allStaff: team } = useTeam();
-  const initials = `${client.firstName[0]}${client.lastName[0]}`;
+  const initials = `${client.firstName?.[0] ?? ''}${client.lastName?.[0] ?? ''}`.toUpperCase();
 
   const preferredStaff = team.find(t => t.id === client.preferredStaffId);
 
@@ -68,8 +70,15 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-xl font-bold text-slate-900">Profil Client</h1>
-        <div className="ml-auto">
-           <button 
+        <div className="ml-auto flex items-center gap-2">
+           <button
+              onClick={onDelete}
+              className="px-4 py-2 bg-white text-red-600 border border-red-200 rounded-lg font-medium text-sm hover:bg-red-50 transition-all flex items-center gap-2"
+            >
+              <Trash2 size={16} />
+              Supprimer
+            </button>
+           <button
               onClick={onEdit}
               className="px-4 py-2 bg-slate-900 text-white rounded-lg font-medium text-sm hover:bg-slate-800 shadow-sm transition-all flex items-center gap-2"
             >
@@ -93,7 +102,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
                   initials
                 )}
             </div>
-            <h2 className="text-lg font-bold text-slate-900">{client.firstName} {client.lastName}</h2>
+            <h2 className="text-lg font-bold text-slate-900">{[client.firstName, client.lastName].filter(Boolean).join(' ')}</h2>
             <p className="text-sm text-slate-500 mb-4 flex items-center gap-1">
                <MapPin size={12} />
                {client.city || 'Ville non renseignée'}

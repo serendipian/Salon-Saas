@@ -75,11 +75,9 @@ export const useClients = () => {
 
   const deleteClientMutation = useMutation({
     mutationFn: async (id: string) => {
-      // Soft delete
-      const { error } = await supabase
-        .from('clients')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', id);
+      const { error } = await supabase.rpc('soft_delete_client', {
+        p_client_id: id,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
