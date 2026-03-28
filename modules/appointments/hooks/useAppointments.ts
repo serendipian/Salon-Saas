@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { toAppointment, toAppointmentInsert } from '../mappers';
+import { toAppointment, toAppointmentInsert, toAppointmentGroupInsert } from '../mappers';
 import type { Appointment } from '../../../types';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useToast } from '../../../context/ToastContext';
@@ -80,6 +80,60 @@ export const useAppointments = () => {
     onError: toastOnError("Impossible de modifier le rendez-vous"),
   });
 
+  const addAppointmentGroupMutation = useMutation({
+    mutationFn: async (payload: {
+      clientId: string;
+      notes: string;
+      reminderMinutes: number | null;
+      status: string;
+      serviceBlocks: Array<{
+        serviceId: string;
+        variantId: string;
+        staffId: string | null;
+        date: string;
+        durationMinutes: number;
+        price: number;
+      }>;
+    }) => {
+      // 1. Insert the group
+      const { data: group, error: groupError } = await supabase
+        .from('appointment_groups')
+        .insert(toAppointmentGroupInsert(payload, salonId))
+        .select('id')
+        .single();
+
+      if (groupError) throw groupError;
+
+      // 2. Insert each appointment linked to the group
+      const appointmentRows = payload.serviceBlocks.map((block) => ({
+        salon_id: salonId,
+        group_id: group.id,
+        client_id: payload.clientId || null,
+        service_id: block.serviceId || null,
+        service_variant_id: block.variantId || null,
+        staff_id: block.staffId || null,
+        date: block.date,
+        duration_minutes: block.durationMinutes,
+        price: block.price,
+        status: payload.status,
+        notes: payload.notes || null,
+      }));
+
+      const { error: apptError } = await supabase
+        .from('appointments')
+        .insert(appointmentRows);
+
+      if (apptError) throw apptError;
+
+      return group.id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
+      addToast({ type: 'success', message: 'Rendez-vous créé' });
+    },
+    onError: toastOnError('Erreur lors de la création du rendez-vous'),
+  });
+
   const filteredAppointments = useMemo(() => {
     return appointments.filter(a => {
       const matchesSearch = a.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -99,5 +153,7 @@ export const useAppointments = () => {
     setStatusFilter,
     addAppointment: (appt: Appointment) => addAppointmentMutation.mutate(appt),
     updateAppointment: (appt: Appointment) => updateAppointmentMutation.mutate(appt),
+    addAppointmentGroup: addAppointmentGroupMutation.mutate,
+    isAddingGroup: addAppointmentGroupMutation.isPending,
   };
 };

@@ -1,5 +1,5 @@
 // modules/appointments/mappers.ts
-import type { Appointment, AppointmentStatus } from '../../types';
+import type { Appointment, AppointmentGroup, AppointmentStatus } from '../../types';
 
 // Row type includes JOINed relations from:
 // .select('*, clients(first_name, last_name), services(name), staff_members(first_name, last_name)')
@@ -59,5 +59,53 @@ export function toAppointmentInsert(appt: Appointment, salonId: string) {
     status: appt.status,
     price: appt.price,
     notes: appt.notes ?? null,
+  };
+}
+
+// --- Appointment Group mappers ---
+
+interface AppointmentGroupRow {
+  id: string;
+  salon_id: string;
+  client_id: string | null;
+  notes: string | null;
+  reminder_minutes: number | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  clients: { first_name: string; last_name: string } | null;
+  appointments: AppointmentRow[];
+}
+
+export function toAppointmentGroup(row: AppointmentGroupRow): AppointmentGroup {
+  return {
+    id: row.id,
+    clientId: row.client_id ?? '',
+    clientName: row.clients
+      ? `${row.clients.first_name} ${row.clients.last_name}`
+      : '',
+    notes: row.notes ?? '',
+    reminderMinutes: row.reminder_minutes,
+    status: row.status as AppointmentStatus,
+    appointments: (row.appointments ?? []).map(toAppointment),
+  };
+}
+
+export function toAppointmentGroupInsert(
+  group: {
+    clientId: string;
+    notes: string;
+    reminderMinutes: number | null;
+    status: string;
+  },
+  salonId: string,
+) {
+  return {
+    salon_id: salonId,
+    client_id: group.clientId || null,
+    notes: group.notes || null,
+    reminder_minutes: group.reminderMinutes,
+    status: group.status,
   };
 }
