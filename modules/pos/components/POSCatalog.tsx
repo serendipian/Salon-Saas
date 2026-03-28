@@ -4,6 +4,7 @@ import { Search, Scissors, ShoppingBag, History, Plus, Receipt } from 'lucide-re
 import { Service, Product, ServiceCategory, ProductCategory, Transaction } from '../../../types';
 import { POSViewMode } from '../hooks/usePOS';
 import { formatPrice } from '../../../lib/format';
+import { useMediaQuery } from '../../../context/MediaQueryContext';
 
 interface POSCatalogProps {
   viewMode: POSViewMode;
@@ -32,7 +33,8 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
   onProductClick,
   onReceiptClick
 }) => {
-  
+  const { isMobile } = useMediaQuery();
+
   return (
     <div className="flex-1 flex flex-col border-r border-slate-200 h-full">
       {/* Top Bar */}
@@ -51,21 +53,21 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
            <div className="flex bg-slate-100 p-1 rounded-xl shrink-0">
               <button 
                 onClick={() => { setViewMode('SERVICES'); setSelectedCategory('ALL'); }}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${viewMode === 'SERVICES' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-4 py-2 min-h-[44px] rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${viewMode === 'SERVICES' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 <Scissors size={16} />
                 <span className="hidden sm:inline">Services</span>
               </button>
               <button 
                 onClick={() => { setViewMode('PRODUCTS'); setSelectedCategory('ALL'); }}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${viewMode === 'PRODUCTS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-4 py-2 min-h-[44px] rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${viewMode === 'PRODUCTS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 <ShoppingBag size={16} />
                 <span className="hidden sm:inline">Produits</span>
               </button>
                <button 
                 onClick={() => { setViewMode('HISTORY'); }}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${viewMode === 'HISTORY' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-4 py-2 min-h-[44px] rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${viewMode === 'HISTORY' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 <History size={16} />
                 <span className="hidden sm:inline">Historique</span>
@@ -74,11 +76,15 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
         </div>
 
         {/* Categories */}
-        {viewMode !== 'HISTORY' && (
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-             <button 
+        {viewMode !== 'HISTORY' && !(isMobile && searchTerm.length > 0) && (
+          <div
+            className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide"
+            style={{ scrollSnapType: 'x mandatory' }}
+          >
+             <button
                onClick={() => setSelectedCategory('ALL')}
-               className={`px-4 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border ${selectedCategory === 'ALL' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+               className={`px-4 ${isMobile ? 'py-2' : 'py-1.5'} rounded-lg text-xs font-medium whitespace-nowrap transition-colors border shrink-0 ${selectedCategory === 'ALL' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+               style={{ scrollSnapAlign: 'start' }}
              >
                Tout
              </button>
@@ -86,7 +92,8 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                <button
                  key={cat.id}
                  onClick={() => setSelectedCategory(cat.id)}
-                 className={`px-4 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border ${selectedCategory === cat.id ? 'bg-slate-200 text-slate-900 border-slate-300' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                 className={`px-4 ${isMobile ? 'py-2' : 'py-1.5'} rounded-lg text-xs font-medium whitespace-nowrap transition-colors border shrink-0 ${selectedCategory === cat.id ? 'bg-slate-200 text-slate-900 border-slate-300' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                 style={{ scrollSnapAlign: 'start' }}
                >
                  {cat.name}
                </button>
@@ -96,7 +103,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
+      <div className={`flex-1 overflow-y-auto p-6 bg-slate-50 ${isMobile ? 'pb-24' : ''}`}>
         
         {/* Grid View */}
         {(viewMode === 'SERVICES' || viewMode === 'PRODUCTS') && (
@@ -159,13 +166,42 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                 <h3 className="font-bold text-slate-900 text-sm">Transactions du jour</h3>
                 <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">{new Date().toLocaleDateString()}</span>
              </div>
-             
+
              {transactions.length === 0 ? (
                <div className="p-12 text-center text-slate-400">
                   <History size={48} className="mx-auto mb-4 opacity-50" />
                   <p>Aucune transaction enregistrée.</p>
                </div>
+             ) : isMobile ? (
+               /* Mobile: card layout */
+               <div className="p-3 space-y-3">
+                 {transactions.map((trx) => (
+                   <button
+                     key={trx.id}
+                     type="button"
+                     onClick={() => onReceiptClick(trx)}
+                     className="w-full text-left bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:bg-slate-50 transition-colors focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus:outline-none"
+                     aria-label={`Transaction ${trx.clientName || 'Client de passage'}, ${formatPrice(trx.total)}`}
+                   >
+                     <div className="flex justify-between items-start mb-2">
+                       <div>
+                         <div className="font-semibold text-slate-900 text-sm">
+                           {trx.clientName || <span className="text-slate-400 italic">Client de passage</span>}
+                         </div>
+                         <div className="text-xs text-slate-500 mt-0.5">
+                           {new Date(trx.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                         </div>
+                       </div>
+                       <span className="font-bold text-slate-900">{formatPrice(trx.total)}</span>
+                     </div>
+                     <div className="text-xs text-slate-500 truncate">
+                       {trx.items.length} article{trx.items.length > 1 ? 's' : ''} · {trx.items.map(i => i.name).join(', ')}
+                     </div>
+                   </button>
+                 ))}
+               </div>
              ) : (
+               /* Desktop: table layout */
                <table className="w-full text-left">
                   <thead className="bg-slate-50 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">
                     <tr>
@@ -198,9 +234,9 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                            {formatPrice(trx.total)}
                          </td>
                          <td className="px-6 py-4 text-right">
-                           <button 
+                           <button
                               onClick={() => onReceiptClick(trx)}
-                              className="p-2 text-slate-300 hover:text-slate-900 transition-colors" 
+                              className="p-2 text-slate-300 hover:text-slate-900 transition-colors"
                               title="Imprimer ticket"
                            >
                              <Receipt size={16} />
