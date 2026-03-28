@@ -32,24 +32,29 @@ CREATE TRIGGER appointment_groups_audit
 ALTER TABLE appointments
   ADD COLUMN group_id UUID REFERENCES appointment_groups(id);
 
--- 5. RLS policies for appointment_groups
+-- 5. RLS policies for appointment_groups (membership-based, matching appointments table)
 ALTER TABLE appointment_groups ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY appointment_groups_select ON appointment_groups
   FOR SELECT USING (
-    salon_id = get_active_salon()
+    salon_id IN (SELECT user_salon_ids_with_role(ARRAY['owner', 'manager', 'receptionist']))
     AND deleted_at IS NULL
   );
 
 CREATE POLICY appointment_groups_insert ON appointment_groups
   FOR INSERT WITH CHECK (
-    salon_id = get_active_salon()
+    salon_id IN (SELECT user_salon_ids_with_role(ARRAY['owner', 'manager', 'receptionist']))
   );
 
 CREATE POLICY appointment_groups_update ON appointment_groups
   FOR UPDATE USING (
-    salon_id = get_active_salon()
+    salon_id IN (SELECT user_salon_ids_with_role(ARRAY['owner', 'manager', 'receptionist']))
     AND deleted_at IS NULL
+  );
+
+CREATE POLICY appointment_groups_delete ON appointment_groups
+  FOR DELETE USING (
+    salon_id IN (SELECT user_salon_ids_with_role(ARRAY['owner', 'manager']))
   );
 
 -- 6. Index for fast group lookups
