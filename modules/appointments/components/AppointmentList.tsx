@@ -1,14 +1,19 @@
 
-import React from 'react';
-import { Plus, Search } from 'lucide-react';
-import { Appointment, AppointmentStatus } from '../../../types';
+import React, { useState } from 'react';
+import { Plus, Search, List, CalendarDays } from 'lucide-react';
+import { Appointment, AppointmentStatus, ServiceCategory, StaffMember, Service } from '../../../types';
 import { useViewMode } from '../../../hooks/useViewMode';
 import { ViewToggle } from '../../../components/ViewToggle';
 import { AppointmentTable } from './AppointmentTable';
 import { AppointmentCardList } from './AppointmentCard';
+import { CalendarView } from './CalendarView';
 
 interface AppointmentListProps {
   appointments: Appointment[];
+  allAppointments: Appointment[];
+  serviceCategories: ServiceCategory[];
+  services: Service[];
+  allStaff: StaffMember[];
   searchTerm: string;
   onSearchChange: (val: string) => void;
   statusFilter: string;
@@ -21,6 +26,10 @@ interface AppointmentListProps {
 
 export const AppointmentList: React.FC<AppointmentListProps> = ({
   appointments,
+  allAppointments,
+  serviceCategories,
+  services,
+  allStaff,
   searchTerm,
   onSearchChange,
   statusFilter,
@@ -31,20 +40,57 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
   onDelete,
 }) => {
   const { viewMode, setViewMode } = useViewMode('appointments');
+  const [mode, setMode] = useState<'list' | 'calendar'>('list');
 
   return (
     <div className="space-y-6 animate-in fade-in">
       <div className="flex justify-between items-end">
         <h1 className="text-2xl font-bold text-slate-900">Rendez-vous</h1>
-        <button
-          onClick={onAdd}
-          className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
-        >
-          <Plus size={16} />
-          Nouveau RDV
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex rounded-lg border border-slate-300 overflow-hidden">
+            <button
+              onClick={() => setMode('list')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors ${
+                mode === 'list'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-white text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <List size={14} />
+              Liste
+            </button>
+            <button
+              onClick={() => setMode('calendar')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors border-l border-slate-300 ${
+                mode === 'calendar'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-white text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <CalendarDays size={14} />
+              Calendrier
+            </button>
+          </div>
+          <button
+            onClick={onAdd}
+            className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
+          >
+            <Plus size={16} />
+            Nouveau RDV
+          </button>
+        </div>
       </div>
 
+      {mode === 'calendar' ? (
+        <CalendarView
+          allAppointments={allAppointments}
+          serviceCategories={serviceCategories}
+          services={services}
+          allStaff={allStaff}
+          onViewDetails={onDetails}
+          onEdit={onEdit ?? (() => {})}
+        />
+      ) : (
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
         <div className="p-3 border-b border-slate-200 flex gap-3 bg-white">
           <div className="relative flex-1 max-w-md">
@@ -76,6 +122,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
           <AppointmentCardList appointments={appointments} onDetails={onDetails} onDelete={onDelete} />
         )}
       </div>
+      )}
     </div>
   );
 };

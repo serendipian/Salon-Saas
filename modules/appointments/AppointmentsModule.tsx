@@ -104,6 +104,10 @@ export const AppointmentsModule: React.FC = () => {
       {view === 'LIST' && (
         <AppointmentList
           appointments={appointments}
+          allAppointments={allAppointments}
+          serviceCategories={serviceCategories}
+          services={services}
+          allStaff={team}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           statusFilter={statusFilter}
@@ -151,6 +155,10 @@ export const AppointmentsModule: React.FC = () => {
                 throw clientError;
               }
               payload.clientId = newClientRow.id;
+            }
+            // In edit mode, delete old appointment(s) first then recreate
+            if (view === 'EDIT' && selectedApptId) {
+              await deleteAppointment(selectedApptId);
             }
             await addAppointmentGroup(payload);
             setView('LIST');
