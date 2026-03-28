@@ -141,6 +141,7 @@ export const POSModule: React.FC = () => {
       {showPaymentModal && (
         <PaymentModal
           total={totals.total}
+          cart={cart}
           onClose={() => setShowPaymentModal(false)}
           onComplete={handleCompletePayment}
         />

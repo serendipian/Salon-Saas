@@ -23,8 +23,8 @@
 /* z-index scale for consistent layering */
 :root {
   --z-content: 0;
-  --z-peek-bar: 21;
   --z-topbar: 20;
+  --z-peek-bar: 21; /* above BottomTabBar (topbar) */
   --z-sidebar: 30;
   --z-drawer-backdrop: 40;
   --z-drawer-panel: 50;

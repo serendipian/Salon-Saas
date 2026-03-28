@@ -37,11 +37,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
     }
   }, [totalPaid, isComplete, total]);
 
-  // Body scroll lock on mobile
+  // Body scroll lock + Escape key on mobile
   useEffect(() => {
     if (isMobile) {
       document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = ''; };
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      };
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        document.removeEventListener('keydown', handleKeyDown);
+      };
     }
   }, [isMobile]);
 

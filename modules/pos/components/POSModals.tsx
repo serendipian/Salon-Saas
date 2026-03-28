@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Clock, Receipt, Printer, Mail } from 'lucide-react';
 import { CartItem, Service, ServiceVariant, Transaction } from '../../../types';
@@ -7,6 +7,22 @@ import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
 import { Input } from '../../../components/FormElements';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
+
+// Shared hook for mobile fullscreen modal accessibility
+function useMobileModalA11y(isMobile: boolean, onClose: () => void) {
+  useEffect(() => {
+    if (!isMobile) return;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMobile, onClose]);
+}
 
 // --- Item Editor (Discount/Price/Note) ---
 export const ItemEditorModal: React.FC<{
@@ -22,6 +38,7 @@ export const ItemEditorModal: React.FC<{
   const originalPrice = item.originalPrice || item.price;
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
   const { isMobile } = useMediaQuery();
+  useMobileModalA11y(isMobile, onClose);
 
   const applyDiscount = (percent: number) => {
     const newPrice = originalPrice * (1 - percent / 100);
@@ -189,6 +206,7 @@ export const ServiceVariantModal: React.FC<{
   onSelect: (variant: ServiceVariant) => void;
 }> = ({ service, onClose, onSelect }) => {
   const { isMobile } = useMediaQuery();
+  useMobileModalA11y(isMobile, onClose);
 
   if (isMobile) {
     return createPortal(
@@ -273,6 +291,7 @@ export const ReceiptModal: React.FC<{
   const vatRate = salonSettings.vatRate || 20;
   const vatAmount = transaction.total * (vatRate / 100) / (1 + vatRate / 100);
   const { isMobile } = useMediaQuery();
+  useMobileModalA11y(isMobile, onClose);
 
   if (isMobile) {
     return createPortal(
