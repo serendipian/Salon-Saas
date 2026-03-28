@@ -1,0 +1,136 @@
+<h2>Appointment Form Redesign — 3 Approaches</h2>
+<p class="subtitle">Compare layout strategies. Click to select your preferred approach.</p>
+
+<div class="options">
+  <!-- APPROACH A -->
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Two-Panel Split (Inspired by Screenshot)</h3>
+      <p><strong>Left panel:</strong> Service → Variant → Client → Staff → Notes</p>
+      <p><strong>Right panel:</strong> Always-visible calendar + time slot chips + duration (auto-calculated) + price summary</p>
+      <div style="display:flex;gap:12px;margin-top:12px;">
+        <div style="flex:1.2;background:#1e293b;border-radius:8px;padding:16px;border:1px solid #334155;">
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;margin-bottom:8px;">Service</div>
+          <div style="background:#0f172a;border-radius:6px;padding:8px 12px;color:#e2e8f0;font-size:13px;margin-bottom:10px;">Coloration ▾</div>
+          <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <span style="background:#ec4899;color:white;padding:4px 10px;border-radius:12px;font-size:11px;">Racines</span>
+            <span style="background:#1e293b;border:1px solid #475569;color:#94a3b8;padding:4px 10px;border-radius:12px;font-size:11px;">Complète</span>
+            <span style="background:#1e293b;border:1px solid #475569;color:#94a3b8;padding:4px 10px;border-radius:12px;font-size:11px;">Mèches</span>
+          </div>
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;margin-bottom:8px;">Client</div>
+          <div style="background:#0f172a;border-radius:6px;padding:8px 12px;color:#e2e8f0;font-size:13px;margin-bottom:10px;">🔍 Rechercher...</div>
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;margin-bottom:8px;">Praticien</div>
+          <div style="background:#0f172a;border-radius:6px;padding:8px 12px;color:#e2e8f0;font-size:13px;margin-bottom:10px;">🔍 Rechercher...</div>
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;margin-bottom:8px;">Notes</div>
+          <div style="background:#0f172a;border-radius:6px;padding:8px 12px;color:#64748b;font-size:13px;height:40px;"></div>
+        </div>
+        <div style="flex:1;background:#1e293b;border-radius:8px;padding:16px;border:1px solid #334155;">
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;margin-bottom:8px;">Date</div>
+          <div style="background:#0f172a;border-radius:6px;padding:8px;margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="color:#64748b;font-size:12px;">◀</span>
+              <span style="color:#e2e8f0;font-size:12px;font-weight:600;">Mars 2026</span>
+              <span style="color:#64748b;font-size:12px;">▶</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:10px;">
+              <span style="color:#64748b;">Lu</span><span style="color:#64748b;">Ma</span><span style="color:#64748b;">Me</span><span style="color:#64748b;">Je</span><span style="color:#64748b;">Ve</span><span style="color:#64748b;">Sa</span><span style="color:#64748b;">Di</span>
+              <span style="color:#475569;">23</span><span style="color:#475569;">24</span><span style="color:#475569;">25</span><span style="color:#475569;">26</span><span style="color:#475569;">27</span>
+              <span style="background:#ec4899;color:white;border-radius:50%;padding:2px;">28</span>
+              <span style="color:#475569;">29</span>
+              <span style="color:#e2e8f0;">30</span><span style="color:#e2e8f0;">31</span><span style="color:#e2e8f0;">1</span><span style="color:#e2e8f0;">2</span><span style="color:#e2e8f0;">3</span><span style="color:#e2e8f0;">4</span><span style="color:#e2e8f0;">5</span>
+            </div>
+          </div>
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;margin-bottom:8px;">Heure</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">
+            <span style="background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:4px 8px;border-radius:6px;font-size:11px;">9h</span>
+            <span style="background:#ec4899;color:white;padding:4px 8px;border-radius:6px;font-size:11px;">10h</span>
+            <span style="background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:4px 8px;border-radius:6px;font-size:11px;">11h</span>
+            <span style="background:#0f172a;border:1px solid #334155;color:#475569;padding:4px 8px;border-radius:6px;font-size:11px;opacity:0.4;text-decoration:line-through;">14h</span>
+            <span style="background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:4px 8px;border-radius:6px;font-size:11px;">15h</span>
+            <span style="background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:4px 8px;border-radius:6px;font-size:11px;">16h</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;border-top:1px solid #334155;padding-top:8px;">
+            <span>Durée: <strong style="color:#e2e8f0;">45 min</strong></span>
+            <span>Prix: <strong style="color:#ec4899;">350 MAD</strong></span>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top:12px;">
+        <div class="pros"><h4>Pros</h4><ul><li>Matches the screenshot UX you liked</li><li>Calendar & time always visible — zero extra clicks</li><li>Unavailable slots shown as disabled (staff awareness)</li><li>Natural left-to-right flow: what → when</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Needs graceful mobile collapse (stack panels)</li><li>Time slots need staff-aware filtering logic</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPROACH B -->
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Guided Stepper (Wizard Flow)</h3>
+      <p><strong>Step 1:</strong> Pick service + variant → <strong>Step 2:</strong> Pick staff (shows who can do it) → <strong>Step 3:</strong> Pick date/time (shows only available slots) → <strong>Step 4:</strong> Add client + notes → Confirm</p>
+      <div style="background:#1e293b;border-radius:8px;padding:16px;border:1px solid #334155;margin-top:12px;">
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="background:#ec4899;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">1</span>
+            <span style="color:#e2e8f0;font-size:12px;font-weight:500;">Service</span>
+          </div>
+          <div style="flex:1;border-bottom:2px solid #334155;margin:0 4px;align-self:center;"></div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="background:#334155;color:#94a3b8;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;">2</span>
+            <span style="color:#64748b;font-size:12px;">Praticien</span>
+          </div>
+          <div style="flex:1;border-bottom:2px solid #334155;margin:0 4px;align-self:center;"></div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="background:#334155;color:#94a3b8;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;">3</span>
+            <span style="color:#64748b;font-size:12px;">Date/Heure</span>
+          </div>
+          <div style="flex:1;border-bottom:2px solid #334155;margin:0 4px;align-self:center;"></div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="background:#334155;color:#94a3b8;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;">4</span>
+            <span style="color:#64748b;font-size:12px;">Client</span>
+          </div>
+        </div>
+        <div style="background:#0f172a;border-radius:6px;padding:16px;text-align:center;color:#94a3b8;font-size:13px;">
+          Each step filters the next — only valid options shown
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top:12px;">
+        <div class="pros"><h4>Pros</h4><ul><li>Each step narrows options — impossible to pick invalid combos</li><li>Works great on mobile (one thing at a time)</li><li>Very guided — less training needed</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Slower for experienced receptionists — too many clicks</li><li>Hard to go back and change earlier steps</li><li>Can't see everything at once</li><li>Doesn't match the all-at-once UX you liked in the screenshot</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPROACH C -->
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Smart Single Column (Enhanced Current)</h3>
+      <p>Keep single-column layout but replace native inputs with inline calendar widget, time chips, and variant pills. Add availability indicators next to staff names.</p>
+      <div style="background:#1e293b;border-radius:8px;padding:16px;border:1px solid #334155;margin-top:12px;max-width:360px;margin-left:auto;margin-right:auto;">
+        <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Service</div>
+        <div style="background:#0f172a;border-radius:6px;padding:8px 12px;color:#e2e8f0;font-size:13px;margin-bottom:6px;">Coloration ▾</div>
+        <div style="display:flex;gap:4px;margin-bottom:10px;">
+          <span style="background:#ec4899;color:white;padding:3px 8px;border-radius:10px;font-size:10px;">Racines</span>
+          <span style="background:#1e293b;border:1px solid #475569;color:#94a3b8;padding:3px 8px;border-radius:10px;font-size:10px;">Complète</span>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Date + Heure</div>
+        <div style="background:#0f172a;border-radius:6px;padding:8px;margin-bottom:6px;font-size:11px;color:#64748b;text-align:center;">[ Calendar inline ]</div>
+        <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px;">
+          <span style="background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:3px 6px;border-radius:4px;font-size:10px;">9h</span>
+          <span style="background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:3px 6px;border-radius:4px;font-size:10px;">10h</span>
+          <span style="background:#ec4899;color:white;padding:3px 6px;border-radius:4px;font-size:10px;">11h</span>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Client + Praticien + Notes...</div>
+        <div style="background:#0f172a;border-radius:6px;padding:8px 12px;color:#64748b;font-size:11px;">remaining fields below</div>
+      </div>
+      <div class="pros-cons" style="margin-top:12px;">
+        <div class="pros"><h4>Pros</h4><ul><li>Simplest to implement — enhance, don't rebuild</li><li>Already mobile-friendly (single column)</li><li>Familiar scroll-down form pattern</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Long scrolling form — calendar pushes fields below the fold</li><li>Can't see time and service context simultaneously</li><li>Doesn't match the two-panel UX you want</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="color:#94a3b8;font-size:13px;margin-top:16px;text-align:center;">💡 <strong>My recommendation: Approach A</strong> — it matches the screenshot UX, keeps everything visible, and is the fastest for experienced receptionists handling phone bookings.</p>

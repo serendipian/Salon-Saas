@@ -1,0 +1,244 @@
+<h2>Approach A — V6</h2>
+<p class="subtitle">Time picker row 3: equal-width buttons for minutes + AM/PM</p>
+
+<div style="display:flex;gap:16px;margin-top:20px;">
+  <!-- LEFT PANEL -->
+  <div style="flex:1.3;background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 style="margin:0;font-size:16px;color:#e2e8f0;">Nouveau Rendez-vous</h3>
+      <div style="display:flex;gap:8px;">
+        <button style="background:#0f172a;border:1px solid #334155;color:#94a3b8;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;">Annuler</button>
+        <button style="background:#ec4899;border:none;color:white;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Enregistrer</button>
+      </div>
+    </div>
+
+    <!-- SERVICE SECTION -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;font-weight:600;">Service *</div>
+      <div style="display:flex;gap:0;border-bottom:2px solid #334155;">
+        <span style="padding:8px 16px;font-size:12px;color:#ec4899;border-bottom:2px solid #ec4899;margin-bottom:-2px;font-weight:600;cursor:pointer;">Coloration</span>
+        <span style="padding:8px 16px;font-size:12px;color:#94a3b8;cursor:pointer;">Coupe</span>
+        <span style="padding:8px 16px;font-size:12px;color:#94a3b8;cursor:pointer;">Soin</span>
+        <span style="padding:8px 16px;font-size:12px;color:#94a3b8;cursor:pointer;">Brushing</span>
+        <span style="padding:8px 16px;font-size:12px;color:#94a3b8;cursor:pointer;">Onglerie</span>
+      </div>
+      <div style="background:#0f172a;border:1px solid #334155;border-top:none;border-radius:0 0 8px 8px;padding:8px;">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+          <div style="background:#1e293b;border:2px solid #ec4899;border-radius:8px;padding:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="color:#e2e8f0;font-size:12px;font-weight:600;">Coloration classique</span>
+              <span style="width:16px;height:16px;background:#ec4899;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:white;">✓</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <div style="display:flex;align-items:center;gap:6px;background:#0f172a;border:1px solid #ec4899;border-radius:5px;padding:6px 8px;cursor:pointer;">
+                <span style="width:10px;height:10px;border-radius:50%;background:#ec4899;"></span>
+                <span style="color:#e2e8f0;font-size:11px;flex:1;">Racines</span>
+                <span style="color:#94a3b8;font-size:10px;">45m</span>
+                <span style="color:#ec4899;font-size:10px;font-weight:600;">350</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;background:#0f172a;border:1px solid #334155;border-radius:5px;padding:6px 8px;cursor:pointer;">
+                <span style="width:10px;height:10px;border-radius:50%;border:1px solid #475569;"></span>
+                <span style="color:#cbd5e1;font-size:11px;flex:1;">Complète</span>
+                <span style="color:#64748b;font-size:10px;">90m</span>
+                <span style="color:#64748b;font-size:10px;">600</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;background:#0f172a;border:1px solid #334155;border-radius:5px;padding:6px 8px;cursor:pointer;">
+                <span style="width:10px;height:10px;border-radius:50%;border:1px solid #475569;"></span>
+                <span style="color:#cbd5e1;font-size:11px;flex:1;">Mèches</span>
+                <span style="color:#64748b;font-size:10px;">120m</span>
+                <span style="color:#64748b;font-size:10px;">800</span>
+              </div>
+            </div>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:10px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:60px;">
+            <span style="color:#cbd5e1;font-size:12px;font-weight:500;text-align:center;">Balayage</span>
+            <span style="color:#64748b;font-size:10px;margin-top:4px;">3 variantes</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:10px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:60px;">
+            <span style="color:#cbd5e1;font-size:12px;font-weight:500;text-align:center;">Décoloration</span>
+            <span style="color:#64748b;font-size:10px;margin-top:4px;">2 variantes</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:10px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:60px;">
+            <span style="color:#cbd5e1;font-size:12px;font-weight:500;text-align:center;">Teinture sourcils</span>
+            <span style="color:#64748b;font-size:10px;margin-top:4px;">1 variante</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:10px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:60px;">
+            <span style="color:#cbd5e1;font-size:12px;font-weight:500;text-align:center;">Glossing</span>
+            <span style="color:#64748b;font-size:10px;margin-top:4px;">2 variantes</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENT -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Client *</div>
+      <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 14px;color:#64748b;font-size:13px;display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <span style="font-size:14px;">🔍</span>
+        <span>Rechercher un client...</span>
+      </div>
+    </div>
+
+    <!-- STAFF -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Praticien *</div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
+        <span style="background:#ec4899;color:white;padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;font-weight:600;">N'importe qui</span>
+        <span style="color:#475569;font-size:11px;">ou choisir :</span>
+      </div>
+      <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 14px;color:#64748b;font-size:13px;display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <span style="font-size:14px;">🔍</span>
+        <span>Rechercher un praticien...</span>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div>
+      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Notes</div>
+      <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 14px;color:#64748b;font-size:13px;min-height:50px;">Ajouter des notes...</div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div style="flex:0.85;background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155;">
+
+    <!-- STATUS -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Statut</div>
+      <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 14px;color:#e2e8f0;font-size:13px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="width:8px;height:8px;background:#3b82f6;border-radius:50%;"></span>
+          <span>Planifié</span>
+        </div>
+        <span style="color:#64748b;font-size:10px;">▼</span>
+      </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Date *</div>
+      <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="color:#94a3b8;cursor:pointer;font-size:14px;">◀</span>
+          <span style="color:#e2e8f0;font-size:13px;font-weight:600;">Mars 2026</span>
+          <span style="color:#94a3b8;cursor:pointer;font-size:14px;">▶</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;">
+          <span style="color:#64748b;font-size:10px;font-weight:600;padding:4px;">Lu</span>
+          <span style="color:#64748b;font-size:10px;font-weight:600;padding:4px;">Ma</span>
+          <span style="color:#64748b;font-size:10px;font-weight:600;padding:4px;">Me</span>
+          <span style="color:#64748b;font-size:10px;font-weight:600;padding:4px;">Je</span>
+          <span style="color:#64748b;font-size:10px;font-weight:600;padding:4px;">Ve</span>
+          <span style="color:#64748b;font-size:10px;font-weight:600;padding:4px;">Sa</span>
+          <span style="color:#64748b;font-size:10px;font-weight:600;padding:4px;">Di</span>
+          <span style="color:#475569;font-size:11px;padding:5px;border-radius:6px;">23</span>
+          <span style="color:#475569;font-size:11px;padding:5px;border-radius:6px;">24</span>
+          <span style="color:#475569;font-size:11px;padding:5px;border-radius:6px;">25</span>
+          <span style="color:#475569;font-size:11px;padding:5px;border-radius:6px;">26</span>
+          <span style="color:#475569;font-size:11px;padding:5px;border-radius:6px;">27</span>
+          <span style="background:#ec4899;color:white;font-size:11px;padding:5px;border-radius:6px;font-weight:600;">28</span>
+          <span style="color:#475569;font-size:11px;padding:5px;border-radius:6px;">29</span>
+          <span style="color:#e2e8f0;font-size:11px;padding:5px;border-radius:6px;">30</span>
+          <span style="color:#e2e8f0;font-size:11px;padding:5px;border-radius:6px;">31</span>
+          <span style="color:#e2e8f0;font-size:11px;padding:5px;border-radius:6px;">1</span>
+          <span style="color:#e2e8f0;font-size:11px;padding:5px;border-radius:6px;">2</span>
+          <span style="color:#e2e8f0;font-size:11px;padding:5px;border-radius:6px;">3</span>
+          <span style="color:#e2e8f0;font-size:11px;padding:5px;border-radius:6px;">4</span>
+          <span style="color:#e2e8f0;font-size:11px;padding:5px;border-radius:6px;">5</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIME PICKER -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Heure *</div>
+      <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px;">
+        <!-- Row 1: Morning/early afternoon -->
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:4px;">
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:#e2e8f0;font-size:12px;font-weight:500;">9</span><span style="color:#94a3b8;font-size:9px;margin-left:1px;">AM</span>
+          </div>
+          <div style="background:#ec4899;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:white;font-size:12px;font-weight:600;">10</span><span style="color:rgba(255,255,255,0.7);font-size:9px;margin-left:1px;">AM</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:#e2e8f0;font-size:12px;font-weight:500;">11</span><span style="color:#94a3b8;font-size:9px;margin-left:1px;">AM</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;opacity:0.35;">
+            <span style="color:#475569;font-size:12px;font-weight:500;text-decoration:line-through;">12</span><span style="color:#475569;font-size:9px;margin-left:1px;">PM</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:#e2e8f0;font-size:12px;font-weight:500;">1</span><span style="color:#94a3b8;font-size:9px;margin-left:1px;">PM</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:#e2e8f0;font-size:12px;font-weight:500;">2</span><span style="color:#94a3b8;font-size:9px;margin-left:1px;">PM</span>
+          </div>
+        </div>
+        <!-- Row 2: Afternoon/evening -->
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:8px;">
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:#e2e8f0;font-size:12px;font-weight:500;">3</span><span style="color:#94a3b8;font-size:9px;margin-left:1px;">PM</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:#e2e8f0;font-size:12px;font-weight:500;">4</span><span style="color:#94a3b8;font-size:9px;margin-left:1px;">PM</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:#e2e8f0;font-size:12px;font-weight:500;">5</span><span style="color:#94a3b8;font-size:9px;margin-left:1px;">PM</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:#e2e8f0;font-size:12px;font-weight:500;">6</span><span style="color:#94a3b8;font-size:9px;margin-left:1px;">PM</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:#e2e8f0;font-size:12px;font-weight:500;">7</span><span style="color:#94a3b8;font-size:9px;margin-left:1px;">PM</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:#e2e8f0;font-size:12px;font-weight:500;">8</span><span style="color:#94a3b8;font-size:9px;margin-left:1px;">PM</span>
+          </div>
+        </div>
+        <!-- Divider -->
+        <div style="border-top:1px solid #334155;margin-bottom:8px;"></div>
+        <!-- Row 3: Minutes + AM/PM — all same width via 6-col grid -->
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;">
+          <div style="background:#ec4899;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:white;font-size:12px;font-weight:600;">:00</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:#cbd5e1;font-size:12px;">:15</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:#cbd5e1;font-size:12px;">:30</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="color:#cbd5e1;font-size:12px;">:45</span>
+          </div>
+          <div style="background:#ec4899;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="font-size:14px;">☀️</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 2px;text-align:center;cursor:pointer;">
+            <span style="font-size:14px;">🌙</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REMINDER TOGGLE — OFF -->
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Rappel</div>
+        <div style="width:36px;height:20px;background:#334155;border-radius:10px;position:relative;cursor:pointer;">
+          <div style="width:16px;height:16px;background:#94a3b8;border-radius:50%;position:absolute;top:2px;left:2px;"></div>
+        </div>
+      </div>
+      <div style="color:#64748b;font-size:11px;margin-top:4px;font-style:italic;">Activer pour configurer un rappel</div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div style="border-top:1px solid #334155;padding-top:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+        <div style="color:#94a3b8;">Durée : <strong style="color:#e2e8f0;">45 min</strong></div>
+        <div style="color:#94a3b8;">Prix : <strong style="color:#ec4899;font-size:15px;">350 MAD</strong></div>
+      </div>
+      <div style="color:#64748b;font-size:11px;margin-top:4px;">📅 Sam. 28 mars · 10h00 – 10h45</div>
+    </div>
+  </div>
+</div>

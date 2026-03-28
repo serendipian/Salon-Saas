@@ -1,0 +1,276 @@
+<h2>Approach A — V8 Final Layout</h2>
+<p class="subtitle">Multi-service appointment builder with tabbed right column</p>
+
+<div style="display:flex;gap:16px;margin-top:20px;">
+  <!-- LEFT PANEL -->
+  <div style="flex:1.3;background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 style="margin:0;font-size:16px;color:#e2e8f0;">Nouveau Rendez-vous</h3>
+      <div style="display:flex;gap:8px;">
+        <button style="background:#0f172a;border:1px solid #334155;color:#94a3b8;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;">Annuler</button>
+        <button style="background:#ec4899;border:none;color:white;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Enregistrer</button>
+      </div>
+    </div>
+
+    <!-- CLIENT (first field) -->
+    <div style="margin-bottom:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Client *</div>
+      </div>
+      <!-- Selected client state -->
+      <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;background:#ec4899;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:600;">FK</div>
+          <div>
+            <div style="color:#e2e8f0;font-size:13px;font-weight:500;">Fatima Khaldi</div>
+            <div style="color:#64748b;font-size:11px;">+212 6 12 34 56 78 · 12 visites</div>
+          </div>
+        </div>
+        <span style="color:#64748b;font-size:12px;cursor:pointer;">✕</span>
+      </div>
+    </div>
+
+    <!-- SEPARATOR -->
+    <div style="border-top:1px solid #334155;margin-bottom:16px;"></div>
+
+    <!-- SERVICE BLOCK 1 — Active (highlighted border) -->
+    <div style="border:2px solid #ec4899;border-radius:10px;padding:14px;margin-bottom:12px;background:rgba(236,72,153,0.03);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="background:#ec4899;color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">1</span>
+          <span style="color:#e2e8f0;font-size:13px;font-weight:600;">Service</span>
+        </div>
+        <span style="color:#64748b;font-size:12px;cursor:pointer;">✕</span>
+      </div>
+
+      <!-- Category Tabs -->
+      <div style="display:flex;gap:0;border-bottom:2px solid #334155;margin-bottom:0;">
+        <span style="padding:6px 12px;font-size:11px;color:#ec4899;border-bottom:2px solid #ec4899;margin-bottom:-2px;font-weight:600;cursor:pointer;">Coloration</span>
+        <span style="padding:6px 12px;font-size:11px;color:#94a3b8;cursor:pointer;">Coupe</span>
+        <span style="padding:6px 12px;font-size:11px;color:#94a3b8;cursor:pointer;">Soin</span>
+        <span style="padding:6px 12px;font-size:11px;color:#94a3b8;cursor:pointer;">Brushing</span>
+      </div>
+
+      <!-- Services grid -->
+      <div style="background:#0f172a;border:1px solid #334155;border-top:none;border-radius:0 0 8px 8px;padding:6px;margin-bottom:10px;">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
+          <div style="background:#1e293b;border:2px solid #ec4899;border-radius:6px;padding:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="color:#e2e8f0;font-size:11px;font-weight:600;">Coloration classique</span>
+              <span style="width:14px;height:14px;background:#ec4899;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;color:white;">✓</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;align-items:center;gap:4px;background:#0f172a;border:1px solid #ec4899;border-radius:4px;padding:4px 6px;cursor:pointer;">
+                <span style="width:8px;height:8px;border-radius:50%;background:#ec4899;"></span>
+                <span style="color:#e2e8f0;font-size:10px;flex:1;">Racines</span>
+                <span style="color:#94a3b8;font-size:9px;">45m</span>
+                <span style="color:#ec4899;font-size:9px;font-weight:600;">350</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;background:#0f172a;border:1px solid #334155;border-radius:4px;padding:4px 6px;cursor:pointer;">
+                <span style="width:8px;height:8px;border-radius:50%;border:1px solid #475569;"></span>
+                <span style="color:#cbd5e1;font-size:10px;flex:1;">Complète</span>
+                <span style="color:#64748b;font-size:9px;">90m</span>
+                <span style="color:#64748b;font-size:9px;">600</span>
+              </div>
+            </div>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:50px;">
+            <span style="color:#cbd5e1;font-size:11px;font-weight:500;">Balayage</span>
+            <span style="color:#64748b;font-size:9px;margin-top:2px;">3 variantes</span>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:50px;">
+            <span style="color:#cbd5e1;font-size:11px;font-weight:500;">Décoloration</span>
+            <span style="color:#64748b;font-size:9px;margin-top:2px;">2 variantes</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Staff for this service -->
+      <div>
+        <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;font-weight:600;">Praticien</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="background:#0f172a;border:1px solid #475569;color:#cbd5e1;padding:5px 10px;border-radius:16px;font-size:11px;cursor:pointer;">N'importe qui</span>
+          <!-- Selected staff shown as chip -->
+          <span style="background:#ec4899;color:white;padding:5px 10px;border-radius:16px;font-size:11px;font-weight:500;display:flex;align-items:center;gap:4px;">
+            Sarah M.
+            <span style="opacity:0.7;cursor:pointer;">✕</span>
+          </span>
+          <span style="background:#0f172a;border:1px solid #334155;color:#94a3b8;padding:5px 10px;border-radius:16px;font-size:11px;cursor:pointer;">Nadia K.</span>
+          <span style="background:#0f172a;border:1px solid #334155;color:#94a3b8;padding:5px 10px;border-radius:16px;font-size:11px;cursor:pointer;">Leila B.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICE BLOCK 2 — Inactive (dimmer border) -->
+    <div style="border:1px solid #475569;border-radius:10px;padding:14px;margin-bottom:12px;cursor:pointer;" title="Click to activate and show in right column">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="background:#475569;color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">2</span>
+          <span style="color:#cbd5e1;font-size:13px;font-weight:600;">Service</span>
+        </div>
+        <span style="color:#64748b;font-size:12px;cursor:pointer;">✕</span>
+      </div>
+
+      <!-- Collapsed: shows selected service summary -->
+      <div style="display:flex;align-items:center;gap:8px;background:#0f172a;border-radius:6px;padding:8px 12px;margin-bottom:8px;">
+        <span style="color:#e2e8f0;font-size:12px;flex:1;">Brushing · Lissage</span>
+        <span style="color:#94a3b8;font-size:11px;">30 min</span>
+        <span style="color:#ec4899;font-size:11px;font-weight:600;">200 MAD</span>
+      </div>
+
+      <!-- Staff summary -->
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:10px;color:#94a3b8;text-transform:uppercase;font-weight:600;">Praticien :</span>
+        <span style="color:#cbd5e1;font-size:11px;">Sarah M.</span>
+        <span style="color:#64748b;font-size:11px;">· Sam. 28 mars · 10h45 – 11h15</span>
+      </div>
+    </div>
+
+    <!-- ADD ANOTHER SERVICE -->
+    <button style="background:none;border:1px dashed #475569;border-radius:10px;padding:12px;width:100%;color:#94a3b8;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:16px;">
+      <span style="color:#ec4899;font-weight:700;font-size:16px;">+</span> Ajouter un service
+    </button>
+
+    <!-- NOTES -->
+    <div>
+      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Notes</div>
+      <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 14px;color:#64748b;font-size:13px;min-height:40px;">Ajouter des notes...</div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL — Tabbed per service -->
+  <div style="flex:0.85;background:#1e293b;border-radius:12px;padding:0;border:1px solid #334155;overflow:hidden;">
+
+    <!-- Service Tabs -->
+    <div style="display:flex;border-bottom:2px solid #334155;background:#0f172a;">
+      <div style="flex:1;padding:10px 16px;font-size:12px;color:#ec4899;font-weight:600;border-bottom:2px solid #ec4899;margin-bottom:-2px;text-align:center;cursor:pointer;">
+        <div>① Coloration</div>
+        <div style="font-size:9px;color:#94a3b8;font-weight:400;margin-top:2px;">Racines · Sarah M.</div>
+      </div>
+      <div style="flex:1;padding:10px 16px;font-size:12px;color:#94a3b8;text-align:center;cursor:pointer;">
+        <div>② Brushing</div>
+        <div style="font-size:9px;color:#64748b;font-weight:400;margin-top:2px;">Lissage · Sarah M.</div>
+      </div>
+    </div>
+
+    <div style="padding:16px;">
+
+      <!-- STATUS -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Statut</div>
+        <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 14px;color:#e2e8f0;font-size:13px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="width:8px;height:8px;background:#3b82f6;border-radius:50%;"></span>
+            <span>Planifié</span>
+          </div>
+          <span style="color:#64748b;font-size:10px;">▼</span>
+        </div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Date *</div>
+        <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="color:#94a3b8;cursor:pointer;font-size:14px;">◀</span>
+            <span style="color:#e2e8f0;font-size:13px;font-weight:600;">Mars 2026</span>
+            <span style="color:#94a3b8;cursor:pointer;font-size:14px;">▶</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;">
+            <span style="color:#64748b;font-size:9px;font-weight:600;padding:3px;">Lu</span>
+            <span style="color:#64748b;font-size:9px;font-weight:600;padding:3px;">Ma</span>
+            <span style="color:#64748b;font-size:9px;font-weight:600;padding:3px;">Me</span>
+            <span style="color:#64748b;font-size:9px;font-weight:600;padding:3px;">Je</span>
+            <span style="color:#64748b;font-size:9px;font-weight:600;padding:3px;">Ve</span>
+            <span style="color:#64748b;font-size:9px;font-weight:600;padding:3px;">Sa</span>
+            <span style="color:#64748b;font-size:9px;font-weight:600;padding:3px;">Di</span>
+            <span style="color:#475569;font-size:10px;padding:4px;border-radius:4px;">23</span>
+            <span style="color:#475569;font-size:10px;padding:4px;border-radius:4px;">24</span>
+            <span style="color:#475569;font-size:10px;padding:4px;border-radius:4px;">25</span>
+            <span style="color:#475569;font-size:10px;padding:4px;border-radius:4px;">26</span>
+            <span style="color:#475569;font-size:10px;padding:4px;border-radius:4px;">27</span>
+            <span style="background:#ec4899;color:white;font-size:10px;padding:4px;border-radius:4px;font-weight:600;">28</span>
+            <span style="color:#475569;font-size:10px;padding:4px;border-radius:4px;">29</span>
+            <span style="color:#e2e8f0;font-size:10px;padding:4px;border-radius:4px;">30</span>
+            <span style="color:#e2e8f0;font-size:10px;padding:4px;border-radius:4px;">31</span>
+            <span style="color:#e2e8f0;font-size:10px;padding:4px;border-radius:4px;">1</span>
+            <span style="color:#e2e8f0;font-size:10px;padding:4px;border-radius:4px;">2</span>
+            <span style="color:#e2e8f0;font-size:10px;padding:4px;border-radius:4px;">3</span>
+            <span style="color:#e2e8f0;font-size:10px;padding:4px;border-radius:4px;">4</span>
+            <span style="color:#e2e8f0;font-size:10px;padding:4px;border-radius:4px;">5</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIME PICKER -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Heure *</div>
+        <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px;">
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-bottom:3px;">
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:#e2e8f0;font-size:11px;">9</span><span style="color:#94a3b8;font-size:8px;margin-left:1px;">AM</span></div>
+            <div style="background:#ec4899;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:white;font-size:11px;font-weight:600;">10</span><span style="color:rgba(255,255,255,0.7);font-size:8px;margin-left:1px;">AM</span></div>
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:#e2e8f0;font-size:11px;">11</span><span style="color:#94a3b8;font-size:8px;margin-left:1px;">AM</span></div>
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;opacity:0.35;"><span style="color:#475569;font-size:11px;text-decoration:line-through;">12</span><span style="color:#475569;font-size:8px;margin-left:1px;">PM</span></div>
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:#e2e8f0;font-size:11px;">1</span><span style="color:#94a3b8;font-size:8px;margin-left:1px;">PM</span></div>
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:#e2e8f0;font-size:11px;">2</span><span style="color:#94a3b8;font-size:8px;margin-left:1px;">PM</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-bottom:6px;">
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:#e2e8f0;font-size:11px;">3</span><span style="color:#94a3b8;font-size:8px;margin-left:1px;">PM</span></div>
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:#e2e8f0;font-size:11px;">4</span><span style="color:#94a3b8;font-size:8px;margin-left:1px;">PM</span></div>
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:#e2e8f0;font-size:11px;">5</span><span style="color:#94a3b8;font-size:8px;margin-left:1px;">PM</span></div>
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:#e2e8f0;font-size:11px;">6</span><span style="color:#94a3b8;font-size:8px;margin-left:1px;">PM</span></div>
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:#e2e8f0;font-size:11px;">7</span><span style="color:#94a3b8;font-size:8px;margin-left:1px;">PM</span></div>
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:#e2e8f0;font-size:11px;">8</span><span style="color:#94a3b8;font-size:8px;margin-left:1px;">PM</span></div>
+          </div>
+          <div style="border-top:1px solid #334155;margin-bottom:6px;"></div>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:3px;">
+            <div style="background:#ec4899;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:white;font-size:11px;font-weight:600;">:00</span></div>
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:#cbd5e1;font-size:11px;">:15</span></div>
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:#cbd5e1;font-size:11px;">:30</span></div>
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="color:#cbd5e1;font-size:11px;">:45</span></div>
+            <div style="background:#ec4899;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="font-size:12px;">☀️</span></div>
+            <div style="background:#1e293b;border:1px solid #334155;border-radius:5px;padding:6px 2px;text-align:center;cursor:pointer;"><span style="font-size:12px;">🌙</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REMINDER -->
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Rappel</div>
+          <div style="width:36px;height:20px;background:#334155;border-radius:10px;position:relative;cursor:pointer;">
+            <div style="width:16px;height:16px;background:#94a3b8;border-radius:50%;position:absolute;top:2px;left:2px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SERVICE SUMMARY -->
+      <div style="border-top:1px solid #334155;padding-top:10px;margin-bottom:8px;">
+        <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Ce service</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+          <span style="color:#94a3b8;">Durée : <strong style="color:#e2e8f0;">45 min</strong></span>
+          <span style="color:#94a3b8;">Prix : <strong style="color:#ec4899;">350 MAD</strong></span>
+        </div>
+        <div style="color:#64748b;font-size:10px;margin-top:3px;">📅 Sam. 28 mars · 10h00 – 10h45</div>
+      </div>
+
+      <!-- TOTAL APPOINTMENT SUMMARY -->
+      <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px;margin-top:8px;">
+        <div style="font-size:10px;color:#ec4899;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Total rendez-vous</div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+          <span style="color:#94a3b8;">① Coloration · Racines</span>
+          <span style="color:#e2e8f0;">350 MAD</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;">
+          <span style="color:#94a3b8;">② Brushing · Lissage</span>
+          <span style="color:#e2e8f0;">200 MAD</span>
+        </div>
+        <div style="border-top:1px solid #334155;padding-top:6px;display:flex;justify-content:space-between;font-size:13px;">
+          <span style="color:#94a3b8;">Durée totale : <strong style="color:#e2e8f0;">1h15</strong></span>
+          <strong style="color:#ec4899;font-size:14px;">550 MAD</strong>
+        </div>
+        <div style="color:#64748b;font-size:10px;margin-top:4px;">📅 Sam. 28 mars · 10h00 – 11h15</div>
+      </div>
+    </div>
+  </div>
+</div>
