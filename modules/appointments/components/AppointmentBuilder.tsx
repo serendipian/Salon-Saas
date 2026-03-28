@@ -13,6 +13,7 @@ import { useFormValidation } from '../../../hooks/useFormValidation';
 import ClientField from './ClientField';
 import ServiceBlock from './ServiceBlock';
 import SchedulingPanel from './SchedulingPanel';
+import AppointmentSummary from './AppointmentSummary';
 import { useStaffAvailability } from '../hooks/useStaffAvailability';
 import { formatPrice } from '../../../lib/format';
 
@@ -111,11 +112,17 @@ export default function AppointmentBuilder({
     return svc?.variants.find((v) => v.id === activeBlock.variantId) ?? null;
   }, [services, activeBlock?.serviceId, activeBlock?.variantId]);
 
+  const activeService = useMemo(
+    () => services.find((s) => s.id === activeBlock?.serviceId) ?? null,
+    [services, activeBlock?.serviceId],
+  );
+  const effectiveDuration = activeVariant?.durationMinutes ?? activeService?.durationMinutes ?? 30;
+
   // Staff availability for active block
   const unavailableHours = useStaffAvailability(
     activeStaff,
     activeBlock?.date ?? null,
-    activeVariant?.durationMinutes ?? 30,
+    effectiveDuration,
     appointments,
   );
 
@@ -154,11 +161,13 @@ export default function AppointmentBuilder({
     const svc = services.find((s) => s.id === block.serviceId);
     const variant = svc?.variants.find((v) => v.id === block.variantId);
     const staff = team.find((m) => m.id === block.staffId);
+    const duration = variant?.durationMinutes ?? svc?.durationMinutes;
+    const price = variant?.price ?? svc?.price;
     const parts = [
       svc?.name,
       variant ? `· ${variant.name}` : null,
-      variant ? `· ${variant.durationMinutes}m` : null,
-      variant ? `· ${formatPrice(variant.price)}` : null,
+      duration ? `· ${duration}m` : null,
+      price != null ? `· ${formatPrice(price)}` : null,
       staff ? `· ${staff.firstName} ${staff.lastName[0]}.` : null,
     ].filter(Boolean);
     return parts.join(' ');
@@ -215,8 +224,8 @@ export default function AppointmentBuilder({
           variantId: b.variantId ?? '',
           staffId: b.staffId,
           date: isoDate,
-          durationMinutes: variant?.durationMinutes ?? 30,
-          price: variant?.price ?? 0,
+          durationMinutes: variant?.durationMinutes ?? svc?.durationMinutes ?? 30,
+          price: variant?.price ?? svc?.price ?? 0,
         };
       }),
     };
@@ -306,21 +315,32 @@ export default function AppointmentBuilder({
             className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-800 focus:border-pink-400 focus:outline-none resize-none min-h-[44px]"
           />
         </div>
+
+        {/* Total Summary */}
+        {serviceBlocks.length > 0 && (
+          <div className="mt-4">
+            <AppointmentSummary
+              serviceBlocks={serviceBlocks}
+              activeBlockIndex={activeBlockIndex}
+              services={services}
+            />
+          </div>
+        )}
       </div>
 
       {/* RIGHT PANEL */}
-      <div className="flex-[0.85]">
+      <div className="flex-[0.6]">
         <SchedulingPanel
-          serviceBlocks={serviceBlocks}
-          activeBlockIndex={activeBlockIndex}
-          onActivateBlock={setActiveBlockIndex}
-          onBlockChange={updateBlock}
+          activeDate={activeBlock?.date ?? null}
+          activeHour={activeBlock?.hour ?? null}
+          activeMinute={activeBlock?.minute ?? 0}
+          onDateChange={(date) => updateBlock(activeBlockIndex, { date })}
+          onHourChange={(hour) => updateBlock(activeBlockIndex, { hour })}
+          onMinuteChange={(minute) => updateBlock(activeBlockIndex, { minute })}
           status={status}
           onStatusChange={setStatus}
           reminderMinutes={reminderMinutes}
           onReminderChange={setReminderMinutes}
-          services={services}
-          team={team}
           unavailableHours={unavailableHours}
         />
       </div>

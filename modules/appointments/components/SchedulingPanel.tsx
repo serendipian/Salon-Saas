@@ -1,22 +1,20 @@
 import React from 'react';
-import type { AppointmentStatus, Service, StaffMember } from '../../../types';
-import type { ServiceBlockState } from '../../../types';
+import type { AppointmentStatus } from '../../../types';
 import InlineCalendar from './InlineCalendar';
 import TimePicker from './TimePicker';
 import ReminderToggle from './ReminderToggle';
-import AppointmentSummary from './AppointmentSummary';
 
 interface SchedulingPanelProps {
-  serviceBlocks: ServiceBlockState[];
-  activeBlockIndex: number;
-  onActivateBlock: (index: number) => void;
-  onBlockChange: (index: number, updates: Partial<ServiceBlockState>) => void;
+  activeDate: string | null;
+  activeHour: number | null;
+  activeMinute: number;
+  onDateChange: (date: string) => void;
+  onHourChange: (hour: number) => void;
+  onMinuteChange: (minute: number) => void;
   status: AppointmentStatus;
   onStatusChange: (status: AppointmentStatus) => void;
   reminderMinutes: number | null;
   onReminderChange: (minutes: number | null) => void;
-  services: Service[];
-  team: StaffMember[];
   unavailableHours?: Set<number>;
 }
 
@@ -28,124 +26,57 @@ const STATUS_OPTIONS: { value: AppointmentStatus; label: string; color: string }
 ];
 
 export default function SchedulingPanel({
-  serviceBlocks,
-  activeBlockIndex,
-  onActivateBlock,
-  onBlockChange,
+  activeDate,
+  activeHour,
+  activeMinute,
+  onDateChange,
+  onHourChange,
+  onMinuteChange,
   status,
   onStatusChange,
   reminderMinutes,
   onReminderChange,
-  services,
-  team,
   unavailableHours,
 }: SchedulingPanelProps) {
-  const activeBlock = serviceBlocks[activeBlockIndex];
-  if (!activeBlock) return null;
-
-  const getTabLabel = (block: ServiceBlockState, index: number) => {
-    const svc = services.find((s) => s.id === block.serviceId);
-    const variant = svc?.variants.find((v) => v.id === block.variantId);
-    const staff = team.find((m) => m.id === block.staffId);
-    return {
-      name: svc?.name ?? 'Service',
-      subtitle: [variant?.name, staff ? `${staff.firstName} ${staff.lastName[0]}.` : null]
-        .filter(Boolean)
-        .join(' · '),
-    };
-  };
-
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-      {/* Service tabs */}
-      <div className="flex border-b-2 border-slate-200 bg-slate-50 overflow-x-auto">
-        {serviceBlocks.map((block, i) => {
-          const tab = getTabLabel(block, i);
-          const isActive = i === activeBlockIndex;
-          const circled = '\u2460\u2461\u2462\u2463\u2464'[i] ?? `${i + 1}`;
-
-          return (
-            <button
-              key={block.id}
-              type="button"
-              onClick={() => onActivateBlock(i)}
-              className={`
-                flex-1 min-w-0 px-4 py-2.5 text-center transition-colors
-                ${isActive
-                  ? 'text-pink-600 font-semibold border-b-2 border-pink-400 -mb-[2px]'
-                  : 'text-slate-500 hover:text-slate-700'
-                }
-              `}
-            >
-              <div className="text-xs truncate">{circled} {tab.name}</div>
-              {tab.subtitle && (
-                <div className={`text-[9px] mt-0.5 truncate ${isActive ? 'text-slate-500' : 'text-slate-400'}`}>
-                  {tab.subtitle}
-                </div>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
       <div className="p-4">
         {/* Status */}
         <div className="mb-4">
-          <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">
-            Statut
-          </div>
+          <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">Statut</div>
           <select
             value={status}
             onChange={(e) => onStatusChange(e.target.value as AppointmentStatus)}
             className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-800 focus:border-pink-400 focus:outline-none min-h-[44px] appearance-none"
           >
             {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
         </div>
 
         {/* Calendar */}
         <div className="mb-4">
-          <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">
-            Date *
-          </div>
-          <InlineCalendar
-            value={activeBlock.date}
-            onChange={(date) => onBlockChange(activeBlockIndex, { date })}
-          />
+          <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">Date *</div>
+          <InlineCalendar value={activeDate} onChange={onDateChange} />
         </div>
 
         {/* Time Picker */}
         <div className="mb-4">
-          <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">
-            Heure *
-          </div>
+          <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">Heure *</div>
           <TimePicker
-            hour={activeBlock.hour}
-            minute={activeBlock.minute}
-            onHourChange={(hour) => onBlockChange(activeBlockIndex, { hour })}
-            onMinuteChange={(minute) => onBlockChange(activeBlockIndex, { minute })}
+            hour={activeHour}
+            minute={activeMinute}
+            onHourChange={onHourChange}
+            onMinuteChange={onMinuteChange}
             unavailableHours={unavailableHours}
           />
         </div>
 
         {/* Reminder */}
-        <div className="mb-4">
-          <ReminderToggle
-            value={reminderMinutes}
-            onChange={onReminderChange}
-          />
+        <div>
+          <ReminderToggle value={reminderMinutes} onChange={onReminderChange} />
         </div>
-
-        {/* Summary */}
-        <AppointmentSummary
-          serviceBlocks={serviceBlocks}
-          activeBlockIndex={activeBlockIndex}
-          services={services}
-        />
       </div>
     </div>
   );
