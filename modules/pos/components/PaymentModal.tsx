@@ -1,18 +1,23 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Trash2, CreditCard, Banknote, Gift, Tag, CheckCircle } from 'lucide-react';
-import { PaymentEntry } from '../../../types';
+import { createPortal } from 'react-dom';
+import { X, Trash2, CreditCard, Banknote, Gift, Tag, CheckCircle, ChevronDown } from 'lucide-react';
+import { PaymentEntry, CartItem } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
+import { useMediaQuery } from '../../../context/MediaQueryContext';
 
 interface PaymentModalProps {
   total: number;
+  cart?: CartItem[];
   onClose: () => void;
   onComplete: (payments: PaymentEntry[]) => void;
 }
 
-export const PaymentModal: React.FC<PaymentModalProps> = ({ total, onClose, onComplete }) => {
+export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], onClose, onComplete }) => {
   const { salonSettings } = useSettings();
+  const { isMobile } = useMediaQuery();
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
   const [payments, setPayments] = useState<PaymentEntry[]>([]);
   const [currentAmount, setCurrentAmount] = useState<string>(total.toFixed(2));
   
@@ -31,6 +36,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, onClose, onCo
       setCurrentAmount('');
     }
   }, [totalPaid, isComplete, total]);
+
+  // Body scroll lock on mobile
+  useEffect(() => {
+    if (isMobile) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [isMobile]);
 
   const handleAddPayment = (method: string) => {
     const amount = parseFloat(currentAmount);
@@ -62,6 +75,152 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, onClose, onCo
     if (method.includes('Cadeau')) return Gift;
     return Tag;
   };
+
+  // Mobile collapsible summary
+  const mobileSummary = cart.length > 0 && isMobile ? (
+    <div className="border-b border-slate-100">
+      <button
+        type="button"
+        onClick={() => setSummaryExpanded(!summaryExpanded)}
+        className="w-full px-5 py-3 flex items-center justify-between text-sm"
+      >
+        <span className="text-slate-600">
+          {cart.length} article{cart.length > 1 ? 's' : ''} · {formatPrice(total)}
+        </span>
+        <ChevronDown size={16} className={`text-slate-400 transition-transform ${summaryExpanded ? 'rotate-180' : ''}`} />
+      </button>
+      {summaryExpanded && (
+        <div className="px-5 pb-3 space-y-2">
+          {cart.map((item, idx) => (
+            <div key={idx} className="flex justify-between text-xs text-slate-600">
+              <span>{item.name} {item.variantName ? `(${item.variantName})` : ''} × {item.quantity}</span>
+              <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  ) : null;
+
+  if (isMobile) {
+    return createPortal(
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Encaissement"
+        className="fixed inset-0 bg-white flex flex-col animate-in slide-in-from-bottom duration-300"
+        style={{ zIndex: 'var(--z-modal)' }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 shrink-0">
+          <h2 className="text-lg font-bold text-slate-900">Encaissement</h2>
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Fermer">
+            <X size={20} />
+          </button>
+        </div>
+
+        {mobileSummary}
+
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
+          {/* Amount input */}
+          <div>
+            <label className="block text-sm font-medium text-slate-500 mb-2">Montant à encaisser</label>
+            <div className="relative">
+              <input
+                type="number"
+                inputMode="decimal"
+                value={currentAmount}
+                onChange={e => setCurrentAmount(e.target.value)}
+                className="w-full text-4xl font-bold text-slate-800 bg-transparent border-b-2 border-slate-200 focus:border-slate-900 outline-none py-2 placeholder:text-slate-300 transition-colors"
+                placeholder="0.00"
+                autoFocus
+              />
+              <span className="absolute right-0 bottom-3 text-xl text-slate-400 font-medium">{currencySymbol}</span>
+            </div>
+          </div>
+
+          {/* Payment methods 2x2 */}
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { method: 'Carte Bancaire', Icon: CreditCard },
+              { method: 'Espèces', Icon: Banknote },
+              { method: 'Carte Cadeau', Icon: Gift },
+              { method: 'Autre', Icon: Tag },
+            ].map(({ method, Icon }) => (
+              <button
+                key={method}
+                onClick={() => handleAddPayment(method)}
+                disabled={remaining <= 0}
+                className="flex flex-col items-center justify-center gap-2 p-5 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm min-h-[80px]"
+              >
+                <Icon size={28} className="text-slate-400 group-hover:text-slate-900" />
+                <span className="font-bold text-sm text-slate-700 group-hover:text-slate-900">{method}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Added payments */}
+          {payments.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-slate-400 uppercase">Paiements reçus</h4>
+              {payments.map(p => {
+                const Icon = getIcon(p.method);
+                return (
+                  <div key={p.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-white text-slate-500 flex items-center justify-center border border-slate-200">
+                        <Icon size={16} />
+                      </div>
+                      <span className="text-sm font-bold text-slate-700">{p.method}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-slate-700">{formatPrice(p.amount)}</span>
+                      <button onClick={() => removePayment(p.id)} className="p-2 text-slate-300 hover:text-red-600 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Sticky footer */}
+        <div className="shrink-0 px-5 py-4 bg-slate-50 border-t border-slate-200 space-y-3" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
+          <div className="flex justify-between text-sm text-slate-600">
+            <span>Reste à payer</span>
+            <span className={`font-bold ${remaining > 0 ? 'text-slate-800' : 'text-slate-400'}`}>
+              {formatPrice(remaining)}
+            </span>
+          </div>
+          {change > 0 && (
+            <div className="flex justify-between bg-emerald-50 p-2 rounded-lg text-emerald-700 text-sm font-bold">
+              <span>A rendre</span>
+              <span>{formatPrice(change)}</span>
+            </div>
+          )}
+          <button
+            onClick={handleFinalize}
+            disabled={!isComplete}
+            className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all shadow-sm ${
+              isComplete
+              ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+              : 'bg-slate-100 text-slate-400 border border-slate-200'
+            }`}
+          >
+            {isComplete ? (
+              <><CheckCircle size={24} /> Valider la transaction</>
+            ) : (
+              <span>Reste {formatPrice(remaining)} à payer</span>
+            )}
+          </button>
+        </div>
+      </div>,
+      document.body
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -136,8 +295,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, onClose, onCo
           <div className="mb-8">
              <label className="block text-sm font-medium text-slate-500 mb-2">Montant à encaisser</label>
              <div className="relative">
-               <input 
+               <input
                  type="number"
+                 inputMode="decimal"
                  value={currentAmount}
                  onChange={e => setCurrentAmount(e.target.value)}
                  className="w-full text-5xl font-bold text-slate-800 bg-transparent border-b-2 border-slate-200 focus:border-slate-900 outline-none py-2 placeholder:text-slate-300 transition-colors"
