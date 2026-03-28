@@ -153,7 +153,7 @@ export const useAppointments = () => {
     setStatusFilter,
     addAppointment: (appt: Appointment) => addAppointmentMutation.mutate(appt),
     updateAppointment: (appt: Appointment) => updateAppointmentMutation.mutate(appt),
-    addAppointmentGroup: addAppointmentGroupMutation.mutate,
+    addAppointmentGroup: addAppointmentGroupMutation.mutateAsync,
     isAddingGroup: addAppointmentGroupMutation.isPending,
   };
 };

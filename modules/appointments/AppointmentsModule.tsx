@@ -94,8 +94,12 @@ export const AppointmentsModule: React.FC = () => {
               }
               payload.clientId = newClientRow.id;
             }
-            addAppointmentGroup(payload);
-            setView('LIST');
+            try {
+              await addAppointmentGroup(payload);
+              setView('LIST');
+            } catch {
+              // Error toast handled by mutation's onError
+            }
           }}
           onCancel={() => view === 'EDIT' ? setView('DETAILS') : setView('LIST')}
           isSaving={isAddingGroup}
