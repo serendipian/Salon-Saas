@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ShoppingBag, Minus, Plus, Trash2, Edit3, Tag, CreditCard, User } from 'lucide-react';
 import { CartItem, Client } from '../../../types';
@@ -80,10 +80,13 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
     };
   }, [isOpen, onClose]);
 
-  const filteredClients = clients.filter(c =>
-    c.firstName.toLowerCase().includes(clientSearch.toLowerCase()) ||
-    c.lastName.toLowerCase().includes(clientSearch.toLowerCase()) ||
-    c.phone.includes(clientSearch)
+  const filteredClients = useMemo(() =>
+    clients.filter(c =>
+      c.firstName.toLowerCase().includes(clientSearch.toLowerCase()) ||
+      c.lastName.toLowerCase().includes(clientSearch.toLowerCase()) ||
+      c.phone.includes(clientSearch)
+    ),
+    [clients, clientSearch]
   );
 
   const handleClientSelect = (client: Client) => {
@@ -255,7 +258,7 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
                   <div className="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200">
                     <button
                       onClick={() => item.quantity > 1 ? onUpdateQuantity(item.id, -1) : onRemoveItem(item.id)}
-                      className="w-10 h-10 flex items-center justify-center hover:bg-white rounded text-slate-600 transition-colors"
+                      className="w-12 h-12 flex items-center justify-center hover:bg-white rounded text-slate-600 transition-colors"
                       aria-label={item.quantity > 1 ? 'Diminuer quantité' : 'Supprimer'}
                     >
                       {item.quantity > 1 ? <Minus size={16} /> : <Trash2 size={16} className="text-red-500" />}
@@ -263,7 +266,7 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
                     <span className="w-10 text-center text-sm font-bold text-slate-800">{item.quantity}</span>
                     <button
                       onClick={() => onUpdateQuantity(item.id, 1)}
-                      className="w-10 h-10 flex items-center justify-center hover:bg-white rounded text-slate-600 transition-colors"
+                      className="w-12 h-12 flex items-center justify-center hover:bg-white rounded text-slate-600 transition-colors"
                       aria-label="Augmenter quantité"
                     >
                       <Plus size={16} />
