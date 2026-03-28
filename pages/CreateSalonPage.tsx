@@ -9,7 +9,7 @@ export const CreateSalonPage: React.FC = () => {
 
   const [name, setName] = useState('');
   const [timezone, setTimezone] = useState('Europe/Paris');
-  const [currency, setCurrency] = useState('EUR');
+  const [currency, setCurrency] = useState('MAD');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 

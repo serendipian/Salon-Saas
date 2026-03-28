@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { Session, User, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { setSalonCurrency } from '../lib/format';
 import type {
   Role,
   Profile,
@@ -47,6 +48,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const roleRef = useRef(role);
   activeSalonRef.current = activeSalon;
   roleRef.current = role;
+
+  // Sync global currency for formatPrice()
+  useEffect(() => {
+    if (activeSalon?.currency) {
+      setSalonCurrency(activeSalon.currency);
+    }
+  }, [activeSalon?.currency]);
 
   // Fetch profile from public.profiles
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
@@ -277,7 +285,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setActiveSalon(prev => prev ? { ...prev, ...updates } : prev);
   }, []);
 
-  const createSalon = useCallback(async (name: string, timezone = 'Europe/Paris', currency = 'EUR') => {
+  const createSalon = useCallback(async (name: string, timezone = 'Europe/Paris', currency = 'MAD') => {
     const { data, error } = await supabase.rpc('create_salon', {
       p_name: name,
       p_timezone: timezone,
