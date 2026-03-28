@@ -321,4 +321,4 @@ export interface KPIData {
   trend: 'up' | 'down' | 'neutral';
 }
 
-export type ViewState = 'LIST' | 'DETAILS' | 'ADD' | 'EDIT';
+export type ViewState = 'LIST' | 'CALENDAR' | 'DETAILS' | 'ADD' | 'EDIT';
