@@ -91,17 +91,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   }, []);
 
-  // Set salon context for RLS
-  const setSalonContext = useCallback(async (salonId: string, userRole: string) => {
-    const { error } = await supabase.rpc('set_session_context', {
-      p_salon_id: salonId,
-      p_user_role: userRole,
-    });
-    if (error) {
-      console.error('Failed to set session context:', error.message);
-    }
-  }, []);
-
   // Switch active salon
   const switchSalon = useCallback(async (salonId: string) => {
     const membership = memberships.find(m => m.salon_id === salonId);
@@ -109,18 +98,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('No membership found for salon:', salonId);
       return;
     }
-    // Set RLS context BEFORE updating state — ensures Supabase session
-    // is ready before TanStack Query refetches on the new salonId key
-    await setSalonContext(salonId, membership.role);
     setActiveSalon(membership.salon);
     setRole(membership.role);
     localStorage.setItem('lastSalonId', salonId);
-  }, [memberships, setSalonContext]);
+  }, [memberships]);
 
   // Initialize auth state on mount
   const initializeAuth = useCallback(async () => {
     try {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      // Timeout to prevent infinite loading if getSession() hangs
+      const sessionResult = await Promise.race([
+        supabase.auth.getSession(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Session fetch timed out')), 5000)
+        ),
+      ]);
+      const { data: { session: currentSession } } = sessionResult;
 
       if (!currentSession?.user) {
         setIsLoading(false);
@@ -143,7 +136,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const m = userMemberships[0];
         setActiveSalon(m.salon);
         setRole(m.role);
-        await setSalonContext(m.salon_id, m.role);
       } else if (userMemberships.length > 1) {
         // Try to restore last salon
         const lastSalonId = localStorage.getItem('lastSalonId');
@@ -153,7 +145,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (lastMembership) {
           setActiveSalon(lastMembership.salon);
           setRole(lastMembership.role);
-          await setSalonContext(lastMembership.salon_id, lastMembership.role);
         }
         // If no last salon, user will be shown the salon picker
       }
@@ -162,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  }, [fetchProfile, fetchMemberships, setSalonContext]);
+  }, [fetchProfile, fetchMemberships]);
 
   // Listen for auth state changes
   useEffect(() => {
@@ -184,7 +175,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const m = userMemberships[0];
             setActiveSalon(m.salon);
             setRole(m.role);
-            await setSalonContext(m.salon_id, m.role);
           }
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
@@ -203,7 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       subscription.unsubscribe();
     };
-  }, [initializeAuth, fetchProfile, fetchMemberships, setSalonContext]);
+  }, [initializeAuth, fetchProfile, fetchMemberships]);
 
   // Real-time membership tracking (detect revocation / role changes)
   useEffect(() => {
@@ -243,7 +233,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } else if (stillMember.role !== currentRole) {
               // Role changed
               setRole(stillMember.role);
-              await setSalonContext(currentSalon.id, stillMember.role);
             }
           }
         }
@@ -255,7 +244,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, fetchMemberships, setSalonContext]);
+  }, [user, fetchMemberships]);
 
   // --- Auth Actions ---
 
@@ -307,13 +296,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (newMembership) {
         setActiveSalon(newMembership.salon);
         setRole(newMembership.role);
-        await setSalonContext(newMembership.salon_id, newMembership.role);
         localStorage.setItem('lastSalonId', newMembership.salon_id);
       }
     }
 
     return { salonId: data as string, error: null };
-  }, [user, fetchMemberships, setSalonContext]);
+  }, [user, fetchMemberships]);
 
   const value: AuthContextType = {
     user,

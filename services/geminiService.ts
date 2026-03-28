@@ -1,9 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 
+// Note: VITE_GEMINI_API_KEY is exposed client-side. For production,
+// move this to a Supabase Edge Function with the key stored as a secret.
 const getAiClient = () => {
-  const apiKey = process.env.API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
-    console.warn("API_KEY is not set in the environment.");
     return null;
   }
   return new GoogleGenAI({ apiKey });

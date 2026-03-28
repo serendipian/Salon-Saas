@@ -10,4 +10,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    // Workaround: some browsers return null from navigator.locks.request(),
+    // causing getSession() to hang. This no-op lock bypasses the Web Locks API.
+    lock: async (_name: string, _acquireTimeout: number, fn: () => Promise<any>) => fn(),
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  } as any,
+});

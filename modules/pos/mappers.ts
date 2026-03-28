@@ -56,9 +56,19 @@ export function toTransaction(row: TransactionRow): Transaction {
     note: item.note ?? undefined,
   }));
 
+  // Map DB constants back to French labels for display
+  const dbMethodToLabel: Record<string, string> = {
+    'CASH': 'Espèces',
+    'CARD': 'Carte Bancaire',
+    'TRANSFER': 'Virement',
+    'CHECK': 'Chèque',
+    'MOBILE': 'Mobile',
+    'OTHER': 'Autre',
+  };
+
   const payments: PaymentEntry[] = (row.transaction_payments ?? []).map(p => ({
     id: p.id,
-    method: p.method,
+    method: dbMethodToLabel[p.method] ?? p.method,
     amount: p.amount,
   }));
 
@@ -93,8 +103,19 @@ export function toTransactionRpcPayload(
     note: item.note ?? null,
   }));
 
+  // Map French UI labels to DB constants
+  const methodMap: Record<string, string> = {
+    'Espèces': 'CASH',
+    'Carte Bancaire': 'CARD',
+    'Virement': 'TRANSFER',
+    'Chèque': 'CHECK',
+    'Mobile': 'MOBILE',
+    'Carte Cadeau': 'OTHER',
+    'Autre': 'OTHER',
+  };
+
   const p_payments = payments.map(p => ({
-    method: p.method,
+    method: methodMap[p.method] ?? 'OTHER',
     amount: p.amount,
   }));
 

@@ -221,20 +221,20 @@ AuthContext calls this automatically on salon selection. The `get_active_salon()
 ## Known Issues to Fix
 
 1. ~~No data persistence~~ DONE — all modules on Supabase
-2. Tailwind via CDN (needs proper PostCSS setup)
-3. Import maps in index.html point to aistudiocdn.com (not needed with Vite)
-4. Gemini API key exposed client-side
-5. ~~No authentication system~~ (DONE — Plan 1B)
-6. Appointment form uses hardcoded staff names instead of team data
-7. Dashboard KPI trends are hardcoded percentages
-8. ~~No form validation~~ (DONE — Plan 4, Zod schemas)
-9. ~~No error boundaries~~ (DONE — Plan 4, module-level ErrorBoundary)
-10. ~~Not responsive for mobile~~ (DONE — Plan 5A infrastructure + nav + forms)
+2. ~~Tailwind via CDN~~ DONE — Tailwind CSS 4 via @tailwindcss/vite plugin
+3. ~~Import maps in index.html~~ DONE — removed, clean index.html
+4. ~~Gemini API key exposed client-side~~ DONE — uses VITE_GEMINI_API_KEY env var; for production, move to Supabase Edge Function
+5. ~~No authentication system~~ DONE — Plan 1B
+6. ~~Appointment form hardcoded staff~~ DONE — uses useTeam() hook for live data
+7. ~~Dashboard KPI trends hardcoded~~ DONE — computed dynamically via calcTrend()
+8. ~~No form validation~~ DONE — Plan 4, Zod schemas
+9. ~~No error boundaries~~ DONE — Plan 4, module-level ErrorBoundary
+10. ~~Not responsive for mobile~~ DONE — Plan 5A infrastructure + nav + forms
 
 ## Environment Variables
 
 ```
-GEMINI_API_KEY=                # Google Gemini API key (in .env.local)
+VITE_GEMINI_API_KEY=           # Google Gemini API key (in .env.local, optional)
 VITE_SUPABASE_URL=             # Supabase API URL (in .env.local)
 VITE_SUPABASE_ANON_KEY=        # Supabase anon key (in .env.local)
 ```
