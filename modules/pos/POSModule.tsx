@@ -27,7 +27,10 @@ export const POSModule: React.FC = () => {
     updateCartItem,
     updateQuantity,
     removeFromCart,
-    processTransaction
+    processTransaction,
+    pendingAppointments,
+    linkedAppointmentId,
+    importAppointment,
   } = usePOS();
 
   // Modal States
@@ -96,6 +99,9 @@ export const POSModule: React.FC = () => {
         onServiceClick={handleServiceClick}
         onProductClick={handleProductClick}
         onReceiptClick={setReceiptTransaction}
+        pendingAppointments={pendingAppointments}
+        onImportAppointment={importAppointment}
+        linkedAppointmentId={linkedAppointmentId}
       />
 
       {/* Desktop: sidebar cart */}
