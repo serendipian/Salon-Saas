@@ -1,0 +1,120 @@
+import React from 'react';
+import { Calendar, Clock, User, AlertTriangle } from 'lucide-react';
+import type { Appointment } from '../../../types';
+import { formatPrice } from '../../../lib/format';
+import { useMediaQuery } from '../../../context/MediaQueryContext';
+
+interface PendingAppointmentsProps {
+  appointments: Appointment[];
+  onImport: (appointment: Appointment) => void;
+  linkedAppointmentId: string | null;
+}
+
+export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
+  appointments,
+  onImport,
+  linkedAppointmentId,
+}) => {
+  const { isMobile } = useMediaQuery();
+
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  if (appointments.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+        <Calendar size={48} strokeWidth={1} className="mb-4 opacity-50" />
+        <p className="font-medium text-sm">Aucun rendez-vous en attente</p>
+        <p className="text-xs mt-1">Les rendez-vous confirmés du jour apparaîtront ici</p>
+      </div>
+    );
+  }
+
+  // Group by groupId (null = standalone appointment)
+  const grouped = new Map<string, Appointment[]>();
+  appointments.forEach(appt => {
+    const key = appt.groupId ?? appt.id;
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key)!.push(appt);
+  });
+
+  return (
+    <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 xl:grid-cols-3'}`}>
+      {Array.from(grouped.entries()).map(([groupKey, groupAppts]) => {
+        const primary = groupAppts[0];
+        const isOverdue = new Date(primary.date) < todayStart;
+        const isLinked = linkedAppointmentId === groupKey;
+        const totalPrice = groupAppts.reduce((sum, a) => sum + a.price, 0);
+
+        return (
+          <button
+            key={groupKey}
+            onClick={() => onImport(primary)}
+            disabled={isLinked}
+            className={`text-left p-4 rounded-xl border-2 transition-all ${
+              isLinked
+                ? 'border-green-300 bg-green-50 opacity-60 cursor-not-allowed'
+                : isOverdue
+                  ? 'border-amber-300 bg-amber-50 hover:border-amber-400 hover:shadow-md'
+                  : 'border-slate-200 bg-white hover:border-slate-400 hover:shadow-md'
+            }`}
+          >
+            {/* Overdue badge */}
+            {isOverdue && (
+              <div className="flex items-center gap-1.5 text-amber-600 text-xs font-semibold mb-2">
+                <AlertTriangle size={12} />
+                <span>En retard</span>
+              </div>
+            )}
+
+            {/* Linked badge */}
+            {isLinked && (
+              <div className="text-xs font-semibold text-green-600 mb-2">
+                Dans le panier
+              </div>
+            )}
+
+            {/* Client name */}
+            <div className="font-semibold text-slate-900 text-sm mb-1">
+              {primary.clientName || <span className="text-slate-400 italic">Client de passage</span>}
+            </div>
+
+            {/* Time */}
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3">
+              <Clock size={12} />
+              <span>
+                {new Date(primary.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+
+            {/* Services list */}
+            <div className="space-y-1.5 mb-3">
+              {groupAppts.map(appt => (
+                <div key={appt.id} className="flex justify-between items-center text-xs">
+                  <div className="flex-1 min-w-0">
+                    <span className="text-slate-700 font-medium truncate block">{appt.serviceName}</span>
+                    {appt.variantName && (
+                      <span className="text-slate-400">{appt.variantName}</span>
+                    )}
+                  </div>
+                  <span className="text-slate-600 font-medium ml-2 shrink-0">{formatPrice(appt.price)}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Staff + total */}
+            <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                <User size={12} />
+                <span className="truncate max-w-[120px]">
+                  {primary.staffName || 'Non attribué'}
+                </span>
+              </div>
+              <span className="font-bold text-slate-900 text-sm">{formatPrice(totalPrice)}</span>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
