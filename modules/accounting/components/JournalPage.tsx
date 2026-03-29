@@ -30,8 +30,9 @@ export const JournalPage: React.FC = () => {
 
   const handleExportCSV = () => {
     const headers = 'Date,Type,Libellé,Catégorie,Débit,Crédit\n';
+    const esc = (s: string) => s.replace(/"/g, '""');
     const rows = ledgerData.map(e =>
-      `${new Date(e.date).toLocaleDateString('fr-FR')},${e.type === 'INCOME' ? 'Recette' : 'Dépense'},"${e.label}","${e.category}",${e.type === 'EXPENSE' ? e.amount : ''},${e.type === 'INCOME' ? e.amount : ''}`
+      `${new Date(e.date).toLocaleDateString('fr-FR')},${e.type === 'INCOME' ? 'Recette' : 'Dépense'},"${esc(e.label)}","${esc(e.category)}",${e.type === 'EXPENSE' ? e.amount : ''},${e.type === 'INCOME' ? e.amount : ''}`
     ).join('\n');
     const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -95,12 +96,12 @@ export const JournalPage: React.FC = () => {
           </button>
           {showExportMenu && (
             <>
-              <div className="fixed inset-0" onClick={() => setShowExportMenu(false)} />
+              <div className="fixed inset-0 z-[9]" onClick={() => setShowExportMenu(false)} />
               <div className="absolute right-0 mt-1 w-56 bg-white rounded-xl border border-slate-200 shadow-lg py-1 z-10">
                 <button onClick={handleExportCSV} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
                   <FileText size={16} className="text-blue-500" /> Télécharger CSV
                 </button>
-                <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-400 cursor-not-allowed">
+                <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-400 cursor-not-allowed" title="Bientôt disponible">
                   <Database size={16} className="text-slate-300" /> Générer fichier FEC
                 </button>
               </div>

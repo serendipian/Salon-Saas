@@ -1,34 +1,14 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, Legend, PieChart, Pie, Cell,
 } from 'recharts';
 import { formatPrice } from '../../../lib/format';
+import { MiniKpiRow } from './MiniKpiRow';
 import type { FinancesOutletContext } from '../FinancesLayout';
 
 const CATEGORY_COLORS = ['#0f172a', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1', '#ef4444'];
-
-// KPI Card component (inline, for the 4-col overview grid)
-const KpiCard: React.FC<{ title: string; value: number; trend?: number; invertTrend?: boolean; subtitle?: string }> = ({ title, value, trend, invertTrend, subtitle }) => {
-  const isPositive = trend != null ? (invertTrend ? trend <= 0 : trend >= 0) : true;
-  return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-      <div className="flex justify-between items-start mb-1">
-        <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">{title}</span>
-        {trend != null && (
-          <span className={`text-[11px] font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${isPositive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-            {isPositive ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
-            {Math.abs(trend).toFixed(1)}%
-          </span>
-        )}
-      </div>
-      <div className="text-xl font-bold text-slate-900 tracking-tight">{formatPrice(value)}</div>
-      {subtitle && <div className="text-[11px] text-slate-400 mt-1">{subtitle}</div>}
-    </div>
-  );
-};
 
 // Payment method horizontal bars
 const PaymentMethodBar: React.FC<{ data: { method: string; amount: number; percent: number }[] }> = ({ data }) => (
@@ -101,12 +81,12 @@ export const FinancesOverview: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 4 KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Chiffre d'Affaires" value={financials.revenue} trend={financials.revenueTrend} />
-        <KpiCard title="B&#233;n&#233;fice Net" value={financials.netProfit} trend={financials.netProfitTrend} subtitle={`marge ${margin}%`} />
-        <KpiCard title="D&#233;penses Totales" value={financials.opex} trend={financials.opexTrend} invertTrend />
-        <KpiCard title="Panier Moyen" value={financials.avgBasket} trend={financials.avgBasketTrend} subtitle={`${financials.transactionCount} transactions`} />
-      </div>
+      <MiniKpiRow columns={4} items={[
+        { title: "Chiffre d'Affaires", value: financials.revenue, trend: financials.revenueTrend },
+        { title: 'Bénéfice Net', value: financials.netProfit, trend: financials.netProfitTrend, subtitle: `marge ${margin}%` },
+        { title: 'Dépenses Totales', value: financials.opex, trend: financials.opexTrend, invertTrend: true },
+        { title: 'Panier Moyen', value: financials.avgBasket, trend: financials.avgBasketTrend, subtitle: `${financials.transactionCount} transactions` },
+      ]} />
 
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
