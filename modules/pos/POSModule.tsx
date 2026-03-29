@@ -20,7 +20,7 @@ export const POSModule: React.FC = () => {
     services, serviceCategories,
     products, productCategories,
     transactions,
-    clients,
+    clients, allStaff,
     filteredItems,
     totals,
     addToCart,
@@ -108,6 +108,8 @@ export const POSModule: React.FC = () => {
           onUpdateQuantity={updateQuantity}
           onRemoveItem={removeFromCart}
           onEditItem={setEditingItem}
+          onUpdateCartItem={updateCartItem}
+          allStaff={allStaff}
           totals={totals}
           onCheckout={() => setShowPaymentModal(true)}
         />
@@ -131,6 +133,8 @@ export const POSModule: React.FC = () => {
             onUpdateQuantity={updateQuantity}
             onRemoveItem={removeFromCart}
             onEditItem={(item) => { setEditingItem(item); setIsCartOpen(false); }}
+            onUpdateCartItem={updateCartItem}
+            allStaff={allStaff}
             totals={totals}
             onCheckout={() => setShowPaymentModal(true)}
           />

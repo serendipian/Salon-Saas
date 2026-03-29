@@ -2,7 +2,9 @@
 import React, { useState } from 'react';
 import { User, ShoppingBag, Trash2, Minus, Plus, Edit3, CreditCard, X, ChevronDown, Tag } from 'lucide-react';
 import { CartItem, Client } from '../../../types';
+import type { StaffMember } from '../../../types';
 import { formatPrice } from '../../../lib/format';
+import { StaffSelector } from './StaffSelector';
 
 interface POSCartProps {
   cart: CartItem[];
@@ -12,6 +14,8 @@ interface POSCartProps {
   onUpdateQuantity: (id: string, delta: number) => void;
   onRemoveItem: (id: string) => void;
   onEditItem: (item: CartItem) => void;
+  onUpdateCartItem: (id: string, updates: Partial<CartItem>) => void;
+  allStaff: StaffMember[];
   totals: { subtotal: number; tax: number; total: number; vatRate: number };
   onCheckout: () => void;
 }
@@ -24,6 +28,8 @@ export const POSCart: React.FC<POSCartProps> = ({
   onUpdateQuantity,
   onRemoveItem,
   onEditItem,
+  onUpdateCartItem,
+  allStaff,
   totals,
   onCheckout
 }) => {
@@ -136,6 +142,13 @@ export const POSCart: React.FC<POSCartProps> = ({
                            <Tag size={10} /> {item.note}
                         </div>
                       )}
+                      <StaffSelector
+                        staffId={item.staffId}
+                        staffName={item.staffName}
+                        staffMembers={allStaff}
+                        onChange={(staffId, staffName) => onUpdateCartItem(item.id, { staffId, staffName })}
+                        expanded={item.type === 'SERVICE'}
+                      />
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-slate-900">{formatPrice(item.price * item.quantity)}</div>
