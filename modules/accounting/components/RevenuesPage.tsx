@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
 import { MiniKpiRow } from './MiniKpiRow';
 import { RevenueCategoryTable } from './RevenueCategoryTable';
@@ -15,6 +15,7 @@ export const RevenuesPage: React.FC = () => {
     serviceRevenue, productRevenue,
     prevServiceRevenue, prevProductRevenue,
     revenueByServiceCategory, revenueByProductCategory,
+    revenueByStaffServices, revenueByStaffProducts,
     calcTrend,
   } = useOutletContext<FinancesOutletContext>();
 
@@ -75,14 +76,13 @@ export const RevenuesPage: React.FC = () => {
           <div className="flex gap-1 bg-slate-100 p-1 rounded-lg w-fit">
             {[
               { id: 'PAR_CATEGORIE' as ServiceSubTab, label: 'Par catégorie' },
-              { id: 'PAR_EQUIPE' as ServiceSubTab, label: 'Par équipe', disabled: true },
+              { id: 'PAR_EQUIPE' as ServiceSubTab, label: 'Par équipe' },
             ].map(tab => (
-              <button key={tab.id} onClick={() => !tab.disabled && setServiceSubTab(tab.id)}
+              <button key={tab.id} onClick={() => setServiceSubTab(tab.id)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${
-                  tab.disabled ? 'text-slate-400 cursor-not-allowed'
-                    : serviceSubTab === tab.id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                  serviceSubTab === tab.id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                 }`}>
-                {tab.disabled && <Lock size={10} />}{tab.label}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -91,9 +91,41 @@ export const RevenuesPage: React.FC = () => {
             <RevenueCategoryTable data={serviceCategoryData} totalRevenue={serviceRevenue.total} itemLabel="prestations" />
           )}
           {serviceSubTab === 'PAR_EQUIPE' && (
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-8 text-center">
-              <Lock size={24} className="mx-auto text-slate-300 mb-3" />
-              <p className="text-sm text-slate-500">Activez le suivi par équipe dans la Caisse pour débloquer cette vue</p>
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr className="text-xs font-semibold text-slate-500 uppercase">
+                    <th className="px-4 py-3">Membre</th>
+                    <th className="px-4 py-3 text-right">Prestations</th>
+                    <th className="px-4 py-3 text-right">CA</th>
+                    <th className="px-4 py-3 text-right">Panier Moyen</th>
+                    <th className="px-4 py-3 text-right">% du total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {revenueByStaffServices.map((row, idx) => (
+                    <tr key={row.staffId || idx} className="hover:bg-slate-50 transition-colors text-sm">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center">
+                            <Users size={12} className="text-slate-400" />
+                          </div>
+                          <span className={`font-medium ${row.staffId ? 'text-slate-900' : 'text-slate-400 italic'}`}>
+                            {row.staffName}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right text-slate-600">{row.count}</td>
+                      <td className="px-4 py-3 text-right font-medium text-slate-900">{formatPrice(row.revenue)}</td>
+                      <td className="px-4 py-3 text-right text-slate-600">{formatPrice(row.avgBasket)}</td>
+                      <td className="px-4 py-3 text-right text-slate-500">{row.percent.toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                  {revenueByStaffServices.length === 0 && (
+                    <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-slate-400">Aucune donnée</td></tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           )}
         </>
@@ -112,14 +144,13 @@ export const RevenuesPage: React.FC = () => {
             {[
               { id: 'PAR_CATEGORIE' as ProductSubTab, label: 'Par catégorie' },
               { id: 'TOUS' as ProductSubTab, label: 'Tous les produits' },
-              { id: 'PAR_EQUIPE' as ProductSubTab, label: 'Par équipe', disabled: true },
+              { id: 'PAR_EQUIPE' as ProductSubTab, label: 'Par équipe' },
             ].map(tab => (
-              <button key={tab.id} onClick={() => !tab.disabled && setProductSubTab(tab.id)}
+              <button key={tab.id} onClick={() => setProductSubTab(tab.id)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${
-                  tab.disabled ? 'text-slate-400 cursor-not-allowed'
-                    : productSubTab === tab.id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                  productSubTab === tab.id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                 }`}>
-                {tab.disabled && <Lock size={10} />}{tab.label}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -161,9 +192,39 @@ export const RevenuesPage: React.FC = () => {
           )}
 
           {productSubTab === 'PAR_EQUIPE' && (
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-8 text-center">
-              <Lock size={24} className="mx-auto text-slate-300 mb-3" />
-              <p className="text-sm text-slate-500">Activez le suivi par équipe dans la Caisse pour débloquer cette vue</p>
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr className="text-xs font-semibold text-slate-500 uppercase">
+                    <th className="px-4 py-3">Membre</th>
+                    <th className="px-4 py-3 text-right">Qté vendue</th>
+                    <th className="px-4 py-3 text-right">CA</th>
+                    <th className="px-4 py-3 text-right">% du total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {revenueByStaffProducts.map((row, idx) => (
+                    <tr key={row.staffId || idx} className="hover:bg-slate-50 transition-colors text-sm">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center">
+                            <Users size={12} className="text-slate-400" />
+                          </div>
+                          <span className={`font-medium ${row.staffId ? 'text-slate-900' : 'text-slate-400 italic'}`}>
+                            {row.staffName}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right text-slate-600">{row.count}</td>
+                      <td className="px-4 py-3 text-right font-medium text-slate-900">{formatPrice(row.revenue)}</td>
+                      <td className="px-4 py-3 text-right text-slate-500">{row.percent.toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                  {revenueByStaffProducts.length === 0 && (
+                    <tr><td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-400">Aucune donnée</td></tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           )}
         </>
