@@ -91,7 +91,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   };
 
   const renderItem = (item: DrawerNavItem) => {
-    const isActive = activeModule === item.id;
+    const isActive = activeModule === item.id || activeModule.startsWith(item.id + '/');
     return (
       <button
         key={item.id}
@@ -154,7 +154,32 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
           <div className="px-4 mb-3 text-[11px] font-bold uppercase text-slate-400 tracking-widest">
             Menu Principal
           </div>
-          {mainNavItems.map(renderItem)}
+          {mainNavItems.map(item => (
+            <React.Fragment key={item.id}>
+              {renderItem(item)}
+              {item.id === 'finances' && (
+                <div className="ml-4 pl-4 border-l border-slate-100 space-y-0.5">
+                  {[
+                    { id: 'finances/revenus', label: 'Revenus' },
+                    { id: 'finances/depenses', label: 'Dépenses' },
+                    { id: 'finances/journal', label: 'Journal' },
+                  ].map(sub => (
+                    <button
+                      key={sub.id}
+                      onClick={() => handleNavClick(sub.id)}
+                      className={`flex items-center w-full px-4 py-2.5 rounded-xl text-[13px] font-medium transition-all min-h-[44px] ${
+                        activeModule === sub.id
+                          ? 'text-slate-900 bg-slate-100'
+                          : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {sub.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </React.Fragment>
+          ))}
 
           {managementNavItems.length > 0 && (
             <>

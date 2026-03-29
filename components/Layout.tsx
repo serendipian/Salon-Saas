@@ -106,7 +106,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
     { id: 'calendar', label: 'Agenda', icon: Calendar, resource: 'appointments' },
     { id: 'clients', label: 'Clients', icon: Users, resource: 'clients' },
     { id: 'pos', label: 'Caisse', icon: CreditCard, resource: 'pos' },
-    { id: 'accounting', label: 'Finances', icon: BarChart3, resource: 'accounting' },
+    { id: 'finances', label: 'Finances', icon: BarChart3, resource: 'accounting' },
+  ];
+
+  const financesSubItems = [
+    { id: 'finances/revenus', label: 'Revenus' },
+    { id: 'finances/depenses', label: 'Dépenses' },
+    { id: 'finances/journal', label: 'Journal' },
   ];
 
   const managementNavItems: NavItem[] = [
@@ -208,14 +214,33 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
               </div>
             )}
             {visibleMainNav.map(item => (
-              <SidebarItem
-                key={item.id}
-                icon={item.icon}
-                label={item.label}
-                active={activeModule === item.id}
-                onClick={() => onNavigate(item.id)}
-                collapsed={collapsed}
-              />
+              <React.Fragment key={item.id}>
+                <SidebarItem
+                  icon={item.icon}
+                  label={item.label}
+                  active={activeModule === item.id || activeModule.startsWith(item.id + '/')}
+                  onClick={() => onNavigate(item.id)}
+                  collapsed={collapsed}
+                />
+                {/* Finances sub-items */}
+                {item.id === 'finances' && !collapsed && (
+                  <div className="ml-4 pl-4 border-l border-slate-100 space-y-0.5">
+                    {financesSubItems.map(sub => (
+                      <button
+                        key={sub.id}
+                        onClick={() => onNavigate(sub.id)}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
+                          activeModule === sub.id
+                            ? 'text-slate-900 bg-slate-100'
+                            : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        {sub.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </React.Fragment>
             ))}
           </div>
 
