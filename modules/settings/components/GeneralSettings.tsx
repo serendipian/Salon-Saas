@@ -75,28 +75,21 @@ export const GeneralSettings: React.FC<{ onBack: () => void }> = ({ onBack }) =>
         </Section>
 
         <Section title="Préférences Financières">
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Select 
-                label="Devise" 
-                value={formData.currency} 
-                onChange={(val) => setFormData({...formData, currency: val as string})} 
-                options={[
-                  { value: 'EUR', label: 'Euro (€)' },
-                  { value: 'USD', label: 'Dollar US ($)' },
-                  { value: 'MAD', label: 'Dirham Marocain (MAD)' },
-                  { value: 'GBP', label: 'Livre Sterling (£)' },
-                  { value: 'CAD', label: 'Dollar Canadien ($)' },
-                  { value: 'CHF', label: 'Franc Suisse (CHF)' }
-                ]}
-              />
-              <Input 
-                label="Taux de TVA par défaut" 
-                type="number"
-                suffix="%"
-                value={formData.vatRate} 
-                onChange={e => setFormData({...formData, vatRate: parseFloat(e.target.value)})} 
-              />
-           </div>
+          <div className="max-w-xs">
+            <Select
+              label="Devise"
+              value={formData.currency}
+              onChange={(val) => setFormData({...formData, currency: val as string})}
+              options={[
+                { value: 'EUR', label: 'Euro (€)' },
+                { value: 'USD', label: 'Dollar US ($)' },
+                { value: 'MAD', label: 'Dirham Marocain (MAD)' },
+                { value: 'GBP', label: 'Livre Sterling (£)' },
+                { value: 'CAD', label: 'Dollar Canadien ($)' },
+                { value: 'CHF', label: 'Franc Suisse (CHF)' }
+              ]}
+            />
+          </div>
         </Section>
       </div>
     </div>
