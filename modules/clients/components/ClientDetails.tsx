@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { 
-  MapPin, 
-  ArrowLeft, 
-  Phone, 
-  Mail, 
+import {
+  MapPin,
+  ArrowLeft,
+  Phone,
+  Mail,
   AlertCircle,
   MessageCircle,
   Instagram,
@@ -14,12 +14,15 @@ import {
   Check,
   X as XIcon,
   Briefcase,
+  Building2,
   UserPlus,
   Calendar,
+  CalendarDays,
   Edit,
   Trash2,
   Clock,
-  ShoppingBag
+  ShoppingBag,
+  User
 } from 'lucide-react';
 import { Client, AppointmentStatus } from '../../../types';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
@@ -89,10 +92,10 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* --- LEFT SIDEBAR --- */}
         <div className="space-y-6">
-          
+
           {/* Profile Card */}
           <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col items-center text-center">
             <div className="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center text-2xl font-bold text-slate-600 mb-4 border border-slate-200 relative overflow-hidden">
@@ -107,7 +110,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
                <MapPin size={12} />
                {client.city || 'Ville non renseignée'}
             </p>
-            
+
             <div className="mb-6">
                {client.status === 'VIP' && <span className="px-3 py-1 bg-purple-100 text-purple-700 border border-purple-200 rounded-full text-xs font-bold">VIP</span>}
                {(!client.status || client.status === 'ACTIF') && <span className="px-3 py-1 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-full text-xs font-medium">Client Actif</span>}
@@ -127,80 +130,145 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
             </div>
           </div>
 
-          {/* Contact & Preferences */}
-          <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-5">
-            
-            <div>
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Coordonnées</h3>
-              <ul className="space-y-3">
-                <li className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
-                     <Phone size={14} />
-                  </div>
-                  <div className="overflow-hidden">
-                    <div className="text-sm font-medium text-slate-900">{client.phone}</div>
-                    <div className="text-xs text-slate-500">Mobile</div>
-                  </div>
-                </li>
-                <li className="flex items-center gap-3">
-                   <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
-                     <Mail size={14} />
-                  </div>
-                  <div className="overflow-hidden">
-                     <div className="text-sm font-medium text-slate-900 truncate">{client.email}</div>
-                     <div className="text-xs text-slate-500">Email</div>
-                  </div>
-                </li>
-                {client.whatsapp && (
-                  <li className="flex items-center gap-3">
-                     <div className="w-8 h-8 rounded bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
-                       <MessageCircle size={14} />
-                    </div>
-                    <div className="overflow-hidden">
-                       <div className="text-sm font-medium text-slate-900">{client.whatsapp}</div>
-                       <div className="text-xs text-slate-500">WhatsApp</div>
-                    </div>
-                  </li>
-                )}
-                {client.instagram && (
-                  <li className="flex items-center gap-3">
-                     <div className="w-8 h-8 rounded bg-pink-50 flex items-center justify-center text-pink-600 shrink-0">
-                       <Instagram size={14} />
-                    </div>
-                    <div className="overflow-hidden">
-                       <div className="text-sm font-medium text-slate-900">{client.instagram}</div>
-                       <div className="text-xs text-slate-500">Instagram</div>
-                    </div>
-                  </li>
-                )}
-              </ul>
+          {/* Info sections in 2 columns with divider */}
+          <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_1px_1fr] gap-6">
+
+              {/* Left column: Coordonnées + Professionnel */}
+              <div className="space-y-5">
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Coordonnées</h3>
+                  <ul className="space-y-3">
+                    <li className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                         <Phone size={14} />
+                      </div>
+                      <div className="overflow-hidden">
+                        <div className="text-sm font-medium text-slate-900">{client.phone || '-'}</div>
+                        <div className="text-xs text-slate-500">Mobile</div>
+                      </div>
+                    </li>
+                    <li className="flex items-center gap-3">
+                       <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                         <Mail size={14} />
+                      </div>
+                      <div className="overflow-hidden">
+                         <div className="text-sm font-medium text-slate-900 truncate">{client.email || '-'}</div>
+                         <div className="text-xs text-slate-500">Email</div>
+                      </div>
+                    </li>
+                    {client.whatsapp && (
+                      <li className="flex items-center gap-3">
+                         <div className="w-8 h-8 rounded bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                           <MessageCircle size={14} />
+                        </div>
+                        <div className="overflow-hidden">
+                           <div className="text-sm font-medium text-slate-900">{client.whatsapp}</div>
+                           <div className="text-xs text-slate-500">WhatsApp</div>
+                        </div>
+                      </li>
+                    )}
+                    {client.instagram && (
+                      <li className="flex items-center gap-3">
+                         <div className="w-8 h-8 rounded bg-pink-50 flex items-center justify-center text-pink-600 shrink-0">
+                           <Instagram size={14} />
+                        </div>
+                        <div className="overflow-hidden">
+                           <div className="text-sm font-medium text-slate-900">{client.instagram}</div>
+                           <div className="text-xs text-slate-500">Instagram</div>
+                        </div>
+                      </li>
+                    )}
+                  </ul>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100">
+                   <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Professionnel</h3>
+                   <ul className="space-y-3">
+                     <li className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                           <Briefcase size={14} />
+                        </div>
+                        <div className="overflow-hidden">
+                           <div className="text-sm font-medium text-slate-900">{client.profession || '-'}</div>
+                           <div className="text-xs text-slate-500">Métier</div>
+                        </div>
+                     </li>
+                     <li className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                           <Building2 size={14} />
+                        </div>
+                        <div className="overflow-hidden">
+                           <div className="text-sm font-medium text-slate-900">{client.company || '-'}</div>
+                           <div className="text-xs text-slate-500">Société</div>
+                        </div>
+                     </li>
+                   </ul>
+                </div>
+              </div>
+
+              {/* Vertical divider */}
+              <div className="hidden sm:block bg-slate-200" />
+
+              {/* Right column: Identité + Préférences */}
+              <div className="space-y-5">
+                <div>
+                   <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Identité</h3>
+                   <ul className="space-y-3">
+                     <li className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                           <User size={14} />
+                        </div>
+                        <div className="overflow-hidden">
+                           <div className="text-sm font-medium text-slate-900">{client.gender || '-'}</div>
+                           <div className="text-xs text-slate-500">Genre</div>
+                        </div>
+                     </li>
+                     <li className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                           <CalendarDays size={14} />
+                        </div>
+                        <div className="overflow-hidden">
+                           <div className="text-sm font-medium text-slate-900">{client.ageGroup || '-'}</div>
+                           <div className="text-xs text-slate-500">Tranche d'âge</div>
+                        </div>
+                     </li>
+                   </ul>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100">
+                   <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Préférences</h3>
+                   <ul className="space-y-3">
+                     <li className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                           <Globe size={14} />
+                        </div>
+                        <div className="overflow-hidden">
+                           <div className="text-sm font-medium text-slate-900">{client.preferredLanguage || '-'}</div>
+                           <div className="text-xs text-slate-500">Langue</div>
+                        </div>
+                     </li>
+                     <li className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                           <MessageCircle size={14} />
+                        </div>
+                        <div className="overflow-hidden">
+                           <div className="text-sm font-medium text-slate-900">
+                             {client.preferredChannel || '-'}
+                             {client.preferredChannel === 'Autre' && client.otherChannelDetail && ` (${client.otherChannelDetail})`}
+                           </div>
+                           <div className="text-xs text-slate-500">Canal favori</div>
+                        </div>
+                     </li>
+                   </ul>
+                </div>
+              </div>
+
             </div>
 
-            <div className="pt-4 border-t border-slate-100">
-               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Préférences</h3>
-               <ul className="space-y-3">
-                 <li className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-slate-600">
-                       <Globe size={14} />
-                       <span>Langue</span>
-                    </div>
-                    <span className="font-medium text-slate-900">{client.preferredLanguage || 'Non spécifié'}</span>
-                 </li>
-                 <li className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-slate-600">
-                       <MessageCircle size={14} />
-                       <span>Canal favori</span>
-                    </div>
-                    <span className="font-medium text-slate-900">
-                      {client.preferredChannel || 'Non spécifié'}
-                      {client.preferredChannel === 'Autre' && client.otherChannelDetail && ` (${client.otherChannelDetail})`}
-                    </span>
-                 </li>
-               </ul>
-            </div>
-
+            {/* Praticien Favori — full width below the 2 columns */}
             {preferredStaff && (
-               <div className="pt-4 border-t border-slate-100">
+               <div className="pt-5 mt-5 border-t border-slate-100">
                   <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Praticien Favori</h3>
                   <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-lg border border-slate-100">
                      {preferredStaff.photoUrl ? (
@@ -223,11 +291,55 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
 
           </div>
 
+          {/* Acquisition & Origine — separate card */}
+          <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Acquisition & Origine</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                  <Calendar size={14} />
+                </div>
+                <div className="overflow-hidden">
+                  <div className="text-sm font-medium text-slate-900">
+                    {client.contactDate ? new Date(client.contactDate).toLocaleDateString('fr-FR') : '-'}
+                  </div>
+                  <div className="text-xs text-slate-500">Premier Contact</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                  <Phone size={14} />
+                </div>
+                <div className="overflow-hidden">
+                  <div className="text-sm font-medium text-slate-900">
+                    {client.contactMethod || '-'}
+                    {client.contactMethod === 'Message' && client.messageChannel && ` (${client.messageChannel})`}
+                  </div>
+                  <div className="text-xs text-slate-500">Méthode</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                  <UserPlus size={14} />
+                </div>
+                <div className="overflow-hidden">
+                  <div className="text-sm font-medium text-slate-900">
+                    {client.acquisitionSource || '-'}
+                    {(client.acquisitionSource === 'Influenceur' || client.acquisitionSource === 'Autre') && client.acquisitionDetail && (
+                      <span className="text-slate-500 text-xs block">{client.acquisitionDetail}</span>
+                    )}
+                  </div>
+                  <div className="text-xs text-slate-500">Source</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         {/* --- MAIN CONTENT --- */}
         <div className="lg:col-span-2 space-y-6">
-          
+
           {/* Medical / Allergies Alert */}
           {client.allergies && (
              <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex gap-3 items-start">
@@ -238,81 +350,6 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
                 </div>
              </div>
           )}
-
-          {/* Info Grid (Demographics / Professional / Acquisition) */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-             <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-                <h3 className="font-bold text-slate-900 text-sm">Détails du Profil</h3>
-             </div>
-             <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
-                
-                {/* Identity / Demo */}
-                <div className="space-y-4">
-                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                      <MapPin size={12} /> Identité
-                   </h4>
-                   <div className="grid grid-cols-2 gap-4">
-                      <div>
-                         <div className="text-xs text-slate-500 mb-1">Genre</div>
-                         <div className="text-sm font-medium text-slate-900">{client.gender || '-'}</div>
-                      </div>
-                      <div>
-                         <div className="text-xs text-slate-500 mb-1">Tranche d'âge</div>
-                         <div className="text-sm font-medium text-slate-900">{client.ageGroup || '-'}</div>
-                      </div>
-                   </div>
-                </div>
-
-                {/* Professional */}
-                <div className="space-y-4">
-                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                      <Briefcase size={12} /> Professionnel
-                   </h4>
-                   <div className="grid grid-cols-2 gap-4">
-                      <div>
-                         <div className="text-xs text-slate-500 mb-1">Métier</div>
-                         <div className="text-sm font-medium text-slate-900">{client.profession || '-'}</div>
-                      </div>
-                      <div>
-                         <div className="text-xs text-slate-500 mb-1">Société</div>
-                         <div className="text-sm font-medium text-slate-900">{client.company || '-'}</div>
-                      </div>
-                   </div>
-                </div>
-
-                {/* Acquisition */}
-                <div className="space-y-4 sm:col-span-2 pt-4 border-t border-slate-100">
-                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                      <UserPlus size={12} /> Acquisition & Origine
-                   </h4>
-                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div>
-                         <div className="text-xs text-slate-500 mb-1">Premier Contact</div>
-                         <div className="text-sm font-medium text-slate-900 flex items-center gap-1">
-                            {client.contactDate ? new Date(client.contactDate).toLocaleDateString('fr-FR') : '-'}
-                         </div>
-                      </div>
-                      <div>
-                         <div className="text-xs text-slate-500 mb-1">Méthode</div>
-                         <div className="text-sm font-medium text-slate-900">
-                            {client.contactMethod || '-'}
-                            {client.contactMethod === 'Message' && client.messageChannel && ` (${client.messageChannel})`}
-                         </div>
-                      </div>
-                      <div>
-                         <div className="text-xs text-slate-500 mb-1">Source</div>
-                         <div className="text-sm font-medium text-slate-900">
-                            {client.acquisitionSource || '-'}
-                            {(client.acquisitionSource === 'Influenceur' || client.acquisitionSource === 'Autre') && client.acquisitionDetail && (
-                               <span className="text-slate-500 text-xs block">{client.acquisitionDetail}</span>
-                            )}
-                         </div>
-                      </div>
-                   </div>
-                </div>
-
-             </div>
-          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
              {/* Permissions Box */}
@@ -339,13 +376,23 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
 
           {/* Timeline / History */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
               <h3 className="font-bold text-slate-900 text-sm">Historique & Activité</h3>
-              <div className="text-xs font-medium bg-slate-100 px-2 py-1 rounded-md text-slate-600">
-                 {clientAppointments.length} visites
+              <div className="flex items-center gap-4 text-xs">
+                <div className="flex items-center gap-1.5 text-slate-500">
+                  <CalendarDays size={12} />
+                  <span>Première visite:</span>
+                  <span className="font-medium text-slate-900">{client.firstVisitDate ? new Date(client.firstVisitDate).toLocaleDateString('fr-FR') : '-'}</span>
+                </div>
+                <div className="h-3 w-px bg-slate-200"></div>
+                <div className="flex items-center gap-1.5 text-slate-500">
+                  <Calendar size={12} />
+                  <span>Dernière visite:</span>
+                  <span className="font-medium text-slate-900">{client.lastVisitDate ? new Date(client.lastVisitDate).toLocaleDateString('fr-FR') : '-'}</span>
+                </div>
               </div>
             </div>
-            
+
             <div className="p-6 bg-slate-50/30 max-h-[500px] overflow-y-auto custom-scrollbar">
               {clientAppointments.length > 0 ? (
                   <div className="relative border-l-2 border-slate-200 ml-3 space-y-8 py-2">
@@ -356,7 +403,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
                         <div key={appt.id} className="relative pl-8 group">
                            {/* Timeline Dot */}
                            <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${isCompleted ? 'bg-emerald-500' : 'bg-slate-400'}`}></div>
-                           
+
                            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all group-hover:border-slate-300">
                               <div className="flex justify-between items-start mb-2">
                                  <div>
@@ -367,7 +414,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
                                  </div>
                                  <span className="text-sm font-bold text-slate-900">{formatPrice(appt.price)}</span>
                               </div>
-                              
+
                               <div className="flex items-center justify-between pt-3 border-t border-slate-50 mt-3">
                                  <div className="flex items-center gap-3 text-xs text-slate-500">
                                     <span className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded border border-slate-100">
