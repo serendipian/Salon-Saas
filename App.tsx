@@ -24,8 +24,12 @@ import { ProductsModule } from './modules/products/ProductsModule';
 import { AppointmentsModule } from './modules/appointments/AppointmentsModule';
 import { SuppliersModule } from './modules/suppliers/SuppliersModule';
 import { SettingsModule } from './modules/settings/SettingsModule';
-import { AccountingModule } from './modules/accounting/AccountingModule';
 import { POSModule } from './modules/pos/POSModule';
+import { FinancesLayout } from './modules/accounting/FinancesLayout';
+import { FinancesOverview } from './modules/accounting/components/FinancesOverview';
+import { RevenuesPage } from './modules/accounting/components/RevenuesPage';
+import { DepensesPage } from './modules/accounting/components/DepensesPage';
+import { JournalPage } from './modules/accounting/components/JournalPage';
 
 const AppContent = () => {
   const location = useLocation();
@@ -81,11 +85,20 @@ const AppContent = () => {
             <ErrorBoundary moduleName="Caisse"><POSModule /></ErrorBoundary>
           </ProtectedRoute>
         } />
-        <Route path="/accounting" element={
+        <Route path="/finances" element={
           <ProtectedRoute action="view" resource="accounting">
-            <ErrorBoundary moduleName="Comptabilité"><AccountingModule /></ErrorBoundary>
+            <ErrorBoundary moduleName="Finances">
+              <FinancesLayout />
+            </ErrorBoundary>
           </ProtectedRoute>
-        } />
+        }>
+          <Route index element={<FinancesOverview />} />
+          <Route path="revenus" element={<RevenuesPage />} />
+          <Route path="depenses" element={<DepensesPage />} />
+          <Route path="journal" element={<JournalPage />} />
+        </Route>
+        {/* Redirect old route */}
+        <Route path="/accounting" element={<Navigate to="/finances" replace />} />
       </Routes>
     </Layout>
   );
