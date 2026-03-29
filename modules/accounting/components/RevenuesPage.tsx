@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Lock } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
-import { useAccounting } from '../hooks/useAccounting';
 import { MiniKpiRow } from './MiniKpiRow';
 import { RevenueCategoryTable } from './RevenueCategoryTable';
 import { formatPrice } from '../../../lib/format';
@@ -12,13 +11,12 @@ type ServiceSubTab = 'PAR_CATEGORIE' | 'PAR_EQUIPE';
 type ProductSubTab = 'PAR_CATEGORIE' | 'TOUS' | 'PAR_EQUIPE';
 
 export const RevenuesPage: React.FC = () => {
-  const { dateRange } = useOutletContext<FinancesOutletContext>();
   const {
     serviceRevenue, productRevenue,
     prevServiceRevenue, prevProductRevenue,
     revenueByServiceCategory, revenueByProductCategory,
     calcTrend,
-  } = useAccounting();
+  } = useOutletContext<FinancesOutletContext>();
 
   const [mainTab, setMainTab] = useState<MainTab>('SERVICES');
   const [serviceSubTab, setServiceSubTab] = useState<ServiceSubTab>('PAR_CATEGORIE');

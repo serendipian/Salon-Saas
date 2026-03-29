@@ -1,14 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Download, FileText, Database } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
-import { useAccounting } from '../hooks/useAccounting';
 import { MiniKpiRow } from './MiniKpiRow';
 import { AccountingLedger } from './AccountingLedger';
 import type { FinancesOutletContext } from '../FinancesLayout';
 
 export const JournalPage: React.FC = () => {
-  const { dateRange } = useOutletContext<FinancesOutletContext>();
-  const { ledgerData, financials } = useAccounting();
+  const { ledgerData, financials } = useOutletContext<FinancesOutletContext>();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');

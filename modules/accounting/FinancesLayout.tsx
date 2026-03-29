@@ -1,26 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { DateRangePicker } from '../../components/DateRangePicker';
-import type { DateRange } from '../../types';
+import { useAccounting } from './hooks/useAccounting';
 
-export interface FinancesOutletContext {
-  dateRange: DateRange;
-  setDateRange: (range: DateRange) => void;
-}
+export type FinancesOutletContext = ReturnType<typeof useAccounting>;
 
 export const FinancesLayout: React.FC = () => {
   const location = useLocation();
+  const accounting = useAccounting();
 
-  const [dateRange, setDateRange] = useState<DateRange>(() => {
-    const now = new Date();
-    return {
-      from: new Date(now.getFullYear(), now.getMonth(), 1),
-      to: new Date(new Date().setHours(23, 59, 59, 999)),
-      label: 'Ce mois-ci',
-    };
-  });
-
-  // Determine page title based on route
   const path = location.pathname;
   let pageTitle = 'Finances';
   let pageSubtitle = 'Vue d\'ensemble financière';
@@ -30,19 +18,16 @@ export const FinancesLayout: React.FC = () => {
 
   return (
     <div className="w-full relative">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pt-2">
         <div>
           <h1 className="text-xl font-bold text-slate-900">{pageTitle}</h1>
           <p className="text-sm text-slate-500">{pageSubtitle}</p>
         </div>
         <div className="flex items-center gap-3">
-          <DateRangePicker dateRange={dateRange} onChange={setDateRange} />
+          <DateRangePicker dateRange={accounting.dateRange} onChange={accounting.setDateRange} />
         </div>
       </div>
-
-      {/* Page content */}
-      <Outlet context={{ dateRange, setDateRange } satisfies FinancesOutletContext} />
+      <Outlet context={accounting} />
     </div>
   );
 };

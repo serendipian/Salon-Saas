@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
-import { useAccounting } from '../hooks/useAccounting';
 import { MiniKpiRow } from './MiniKpiRow';
 import { AccountingExpenses } from './AccountingExpenses';
 import { ExpenseForm } from './ExpenseForm';
@@ -12,8 +11,7 @@ import type { Expense } from '../../../types';
 type Tab = 'COURANTES' | 'RECURRENTES';
 
 export const DepensesPage: React.FC = () => {
-  const { dateRange } = useOutletContext<FinancesOutletContext>();
-  const { filteredExpenses, addExpense, financials } = useAccounting();
+  const { filteredExpenses, addExpense, financials } = useOutletContext<FinancesOutletContext>();
 
   const [activeTab, setActiveTab] = useState<Tab>('COURANTES');
   const [showForm, setShowForm] = useState(false);

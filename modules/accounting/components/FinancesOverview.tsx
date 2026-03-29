@@ -5,7 +5,6 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, Legend, PieChart, Pie, Cell,
 } from 'recharts';
-import { useAccounting } from '../hooks/useAccounting';
 import { formatPrice } from '../../../lib/format';
 import type { FinancesOutletContext } from '../FinancesLayout';
 
@@ -74,11 +73,10 @@ const RankedList: React.FC<{ title: string; items: { name: string; count: number
 };
 
 export const FinancesOverview: React.FC = () => {
-  const { dateRange } = useOutletContext<FinancesOutletContext>();
   const {
     financials, chartData, revenueByServiceCategory, paymentMethodBreakdown,
     clientMetrics, topProducts, productRevenue,
-  } = useAccounting();
+  } = useOutletContext<FinancesOutletContext>();
 
   // Donut data: service categories + products as one slice
   const donutData = [
