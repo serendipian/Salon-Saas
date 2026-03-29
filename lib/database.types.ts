@@ -1,4 +1,3 @@
-Initialising login role...
 export type Json =
   | string
   | number
@@ -12,31 +11,6 @@ export type Database = {
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.4"
-  }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
   }
   public: {
     Tables: {
@@ -1770,6 +1744,14 @@ export type Database = {
         }
         Returns: Json
       }
+      get_staff_pii: {
+        Args: { p_staff_id: string }
+        Returns: {
+          base_salary: string
+          iban: string
+          social_security_number: string
+        }[]
+      }
       get_user_role: { Args: never; Returns: string }
       revoke_membership: {
         Args: { p_membership_id: string }
@@ -1790,6 +1772,18 @@ export type Database = {
       soft_delete_client: { Args: { p_client_id: string }; Returns: undefined }
       transfer_ownership: {
         Args: { p_new_owner_id: string; p_salon_id: string }
+        Returns: undefined
+      }
+      update_staff_pii: {
+        Args: {
+          p_base_salary?: string
+          p_clear_base_salary?: boolean
+          p_clear_iban?: boolean
+          p_clear_ssn?: boolean
+          p_iban?: string
+          p_social_security_number?: string
+          p_staff_id: string
+        }
         Returns: undefined
       }
       user_role_in_salon: { Args: { p_salon_id: string }; Returns: string }
@@ -1927,9 +1921,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

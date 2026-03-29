@@ -18,7 +18,12 @@ import { AccountingSettings } from './components/AccountingSettings';
 import { GeneralSettings } from './components/GeneralSettings';
 import { OpeningHoursSettings } from './components/OpeningHoursSettings';
 
-const SettingCard = ({ icon: Icon, title, description, onClick }: any) => (
+const SettingCard = ({ icon: Icon, title, description, onClick }: {
+  icon: React.ComponentType<{ size?: number }>;
+  title: string;
+  description: string;
+  onClick: () => void;
+}) => (
   <button 
     onClick={onClick}
     className="flex items-start gap-4 p-6 bg-white border border-slate-200 rounded-xl hover:border-slate-300 hover:shadow-sm transition-all text-left group h-full w-full"

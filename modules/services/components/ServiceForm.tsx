@@ -22,7 +22,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
     name: '',
     categoryId: categories[0]?.id || '',
     description: '',
-    variants: [{ id: `var${Date.now()}`, name: 'Standard', durationMinutes: 30, price: 0, cost: 0 }],
+    variants: [{ id: crypto.randomUUID(), name: 'Standard', durationMinutes: 30, price: 0, cost: 0 }],
     active: true
   });
 
@@ -41,7 +41,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
     setIsGeneratingAi(false);
   };
 
-  const updateVariant = (id: string, field: keyof ServiceVariant, value: any) => {
+  const updateVariant = (id: string, field: keyof ServiceVariant, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       variants: prev.variants.map(v => v.id === id ? { ...v, [field]: value } : v)
@@ -57,7 +57,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
   const addVariant = () => {
     setFormData(prev => ({
       ...prev,
-      variants: [...prev.variants, { id: `var${Date.now()}`, name: '', durationMinutes: 30, price: 0, cost: 0 }]
+      variants: [...prev.variants, { id: crypto.randomUUID(), name: '', durationMinutes: 30, price: 0, cost: 0 }]
     }));
   };
 

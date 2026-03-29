@@ -76,7 +76,7 @@ const CategoryManagerModal: React.FC<{
   const handleAdd = () => {
     if (!newCatName.trim()) return;
     const newCat: ServiceCategory = {
-      id: `cat${Date.now()}`,
+      id: crypto.randomUUID(),
       name: newCatName,
       color: 'bg-slate-100 text-slate-800 border-slate-200',
       icon: newCatIcon,

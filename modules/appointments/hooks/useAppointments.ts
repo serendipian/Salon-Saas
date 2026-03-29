@@ -66,7 +66,8 @@ export const useAppointments = () => {
       const { error } = await supabase
         .from('appointments')
         .update(updateData)
-        .eq('id', appt.id);
+        .eq('id', appt.id)
+        .eq('salon_id', salonId);
       if (error) {
         if (error.code === '23P01') {
           throw new Error('Ce créneau est déjà occupé pour ce praticien. Veuillez choisir un autre horaire.');

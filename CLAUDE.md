@@ -73,7 +73,7 @@ modules/{module}/
 - `useQuery` for reads → calls `supabase.from('table').select()`
 - `useMutation` for writes → calls insert/update + `invalidateQueries`
 - Co-located mappers handle snake_case ↔ camelCase conversion
-- RLS via `set_session_context()` scopes all reads automatically
+- RLS via membership-based policies (`user_salon_ids()`) scopes all reads automatically
 - Writes include `salon_id` explicitly
 
 **Standalone utilities:**
@@ -132,18 +132,8 @@ modules/{module}/
 - BonusSystemEditor: card layout on mobile
 - z-index scale defined in CSS custom properties (--z-content through --z-toast)
 
-### Dead Code (DO NOT USE)
-These files in `components/` are old monolithic versions replaced by `modules/`:
-- `components/AccountingModule.tsx`
-- `components/AppointmentsModule.tsx`
-- `components/ClientsModule.tsx`
-- `components/Dashboard.tsx`
-- `components/POSModule.tsx`
-- `components/ProductsModule.tsx`
-- `components/ServicesModule.tsx`
-- `components/SettingsModule.tsx`
-- `components/SuppliersModule.tsx`
-- `services/store.ts` (legacy singleton store, broken import)
+### Dead Code
+All previously listed dead monolithic components (`components/AccountingModule.tsx`, etc.) and `services/store.ts` have been deleted. No known dead code remains in the active codebase.
 
 ## Commands
 
@@ -158,7 +148,7 @@ npm run preview      # Preview production build
 
 - **Backend**: Supabase (PostgreSQL 15, Auth, Realtime, Storage)
 - **Local dev**: `npm run db:start` / `npm run db:stop` (requires Docker Desktop)
-- **Migrations**: `supabase/migrations/` — 13 migration files, applied in order
+- **Migrations**: `supabase/migrations/` — 30 migration files, applied in order
 - **Seed data**: `supabase/seed.sql` — subscription plans (Free, Pro, Enterprise)
 - **Types**: Auto-generated via `npm run db:types` → `lib/database.types.ts`
 - **Reset**: `npm run db:reset` — drops and recreates everything
@@ -200,12 +190,8 @@ npm run preview      # Preview production build
 - **stylist**: No accounting, suppliers, settings
 - **receptionist**: No accounting, suppliers, settings
 
-### Session Context
-Every Supabase query requires salon context set first:
-```typescript
-await supabase.rpc('set_session_context', { p_salon_id: salonId, p_user_role: role });
-```
-AuthContext calls this automatically on salon selection. The `get_active_salon()` and `get_user_role()` Postgres functions read these session variables for RLS.
+### RLS Model (Membership-Based)
+RLS uses `user_salon_ids()` and `user_salon_ids_with_role()` functions that derive access from `salon_memberships` using `auth.uid()` from the JWT. No session variables are needed — `set_session_context` is legacy and no longer called by the application. All data isolation is enforced via membership-based RLS policies (migration `20260328120000`).
 
 ## Code Conventions
 

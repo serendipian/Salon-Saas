@@ -14,6 +14,15 @@ import { SignupPage } from './pages/SignupPage';
 import { CreateSalonPage } from './pages/CreateSalonPage';
 import { SalonPickerPage } from './pages/SalonPickerPage';
 import { AcceptInvitationPage } from './pages/AcceptInvitationPage';
+import { useAuth } from './context/AuthContext';
+
+// Lightweight auth guard — requires authentication but not an active salon
+const AuthRequired: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return null;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+};
 
 // Module imports (unchanged)
 import { DashboardModule } from './modules/dashboard/DashboardModule';
@@ -117,8 +126,8 @@ export default function App() {
               <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
 
               {/* Auth-required, no-salon routes */}
-              <Route path="/create-salon" element={<CreateSalonPage />} />
-              <Route path="/select-salon" element={<SalonPickerPage />} />
+              <Route path="/create-salon" element={<AuthRequired><CreateSalonPage /></AuthRequired>} />
+              <Route path="/select-salon" element={<AuthRequired><SalonPickerPage /></AuthRequired>} />
 
               {/* Protected app routes */}
               <Route path="/*" element={

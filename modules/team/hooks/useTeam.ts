@@ -30,12 +30,30 @@ export const useTeam = () => {
     enabled: !!salonId,
   });
 
+  // Save PII fields via encrypted RPC (base_salary, iban, social_security_number)
+  const savePiiFields = async (staffId: string, member: StaffMember) => {
+    const { error } = await supabase.rpc('update_staff_pii', {
+      p_staff_id: staffId,
+      p_base_salary: member.baseSalary != null ? String(member.baseSalary) : null,
+      p_iban: member.iban || null,
+      p_social_security_number: member.socialSecurityNumber || null,
+      p_clear_base_salary: member.baseSalary == null,
+      p_clear_iban: !member.iban,
+      p_clear_ssn: !member.socialSecurityNumber,
+    });
+    if (error) throw error;
+  };
+
   const addStaffMemberMutation = useMutation({
     mutationFn: async (member: StaffMember) => {
-      const { error } = await supabase
+      const insertData = toStaffMemberInsert(member, salonId);
+      const { data, error } = await supabase
         .from('staff_members')
-        .insert(toStaffMemberInsert(member, salonId));
+        .insert(insertData)
+        .select('id')
+        .single();
       if (error) throw error;
+      await savePiiFields(data.id, member);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });
@@ -49,8 +67,10 @@ export const useTeam = () => {
       const { error } = await supabase
         .from('staff_members')
         .update(updateData)
-        .eq('id', member.id);
+        .eq('id', member.id)
+        .eq('salon_id', salonId);
       if (error) throw error;
+      await savePiiFields(member.id, member);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });

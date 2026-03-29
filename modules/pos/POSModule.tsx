@@ -5,7 +5,7 @@ import { POSCatalog } from './components/POSCatalog';
 import { POSCart } from './components/POSCart';
 import { PaymentModal } from './components/PaymentModal';
 import { ItemEditorModal, ServiceVariantModal, ReceiptModal } from './components/POSModals';
-import { Service, Product, ServiceVariant, Transaction, CartItem } from '../../types';
+import { Service, Product, ServiceVariant, Transaction, CartItem, PaymentEntry } from '../../types';
 import { useMediaQuery } from '../../context/MediaQueryContext';
 import { MiniCartBar } from './components/MiniCartBar';
 import { CartBottomSheet } from './components/CartBottomSheet';
@@ -77,7 +77,7 @@ export const POSModule: React.FC = () => {
     });
   };
 
-  const handleCompletePayment = (payments: any[]) => {
+  const handleCompletePayment = (payments: PaymentEntry[]) => {
     processTransaction(payments);
     setShowPaymentModal(false);
   };

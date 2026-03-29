@@ -44,6 +44,7 @@ export function toAppointment(row: AppointmentRow): Appointment {
       ? [row.staff_members.first_name, row.staff_members.last_name].filter(Boolean).join(' ')
       : '',
     status: row.status as AppointmentStatus,
+    variantId: row.service_variant_id ?? undefined,
     variantName: row.service_variants?.name ?? '',
     price: row.price,
     notes: row.notes ?? undefined,
@@ -57,6 +58,7 @@ export function toAppointmentInsert(appt: Appointment, salonId: string) {
     salon_id: salonId,
     client_id: appt.clientId || null,
     service_id: appt.serviceId || null,
+    service_variant_id: appt.variantId || null,
     staff_id: appt.staffId || null,
     date: appt.date,
     duration_minutes: appt.durationMinutes,

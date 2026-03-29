@@ -19,7 +19,16 @@ import { formatPrice } from '../../lib/format';
 import { DateRange } from '../../types';
 import { DateRangePicker } from '../../components/DateRangePicker';
 
-const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon }: any) => {
+interface MetricCardProps {
+  title: string;
+  value: number | string;
+  trend: number | null;
+  isPositive: boolean;
+  subtitle?: string;
+  icon?: React.ComponentType<{ size?: number; className?: string }>;
+}
+
+const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon }: MetricCardProps) => {
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4 md:p-5 shadow-sm hover:shadow-md transition-all duration-200 h-full flex flex-col justify-between group">
       <div>
@@ -51,10 +60,10 @@ export const DashboardModule: React.FC = () => {
 
   // State for Date Range (Default: This Month)
   const [dateRange, setDateRange] = useState<DateRange>(() => {
-    const now = new Date();
+    const today = new Date();
     return {
-        from: new Date(now.getFullYear(), now.getMonth(), 1),
-        to: new Date(now.setHours(23,59,59,999)),
+        from: new Date(today.getFullYear(), today.getMonth(), 1),
+        to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999),
         label: 'Ce mois-ci'
     };
   });

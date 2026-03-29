@@ -1,14 +1,18 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+
+type EventPayload = RealtimePostgresChangesPayload<Record<string, unknown>>;
+type EventHandler = (payload: EventPayload) => void;
 
 // --- Subscription Manager (module-level singleton) ---
 
 interface Subscription {
   channel: RealtimeChannel;
   refCount: number;
+  handlers: Set<EventHandler>;
 }
 
 const subscriptions = new Map<string, Subscription>();
@@ -16,15 +20,19 @@ const subscriptions = new Map<string, Subscription>();
 function subscribe(
   tableName: string,
   salonId: string,
-  onEvent: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void,
+  handler: EventHandler,
+  filterOverride?: string,
 ): () => void {
   const key = `${tableName}:${salonId}`;
 
   const existing = subscriptions.get(key);
   if (existing) {
     existing.refCount++;
-    return () => unsubscribe(key);
+    existing.handlers.add(handler);
+    return () => unsubscribe(key, handler);
   }
+
+  const handlers = new Set<EventHandler>([handler]);
 
   const channel = supabase
     .channel(`realtime:${key}`)
@@ -34,21 +42,27 @@ function subscribe(
         event: '*',
         schema: 'public',
         table: tableName,
-        filter: `salon_id=eq.${salonId}`,
+        filter: filterOverride ?? `salon_id=eq.${salonId}`,
       },
-      onEvent,
+      (payload) => {
+        // Fan out to all registered handlers
+        for (const h of handlers) {
+          h(payload);
+        }
+      },
     )
     .subscribe();
 
-  subscriptions.set(key, { channel, refCount: 1 });
+  subscriptions.set(key, { channel, refCount: 1, handlers });
 
-  return () => unsubscribe(key);
+  return () => unsubscribe(key, handler);
 }
 
-function unsubscribe(key: string) {
+function unsubscribe(key: string, handler: EventHandler) {
   const sub = subscriptions.get(key);
   if (!sub) return;
 
+  sub.handlers.delete(handler);
   sub.refCount--;
   if (sub.refCount <= 0) {
     supabase.removeChannel(sub.channel);
@@ -59,7 +73,9 @@ function unsubscribe(key: string) {
 // --- Public Hook ---
 
 export interface RealtimeSyncOptions {
-  onEvent?: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void;
+  onEvent?: (payload: EventPayload) => void;
+  /** Override the default salon_id filter (e.g., 'id=eq.xxx' for the salons table) */
+  filterOverride?: string;
 }
 
 export function useRealtimeSync(tableName: string, options?: RealtimeSyncOptions) {
@@ -67,21 +83,19 @@ export function useRealtimeSync(tableName: string, options?: RealtimeSyncOptions
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
 
-  // Store onEvent in a ref to avoid re-subscribing when the callback changes
+  // Store onEvent in a ref so we always call the latest version
   const onEventRef = useRef(options?.onEvent);
   onEventRef.current = options?.onEvent;
+
+  // Stable handler that delegates to the ref — this identity is used for registration
+  const stableHandler = useCallback((payload: EventPayload) => {
+    queryClient.invalidateQueries({ queryKey: [tableName, salonId] });
+    onEventRef.current?.(payload);
+  }, [tableName, salonId, queryClient]);
 
   useEffect(() => {
     if (!salonId) return;
 
-    const unsub = subscribe(tableName, salonId, (payload) => {
-      // Invalidate TanStack Query cache for this table
-      queryClient.invalidateQueries({ queryKey: [tableName, salonId] });
-
-      // Call optional per-module event handler
-      onEventRef.current?.(payload);
-    });
-
-    return unsub;
-  }, [tableName, salonId, queryClient]);
+    return subscribe(tableName, salonId, stableHandler, options?.filterOverride);
+  }, [tableName, salonId, stableHandler, options?.filterOverride]);
 }

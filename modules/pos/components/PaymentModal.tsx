@@ -22,8 +22,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
   const [currentAmount, setCurrentAmount] = useState<string>(total.toFixed(2));
   
   const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
-  const remaining = Math.max(0, total - totalPaid);
-  const change = Math.max(0, totalPaid - total);
+  const remaining = Math.max(0, Math.round((total - totalPaid) * 100) / 100);
+  const change = Math.max(0, Math.round((totalPaid - total) * 100) / 100);
   const isComplete = remaining === 0;
 
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
@@ -50,14 +50,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
         document.removeEventListener('keydown', handleKeyDown);
       };
     }
-  }, [isMobile]);
+  }, [isMobile, onClose]);
 
   const handleAddPayment = (method: string) => {
     const amount = parseFloat(currentAmount);
     if (isNaN(amount) || amount <= 0) return;
 
     const newPayment: PaymentEntry = {
-      id: `pay-${Date.now()}`,
+      id: crypto.randomUUID(),
       method,
       amount,
     };

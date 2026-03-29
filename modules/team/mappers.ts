@@ -19,10 +19,10 @@ interface StaffMemberRow {
   contract_type: string | null;
   weekly_hours: number | null;
   commission_rate: number;
-  base_salary: number | null;
+  base_salary: unknown; // BYTEA encrypted — read via get_staff_pii RPC
   bonus_tiers: BonusTier[] | null;
-  iban: string | null;
-  social_security_number: string | null;
+  iban: unknown; // BYTEA encrypted — read via get_staff_pii RPC
+  social_security_number: unknown; // BYTEA encrypted — read via get_staff_pii RPC
   birth_date: string | null;
   address: string | null;
   emergency_contact_name: string | null;
@@ -54,10 +54,11 @@ export function toStaffMember(row: StaffMemberRow): StaffMember {
     contractType: (row.contract_type as StaffMember['contractType']) ?? undefined,
     weeklyHours: row.weekly_hours ?? undefined,
     commissionRate: row.commission_rate,
-    baseSalary: row.base_salary ?? undefined,
+    // PII fields are encrypted BYTEA — populated separately via get_staff_pii RPC
+    baseSalary: undefined,
     bonusTiers: row.bonus_tiers ?? undefined,
-    iban: row.iban ?? undefined,
-    socialSecurityNumber: row.social_security_number ?? undefined,
+    iban: undefined,
+    socialSecurityNumber: undefined,
     birthDate: row.birth_date ?? undefined,
     address: row.address ?? undefined,
     emergencyContactName: row.emergency_contact_name ?? undefined,
@@ -94,10 +95,9 @@ export function toStaffMemberInsert(staff: StaffMember, salonId: string) {
     contract_type: staff.contractType ?? null,
     weekly_hours: staff.weeklyHours ?? null,
     commission_rate: staff.commissionRate,
-    base_salary: staff.baseSalary ?? null,
+    // PII fields (base_salary, iban, social_security_number) are excluded here
+    // They must be written via the update_staff_pii RPC to ensure encryption
     bonus_tiers: staff.bonusTiers ?? null,
-    iban: staff.iban ?? null,
-    social_security_number: staff.socialSecurityNumber ?? null,
     birth_date: staff.birthDate ?? null,
     address: staff.address ?? null,
     emergency_contact_name: staff.emergencyContactName ?? null,

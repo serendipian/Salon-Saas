@@ -25,8 +25,9 @@ export const useSettings = () => {
     queryClient.invalidateQueries({ queryKey: ['salon_settings', salonId] });
   }, [queryClient, salonId]);
 
-  useRealtimeSync('salons', { onEvent: handleSalonChange });
+  useRealtimeSync('salons', { onEvent: handleSalonChange, filterOverride: `id=eq.${salonId}` });
   useRealtimeSync('expense_categories');
+  useRealtimeSync('recurring_expenses');
 
   // --- Salon Settings (from salons table) ---
   const { data: salonSettings, isLoading: isLoadingSettings } = useQuery({

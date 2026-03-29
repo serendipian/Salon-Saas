@@ -17,7 +17,7 @@ const CategoryManagerModal: React.FC<{
   const handleAdd = () => {
     if (!newCatName.trim()) return;
     const newCat: ProductCategory = {
-      id: `pcat${Date.now()}`,
+      id: crypto.randomUUID(),
       name: newCatName,
       color: 'bg-slate-100 text-slate-800 border-slate-200'
     };

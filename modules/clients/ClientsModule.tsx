@@ -26,10 +26,8 @@ export const ClientsModule: React.FC = () => {
     setView('DETAILS');
   };
 
-  const handleSchedule = (id: string) => {
-    // Logic to open calendar or appointment modal with client pre-selected
-    console.log("Schedule appointment for client:", id);
-    // In a full implementation, this would navigate to /calendar?clientId=id
+  const handleSchedule = (_id: string) => {
+    // TODO: Navigate to /calendar?clientId=id to pre-select this client
   };
 
   const handleDelete = (id: string) => {

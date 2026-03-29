@@ -12,7 +12,7 @@ import { toExpense, toExpenseInsert, ExpenseRow } from '../mappers';
 const UNASSIGNED_KEY = '__unassigned__';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
-import type { Expense, LedgerEntry, DateRange } from '../../../types';
+import type { Expense, LedgerEntry, DateRange, Transaction, CartItem, PaymentEntry } from '../../../types';
 
 const calcTrend = (curr: number, prev: number) =>
   prev === 0 ? (curr > 0 ? 100 : 0) : ((curr - prev) / Math.abs(prev)) * 100;
@@ -63,10 +63,10 @@ export const useAccounting = () => {
 
   // --- Date Range State ---
   const [dateRange, setDateRange] = useState<DateRange>(() => {
-    const now = new Date();
+    const today = new Date();
     return {
-      from: new Date(now.getFullYear(), now.getMonth(), 1),
-      to: new Date(now.setHours(23, 59, 59, 999)),
+      from: new Date(today.getFullYear(), today.getMonth(), 1),
+      to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999),
       label: 'Ce mois-ci',
     };
   });
@@ -79,9 +79,9 @@ export const useAccounting = () => {
     const prevTo = from - 1;
     const prevFrom = prevTo - duration;
 
-    const filterRange = (items: any[], dateKey: string, start: number, end: number) =>
+    const filterRange = <T extends Record<string, unknown>>(items: T[], dateKey: keyof T, start: number, end: number): T[] =>
       items.filter(i => {
-        const t = new Date(i[dateKey]).getTime();
+        const t = new Date(i[dateKey] as string).getTime();
         return t >= start && t <= end;
       });
 
@@ -121,8 +121,8 @@ export const useAccounting = () => {
     const vatDue = revenue - revenue / (1 + taxRate);
 
     const serviceSales: Record<string, number> = {};
-    data.current.transactions.forEach((t: any) => {
-      t.items.forEach((i: any) => {
+    data.current.transactions.forEach((t: Transaction) => {
+      t.items.forEach((i: CartItem) => {
         if (i.type === 'SERVICE') serviceSales[i.name] = (serviceSales[i.name] || 0) + 1;
       });
     });
@@ -178,8 +178,8 @@ export const useAccounting = () => {
   const revenueByServiceCategory = useMemo(() => {
     const map = new Map<string, { categoryId: string; categoryName: string; count: number; revenue: number; services: Map<string, { name: string; variantName?: string; count: number; revenue: number }> }>();
 
-    data.current.transactions.forEach((t: any) => {
-      t.items.forEach((item: any) => {
+    data.current.transactions.forEach((t: Transaction) => {
+      t.items.forEach((item: CartItem) => {
         if (item.type !== 'SERVICE') return;
         const lookup = serviceCategoryLookup.get(item.referenceId);
         const catId = lookup?.categoryId || 'uncategorized';
@@ -206,8 +206,8 @@ export const useAccounting = () => {
   const revenueByProductCategory = useMemo(() => {
     const map = new Map<string, { categoryId: string; categoryName: string; count: number; revenue: number; products: Map<string, { name: string; count: number; revenue: number }> }>();
 
-    data.current.transactions.forEach((t: any) => {
-      t.items.forEach((item: any) => {
+    data.current.transactions.forEach((t: Transaction) => {
+      t.items.forEach((item: CartItem) => {
         if (item.type !== 'PRODUCT') return;
         const lookup = productCategoryLookup.get(item.referenceId);
         const catId = lookup?.categoryId || 'uncategorized';
@@ -234,8 +234,8 @@ export const useAccounting = () => {
   const revenueByStaffServices = useMemo(() => {
     const map = new Map<string, { staffId: string | null; staffName: string; count: number; revenue: number }>();
 
-    data.current.transactions.forEach((t: any) => {
-      t.items.forEach((item: any) => {
+    data.current.transactions.forEach((t: Transaction) => {
+      t.items.forEach((item: CartItem) => {
         if (item.type !== 'SERVICE') return;
         const key = item.staffId || UNASSIGNED_KEY;
         const name = item.staffName || 'Non attribué';
@@ -259,8 +259,8 @@ export const useAccounting = () => {
   const revenueByStaffProducts = useMemo(() => {
     const map = new Map<string, { staffId: string | null; staffName: string; count: number; revenue: number }>();
 
-    data.current.transactions.forEach((t: any) => {
-      t.items.forEach((item: any) => {
+    data.current.transactions.forEach((t: Transaction) => {
+      t.items.forEach((item: CartItem) => {
         if (item.type !== 'PRODUCT') return;
         const key = item.staffId || UNASSIGNED_KEY;
         const name = item.staffName || 'Non attribué';
@@ -282,8 +282,8 @@ export const useAccounting = () => {
   // --- Payment Method Breakdown ---
   const paymentMethodBreakdown = useMemo(() => {
     const map = new Map<string, number>();
-    data.current.transactions.forEach((t: any) => {
-      (t.payments || []).forEach((p: any) => {
+    data.current.transactions.forEach((t: Transaction) => {
+      (t.payments || []).forEach((p: PaymentEntry) => {
         map.set(p.method, (map.get(p.method) || 0) + p.amount);
       });
     });
@@ -296,8 +296,8 @@ export const useAccounting = () => {
   // --- Service/Product Revenue Totals ---
   const serviceRevenue = useMemo(() => {
     let total = 0, count = 0;
-    data.current.transactions.forEach((t: any) => {
-      t.items.forEach((item: any) => {
+    data.current.transactions.forEach((t: Transaction) => {
+      t.items.forEach((item: CartItem) => {
         if (item.type === 'SERVICE') { total += item.price * (item.quantity || 1); count += item.quantity || 1; }
       });
     });
@@ -306,8 +306,8 @@ export const useAccounting = () => {
 
   const productRevenue = useMemo(() => {
     let total = 0, count = 0;
-    data.current.transactions.forEach((t: any) => {
-      t.items.forEach((item: any) => {
+    data.current.transactions.forEach((t: Transaction) => {
+      t.items.forEach((item: CartItem) => {
         if (item.type === 'PRODUCT') { total += item.price * (item.quantity || 1); count += item.quantity || 1; }
       });
     });
@@ -317,8 +317,8 @@ export const useAccounting = () => {
   // --- Previous Period Service/Product Revenue (for trends) ---
   const prevServiceRevenue = useMemo(() => {
     let total = 0, count = 0;
-    data.previous.transactions.forEach((t: any) => {
-      t.items.forEach((item: any) => {
+    data.previous.transactions.forEach((t: Transaction) => {
+      t.items.forEach((item: CartItem) => {
         if (item.type === 'SERVICE') { total += item.price * (item.quantity || 1); count += item.quantity || 1; }
       });
     });
@@ -327,8 +327,8 @@ export const useAccounting = () => {
 
   const prevProductRevenue = useMemo(() => {
     let total = 0, count = 0;
-    data.previous.transactions.forEach((t: any) => {
-      t.items.forEach((item: any) => {
+    data.previous.transactions.forEach((t: Transaction) => {
+      t.items.forEach((item: CartItem) => {
         if (item.type === 'PRODUCT') { total += item.price * (item.quantity || 1); count += item.quantity || 1; }
       });
     });
@@ -338,10 +338,10 @@ export const useAccounting = () => {
   // --- Unique + New Clients ---
   const clientMetrics = useMemo(() => {
     const currentClientIds = new Set<string>();
-    data.current.transactions.forEach((t: any) => { if (t.clientId) currentClientIds.add(t.clientId); });
+    data.current.transactions.forEach((t: Transaction) => { if (t.clientId) currentClientIds.add(t.clientId); });
 
     const firstTransactionByClient = new Map<string, number>();
-    transactions.forEach((t: any) => {
+    transactions.forEach((t: Transaction) => {
       if (!t.clientId) return;
       const time = new Date(t.date).getTime();
       const existing = firstTransactionByClient.get(t.clientId);
@@ -362,8 +362,8 @@ export const useAccounting = () => {
   // --- Top Products ---
   const topProducts = useMemo(() => {
     const productSales: Record<string, { name: string; count: number; revenue: number }> = {};
-    data.current.transactions.forEach((t: any) => {
-      t.items.forEach((i: any) => {
+    data.current.transactions.forEach((t: Transaction) => {
+      t.items.forEach((i: CartItem) => {
         if (i.type === 'PRODUCT') {
           const key = i.referenceId || i.name;
           if (!productSales[key]) productSales[key] = { name: i.name, count: 0, revenue: 0 };
@@ -379,7 +379,7 @@ export const useAccounting = () => {
   const ledgerData: LedgerEntry[] = useMemo(() => {
     const entries: LedgerEntry[] = [];
 
-    data.current.transactions.forEach((t: any) => {
+    data.current.transactions.forEach((t: Transaction) => {
       entries.push({
         id: t.id,
         date: t.date,
@@ -391,7 +391,7 @@ export const useAccounting = () => {
       });
     });
 
-    data.current.expenses.forEach((e: any) => {
+    data.current.expenses.forEach((e: Expense) => {
       entries.push({
         id: e.id,
         date: e.date,
@@ -431,7 +431,7 @@ export const useAccounting = () => {
       if (!map.has(key)) map.set(key, { name: key, sortKey, sales: 0, expenses: 0 });
     }
 
-    data.current.transactions.forEach((t: any) => {
+    data.current.transactions.forEach((t: Transaction) => {
       const d = new Date(t.date);
       const key = isMonthly
         ? d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })
@@ -439,7 +439,7 @@ export const useAccounting = () => {
       if (map.has(key)) map.get(key)!.sales += t.total;
     });
 
-    data.current.expenses.forEach((e: any) => {
+    data.current.expenses.forEach((e: Expense) => {
       const d = new Date(e.date);
       const key = isMonthly
         ? d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })

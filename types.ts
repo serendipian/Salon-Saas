@@ -72,6 +72,7 @@ export interface Product {
   sku: string; // Stock Keeping Unit
   barcode?: string;
   stock: number;
+  supplierId?: string;
   supplier?: string;
   active: boolean;
 }
@@ -218,6 +219,7 @@ export interface Appointment {
   staffId: string;
   staffName: string;
   status: AppointmentStatus;
+  variantId?: string;
   variantName: string;
   price: number;
   notes?: string;
@@ -265,7 +267,7 @@ export interface PaymentEntry {
   id: string;
   method: string; // 'Espèces', 'Carte Bancaire', etc.
   amount: number;
-  icon?: any; // Optional for UI, handled within component usually, but keeping consistent
+  icon?: React.ComponentType; // Optional for UI, handled within component usually
 }
 
 export interface Transaction {
@@ -316,7 +318,7 @@ export interface LedgerEntry {
   label: string;
   category: string;
   amount: number;
-  details?: any;
+  details?: Transaction | Expense;
 }
 
 // Mock Data Types for Dashboard

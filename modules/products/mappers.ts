@@ -43,6 +43,7 @@ export function toProduct(row: ProductRow): Product {
     sku: row.sku ?? '',
     barcode: row.barcode ?? undefined,
     stock: row.stock,
+    supplierId: row.supplier_id ?? undefined,
     supplier: row.suppliers?.name ?? undefined,
     active: row.active,
   };
@@ -59,7 +60,7 @@ export function toProductInsert(data: Product, salonId: string, supplierId?: str
     sku: data.sku || null,
     barcode: data.barcode || null,
     stock: data.stock ?? 0,
-    supplier_id: supplierId ?? null,
+    supplier_id: supplierId !== undefined ? supplierId : (data.supplierId ?? null),
     active: data.active ?? true,
   };
 }

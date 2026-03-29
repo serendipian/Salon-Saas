@@ -29,7 +29,8 @@ export const useClients = () => {
           .order('last_name'),
         supabase
           .from('client_stats')
-          .select('*'),
+          .select('*')
+          .eq('salon_id', salonId),
       ]);
 
       if (clientsRes.error) throw clientsRes.error;

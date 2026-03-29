@@ -42,8 +42,9 @@ export const usePOS = () => {
     );
 
     if (existingItemIndex >= 0) {
-      const newCart = [...cart];
-      newCart[existingItemIndex].quantity += 1;
+      const newCart = cart.map((item, i) =>
+        i === existingItemIndex ? { ...item, quantity: item.quantity + 1 } : item
+      );
       setCart(newCart);
     } else {
       setCart([...cart, itemWithMeta]);
