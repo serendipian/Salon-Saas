@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Search, Scissors, ShoppingBag, History, Plus, Receipt } from 'lucide-react';
-import { Service, Product, ServiceCategory, ProductCategory, Transaction } from '../../../types';
+import { Search, Scissors, ShoppingBag, History, Plus, Receipt, Calendar } from 'lucide-react';
+import { Service, Product, ServiceCategory, ProductCategory, Transaction, Appointment } from '../../../types';
+import { PendingAppointments } from './PendingAppointments';
 import { POSViewMode } from '../hooks/usePOS';
 import { formatPrice } from '../../../lib/format';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
@@ -20,6 +21,9 @@ interface POSCatalogProps {
   onServiceClick: (s: Service) => void;
   onProductClick: (p: Product) => void;
   onReceiptClick: (t: Transaction) => void;
+  pendingAppointments: Appointment[];
+  onImportAppointment: (appointment: Appointment) => void;
+  linkedAppointmentId: string | null;
 }
 
 export const POSCatalog: React.FC<POSCatalogProps> = ({
@@ -31,7 +35,10 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
   transactions,
   onServiceClick,
   onProductClick,
-  onReceiptClick
+  onReceiptClick,
+  pendingAppointments,
+  onImportAppointment,
+  linkedAppointmentId,
 }) => {
   const { isMobile } = useMediaQuery();
 
@@ -72,11 +79,23 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                 <History size={16} />
                 <span className="hidden sm:inline">Historique</span>
               </button>
+              <button
+                onClick={() => { setViewMode('APPOINTMENTS'); }}
+                className={`px-4 py-2 min-h-[44px] rounded-lg font-medium text-sm transition-all flex items-center gap-2 relative ${viewMode === 'APPOINTMENTS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                <Calendar size={16} />
+                <span className="hidden sm:inline">Rendez-vous</span>
+                {pendingAppointments.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {pendingAppointments.length > 9 ? '9+' : pendingAppointments.length}
+                  </span>
+                )}
+              </button>
            </div>
         </div>
 
         {/* Categories */}
-        {viewMode !== 'HISTORY' && !(isMobile && searchTerm.length > 0) && (
+        {viewMode !== 'HISTORY' && viewMode !== 'APPOINTMENTS' && !(isMobile && searchTerm.length > 0) && (
           <div
             className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide"
             style={{ scrollSnapType: 'x mandatory' }}
@@ -248,6 +267,15 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                </table>
              )}
           </div>
+        )}
+
+        {/* Appointments View */}
+        {viewMode === 'APPOINTMENTS' && (
+          <PendingAppointments
+            appointments={pendingAppointments}
+            onImport={onImportAppointment}
+            linkedAppointmentId={linkedAppointmentId}
+          />
         )}
       </div>
     </div>
