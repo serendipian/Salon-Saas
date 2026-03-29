@@ -228,6 +228,55 @@ export const useAccounting = () => {
       .sort((a, b) => b.revenue - a.revenue);
   }, [data.current.transactions, productCategoryLookup]);
 
+  // --- Revenue by Staff (Services) ---
+  const revenueByStaffServices = useMemo(() => {
+    const map = new Map<string, { staffId: string | null; staffName: string; count: number; revenue: number }>();
+
+    data.current.transactions.forEach((t: any) => {
+      t.items.forEach((item: any) => {
+        if (item.type !== 'SERVICE') return;
+        const key = item.staffId || '__unassigned__';
+        const name = item.staffName || 'Non attribué';
+        if (!map.has(key)) map.set(key, { staffId: item.staffId || null, staffName: name, count: 0, revenue: 0 });
+        const row = map.get(key)!;
+        row.count += item.quantity || 1;
+        row.revenue += item.price * (item.quantity || 1);
+      });
+    });
+
+    const rows = Array.from(map.values()).sort((a, b) => b.revenue - a.revenue);
+    const totalRevenue = rows.reduce((s, r) => s + r.revenue, 0);
+    return rows.map(r => ({
+      ...r,
+      avgBasket: r.count > 0 ? r.revenue / r.count : 0,
+      percent: totalRevenue > 0 ? (r.revenue / totalRevenue) * 100 : 0,
+    }));
+  }, [data.current.transactions]);
+
+  // --- Revenue by Staff (Products) ---
+  const revenueByStaffProducts = useMemo(() => {
+    const map = new Map<string, { staffId: string | null; staffName: string; count: number; revenue: number }>();
+
+    data.current.transactions.forEach((t: any) => {
+      t.items.forEach((item: any) => {
+        if (item.type !== 'PRODUCT') return;
+        const key = item.staffId || '__unassigned__';
+        const name = item.staffName || 'Non attribué';
+        if (!map.has(key)) map.set(key, { staffId: item.staffId || null, staffName: name, count: 0, revenue: 0 });
+        const row = map.get(key)!;
+        row.count += item.quantity || 1;
+        row.revenue += item.price * (item.quantity || 1);
+      });
+    });
+
+    const rows = Array.from(map.values()).sort((a, b) => b.revenue - a.revenue);
+    const totalRevenue = rows.reduce((s, r) => s + r.revenue, 0);
+    return rows.map(r => ({
+      ...r,
+      percent: totalRevenue > 0 ? (r.revenue / totalRevenue) * 100 : 0,
+    }));
+  }, [data.current.transactions]);
+
   // --- Payment Method Breakdown ---
   const paymentMethodBreakdown = useMemo(() => {
     const map = new Map<string, number>();
@@ -418,6 +467,8 @@ export const useAccounting = () => {
     prevProductRevenue,
     clientMetrics,
     topProducts,
+    revenueByStaffServices,
+    revenueByStaffProducts,
     calcTrend,
   };
 };
