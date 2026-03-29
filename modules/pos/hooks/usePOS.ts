@@ -6,9 +6,10 @@ import { useServices } from '../../services/hooks/useServices';
 import { useClients } from '../../clients/hooks/useClients';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useTeam } from '../../team/hooks/useTeam';
-import { CartItem, Client, Service, Product, ServiceVariant, PaymentEntry } from '../../../types';
+import { useAppointments } from '../../appointments/hooks/useAppointments';
+import { CartItem, Client, Service, Product, ServiceVariant, PaymentEntry, Appointment } from '../../../types';
 
-export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'HISTORY';
+export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'HISTORY' | 'APPOINTMENTS';
 
 export const usePOS = () => {
   const { transactions, addTransaction } = useTransactions();
@@ -19,12 +20,14 @@ export const usePOS = () => {
   const { allServices: services, serviceCategories } = useServices();
   const { products, productCategories } = useProducts();
   const { allStaff } = useTeam();
+  const { allAppointments } = useAppointments();
 
   const [viewMode, setViewMode] = useState<POSViewMode>('SERVICES');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [linkedAppointmentId, setLinkedAppointmentId] = useState<string | null>(null);
 
   // --- Cart Actions ---
 
@@ -68,12 +71,13 @@ export const usePOS = () => {
   const clearCart = () => {
     setCart([]);
     setSelectedClient(null);
+    setLinkedAppointmentId(null);
   };
 
   // --- Transaction Processing ---
 
   const processTransaction = async (payments: PaymentEntry[]) => {
-    await addTransaction(cart, payments, selectedClient?.id);
+    await addTransaction(cart, payments, selectedClient?.id, linkedAppointmentId ?? undefined);
     clearCart();
     setViewMode('HISTORY');
   };
@@ -97,6 +101,59 @@ export const usePOS = () => {
     return [];
   }, [viewMode, searchTerm, selectedCategory, services, products]);
 
+  const pendingAppointments = useMemo(() => {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const tomorrowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+
+    return allAppointments
+      .filter(a => {
+        if (a.status !== 'SCHEDULED') return false;
+        // Today's appointments OR overdue from previous days
+        return a.date < tomorrowStart;
+      })
+      .sort((a, b) => {
+        const aIsOverdue = a.date < todayStart;
+        const bIsOverdue = b.date < todayStart;
+        // Overdue first, then by scheduled time
+        if (aIsOverdue && !bIsOverdue) return -1;
+        if (!aIsOverdue && bIsOverdue) return 1;
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      });
+  }, [allAppointments]);
+
+  // --- Import Appointment ---
+
+  const importAppointment = (appointment: Appointment) => {
+    // Find all appointments in the same group (or just this one if no group)
+    const groupAppointments = appointment.groupId
+      ? allAppointments.filter(a => a.groupId === appointment.groupId && a.status === 'SCHEDULED')
+      : [appointment];
+
+    // Clear current cart and set client
+    setCart([]);
+    const client = clients.find(c => c.id === appointment.clientId);
+    setSelectedClient(client ?? null);
+    setLinkedAppointmentId(appointment.groupId ?? appointment.id);
+
+    // Convert each appointment in the group to a cart item
+    const cartItems: CartItem[] = groupAppointments.map(appt => ({
+      id: crypto.randomUUID(),
+      referenceId: appt.serviceId,
+      type: 'SERVICE' as const,
+      name: appt.serviceName,
+      variantName: appt.variantName || undefined,
+      price: appt.price,
+      originalPrice: appt.price,
+      quantity: 1,
+      staffId: appt.staffId || undefined,
+      staffName: appt.staffName || undefined,
+    }));
+
+    setCart(cartItems);
+    setViewMode('SERVICES');
+  };
+
   const totals = useMemo(() => {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const taxRate = (salonSettings.vatRate || 20) / 100;
@@ -111,7 +168,7 @@ export const usePOS = () => {
     selectedCategory, setSelectedCategory,
     selectedClient, setSelectedClient,
     cart,
-    
+
     // Data
     services, serviceCategories,
     products, productCategories,
@@ -119,12 +176,15 @@ export const usePOS = () => {
     transactions,
     filteredItems,
     totals,
+    pendingAppointments,
+    linkedAppointmentId,
 
     // Actions
     addToCart,
     updateCartItem,
     updateQuantity,
     removeFromCart,
-    processTransaction
+    processTransaction,
+    importAppointment,
   };
 };
