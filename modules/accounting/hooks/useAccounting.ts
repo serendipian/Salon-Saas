@@ -5,10 +5,15 @@ import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { useTransactions } from '../../../hooks/useTransactions';
 import { useSettings } from '../../settings/hooks/useSettings';
+import { useServices } from '../../services/hooks/useServices';
+import { useProducts } from '../../products/hooks/useProducts';
 import { toExpense, toExpenseInsert, ExpenseRow } from '../mappers';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { Expense, LedgerEntry, DateRange } from '../../../types';
+
+const calcTrend = (curr: number, prev: number) =>
+  prev === 0 ? (curr > 0 ? 100 : 0) : ((curr - prev) / Math.abs(prev)) * 100;
 
 export const useAccounting = () => {
   const { activeSalon } = useAuth();
@@ -19,6 +24,8 @@ export const useAccounting = () => {
 
   const { transactions } = useTransactions();
   const { salonSettings } = useSettings();
+  const { allServices, serviceCategories } = useServices();
+  const { allProducts, productCategories } = useProducts();
 
   // --- Expenses Query ---
   const { data: expenses = [] } = useQuery({
@@ -108,9 +115,6 @@ export const useAccounting = () => {
     const prevNetProfit = prevRevenue - prevCogs - prevOpex;
     const prevAvgBasket = data.previous.transactions.length > 0 ? prevRevenue / data.previous.transactions.length : 0;
 
-    const calcTrend = (curr: number, prev: number) =>
-      prev === 0 ? (curr > 0 ? 100 : 0) : ((curr - prev) / Math.abs(prev)) * 100;
-
     const taxRate = (salonSettings.vatRate || 20) / 100;
     const vatDue = revenue - revenue / (1 + taxRate);
 
@@ -138,6 +142,187 @@ export const useAccounting = () => {
       topServices,
     };
   }, [data, salonSettings.vatRate]);
+
+  // --- Category Lookup Maps ---
+  const serviceCategoryLookup = useMemo(() => {
+    const catNameMap = new Map<string, string>();
+    (serviceCategories || []).forEach(cat => catNameMap.set(cat.id, cat.name));
+
+    const lookup = new Map<string, { categoryId: string; categoryName: string }>();
+    (allServices || []).forEach(svc => {
+      lookup.set(svc.id, {
+        categoryId: svc.categoryId || 'uncategorized',
+        categoryName: catNameMap.get(svc.categoryId) || 'Non catégorisé',
+      });
+    });
+    return lookup;
+  }, [allServices, serviceCategories]);
+
+  const productCategoryLookup = useMemo(() => {
+    const catNameMap = new Map<string, string>();
+    (productCategories || []).forEach(cat => catNameMap.set(cat.id, cat.name));
+
+    const lookup = new Map<string, { categoryId: string; categoryName: string }>();
+    (allProducts || []).forEach(prod => {
+      lookup.set(prod.id, {
+        categoryId: prod.categoryId || 'uncategorized',
+        categoryName: catNameMap.get(prod.categoryId) || 'Non catégorisé',
+      });
+    });
+    return lookup;
+  }, [allProducts, productCategories]);
+
+  // --- Revenue by Service Category ---
+  const revenueByServiceCategory = useMemo(() => {
+    const map = new Map<string, { categoryId: string; categoryName: string; count: number; revenue: number; services: Map<string, { name: string; variantName?: string; count: number; revenue: number }> }>();
+
+    data.current.transactions.forEach((t: any) => {
+      t.items.forEach((item: any) => {
+        if (item.type !== 'SERVICE') return;
+        const lookup = serviceCategoryLookup.get(item.referenceId);
+        const catId = lookup?.categoryId || 'uncategorized';
+        const catName = lookup?.categoryName || 'Non catégorisé';
+        if (!map.has(catId)) map.set(catId, { categoryId: catId, categoryName: catName, count: 0, revenue: 0, services: new Map() });
+        const cat = map.get(catId)!;
+        cat.count += item.quantity || 1;
+        cat.revenue += item.price * (item.quantity || 1);
+
+        const serviceKey = item.referenceId || item.name;
+        if (!cat.services.has(serviceKey)) cat.services.set(serviceKey, { name: item.name, variantName: item.variantName, count: 0, revenue: 0 });
+        const svc = cat.services.get(serviceKey)!;
+        svc.count += item.quantity || 1;
+        svc.revenue += item.price * (item.quantity || 1);
+      });
+    });
+
+    return Array.from(map.values())
+      .map(cat => ({ ...cat, services: Array.from(cat.services.values()).sort((a, b) => b.revenue - a.revenue) }))
+      .sort((a, b) => b.revenue - a.revenue);
+  }, [data.current.transactions, serviceCategoryLookup]);
+
+  // --- Revenue by Product Category ---
+  const revenueByProductCategory = useMemo(() => {
+    const map = new Map<string, { categoryId: string; categoryName: string; count: number; revenue: number; products: Map<string, { name: string; count: number; revenue: number }> }>();
+
+    data.current.transactions.forEach((t: any) => {
+      t.items.forEach((item: any) => {
+        if (item.type !== 'PRODUCT') return;
+        const lookup = productCategoryLookup.get(item.referenceId);
+        const catId = lookup?.categoryId || 'uncategorized';
+        const catName = lookup?.categoryName || 'Non catégorisé';
+        if (!map.has(catId)) map.set(catId, { categoryId: catId, categoryName: catName, count: 0, revenue: 0, products: new Map() });
+        const cat = map.get(catId)!;
+        cat.count += item.quantity || 1;
+        cat.revenue += item.price * (item.quantity || 1);
+
+        const prodKey = item.referenceId || item.name;
+        if (!cat.products.has(prodKey)) cat.products.set(prodKey, { name: item.name, count: 0, revenue: 0 });
+        const prod = cat.products.get(prodKey)!;
+        prod.count += item.quantity || 1;
+        prod.revenue += item.price * (item.quantity || 1);
+      });
+    });
+
+    return Array.from(map.values())
+      .map(cat => ({ ...cat, products: Array.from(cat.products.values()).sort((a, b) => b.revenue - a.revenue) }))
+      .sort((a, b) => b.revenue - a.revenue);
+  }, [data.current.transactions, productCategoryLookup]);
+
+  // --- Payment Method Breakdown ---
+  const paymentMethodBreakdown = useMemo(() => {
+    const map = new Map<string, number>();
+    data.current.transactions.forEach((t: any) => {
+      (t.payments || []).forEach((p: any) => {
+        map.set(p.method, (map.get(p.method) || 0) + p.amount);
+      });
+    });
+    const total = Array.from(map.values()).reduce((s, v) => s + v, 0);
+    return Array.from(map.entries())
+      .map(([method, amount]) => ({ method, amount, percent: total > 0 ? (amount / total) * 100 : 0 }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [data.current.transactions]);
+
+  // --- Service/Product Revenue Totals ---
+  const serviceRevenue = useMemo(() => {
+    let total = 0, count = 0;
+    data.current.transactions.forEach((t: any) => {
+      t.items.forEach((item: any) => {
+        if (item.type === 'SERVICE') { total += item.price * (item.quantity || 1); count += item.quantity || 1; }
+      });
+    });
+    return { total, count, avgPrice: count > 0 ? total / count : 0 };
+  }, [data.current.transactions]);
+
+  const productRevenue = useMemo(() => {
+    let total = 0, count = 0;
+    data.current.transactions.forEach((t: any) => {
+      t.items.forEach((item: any) => {
+        if (item.type === 'PRODUCT') { total += item.price * (item.quantity || 1); count += item.quantity || 1; }
+      });
+    });
+    return { total, count, avgPrice: count > 0 ? total / count : 0 };
+  }, [data.current.transactions]);
+
+  // --- Previous Period Service/Product Revenue (for trends) ---
+  const prevServiceRevenue = useMemo(() => {
+    let total = 0, count = 0;
+    data.previous.transactions.forEach((t: any) => {
+      t.items.forEach((item: any) => {
+        if (item.type === 'SERVICE') { total += item.price * (item.quantity || 1); count += item.quantity || 1; }
+      });
+    });
+    return { total, count, avgPrice: count > 0 ? total / count : 0 };
+  }, [data.previous.transactions]);
+
+  const prevProductRevenue = useMemo(() => {
+    let total = 0, count = 0;
+    data.previous.transactions.forEach((t: any) => {
+      t.items.forEach((item: any) => {
+        if (item.type === 'PRODUCT') { total += item.price * (item.quantity || 1); count += item.quantity || 1; }
+      });
+    });
+    return { total, count, avgPrice: count > 0 ? total / count : 0 };
+  }, [data.previous.transactions]);
+
+  // --- Unique + New Clients ---
+  const clientMetrics = useMemo(() => {
+    const currentClientIds = new Set<string>();
+    data.current.transactions.forEach((t: any) => { if (t.clientId) currentClientIds.add(t.clientId); });
+
+    const firstTransactionByClient = new Map<string, number>();
+    transactions.forEach((t: any) => {
+      if (!t.clientId) return;
+      const time = new Date(t.date).getTime();
+      const existing = firstTransactionByClient.get(t.clientId);
+      if (!existing || time < existing) firstTransactionByClient.set(t.clientId, time);
+    });
+
+    const from = new Date(dateRange.from).getTime();
+    const to = new Date(dateRange.to).getTime();
+    let newClients = 0;
+    currentClientIds.forEach(clientId => {
+      const firstDate = firstTransactionByClient.get(clientId);
+      if (firstDate && firstDate >= from && firstDate <= to) newClients++;
+    });
+
+    return { uniqueClients: currentClientIds.size, newClients };
+  }, [data.current.transactions, transactions, dateRange]);
+
+  // --- Top Products ---
+  const topProducts = useMemo(() => {
+    const productSales: Record<string, { name: string; count: number; revenue: number }> = {};
+    data.current.transactions.forEach((t: any) => {
+      t.items.forEach((i: any) => {
+        if (i.type === 'PRODUCT') {
+          const key = i.referenceId || i.name;
+          if (!productSales[key]) productSales[key] = { name: i.name, count: 0, revenue: 0 };
+          productSales[key].count += i.quantity || 1;
+          productSales[key].revenue += i.price * (i.quantity || 1);
+        }
+      });
+    });
+    return Object.values(productSales).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+  }, [data.current.transactions]);
 
   // --- Ledger Generation ---
   const ledgerData: LedgerEntry[] = useMemo(() => {
@@ -223,5 +408,16 @@ export const useAccounting = () => {
     ledgerData,
     chartData,
     addExpense,
+    // Revenue breakdowns & metrics
+    revenueByServiceCategory,
+    revenueByProductCategory,
+    paymentMethodBreakdown,
+    serviceRevenue,
+    productRevenue,
+    prevServiceRevenue,
+    prevProductRevenue,
+    clientMetrics,
+    topProducts,
+    calcTrend,
   };
 };
