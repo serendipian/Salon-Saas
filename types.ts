@@ -257,6 +257,8 @@ export interface CartItem {
   quantity: number;
   cost?: number; // Added for Profitability calculation
   note?: string; // Reason for discount or modification
+  staffId?: string;
+  staffName?: string;
 }
 
 export interface PaymentEntry {

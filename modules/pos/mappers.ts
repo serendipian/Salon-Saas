@@ -14,6 +14,8 @@ export interface TransactionItemRow {
   quantity: number;
   cost: number | null;
   note: string | null;
+  staff_id: string | null;
+  staff_name: string | null;
 }
 
 export interface TransactionPaymentRow {
@@ -54,6 +56,8 @@ export function toTransaction(row: TransactionRow): Transaction {
     quantity: item.quantity,
     cost: item.cost ?? undefined,
     note: item.note ?? undefined,
+    staffId: item.staff_id ?? undefined,
+    staffName: item.staff_name ?? undefined,
   }));
 
   // Map DB constants back to French labels for display
@@ -101,6 +105,8 @@ export function toTransactionRpcPayload(
     quantity: item.quantity,
     cost: item.cost ?? 0,
     note: item.note ?? null,
+    staff_id: item.staffId ?? null,
+    staff_name: item.staffName ?? null,
   }));
 
   // Map French UI labels to DB constants
