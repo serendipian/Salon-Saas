@@ -25,6 +25,7 @@ export const useAppointments = () => {
   }, [addToast]);
 
   useRealtimeSync('appointments', { onEvent: handleAppointmentEvent });
+  useRealtimeSync('appointment_groups');
 
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ['appointments', salonId],

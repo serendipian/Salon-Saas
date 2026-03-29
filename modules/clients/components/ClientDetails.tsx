@@ -98,7 +98,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
 
           {/* Profile Card */}
           <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-            <div className="flex items-center gap-4 mb-5">
+            <div className="flex items-start gap-4">
               <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center text-2xl font-bold text-slate-600 border border-slate-200 shrink-0 overflow-hidden">
                   {client.photoUrl ? (
                     <img src={client.photoUrl} alt="Profile" className="w-full h-full object-cover" />
@@ -106,233 +106,244 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
                     initials
                   )}
               </div>
-              <div className="min-w-0">
-                <h2 className="text-lg font-bold text-slate-900 truncate">{[client.firstName, client.lastName].filter(Boolean).join(' ')}</h2>
-                <p className="text-sm text-slate-500 flex items-center gap-1 mt-0.5">
-                   <MapPin size={12} />
-                   {client.city || '-'}
-                </p>
-                <div className="mt-2">
-                   {client.status === 'VIP' && <span className="px-3 py-1 bg-purple-100 text-purple-700 border border-purple-200 rounded-md text-xs font-bold">VIP</span>}
-                   {(!client.status || client.status === 'ACTIF') && <span className="px-3 py-1 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-md text-xs font-medium">Actif</span>}
-                   {client.status === 'INACTIF' && <span className="px-3 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-md text-xs font-medium">Inactif</span>}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-bold text-slate-900 truncate">{[client.firstName, client.lastName].filter(Boolean).join(' ')}</h2>
+                    <p className="text-sm text-slate-500 flex items-center gap-1 mt-0.5">
+                       <MapPin size={12} />
+                       {client.city || '-'}
+                    </p>
+                  </div>
+                  <div className="shrink-0">
+                     {client.status === 'VIP' && <span className="px-3 py-1 bg-purple-100 text-purple-700 border border-purple-200 rounded-md text-xs font-bold">VIP</span>}
+                     {(!client.status || client.status === 'ACTIF') && <span className="px-3 py-1 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-md text-xs font-medium">Actif</span>}
+                     {client.status === 'INACTIF' && <span className="px-3 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-md text-xs font-medium">Inactif</span>}
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="w-full pt-4 border-t border-slate-100 flex justify-around">
-              <div className="text-center">
-                <div className="text-xs text-slate-500 uppercase font-semibold mb-1">Visites</div>
-                <div className="font-bold text-slate-900 text-lg">{client.totalVisits}</div>
-              </div>
-              <div className="h-10 w-px bg-slate-200"></div>
-              <div className="text-center">
-                 <div className="text-xs text-slate-500 uppercase font-semibold mb-1">Total</div>
-                 <div className="font-bold text-slate-900 text-lg">{formatPrice(client.totalSpent)}</div>
               </div>
             </div>
           </div>
 
-          {/* Info sections in 2 columns with divider */}
-          <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_1px_1fr] gap-6">
+          {/* 2x2 grid: Coordonnées, Identité, Professionnel, Préférences */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-              {/* Left column: Coordonnées + Professionnel */}
-              <div className="space-y-5">
-                <div>
-                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Coordonnées</h3>
-                  <ul className="space-y-3">
-                    <li className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
-                         <Phone size={14} />
-                      </div>
-                      <div className="overflow-hidden">
-                        <div className="text-sm font-medium text-slate-900">{client.phone || '-'}</div>
-                        <div className="text-xs text-slate-500">Mobile</div>
-                      </div>
-                    </li>
-                    <li className="flex items-center gap-3">
-                       <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
-                         <Mail size={14} />
-                      </div>
-                      <div className="overflow-hidden">
-                         <div className="text-sm font-medium text-slate-900 truncate">{client.email || '-'}</div>
-                         <div className="text-xs text-slate-500">Email</div>
-                      </div>
-                    </li>
-                    {client.whatsapp && (
-                      <li className="flex items-center gap-3">
-                         <div className="w-8 h-8 rounded bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
-                           <MessageCircle size={14} />
-                        </div>
-                        <div className="overflow-hidden">
-                           <div className="text-sm font-medium text-slate-900">{client.whatsapp}</div>
-                           <div className="text-xs text-slate-500">WhatsApp</div>
-                        </div>
-                      </li>
-                    )}
-                    {client.instagram && (
-                      <li className="flex items-center gap-3">
-                         <div className="w-8 h-8 rounded bg-pink-50 flex items-center justify-center text-pink-600 shrink-0">
-                           <Instagram size={14} />
-                        </div>
-                        <div className="overflow-hidden">
-                           <div className="text-sm font-medium text-slate-900">{client.instagram}</div>
-                           <div className="text-xs text-slate-500">Instagram</div>
-                        </div>
-                      </li>
-                    )}
-                  </ul>
-                </div>
-
-                <div className="pt-4 border-t border-slate-100">
-                   <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Professionnel</h3>
-                   <ul className="space-y-3">
-                     <li className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
-                           <Briefcase size={14} />
-                        </div>
-                        <div className="overflow-hidden">
-                           <div className="text-sm font-medium text-slate-900">{client.profession || '-'}</div>
-                           <div className="text-xs text-slate-500">Métier</div>
-                        </div>
-                     </li>
-                     <li className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
-                           <Building2 size={14} />
-                        </div>
-                        <div className="overflow-hidden">
-                           <div className="text-sm font-medium text-slate-900">{client.company || '-'}</div>
-                           <div className="text-xs text-slate-500">Société</div>
-                        </div>
-                     </li>
-                   </ul>
-                </div>
+            {/* Coordonnées */}
+            <div>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Coordonnées</h3>
+              <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                     <Phone size={14} />
+                  </div>
+                  <div className="overflow-hidden">
+                    <div className="text-sm font-medium text-slate-900">{client.phone || '-'}</div>
+                    <div className="text-xs text-slate-500">Mobile</div>
+                  </div>
+                </li>
+                <li className="flex items-center gap-3">
+                   <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                     <Mail size={14} />
+                  </div>
+                  <div className="overflow-hidden">
+                     <div className="text-sm font-medium text-slate-900 truncate">{client.email || '-'}</div>
+                     <div className="text-xs text-slate-500">Email</div>
+                  </div>
+                </li>
+                {client.whatsapp && (
+                  <li className="flex items-center gap-3">
+                     <div className="w-8 h-8 rounded bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                       <MessageCircle size={14} />
+                    </div>
+                    <div className="overflow-hidden">
+                       <div className="text-sm font-medium text-slate-900">{client.whatsapp}</div>
+                       <div className="text-xs text-slate-500">WhatsApp</div>
+                    </div>
+                  </li>
+                )}
+                {client.instagram && (
+                  <li className="flex items-center gap-3">
+                     <div className="w-8 h-8 rounded bg-pink-50 flex items-center justify-center text-pink-600 shrink-0">
+                       <Instagram size={14} />
+                    </div>
+                    <div className="overflow-hidden">
+                       <div className="text-sm font-medium text-slate-900">{client.instagram}</div>
+                       <div className="text-xs text-slate-500">Instagram</div>
+                    </div>
+                  </li>
+                )}
+              </ul>
               </div>
-
-              {/* Vertical divider */}
-              <div className="hidden sm:block bg-slate-200" />
-
-              {/* Right column: Identité + Préférences */}
-              <div className="space-y-5">
-                <div>
-                   <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Identité</h3>
-                   <ul className="space-y-3">
-                     <li className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
-                           <User size={14} />
-                        </div>
-                        <div className="overflow-hidden">
-                           <div className="text-sm font-medium text-slate-900">{client.gender || '-'}</div>
-                           <div className="text-xs text-slate-500">Genre</div>
-                        </div>
-                     </li>
-                     <li className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
-                           <CalendarDays size={14} />
-                        </div>
-                        <div className="overflow-hidden">
-                           <div className="text-sm font-medium text-slate-900">{client.ageGroup || '-'}</div>
-                           <div className="text-xs text-slate-500">Tranche d'âge</div>
-                        </div>
-                     </li>
-                   </ul>
-                </div>
-
-                <div className="pt-4 border-t border-slate-100">
-                   <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Préférences</h3>
-                   <ul className="space-y-3">
-                     <li className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
-                           <Globe size={14} />
-                        </div>
-                        <div className="overflow-hidden">
-                           <div className="text-sm font-medium text-slate-900">{client.preferredLanguage || '-'}</div>
-                           <div className="text-xs text-slate-500">Langue</div>
-                        </div>
-                     </li>
-                     <li className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
-                           <MessageCircle size={14} />
-                        </div>
-                        <div className="overflow-hidden">
-                           <div className="text-sm font-medium text-slate-900">
-                             {client.preferredChannel || '-'}
-                             {client.preferredChannel === 'Autre' && client.otherChannelDetail && ` (${client.otherChannelDetail})`}
-                           </div>
-                           <div className="text-xs text-slate-500">Canal favori</div>
-                        </div>
-                     </li>
-                   </ul>
-                </div>
-              </div>
-
             </div>
 
-            {/* Praticien Favori — full width below the 2 columns */}
-            {preferredStaff && (
-               <div className="pt-5 mt-5 border-t border-slate-100">
-                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Praticien Favori</h3>
-                  <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-lg border border-slate-100">
-                     {preferredStaff.photoUrl ? (
-                       <img src={preferredStaff.photoUrl} className="w-8 h-8 rounded-full object-cover" alt="" />
-                     ) : (
-                       <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
-                         {preferredStaff.firstName[0]}{preferredStaff.lastName[0]}
-                       </div>
-                     )}
-                     <div>
-                        <div className="text-sm font-bold text-slate-900">{preferredStaff.firstName} {preferredStaff.lastName}</div>
-                        <div className="text-xs text-slate-500">{preferredStaff.role}</div>
-                     </div>
-                     <div className="ml-auto text-amber-400">
-                        <Star size={16} fill="currentColor" />
-                     </div>
+            {/* Identité */}
+            <div>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Identité</h3>
+              <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                     <User size={14} />
                   </div>
-               </div>
-            )}
+                  <div className="overflow-hidden">
+                     <div className="text-sm font-medium text-slate-900">{client.gender || '-'}</div>
+                     <div className="text-xs text-slate-500">Genre</div>
+                  </div>
+                </li>
+                <li className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                     <CalendarDays size={14} />
+                  </div>
+                  <div className="overflow-hidden">
+                     <div className="text-sm font-medium text-slate-900">{client.ageGroup || '-'}</div>
+                     <div className="text-xs text-slate-500">Tranche d'âge</div>
+                  </div>
+                </li>
+              </ul>
+              </div>
+            </div>
+
+            {/* Professionnel */}
+            <div>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Professionnel</h3>
+              <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                     <Briefcase size={14} />
+                  </div>
+                  <div className="overflow-hidden">
+                     <div className="text-sm font-medium text-slate-900">{client.profession || '-'}</div>
+                     <div className="text-xs text-slate-500">Métier</div>
+                  </div>
+                </li>
+                <li className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                     <Building2 size={14} />
+                  </div>
+                  <div className="overflow-hidden">
+                     <div className="text-sm font-medium text-slate-900">{client.company || '-'}</div>
+                     <div className="text-xs text-slate-500">Société</div>
+                  </div>
+                </li>
+              </ul>
+              </div>
+            </div>
+
+            {/* Préférences */}
+            <div>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Préférences</h3>
+              <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                     <Globe size={14} />
+                  </div>
+                  <div className="overflow-hidden">
+                     <div className="text-sm font-medium text-slate-900">{client.preferredLanguage || '-'}</div>
+                     <div className="text-xs text-slate-500">Langue</div>
+                  </div>
+                </li>
+                <li className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                     <MessageCircle size={14} />
+                  </div>
+                  <div className="overflow-hidden">
+                     <div className="text-sm font-medium text-slate-900">
+                       {client.preferredChannel || '-'}
+                       {client.preferredChannel === 'Autre' && client.otherChannelDetail && ` (${client.otherChannelDetail})`}
+                     </div>
+                     <div className="text-xs text-slate-500">Canal favori</div>
+                  </div>
+                </li>
+              </ul>
+              </div>
+            </div>
 
           </div>
 
-          {/* Acquisition & Origine — separate card */}
-          <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Acquisition & Origine</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
-                  <Calendar size={14} />
-                </div>
-                <div className="overflow-hidden">
-                  <div className="text-sm font-medium text-slate-900">
-                    {client.contactDate ? new Date(client.contactDate).toLocaleDateString('fr-FR') : '-'}
-                  </div>
-                  <div className="text-xs text-slate-500">Premier Contact</div>
-                </div>
+          {/* Praticien Favori */}
+          {preferredStaff && (
+            <div>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Praticien Favori</h3>
+              <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-lg border border-slate-100">
+                 {preferredStaff.photoUrl ? (
+                   <img src={preferredStaff.photoUrl} className="w-8 h-8 rounded-full object-cover" alt="" />
+                 ) : (
+                   <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+                     {preferredStaff.firstName[0]}{preferredStaff.lastName[0]}
+                   </div>
+                 )}
+                 <div>
+                    <div className="text-sm font-bold text-slate-900">{preferredStaff.firstName} {preferredStaff.lastName}</div>
+                    <div className="text-xs text-slate-500">{preferredStaff.role}</div>
+                 </div>
+                 <div className="ml-auto text-amber-400">
+                    <Star size={16} fill="currentColor" />
+                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
-                  <Phone size={14} />
-                </div>
-                <div className="overflow-hidden">
-                  <div className="text-sm font-medium text-slate-900">
-                    {client.contactMethod || '-'}
-                    {client.contactMethod === 'Message' && client.messageChannel && ` (${client.messageChannel})`}
-                  </div>
-                  <div className="text-xs text-slate-500">Méthode</div>
-                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
-                  <UserPlus size={14} />
-                </div>
-                <div className="overflow-hidden">
-                  <div className="text-sm font-medium text-slate-900">
-                    {client.acquisitionSource || '-'}
-                    {(client.acquisitionSource === 'Influenceur' || client.acquisitionSource === 'Autre') && client.acquisitionDetail && (
-                      <span className="text-slate-500 text-xs block">{client.acquisitionDetail}</span>
-                    )}
-                  </div>
-                  <div className="text-xs text-slate-500">Source</div>
+            </div>
+          )}
+
+          {/* Acquisition & Autorisations side by side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Acquisition & Origine */}
+            <div>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Acquisition & Origine</h3>
+              <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                <ul className="space-y-3">
+                  <li className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                      <Calendar size={14} />
+                    </div>
+                    <div className="overflow-hidden">
+                      <div className="text-sm font-medium text-slate-900">
+                        {client.contactDate ? new Date(client.contactDate).toLocaleDateString('fr-FR') : '-'}
+                      </div>
+                      <div className="text-xs text-slate-500">Premier Contact</div>
+                    </div>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                      <Phone size={14} />
+                    </div>
+                    <div className="overflow-hidden">
+                      <div className="text-sm font-medium text-slate-900">
+                        {client.contactMethod || '-'}
+                        {client.contactMethod === 'Message' && client.messageChannel && ` (${client.messageChannel})`}
+                      </div>
+                      <div className="text-xs text-slate-500">Méthode</div>
+                    </div>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                      <UserPlus size={14} />
+                    </div>
+                    <div className="overflow-hidden">
+                      <div className="text-sm font-medium text-slate-900">
+                        {client.acquisitionSource || '-'}
+                        {(client.acquisitionSource === 'Influenceur' || client.acquisitionSource === 'Autre') && client.acquisitionDetail && (
+                          <span className="text-slate-500 text-xs block">{client.acquisitionDetail}</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-500">Source</div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Autorisations */}
+            <div>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Autorisations</h3>
+              <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                <div className="space-y-1">
+                  <PermissionItem label="Réseaux Sociaux" value={client.permissions?.socialMedia} />
+                  <PermissionItem label="Marketing" value={client.permissions?.marketing} />
+                  <PermissionItem label="Autres" value={client.permissions?.other} detail={client.permissions?.otherDetail} />
                 </div>
               </div>
             </div>
@@ -354,26 +365,31 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
              </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-             {/* Permissions Box */}
-             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-3">
-                   <Shield size={16} className="text-slate-400" />
-                   <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Autorisations</h3>
-                </div>
-                <div className="space-y-1">
-                  <PermissionItem label="Réseaux Sociaux" value={client.permissions?.socialMedia} />
-                  <PermissionItem label="Marketing" value={client.permissions?.marketing} />
-                  <PermissionItem label="Autres" value={client.permissions?.other} detail={client.permissions?.otherDetail} />
-                </div>
-             </div>
+          {/* KPIs */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm text-center">
+              <div className="text-2xl font-bold text-slate-900">{client.totalVisits}</div>
+              <div className="text-xs text-slate-500 mt-1">Visites</div>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm text-center">
+              <div className="text-2xl font-bold text-slate-900">{client.totalVisits > 0 ? formatPrice(client.totalSpent / client.totalVisits) : formatPrice(0)}</div>
+              <div className="text-xs text-slate-500 mt-1">Panier Moyen</div>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm text-center">
+              <div className="text-2xl font-bold text-slate-900">{formatPrice(client.totalSpent)}</div>
+              <div className="text-xs text-slate-500 mt-1">Total Dépensé</div>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm text-center">
+              <div className="text-2xl font-bold text-slate-900">0</div>
+              <div className="text-xs text-slate-500 mt-1">Points Fidélité</div>
+            </div>
+          </div>
 
-             {/* Notes */}
-             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col">
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Notes Internes</h3>
-                <div className="text-sm text-slate-600 leading-relaxed bg-amber-50 p-4 rounded-lg border border-amber-100 italic whitespace-pre-wrap flex-1">
-                  {client.notes || "Aucune note enregistrée pour ce client."}
-                </div>
+          {/* Notes */}
+          <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Notes Internes</h3>
+             <div className="text-sm text-slate-600 leading-relaxed bg-amber-50 p-4 rounded-lg border border-amber-100 italic whitespace-pre-wrap">
+               {client.notes || "Aucune note enregistrée pour ce client."}
              </div>
           </div>
 

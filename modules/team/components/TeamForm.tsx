@@ -234,7 +234,7 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
               <Select
                  label="Rôle"
                  value={formData.role}
-                 onChange={(val) => { clearFieldError('role'); setFormData({...formData, role: val as any}); }}
+                 onChange={(val) => { clearFieldError('role'); setFormData({...formData, role: val as string}); }}
                  error={errors.role}
                  options={[
                    { value: 'Manager', label: 'Manager' },
@@ -265,7 +265,7 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
                  <Select 
                     label="Type de Contrat"
                     value={formData.contractType}
-                    onChange={(val) => setFormData({...formData, contractType: val as any})}
+                    onChange={(val) => setFormData({...formData, contractType: val as string})}
                     options={[
                       { value: 'CDI', label: 'CDI' },
                       { value: 'CDD', label: 'CDD' },

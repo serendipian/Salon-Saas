@@ -130,20 +130,20 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
         {/* Grid View */}
         {(viewMode === 'SERVICES' || viewMode === 'PRODUCTS') && (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredItems.map((item: any) => {
+            {filteredItems.map((item) => {
                const isService = viewMode === 'SERVICES';
-               const category = isService 
+               const category = isService
                   ? serviceCategories.find(c => c.id === item.categoryId)
                   : productCategories.find(c => c.id === item.categoryId);
-               
+
                let priceDisplay = '';
-               if (isService) {
-                 const prices = item.variants.map((v: any) => v.price);
+               if (isService && 'variants' in item) {
+                 const prices = (item as Service).variants.map(v => v.price);
                  const min = Math.min(...prices);
                  priceDisplay = formatPrice(min);
                  if (prices.length > 1) priceDisplay += '+';
-               } else {
-                 priceDisplay = formatPrice(item.price);
+               } else if ('price' in item) {
+                 priceDisplay = formatPrice((item as Product).price);
                }
 
                return (
@@ -161,11 +161,11 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                      <h3 className="font-semibold text-slate-900 leading-tight mb-1 group-hover:text-slate-700 transition-colors line-clamp-2">
                        {item.name}
                      </h3>
-                     {isService && item.variants.length > 1 && (
-                       <span className="text-xs text-slate-400">{item.variants.length} options</span>
+                     {isService && 'variants' in item && (item as Service).variants.length > 1 && (
+                       <span className="text-xs text-slate-400">{(item as Service).variants.length} options</span>
                      )}
-                     {!isService && (
-                       <span className="text-xs text-slate-400">Stock: {item.stock}</span>
+                     {!isService && 'stock' in item && (
+                       <span className="text-xs text-slate-400">Stock: {(item as Product).stock}</span>
                      )}
                    </div>
                    

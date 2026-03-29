@@ -7,7 +7,7 @@ import { useClients } from '../../clients/hooks/useClients';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useTeam } from '../../team/hooks/useTeam';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
-import { CartItem, Client, Service, Product, ServiceVariant, PaymentEntry, Appointment } from '../../../types';
+import { CartItem, Client, Service, Product, PaymentEntry, Appointment } from '../../../types';
 
 export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'HISTORY' | 'APPOINTMENTS';
 
@@ -156,7 +156,7 @@ export const usePOS = () => {
   };
 
   const totals = useMemo(() => {
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = Math.round(cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) * 100) / 100;
     const taxRate = (salonSettings.vatRate || 20) / 100;
     const tax = subtotal * taxRate / (1 + taxRate);
     return { subtotal, tax, total: subtotal, vatRate: salonSettings.vatRate || 20 };

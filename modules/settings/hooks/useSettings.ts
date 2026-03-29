@@ -97,7 +97,8 @@ export const useSettings = () => {
         const { error } = await supabase
           .from('expense_categories')
           .update({ deleted_at: new Date().toISOString() })
-          .in('id', toDelete);
+          .in('id', toDelete)
+          .eq('salon_id', salonId);
         if (error) throw error;
       }
 
@@ -160,7 +161,8 @@ export const useSettings = () => {
         const { error } = await supabase
           .from('recurring_expenses')
           .update({ deleted_at: new Date().toISOString() })
-          .in('id', toDelete);
+          .in('id', toDelete)
+          .eq('salon_id', salonId);
         if (error) throw error;
       }
 

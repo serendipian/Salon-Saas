@@ -22,7 +22,7 @@ const ORDERED_DAYS: (keyof WorkSchedule)[] = ['monday', 'tuesday', 'wednesday', 
 
 export const WorkScheduleEditor: React.FC<WorkScheduleEditorProps> = ({ value, onChange }) => {
   
-  const handleChange = (day: keyof WorkSchedule, field: keyof WorkDay, val: any) => {
+  const handleChange = (day: keyof WorkSchedule, field: keyof WorkDay, val: string | boolean) => {
     onChange({
       ...value,
       [day]: {

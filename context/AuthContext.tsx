@@ -89,13 +89,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Supabase returns salon as object (not array) due to !inner
-    return (data || []).map((m: any) => ({
+    return (data || []).map((m) => ({
       id: m.id,
       salon_id: m.salon_id,
       profile_id: m.profile_id,
       role: m.role as Role,
       status: m.status,
-      salon: m.salon,
+      salon: m.salon as unknown as SalonMembership['salon'],
     }));
   }, []);
 

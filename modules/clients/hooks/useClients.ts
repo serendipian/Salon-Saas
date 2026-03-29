@@ -65,7 +65,8 @@ export const useClients = () => {
       const { error } = await supabase
         .from('clients')
         .update(toClientInsert(client, salonId))
-        .eq('id', client.id);
+        .eq('id', client.id)
+        .eq('salon_id', salonId);
       if (error) throw error;
     },
     onSuccess: () => {

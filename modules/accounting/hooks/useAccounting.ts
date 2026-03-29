@@ -8,11 +8,11 @@ import { useSettings } from '../../settings/hooks/useSettings';
 import { useServices } from '../../services/hooks/useServices';
 import { useProducts } from '../../products/hooks/useProducts';
 import { toExpense, toExpenseInsert, ExpenseRow } from '../mappers';
-
-const UNASSIGNED_KEY = '__unassigned__';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { Expense, LedgerEntry, DateRange, Transaction, CartItem, PaymentEntry } from '../../../types';
+
+const UNASSIGNED_KEY = '__unassigned__';
 
 const calcTrend = (curr: number, prev: number) =>
   prev === 0 ? (curr > 0 ? 100 : 0) : ((curr - prev) / Math.abs(prev)) * 100;
@@ -79,7 +79,7 @@ export const useAccounting = () => {
     const prevTo = from - 1;
     const prevFrom = prevTo - duration;
 
-    const filterRange = <T extends Record<string, unknown>>(items: T[], dateKey: keyof T, start: number, end: number): T[] =>
+    const filterRange = <T extends object>(items: T[], dateKey: keyof T, start: number, end: number): T[] =>
       items.filter(i => {
         const t = new Date(i[dateKey] as string).getTime();
         return t >= start && t <= end;
@@ -99,21 +99,21 @@ export const useAccounting = () => {
 
   // --- Financial KPIs & Trends ---
   const financials = useMemo(() => {
-    const revenue = data.current.transactions.reduce((sum: number, t: any) => sum + t.total, 0);
+    const revenue = data.current.transactions.reduce((sum, t) => sum + t.total, 0);
     const cogs = data.current.transactions.reduce(
-      (sum: number, t: any) => sum + t.items.reduce((isum: number, item: any) => isum + (item.cost || 0), 0),
+      (sum, t) => sum + t.items.reduce((isum, item) => isum + (item.cost || 0), 0),
       0
     );
-    const opex = data.current.expenses.reduce((sum: number, e: any) => sum + e.amount, 0);
+    const opex = data.current.expenses.reduce((sum, e) => sum + e.amount, 0);
     const netProfit = revenue - cogs - opex;
     const avgBasket = data.current.transactions.length > 0 ? revenue / data.current.transactions.length : 0;
 
-    const prevRevenue = data.previous.transactions.reduce((sum: number, t: any) => sum + t.total, 0);
+    const prevRevenue = data.previous.transactions.reduce((sum, t) => sum + t.total, 0);
     const prevCogs = data.previous.transactions.reduce(
-      (sum: number, t: any) => sum + t.items.reduce((isum: number, item: any) => isum + (item.cost || 0), 0),
+      (sum, t) => sum + t.items.reduce((isum, item) => isum + (item.cost || 0), 0),
       0
     );
-    const prevOpex = data.previous.expenses.reduce((sum: number, e: any) => sum + e.amount, 0);
+    const prevOpex = data.previous.expenses.reduce((sum, e) => sum + e.amount, 0);
     const prevNetProfit = prevRevenue - prevCogs - prevOpex;
     const prevAvgBasket = data.previous.transactions.length > 0 ? prevRevenue / data.previous.transactions.length : 0;
 

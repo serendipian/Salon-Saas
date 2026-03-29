@@ -65,10 +65,12 @@ export const useProducts = () => {
   // Update product
   const updateProductMutation = useMutation({
     mutationFn: async ({ product, supplierId }: { product: Product; supplierId?: string | null }) => {
+      const { id, salon_id, ...updateData } = toProductInsert(product, salonId, supplierId);
       const { error } = await supabase
         .from('products')
-        .update(toProductInsert(product, salonId, supplierId))
-        .eq('id', product.id);
+        .update(updateData)
+        .eq('id', product.id)
+        .eq('salon_id', salonId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -96,7 +98,8 @@ export const useProducts = () => {
         const { error } = await supabase
           .from('product_categories')
           .update({ deleted_at: new Date().toISOString() })
-          .in('id', toDelete);
+          .in('id', toDelete)
+          .eq('salon_id', salonId);
         if (error) throw error;
       }
 

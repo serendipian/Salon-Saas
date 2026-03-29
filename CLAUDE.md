@@ -8,7 +8,7 @@ Salon management SaaS application for beauty salons. Built with React 19, TypeSc
 
 - **Framework**: React 19 + TypeScript
 - **Build**: Vite 6
-- **Styling**: Tailwind CSS (needs migration from CDN to proper install)
+- **Styling**: Tailwind CSS 4 (via @tailwindcss/vite plugin)
 - **Charts**: Recharts 3
 - **Icons**: Lucide React
 - **Routing**: React Router DOM 7 (HashRouter)
@@ -23,7 +23,8 @@ modules/
     {Module}Module.tsx    # Container component, manages view state
     hooks/use{Module}.ts  # TanStack Query hooks (useQuery + useMutation)
     components/           # Presentational components
-    data.ts               # Mock/initial data (where applicable)
+    mappers.ts            # DB Row ↔ Frontend type translation
+    schemas.ts            # Zod validation schemas (where applicable)
 ```
 
 Active modules: `dashboard`, `clients`, `services`, `products`, `appointments`, `pos`, `team`, `suppliers`, `accounting`, `settings`
@@ -38,6 +39,15 @@ components/
   WorkScheduleEditor.tsx  # Weekly schedule grid
   BonusSystemEditor.tsx   # Tiered bonus configuration
   ProtectedRoute.tsx      # Auth/salon/permission route guard
+  ErrorBoundary.tsx       # Module-level error boundary
+  Toast.tsx               # Portal-rendered toast notifications
+  ConnectionStatus.tsx    # Realtime connection indicator
+  BottomTabBar.tsx        # Mobile bottom navigation
+  MobileDrawer.tsx        # Slide-in overlay with focus trap
+  MobileSelect.tsx        # Fullscreen select overlay for mobile
+  ViewToggle.tsx          # Card/table view switch
+  StaffAvatar.tsx         # Staff member avatar display
+  EmptyState.tsx          # Empty list placeholder
 ```
 
 ### Auth Pages
@@ -157,8 +167,8 @@ npm run preview      # Preview production build
 ### Schema Overview
 - 20 tables + 3 views
 - RLS enabled on every table
-- Session-variable-based RLS via `set_session_context()` RPC
-- 17 custom Postgres functions (see `supabase/migrations/` files 00011-00013)
+- Membership-based RLS via `user_salon_ids()` / `user_salon_ids_with_role()` functions
+- Custom Postgres functions across migration files (identity, RPC, encryption, etc.)
 - Audit logging on all business tables via triggers
 
 ### Key Patterns

@@ -23,7 +23,7 @@ export interface SelectOption {
 interface SelectProps {
   label?: string;
   value?: string | number;
-  onChange: (value: any) => void;
+  onChange: (value: string | number) => void;
   options: SelectOption[];
   error?: string;
   className?: string;

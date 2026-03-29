@@ -1,3 +1,4 @@
+import type React from 'react';
 
 // Enums for status
 export enum AppointmentStatus {

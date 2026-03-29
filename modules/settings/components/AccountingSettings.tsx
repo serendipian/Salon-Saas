@@ -52,7 +52,7 @@ export const AccountingSettings: React.FC<{ onBack: () => void }> = ({ onBack })
            ].map((tab) => (
              <button
                key={tab.id}
-               onClick={() => setActiveTab(tab.id as any)}
+               onClick={() => setActiveTab(tab.id as 'TAXES' | 'CATEGORIES')}
                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}
              >
                <tab.icon size={16} />

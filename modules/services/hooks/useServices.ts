@@ -17,6 +17,7 @@ export const useServices = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const { toastOnError } = useMutationToast();
   useRealtimeSync('services');
+  useRealtimeSync('service_variants');
   useRealtimeSync('service_categories');
 
   // Services query (with nested variants)
@@ -81,10 +82,12 @@ export const useServices = () => {
   // Update Service (+ upsert/delete variants)
   const updateServiceMutation = useMutation({
     mutationFn: async (service: Service) => {
+      const svcRow = toServiceInsert(service, salonId);
       const { error: svcErr } = await supabase
         .from('services')
-        .update(toServiceInsert(service, salonId))
-        .eq('id', service.id);
+        .update(svcRow)
+        .eq('id', service.id)
+        .eq('salon_id', salonId);
       if (svcErr) throw svcErr;
 
       // Get existing variant IDs
@@ -104,7 +107,8 @@ export const useServices = () => {
         const { error } = await supabase
           .from('service_variants')
           .update({ deleted_at: new Date().toISOString() })
-          .in('id', toDelete);
+          .in('id', toDelete)
+          .eq('salon_id', salonId);
         if (error) throw error;
       }
 
@@ -156,7 +160,8 @@ export const useServices = () => {
         const { error } = await supabase
           .from('service_categories')
           .update({ deleted_at: new Date().toISOString() })
-          .in('id', toDelete);
+          .in('id', toDelete)
+          .eq('salon_id', salonId);
         if (error) throw error;
       }
 

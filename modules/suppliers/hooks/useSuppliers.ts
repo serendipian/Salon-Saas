@@ -50,7 +50,8 @@ export const useSuppliers = () => {
       const { error } = await supabase
         .from('suppliers')
         .update(updateData)
-        .eq('id', supplier.id);
+        .eq('id', supplier.id)
+        .eq('salon_id', salonId);
       if (error) throw error;
     },
     onSuccess: () => {

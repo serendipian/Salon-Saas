@@ -53,7 +53,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
   }, [isMobile, onClose]);
 
   const handleAddPayment = (method: string) => {
-    const amount = parseFloat(currentAmount);
+    const amount = Math.round(parseFloat(currentAmount) * 100) / 100;
     if (isNaN(amount) || amount <= 0) return;
 
     const newPayment: PaymentEntry = {

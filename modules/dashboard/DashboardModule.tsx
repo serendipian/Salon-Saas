@@ -80,9 +80,9 @@ export const DashboardModule: React.FC = () => {
     const prevFrom = prevTo - duration;
 
     // Helper to filter
-    const filterByRange = (dataArr: any[], dateField: string, start: number, end: number) => {
+    const filterByRange = <T extends object>(dataArr: T[], dateField: keyof T, start: number, end: number): T[] => {
       return dataArr.filter(item => {
-        const d = new Date(item[dateField]).getTime();
+        const d = new Date(item[dateField] as string).getTime();
         return d >= start && d <= end;
       });
     };
