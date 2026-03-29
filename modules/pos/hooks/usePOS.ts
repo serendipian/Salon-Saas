@@ -5,6 +5,7 @@ import { useProducts } from '../../products/hooks/useProducts';
 import { useServices } from '../../services/hooks/useServices';
 import { useClients } from '../../clients/hooks/useClients';
 import { useSettings } from '../../settings/hooks/useSettings';
+import { useTeam } from '../../team/hooks/useTeam';
 import { CartItem, Client, Service, Product, ServiceVariant, PaymentEntry } from '../../../types';
 
 export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'HISTORY';
@@ -17,6 +18,7 @@ export const usePOS = () => {
 
   const { allServices: services, serviceCategories } = useServices();
   const { products, productCategories } = useProducts();
+  const { allStaff } = useTeam();
 
   const [viewMode, setViewMode] = useState<POSViewMode>('SERVICES');
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,7 +35,7 @@ export const usePOS = () => {
     };
 
     const existingItemIndex = cart.findIndex(
-      i => i.referenceId === item.referenceId && i.variantName === item.variantName
+      i => i.referenceId === item.referenceId && i.variantName === item.variantName && i.staffId === item.staffId
     );
 
     if (existingItemIndex >= 0) {
@@ -113,7 +115,7 @@ export const usePOS = () => {
     // Data
     services, serviceCategories,
     products, productCategories,
-    clients,
+    clients, allStaff,
     transactions,
     filteredItems,
     totals,
