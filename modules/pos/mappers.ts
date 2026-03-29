@@ -28,6 +28,7 @@ export interface TransactionRow {
   id: string;
   salon_id: string;
   client_id: string | null;
+  appointment_id: string | null;
   date: string;
   total: number;
   notes: string | null;
@@ -82,6 +83,7 @@ export function toTransaction(row: TransactionRow): Transaction {
     total: row.total,
     clientName,
     clientId: row.client_id ?? undefined,
+    appointmentId: row.appointment_id ?? undefined,
     items,
     payments,
   };
@@ -93,7 +95,8 @@ export function toTransactionRpcPayload(
   cart: CartItem[],
   payments: PaymentEntry[],
   clientId: string | undefined,
-  salonId: string
+  salonId: string,
+  appointmentId?: string
 ) {
   const p_items = cart.map(item => ({
     reference_id: item.referenceId,
@@ -128,6 +131,7 @@ export function toTransactionRpcPayload(
   return {
     p_salon_id: salonId,
     p_client_id: clientId ?? null,
+    p_appointment_id: appointmentId ?? null,
     p_items,
     p_payments,
   };

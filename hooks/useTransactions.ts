@@ -33,12 +33,14 @@ export const useTransactions = () => {
       items,
       payments,
       clientId,
+      appointmentId,
     }: {
       items: CartItem[];
       payments: PaymentEntry[];
       clientId?: string;
+      appointmentId?: string;
     }) => {
-      const payload = toTransactionRpcPayload(items, payments, clientId, salonId);
+      const payload = toTransactionRpcPayload(items, payments, clientId, salonId, appointmentId);
       const { error } = await supabase.rpc('create_transaction', payload);
       if (error) throw error;
     },
@@ -46,12 +48,13 @@ export const useTransactions = () => {
       queryClient.invalidateQueries({ queryKey: ['transactions', salonId] });
       // RPC decrements product stock, so invalidate products too
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
+      queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
     },
     onError: toastOnError("Impossible de créer la transaction"),
   });
 
-  const addTransaction = (items: CartItem[], payments: PaymentEntry[], clientId?: string) =>
-    addTransactionMutation.mutateAsync({ items, payments, clientId });
+  const addTransaction = (items: CartItem[], payments: PaymentEntry[], clientId?: string, appointmentId?: string) =>
+    addTransactionMutation.mutateAsync({ items, payments, clientId, appointmentId });
 
   return {
     transactions,

@@ -274,6 +274,7 @@ export interface Transaction {
   total: number;
   clientName?: string;
   clientId?: string;
+  appointmentId?: string;
   items: CartItem[];
   payments: PaymentEntry[];
 }
