@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_groups: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          notes: string | null
+          reminder_minutes: number | null
+          salon_id: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          notes?: string | null
+          reminder_minutes?: number | null
+          salon_id: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          notes?: string | null
+          reminder_minutes?: number | null
+          salon_id?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_groups_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_stats"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "appointment_groups_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_groups_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_groups_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_groups_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           client_id: string | null
@@ -22,6 +100,7 @@ export type Database = {
           date: string
           deleted_at: string | null
           duration_minutes: number
+          group_id: string | null
           id: string
           notes: string | null
           price: number
@@ -40,6 +119,7 @@ export type Database = {
           date: string
           deleted_at?: string | null
           duration_minutes: number
+          group_id?: string | null
           id?: string
           notes?: string | null
           price: number
@@ -58,6 +138,7 @@ export type Database = {
           date?: string
           deleted_at?: string | null
           duration_minutes?: number
+          group_id?: string | null
           id?: string
           notes?: string | null
           price?: number
@@ -89,6 +170,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "appointment_groups"
             referencedColumns: ["id"]
           },
           {
@@ -906,6 +994,7 @@ export type Database = {
           color: string | null
           created_at: string
           deleted_at: string | null
+          icon: string | null
           id: string
           name: string
           salon_id: string
@@ -916,6 +1005,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           deleted_at?: string | null
+          icon?: string | null
           id?: string
           name: string
           salon_id: string
@@ -926,6 +1016,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           deleted_at?: string | null
+          icon?: string | null
           id?: string
           name?: string
           salon_id?: string
@@ -1300,6 +1391,8 @@ export type Database = {
           quantity: number
           reference_id: string | null
           salon_id: string
+          staff_id: string | null
+          staff_name: string | null
           transaction_id: string
           type: string
           variant_name: string | null
@@ -1314,6 +1407,8 @@ export type Database = {
           quantity?: number
           reference_id?: string | null
           salon_id: string
+          staff_id?: string | null
+          staff_name?: string | null
           transaction_id: string
           type: string
           variant_name?: string | null
@@ -1328,6 +1423,8 @@ export type Database = {
           quantity?: number
           reference_id?: string | null
           salon_id?: string
+          staff_id?: string | null
+          staff_name?: string | null
           transaction_id?: string
           type?: string
           variant_name?: string | null
@@ -1338,6 +1435,13 @@ export type Database = {
             columns: ["salon_id"]
             isOneToOne: false
             referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_items_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
             referencedColumns: ["id"]
           },
           {
@@ -1521,6 +1625,7 @@ export type Database = {
       client_stats: {
         Row: {
           client_id: string | null
+          first_visit_date: string | null
           last_visit_date: string | null
           salon_id: string | null
           total_spent: number | null
@@ -1590,6 +1695,7 @@ export type Database = {
         }
         Returns: string
       }
+      debug_auth: { Args: never; Returns: Json }
       decrypt_pii: { Args: { ciphertext: string }; Returns: string }
       encrypt_pii: { Args: { plaintext: string }; Returns: string }
       gdpr_delete_client: { Args: { p_client_id: string }; Returns: undefined }
@@ -1614,14 +1720,30 @@ export type Database = {
         Args: { p_membership_id: string }
         Returns: undefined
       }
+      seed_salon_demo_data: {
+        Args: { p_owner_id: string; p_salon_id: string }
+        Returns: undefined
+      }
       set_session_context: {
         Args: { p_salon_id: string; p_user_role: string }
         Returns: undefined
       }
+      soft_delete_appointment: {
+        Args: { p_appointment_id: string }
+        Returns: undefined
+      }
+      soft_delete_client: { Args: { p_client_id: string }; Returns: undefined }
       transfer_ownership: {
         Args: { p_new_owner_id: string; p_salon_id: string }
         Returns: undefined
       }
+      user_role_in_salon: { Args: { p_salon_id: string }; Returns: string }
+      user_salon_ids: { Args: never; Returns: string[] }
+      user_salon_ids_with_role: {
+        Args: { allowed_roles: string[] }
+        Returns: string[]
+      }
+      user_staff_id_in_salon: { Args: { p_salon_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
