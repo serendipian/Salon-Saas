@@ -8,6 +8,8 @@ import { useSettings } from '../../settings/hooks/useSettings';
 import { useServices } from '../../services/hooks/useServices';
 import { useProducts } from '../../products/hooks/useProducts';
 import { toExpense, toExpenseInsert, ExpenseRow } from '../mappers';
+
+const UNASSIGNED_KEY = '__unassigned__';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { Expense, LedgerEntry, DateRange } from '../../../types';
@@ -235,7 +237,7 @@ export const useAccounting = () => {
     data.current.transactions.forEach((t: any) => {
       t.items.forEach((item: any) => {
         if (item.type !== 'SERVICE') return;
-        const key = item.staffId || '__unassigned__';
+        const key = item.staffId || UNASSIGNED_KEY;
         const name = item.staffName || 'Non attribué';
         if (!map.has(key)) map.set(key, { staffId: item.staffId || null, staffName: name, count: 0, revenue: 0 });
         const row = map.get(key)!;
@@ -260,7 +262,7 @@ export const useAccounting = () => {
     data.current.transactions.forEach((t: any) => {
       t.items.forEach((item: any) => {
         if (item.type !== 'PRODUCT') return;
-        const key = item.staffId || '__unassigned__';
+        const key = item.staffId || UNASSIGNED_KEY;
         const name = item.staffName || 'Non attribué';
         if (!map.has(key)) map.set(key, { staffId: item.staffId || null, staffName: name, count: 0, revenue: 0 });
         const row = map.get(key)!;

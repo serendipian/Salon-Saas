@@ -50,7 +50,7 @@ export const POSModule: React.FC = () => {
 
   const addVariantToCart = (variant: ServiceVariant, serviceName: string) => {
     addToCart({
-      id: `cart-${Date.now()}`,
+      id: crypto.randomUUID(),
       referenceId: variant.id,
       type: 'SERVICE',
       name: serviceName,
@@ -64,7 +64,7 @@ export const POSModule: React.FC = () => {
 
   const handleProductClick = (product: Product) => {
     addToCart({
-      id: `cart-${Date.now()}`,
+      id: crypto.randomUUID(),
       referenceId: product.id,
       type: 'PRODUCT',
       name: product.name,

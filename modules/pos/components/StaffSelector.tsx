@@ -47,6 +47,8 @@ export const StaffSelector: React.FC<StaffSelectorProps> = ({
     <div ref={ref} className="relative mt-1" onClick={(e) => e.stopPropagation()}>
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
         className={`flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-md border transition-colors ${
           staffId
             ? 'bg-blue-50 border-blue-200 text-blue-700'
@@ -67,8 +69,10 @@ export const StaffSelector: React.FC<StaffSelectorProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-lg border border-slate-200 shadow-lg z-50 py-1 max-h-48 overflow-y-auto">
+        <div role="listbox" aria-label="Sélectionner un membre" className="absolute left-0 top-full mt-1 w-48 bg-white rounded-lg border border-slate-200 shadow-lg py-1 max-h-48 overflow-y-auto" style={{ zIndex: 'var(--z-drawer-panel)' }}>
           <button
+            role="option"
+            aria-selected={!staffId}
             onClick={() => { onChange(undefined, undefined); setIsOpen(false); }}
             className={`w-full text-left px-3 py-2 text-xs hover:bg-slate-50 flex items-center gap-2 ${
               !staffId ? 'text-slate-900 font-medium' : 'text-slate-500'
@@ -82,6 +86,8 @@ export const StaffSelector: React.FC<StaffSelectorProps> = ({
           {activeStaff.map(member => (
             <button
               key={member.id}
+              role="option"
+              aria-selected={staffId === member.id}
               onClick={() => {
                 onChange(member.id, `${member.firstName} ${member.lastName}`);
                 setIsOpen(false);
