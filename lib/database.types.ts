@@ -1,3 +1,4 @@
+Initialising login role...
 export type Json =
   | string
   | number
@@ -11,6 +12,31 @@ export type Database = {
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.4"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -1494,6 +1520,7 @@ export type Database = {
       }
       transactions: {
         Row: {
+          appointment_id: string | null
           client_id: string | null
           created_at: string
           created_by: string | null
@@ -1504,6 +1531,7 @@ export type Database = {
           total: number
         }
         Insert: {
+          appointment_id?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -1514,6 +1542,7 @@ export type Database = {
           total: number
         }
         Update: {
+          appointment_id?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -1524,6 +1553,20 @@ export type Database = {
           total?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "transactions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointment_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transactions_client_id_fkey"
             columns: ["client_id"]
@@ -1685,16 +1728,28 @@ export type Database = {
         }
         Returns: string
       }
-      create_transaction: {
-        Args: {
-          p_client_id: string
-          p_items: Json
-          p_notes?: string
-          p_payments: Json
-          p_salon_id: string
-        }
-        Returns: string
-      }
+      create_transaction:
+        | {
+            Args: {
+              p_client_id: string
+              p_items: Json
+              p_notes?: string
+              p_payments: Json
+              p_salon_id: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_appointment_id?: string
+              p_client_id: string
+              p_items: Json
+              p_notes?: string
+              p_payments: Json
+              p_salon_id: string
+            }
+            Returns: string
+          }
       debug_auth: { Args: never; Returns: Json }
       decrypt_pii: { Args: { ciphertext: string }; Returns: string }
       encrypt_pii: { Args: { plaintext: string }; Returns: string }
@@ -1872,6 +1927,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

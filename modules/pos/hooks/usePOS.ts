@@ -134,7 +134,7 @@ export const usePOS = () => {
     setCart([]);
     const client = clients.find(c => c.id === appointment.clientId);
     setSelectedClient(client ?? null);
-    setLinkedAppointmentId(appointment.groupId ?? appointment.id);
+    setLinkedAppointmentId(appointment.id);
 
     // Convert each appointment in the group to a cart item
     const cartItems: CartItem[] = groupAppointments.map(appt => ({

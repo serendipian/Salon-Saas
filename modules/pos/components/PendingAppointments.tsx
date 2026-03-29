@@ -43,7 +43,7 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
       {Array.from(grouped.entries()).map(([groupKey, groupAppts]) => {
         const primary = groupAppts[0];
         const isOverdue = new Date(primary.date) < todayStart;
-        const isLinked = linkedAppointmentId === groupKey;
+        const isLinked = groupAppts.some(a => a.id === linkedAppointmentId);
         const totalPrice = groupAppts.reduce((sum, a) => sum + a.price, 0);
 
         return (
@@ -107,7 +107,10 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
               <div className="flex items-center gap-1.5 text-xs text-slate-500">
                 <User size={12} />
                 <span className="truncate max-w-[120px]">
-                  {primary.staffName || 'Non attribué'}
+                  {(() => {
+                    const names = [...new Set(groupAppts.map(a => a.staffName).filter(Boolean))];
+                    return names.length > 0 ? names.join(', ') : 'Non attribué';
+                  })()}
                 </span>
               </div>
               <span className="font-bold text-slate-900 text-sm">{formatPrice(totalPrice)}</span>

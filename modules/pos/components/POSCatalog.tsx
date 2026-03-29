@@ -85,11 +85,14 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
               >
                 <Calendar size={16} />
                 <span className="hidden sm:inline">Rendez-vous</span>
-                {pendingAppointments.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                    {pendingAppointments.length > 9 ? '9+' : pendingAppointments.length}
-                  </span>
-                )}
+                {pendingAppointments.length > 0 && (() => {
+                  const groupCount = new Set(pendingAppointments.map(a => a.groupId ?? a.id)).size;
+                  return (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {groupCount > 9 ? '9+' : groupCount}
+                    </span>
+                  );
+                })()}
               </button>
            </div>
         </div>
