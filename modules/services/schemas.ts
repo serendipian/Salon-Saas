@@ -5,6 +5,7 @@ export const serviceVariantSchema = z.object({
   durationMinutes: z.number().gt(0, 'La durée doit être supérieure à 0'),
   price: z.number().min(0, 'Le prix doit être positif'),
   cost: z.number().min(0, 'Le coût doit être positif'),
+  additionalCost: z.number().min(0, 'Le coût additionnel doit être positif'),
 });
 
 export const serviceSchema = z.object({
