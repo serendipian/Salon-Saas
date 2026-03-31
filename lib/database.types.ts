@@ -1035,6 +1035,7 @@ export type Database = {
       }
       service_variants: {
         Row: {
+          additional_cost: number
           cost: number | null
           created_at: string
           deleted_at: string | null
@@ -1048,6 +1049,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          additional_cost?: number
           cost?: number | null
           created_at?: string
           deleted_at?: string | null
@@ -1061,6 +1063,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          additional_cost?: number
           cost?: number | null
           created_at?: string
           deleted_at?: string | null
