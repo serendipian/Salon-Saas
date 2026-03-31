@@ -134,7 +134,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
                           placeholder="Ex: Cheveux Longs"
                         />
                       </div>
-                      <div className="col-span-3">
+                      <div className="col-span-2">
                          <Input
                             label="Durée"
                             icon={Clock}
@@ -144,7 +144,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
                             onChange={e => updateVariant(variant.id, 'durationMinutes', parseInt(e.target.value))}
                           />
                       </div>
-                      <div className="col-span-3">
+                      <div className="col-span-2">
                          <Input
                             label="Prix"
                             prefix={currencySymbol}
@@ -159,6 +159,16 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
                             type="number"
                             value={variant.cost}
                             onChange={e => updateVariant(variant.id, 'cost', parseFloat(e.target.value))}
+                          />
+                      </div>
+                      <div className="col-span-2">
+                         <Input
+                            label="Coût add."
+                            type="number"
+                            min={0}
+                            step={0.01}
+                            value={variant.additionalCost}
+                            onChange={e => updateVariant(variant.id, 'additionalCost', parseFloat(e.target.value))}
                           />
                       </div>
                     </div>
