@@ -8,6 +8,7 @@ interface ServiceVariantRow {
   duration_minutes: number;
   price: number;
   cost: number;
+  additional_cost: number;
   sort_order: number | null;
   created_at: string;
   updated_at: string;
@@ -48,6 +49,7 @@ export function toServiceVariant(row: ServiceVariantRow): ServiceVariant {
     durationMinutes: row.duration_minutes,
     price: row.price,
     cost: row.cost,
+    additionalCost: row.additional_cost,
   };
 }
 
@@ -82,6 +84,7 @@ export function toVariantInsert(variant: ServiceVariant, serviceId: string, salo
     duration_minutes: variant.durationMinutes,
     price: variant.price,
     cost: variant.cost,
+    additional_cost: variant.additionalCost,
     sort_order: sortOrder,
   };
 }
