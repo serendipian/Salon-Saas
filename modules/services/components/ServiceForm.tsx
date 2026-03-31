@@ -22,7 +22,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
     name: '',
     categoryId: categories[0]?.id || '',
     description: '',
-    variants: [{ id: crypto.randomUUID(), name: 'Standard', durationMinutes: 30, price: 0, cost: 0 }],
+    variants: [{ id: crypto.randomUUID(), name: 'Standard', durationMinutes: 30, price: 0, cost: 0, additionalCost: 0 }],
     active: true
   });
 
@@ -57,7 +57,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
   const addVariant = () => {
     setFormData(prev => ({
       ...prev,
-      variants: [...prev.variants, { id: crypto.randomUUID(), name: '', durationMinutes: 30, price: 0, cost: 0 }]
+      variants: [...prev.variants, { id: crypto.randomUUID(), name: '', durationMinutes: 30, price: 0, cost: 0, additionalCost: 0 }]
     }));
   };
 
