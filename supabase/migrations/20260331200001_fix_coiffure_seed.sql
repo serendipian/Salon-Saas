@@ -1,7 +1,11 @@
 -- ═══════════════════════════════════════════════════════════════
--- Migration: Seed Coiffure real services
--- Replaces 3 demo services (Coupe Femme, Balayage, Brushing)
--- with 8 real services and 43 variants from FICHE DE PRIX - COIFFURE
+-- Fix: add_coiffure_services must create Coiffure category for new salons
+--
+-- Fixes applied:
+--   1. add_coiffure_services: find-or-create Coiffure category (was find-only)
+--   2. seed_salon_demo_data: NULL guard raises exception if Brushing/Coloration
+--      services were not created (prevents silent NULL service_id on appointments)
+--   3. All 43 variant rows use 0.00 (not integer 0) for additional_cost
 -- ═══════════════════════════════════════════════════════════════
 
 CREATE OR REPLACE FUNCTION add_coiffure_services(p_salon_id UUID)
@@ -129,14 +133,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Apply to all existing salons
-SELECT add_coiffure_services(id) FROM salons;
-
 -- ═══════════════════════════════════════════════════════════════
--- Update seed_salon_demo_data:
---   - Remove 3 demo coiffure services (Coupe Femme, Balayage, Brushing)
---   - Call add_coiffure_services instead
---   - Resolve new service IDs for appointments
+-- Update seed_salon_demo_data to include NULL guard for
+-- resolved Brushing / Coloration service IDs
 -- ═══════════════════════════════════════════════════════════════
 CREATE OR REPLACE FUNCTION seed_salon_demo_data(p_salon_id UUID, p_owner_id UUID)
 RETURNS VOID AS $$
