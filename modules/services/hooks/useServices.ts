@@ -124,6 +124,7 @@ export const useServices = () => {
               duration_minutes: row.duration_minutes,
               price: row.price,
               cost: row.cost,
+              additional_cost: row.additional_cost,
               sort_order: row.sort_order,
             })
             .eq('id', v.id);
