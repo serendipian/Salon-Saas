@@ -34,6 +34,7 @@ export interface ServiceVariant {
   durationMinutes: number;
   price: number;
   cost: number; // Internal cost for profit calculation
+  additionalCost: number; // Extra material cost (caps, tips, accessories)
 }
 
 export interface ServiceCategory {
