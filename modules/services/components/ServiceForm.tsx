@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, Save, Sparkles, Clock, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Clock, Trash2 } from 'lucide-react';
 import { Service, ServiceCategory, ServiceVariant } from '../../../types';
-import { generateServiceDescription } from '../../../services/geminiService';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useFormValidation } from '../../../hooks/useFormValidation';
@@ -26,20 +25,10 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
     active: true
   });
 
-  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const { errors, validate, clearFieldError } = useFormValidation(serviceSchema);
 
   // Helper for dynamic currency display
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
-
-  const handleAiGenerate = async () => {
-    if (!formData.name || !formData.categoryId) return;
-    setIsGeneratingAi(true);
-    const catName = categories.find(c => c.id === formData.categoryId)?.name || "General";
-    const desc = await generateServiceDescription(formData.name, catName, "premium, relaxant");
-    setFormData(prev => ({ ...prev, description: desc }));
-    setIsGeneratingAi(false);
-  };
 
   const updateVariant = (id: string, field: keyof ServiceVariant, value: string | number) => {
     setFormData(prev => ({
@@ -93,18 +82,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
               />
             </div>
             <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <label className="block text-sm font-medium text-slate-700">Description</label>
-                <button 
-                  type="button"
-                  onClick={handleAiGenerate}
-                  disabled={isGeneratingAi || !formData.name}
-                  className="text-xs flex items-center gap-1 text-brand-600 hover:text-brand-700 font-medium disabled:opacity-50 transition-colors"
-                >
-                  <Sparkles size={12} />
-                  {isGeneratingAi ? 'Génération...' : 'Générer avec IA'}
-                </button>
-              </div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
               <TextArea 
                 value={formData.description}
                 onChange={e => setFormData({...formData, description: e.target.value})}

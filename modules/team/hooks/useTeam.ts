@@ -30,6 +30,19 @@ export const useTeam = () => {
     enabled: !!salonId,
   });
 
+  // Load PII fields for a specific staff member via decrypted RPC
+  const loadStaffPii = async (staffId: string): Promise<Partial<StaffMember>> => {
+    const { data, error } = await supabase.rpc('get_staff_pii', { p_staff_id: staffId });
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) return {};
+    return {
+      baseSalary: row.base_salary != null ? parseFloat(row.base_salary) : undefined,
+      iban: row.iban ?? undefined,
+      socialSecurityNumber: row.social_security_number ?? undefined,
+    };
+  };
+
   // Save PII fields via encrypted RPC (base_salary, iban, social_security_number)
   const savePiiFields = async (staffId: string, member: StaffMember) => {
     const { error } = await supabase.rpc('update_staff_pii', {
@@ -93,6 +106,7 @@ export const useTeam = () => {
     isLoading,
     searchTerm,
     setSearchTerm,
+    loadStaffPii,
     addStaffMember: (member: StaffMember) => addStaffMemberMutation.mutate(member),
     updateStaffMember: (member: StaffMember) => updateStaffMemberMutation.mutate(member),
   };

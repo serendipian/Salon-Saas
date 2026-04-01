@@ -125,7 +125,6 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
                     />
                     <Input
                       label="Nom"
-                      required
                       value={formData.lastName}
                       onChange={e => { clearFieldError('lastName'); setFormData({...formData, lastName: e.target.value}); }}
                       error={errors.lastName}
@@ -133,7 +132,6 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
                     <Input
                       label="Email"
                       type="email"
-                      required
                       value={formData.email}
                       onChange={e => { clearFieldError('email'); setFormData({...formData, email: e.target.value}); }}
                       error={errors.email}
