@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MediaQueryProvider } from './context/MediaQueryContext';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
@@ -118,7 +118,7 @@ export default function App() {
     <MediaQueryProvider>
       <AuthProvider>
         <ToastProvider>
-          <HashRouter>
+          <BrowserRouter>
             <Routes>
               {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
@@ -136,7 +136,7 @@ export default function App() {
                 </ProtectedRoute>
               } />
             </Routes>
-          </HashRouter>
+          </BrowserRouter>
           <ToastContainer />
         </ToastProvider>
       </AuthProvider>
