@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, Save, Sparkles, Box, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Save, Box, AlertTriangle } from 'lucide-react';
 import { Product, ProductCategory } from '../../../types';
-import { generateServiceDescription } from '../../../services/geminiService';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
@@ -39,17 +38,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
       : ''
   );
 
-  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const { errors, validate, clearFieldError } = useFormValidation(productSchema);
-
-  const handleAiGenerate = async () => {
-    if (!formData.name) return;
-    setIsGeneratingAi(true);
-    const catName = categories.find(c => c.id === formData.categoryId)?.name || "Produit";
-    const desc = await generateServiceDescription(formData.name, catName, "vente, produit, avantages, utilisation");
-    setFormData(prev => ({ ...prev, description: desc }));
-    setIsGeneratingAi(false);
-  };
 
   const handleSave = () => {
     const validated = validate(formData);
@@ -80,18 +69,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
                error={errors.name}
              />
              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-sm font-medium text-slate-700">Description</label>
-                  <button 
-                    type="button"
-                    onClick={handleAiGenerate}
-                    disabled={isGeneratingAi || !formData.name}
-                    className="text-xs flex items-center gap-1 text-brand-600 hover:text-brand-700 font-medium disabled:opacity-50 transition-colors"
-                  >
-                    <Sparkles size={12} />
-                    {isGeneratingAi ? 'Rédaction...' : 'Rédiger avec IA'}
-                  </button>
-                </div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
                 <TextArea 
                   value={formData.description}
                   onChange={e => setFormData({...formData, description: e.target.value})}
