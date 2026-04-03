@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 CREATE TABLE IF NOT EXISTS invoices (
   id                   uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   salon_id             uuid NOT NULL REFERENCES salons(id) ON DELETE CASCADE,
-  subscription_id      uuid NOT NULL REFERENCES subscriptions(id),
+  subscription_id      uuid NOT NULL REFERENCES subscriptions(id) ON DELETE CASCADE,
   stripe_invoice_id    text NOT NULL UNIQUE,
   stripe_event_id      text NOT NULL UNIQUE,
   amount_cents         integer NOT NULL,
@@ -41,20 +41,26 @@ CREATE TABLE IF NOT EXISTS invoices (
 );
 
 -- 4. updated_at trigger for subscriptions (reuse existing trigger function)
-CREATE TRIGGER subscriptions_updated_at
+CREATE OR REPLACE TRIGGER subscriptions_updated_at
   BEFORE UPDATE ON subscriptions
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
--- 5. RLS
+-- 5. Indexes for webhook lookups
+CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_customer ON subscriptions(stripe_customer_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_subscription ON subscriptions(stripe_subscription_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_salon ON invoices(salon_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_subscription ON invoices(subscription_id);
+
+-- 6. RLS
 ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "salon members read own subscription"
+CREATE POLICY "owners and managers read own subscription"
   ON subscriptions FOR SELECT
-  USING (salon_id IN (SELECT user_salon_ids()));
+  USING (salon_id IN (SELECT user_salon_ids_with_role(ARRAY['owner', 'manager'])));
 
-CREATE POLICY "salon members read own invoices"
+CREATE POLICY "owners and managers read own invoices"
   ON invoices FOR SELECT
-  USING (salon_id IN (SELECT user_salon_ids()));
+  USING (salon_id IN (SELECT user_salon_ids_with_role(ARRAY['owner', 'manager'])));
 
 -- Edge Functions use service role — no INSERT/UPDATE policies needed for app users
