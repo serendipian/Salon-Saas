@@ -297,7 +297,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Initialize 14-day Pro trial for the new salon
-    await supabase.rpc('initialize_salon_trial', { p_salon_id: data });
+    const { error: trialError } = await supabase.rpc('initialize_salon_trial', { p_salon_id: data });
+    if (trialError) {
+      console.error('Failed to initialize salon trial:', trialError.message);
+    }
 
     // Refetch memberships after salon creation
     if (user) {
