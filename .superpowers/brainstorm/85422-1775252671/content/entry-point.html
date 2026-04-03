@@ -1,0 +1,37 @@
+<h2>Où l'utilisateur gère-t-il son abonnement ?</h2>
+<p class="subtitle">Where does plan selection and billing live in the app?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Inside Settings → "Abonnement"</h3>
+      <p>A new card in the existing Settings grid. Users click it like any other setting. Simple, no new nav item.</p>
+      <div style="margin-top:12px;padding:10px;background:#f8fafc;border-radius:8px;font-size:12px;color:#64748b">
+        Réglages grid → <strong>Abonnement & Facturation</strong> card → plan page
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Upgrade banner throughout the app</h3>
+      <p>A persistent banner at the top when on Free/trial plan. "You are on Free — Upgrade to Pro →". Clicking opens a full-screen plan selector modal.</p>
+      <div style="margin-top:12px;padding:10px;background:#f8fafc;border-radius:8px;font-size:12px;color:#64748b">
+        Banner (free users only) → modal overlay with pricing cards
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Both: Settings + inline upgrade prompts</h3>
+      <p>Billing lives in Settings (for managing invoices, changing plan). PLUS small "Upgrade" badges on locked features (e.g. analytics tab shows a lock icon). Best discovery but more work to build.</p>
+      <div style="margin-top:12px;padding:10px;background:#f8fafc;border-radius:8px;font-size:12px;color:#64748b">
+        Settings → Abonnement (primary) + feature-level lock icons (secondary)
+      </div>
+    </div>
+  </div>
+</div>

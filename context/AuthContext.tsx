@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .from('salon_memberships')
       .select(`
         id, salon_id, profile_id, role, status,
-        salon:salons!inner(id, name, slug, logo_url, currency, timezone)
+        salon:salons!inner(id, name, slug, logo_url, currency, timezone, subscription_tier)
       `)
       .eq('profile_id', userId)
       .eq('status', 'active')
@@ -294,6 +294,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (error) {
       return { salonId: null, error: error.message };
+    }
+
+    // Initialize 14-day Pro trial for the new salon
+    const { error: trialError } = await supabase.rpc('initialize_salon_trial', { p_salon_id: data });
+    if (trialError) {
+      console.error('Failed to initialize salon trial:', trialError.message);
     }
 
     // Refetch memberships after salon creation

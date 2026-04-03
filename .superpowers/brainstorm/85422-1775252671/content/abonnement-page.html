@@ -1,0 +1,110 @@
+<h2>Design Section 1 — Settings → Abonnement page</h2>
+<p class="subtitle">What the salon owner sees when they open the billing section</p>
+
+<div class="mockup">
+  <div class="mockup-header">Réglages → Abonnement & Facturation</div>
+  <div class="mockup-body" style="padding:0">
+
+    <!-- Trial banner -->
+    <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;padding:16px 24px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-weight:600;font-size:14px">✨ Essai Pro — 11 jours restants</div>
+        <div style="font-size:12px;opacity:0.85;margin-top:2px">Vous bénéficiez de toutes les fonctionnalités Pro gratuitement jusqu'au 14 avril.</div>
+      </div>
+      <button style="background:white;color:#6366f1;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">Passer en Pro →</button>
+    </div>
+
+    <div style="padding:24px;display:flex;flex-direction:column;gap:24px">
+
+      <!-- Current plan card -->
+      <div style="border:1px solid #e2e8f0;border-radius:12px;padding:20px">
+        <div style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Plan actuel</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:20px;font-weight:700;color:#0f172a">Pro</span>
+              <span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600">Essai</span>
+            </div>
+            <div style="font-size:13px;color:#64748b;margin-top:4px">29,99 €/mois après l'essai</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:12px;color:#94a3b8">Expire le</div>
+            <div style="font-size:14px;font-weight:600;color:#0f172a">14 avril 2026</div>
+          </div>
+        </div>
+        <!-- Usage bars -->
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:4px"><span>Membres d'équipe</span><span>3 / 10</span></div>
+            <div style="background:#f1f5f9;border-radius:4px;height:6px"><div style="background:#6366f1;width:30%;height:6px;border-radius:4px"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:4px"><span>Clients</span><span>124 / illimité</span></div>
+            <div style="background:#f1f5f9;border-radius:4px;height:6px"><div style="background:#6366f1;width:12%;height:6px;border-radius:4px"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing cards -->
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Changer de plan</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+
+          <!-- Free -->
+          <div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px">
+            <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Free</div>
+            <div style="font-size:22px;font-weight:800;color:#0f172a">0 €<span style="font-size:13px;font-weight:400;color:#94a3b8">/mois</span></div>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:#64748b">
+              <div>✓ 2 membres max</div>
+              <div>✓ 50 clients max</div>
+              <div>✗ Analytics</div>
+              <div>✗ Branding personnalisé</div>
+            </div>
+            <button style="margin-top:16px;width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#64748b;background:white;cursor:pointer">Rétrograder</button>
+          </div>
+
+          <!-- Pro - highlighted -->
+          <div style="border:2px solid #6366f1;border-radius:12px;padding:16px;background:#faf5ff;position:relative">
+            <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#6366f1;color:white;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px">ACTUEL</div>
+            <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Pro</div>
+            <div style="font-size:22px;font-weight:800;color:#0f172a">29,99 €<span style="font-size:13px;font-weight:400;color:#94a3b8">/mois</span></div>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:#64748b">
+              <div>✓ 10 membres max</div>
+              <div>✓ Clients illimités</div>
+              <div>✓ Analytics</div>
+              <div>✓ Branding personnalisé</div>
+            </div>
+            <button style="margin-top:16px;width:100%;padding:8px;background:#6366f1;color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">S'abonner →</button>
+          </div>
+
+          <!-- Enterprise -->
+          <div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px">
+            <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Enterprise</div>
+            <div style="font-size:22px;font-weight:800;color:#0f172a">79,99 €<span style="font-size:13px;font-weight:400;color:#94a3b8">/mois</span></div>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:#64748b">
+              <div>✓ Membres illimités</div>
+              <div>✓ Clients illimités</div>
+              <div>✓ Analytics avancés</div>
+              <div>✓ Accès API</div>
+            </div>
+            <button style="margin-top:16px;width:100%;padding:8px;border:1px solid #6366f1;border-radius:8px;font-size:12px;color:#6366f1;background:white;font-weight:600;cursor:pointer">Passer Enterprise →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoice history -->
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Historique de facturation</div>
+        <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 80px;padding:10px 16px;background:#f8fafc;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase">
+            <span>Date</span><span>Plan</span><span>Statut</span><span>Montant</span>
+          </div>
+          <div style="padding:16px;text-align:center;font-size:13px;color:#94a3b8">Aucune facture pour le moment</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px">Does this layout look right? Any changes before we move to the next section?</p>

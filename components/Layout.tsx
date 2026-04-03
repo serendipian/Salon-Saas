@@ -27,6 +27,13 @@ import { ConnectionStatusDot, ConnectionBanner } from './ConnectionStatus';
 import { BottomTabBar } from './BottomTabBar';
 import { MobileDrawer } from './MobileDrawer';
 import type { AuthResource } from '../lib/auth.types';
+import { useBilling } from '../modules/billing/hooks/useBilling';
+import { PastDueBanner } from '../modules/billing/components/PastDueBanner';
+
+const PastDueBannerConnected: React.FC = () => {
+  const { createPortalSession, isLoadingPortal } = useBilling();
+  return <PastDueBanner onFixClick={createPortalSession} isLoading={isLoadingPortal} />;
+};
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -354,6 +361,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
             isMobile ? 'pb-[calc(56px+env(safe-area-inset-bottom)+1rem)]' : ''
           }`}
         >
+          {activeSalon?.subscription_tier === 'past_due' && (
+            <PastDueBannerConnected />
+          )}
           {children}
         </main>
       </div>

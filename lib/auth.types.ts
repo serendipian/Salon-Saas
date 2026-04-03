@@ -2,6 +2,8 @@ import type { Session, User } from '@supabase/supabase-js';
 
 export type Role = 'owner' | 'manager' | 'stylist' | 'receptionist';
 
+export type SubscriptionTier = 'trial' | 'free' | 'pro' | 'enterprise' | 'past_due';
+
 export interface Profile {
   id: string;
   email: string;
@@ -23,6 +25,7 @@ export interface SalonMembership {
     logo_url: string | null;
     currency: string;
     timezone: string;
+    subscription_tier: SubscriptionTier;
   };
 }
 
@@ -33,6 +36,7 @@ export interface ActiveSalon {
   logo_url: string | null;
   currency: string;
   timezone: string;
+  subscription_tier: SubscriptionTier;
 }
 
 export interface AuthState {
@@ -63,3 +67,20 @@ export type AuthResource =
   | 'audit_log';
 
 export type AccessLevel = 'full' | 'own' | 'linked' | 'summary' | 'none';
+
+export interface Subscription {
+  id: string;
+  salon_id: string;
+  plan_id: string;
+  status: 'trial' | 'active' | 'past_due' | 'cancelled';
+  billing_cycle: 'monthly' | 'yearly';
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  stripe_price_id: string | null;
+  currency: string;
+  trial_ends_at: string | null;
+  current_period_end: string | null;
+  cancelled_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
