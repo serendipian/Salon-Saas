@@ -19,12 +19,13 @@ const RESOURCE_COPY = {
 
 interface UpgradeModalProps {
   resource: 'staff' | 'clients' | 'products';
+  priceMonthly: number;
   onUpgrade: () => void;
   onClose: () => void;
   isLoading?: boolean;
 }
 
-export const UpgradeModal: React.FC<UpgradeModalProps> = ({ resource, onUpgrade, onClose, isLoading }) => {
+export const UpgradeModal: React.FC<UpgradeModalProps> = ({ resource, priceMonthly, onUpgrade, onClose, isLoading }) => {
   const copy = RESOURCE_COPY[resource];
 
   useEffect(() => {
@@ -76,7 +77,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ resource, onUpgrade,
         </div>
 
         <div className="text-center text-2xl font-extrabold text-slate-900 mb-4">
-          29,99 €<span className="text-sm font-normal text-slate-400">/mois</span>
+          {priceMonthly.toFixed(2)} €<span className="text-sm font-normal text-slate-400">/mois</span>
         </div>
 
         <button

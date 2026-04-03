@@ -130,6 +130,7 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
       {showUpgradeModal && proPlan && (
         <UpgradeModal
           resource="staff"
+          priceMonthly={proPlan?.price_monthly ?? 0}
           onUpgrade={handleUpgradeFromModal}
           onClose={() => setShowUpgradeModal(false)}
           isLoading={isLoadingCheckout}
