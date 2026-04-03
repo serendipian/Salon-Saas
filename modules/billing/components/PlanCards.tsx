@@ -26,7 +26,17 @@ const TIER_FROM_NAME: Record<string, SubscriptionTier> = {
   Enterprise: 'enterprise',
 };
 
-export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSelectPlan, isLoading }) => (
+export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSelectPlan, isLoading }) => {
+  if (currentTier === 'past_due') {
+    return (
+      <div className="bg-rose-50 border border-rose-200 rounded-2xl p-5 text-center">
+        <p className="text-sm font-medium text-rose-700 mb-1">Paiement en attente</p>
+        <p className="text-xs text-rose-500">Mettez à jour votre carte bancaire via le portail Stripe pour retrouver l'accès à votre plan.</p>
+      </div>
+    );
+  }
+
+  return (
   <div>
     <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Changer de plan</div>
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -99,4 +109,5 @@ export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSele
       })}
     </div>
   </div>
-);
+  );
+};
