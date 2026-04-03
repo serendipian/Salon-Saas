@@ -1,0 +1,119 @@
+<h2>Abonnement page — v2 (correct colors + Stripe Portal)</h2>
+<p class="subtitle">Brand pink + slate palette. Invoice history replaced by Stripe Customer Portal redirect.</p>
+
+<div class="mockup">
+  <div class="mockup-header">Réglages → Abonnement & Facturation</div>
+  <div class="mockup-body" style="padding:0;background:#f8fafc">
+
+    <!-- Trial banner -->
+    <div style="background:linear-gradient(135deg,#ec4899,#f43f5e);color:white;padding:16px 24px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-weight:600;font-size:14px">✨ Essai Pro — 11 jours restants</div>
+        <div style="font-size:12px;opacity:0.9;margin-top:2px">Toutes les fonctionnalités Pro gratuitement jusqu'au 14 avril.</div>
+      </div>
+      <button style="background:white;color:#ec4899;border:none;padding:8px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Choisir un plan →</button>
+    </div>
+
+    <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+
+      <!-- Current plan + portal -->
+      <div style="background:white;border:1px solid #e2e8f0;border-radius:16px;padding:24px;display:flex;justify-content:space-between;align-items:flex-start;gap:24px">
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Plan actuel</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            <span style="font-size:24px;font-weight:800;color:#0f172a">Pro</span>
+            <span style="background:#fce7f3;color:#be185d;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">ESSAI</span>
+          </div>
+          <div style="font-size:13px;color:#64748b">29,99 €/mois · Renouvellement le 14 avril 2026</div>
+
+          <!-- Usage -->
+          <div style="margin-top:18px;display:flex;flex-direction:column;gap:10px">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                <span style="color:#475569;font-weight:500">Membres d'équipe</span>
+                <span style="color:#0f172a;font-weight:600">3 / 10</span>
+              </div>
+              <div style="background:#f1f5f9;border-radius:99px;height:5px"><div style="background:#ec4899;width:30%;height:5px;border-radius:99px"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                <span style="color:#475569;font-weight:500">Clients</span>
+                <span style="color:#0f172a;font-weight:600">124 / illimité</span>
+              </div>
+              <div style="background:#f1f5f9;border-radius:99px;height:5px"><div style="background:#ec4899;width:8%;height:5px;border-radius:99px"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stripe portal button -->
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0">
+          <button style="background:#0f172a;color:white;border:none;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
+            Gérer la facturation ↗
+          </button>
+          <div style="font-size:11px;color:#94a3b8;text-align:right">Factures, carte bancaire,<br>annulation via Stripe</div>
+        </div>
+      </div>
+
+      <!-- Plan cards -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Changer de plan</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+
+          <!-- Free -->
+          <div style="background:white;border:1px solid #e2e8f0;border-radius:14px;padding:18px">
+            <div style="font-weight:700;color:#0f172a;font-size:15px;margin-bottom:4px">Free</div>
+            <div style="font-size:26px;font-weight:800;color:#0f172a;margin-bottom:14px">0 €<span style="font-size:13px;font-weight:400;color:#94a3b8"> /mois</span></div>
+            <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;margin-bottom:18px">
+              <div style="color:#475569">✓ 2 membres</div>
+              <div style="color:#475569">✓ 50 clients</div>
+              <div style="color:#94a3b8">✗ Analytics</div>
+              <div style="color:#94a3b8">✗ Branding</div>
+            </div>
+            <button style="width:100%;padding:9px;border:1px solid #e2e8f0;border-radius:9px;font-size:12px;color:#64748b;background:white;cursor:pointer;font-weight:500">Rétrograder</button>
+          </div>
+
+          <!-- Pro - current -->
+          <div style="background:white;border:2px solid #ec4899;border-radius:14px;padding:18px;position:relative">
+            <div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#ec4899;color:white;font-size:10px;font-weight:800;padding:3px 12px;border-radius:99px;white-space:nowrap">PLAN ACTUEL</div>
+            <div style="font-weight:700;color:#0f172a;font-size:15px;margin-bottom:4px">Pro</div>
+            <div style="font-size:26px;font-weight:800;color:#0f172a;margin-bottom:14px">29,99 €<span style="font-size:13px;font-weight:400;color:#94a3b8"> /mois</span></div>
+            <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;margin-bottom:18px">
+              <div style="color:#475569">✓ 10 membres</div>
+              <div style="color:#475569">✓ Clients illimités</div>
+              <div style="color:#475569">✓ Analytics</div>
+              <div style="color:#475569">✓ Branding</div>
+            </div>
+            <button style="width:100%;padding:9px;background:#ec4899;color:white;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">S'abonner →</button>
+          </div>
+
+          <!-- Enterprise -->
+          <div style="background:white;border:1px solid #e2e8f0;border-radius:14px;padding:18px">
+            <div style="font-weight:700;color:#0f172a;font-size:15px;margin-bottom:4px">Enterprise</div>
+            <div style="font-size:26px;font-weight:800;color:#0f172a;margin-bottom:14px">79,99 €<span style="font-size:13px;font-weight:400;color:#94a3b8"> /mois</span></div>
+            <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;margin-bottom:18px">
+              <div style="color:#475569">✓ Membres illimités</div>
+              <div style="color:#475569">✓ Clients illimités</div>
+              <div style="color:#475569">✓ Analytics avancés</div>
+              <div style="color:#475569">✓ Accès API</div>
+            </div>
+            <button style="width:100%;padding:9px;border:1px solid #0f172a;border-radius:9px;font-size:12px;color:#0f172a;background:white;font-weight:600;cursor:pointer">Passer Enterprise →</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Stripe portal explanation -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px">
+        <div style="font-size:24px">💳</div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#0f172a">Facturation sécurisée via Stripe</div>
+          <div style="font-size:12px;color:#64748b;margin-top:2px">Téléchargez vos factures, mettez à jour votre carte bancaire ou annulez votre abonnement depuis le portail Stripe sécurisé.</div>
+        </div>
+        <button style="flex-shrink:0;padding:8px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#475569;background:white;cursor:pointer;white-space:nowrap">Ouvrir le portail →</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px">The "Gérer la facturation" and "Ouvrir le portail" buttons both redirect to Stripe's hosted portal. No invoice table to build.</p>

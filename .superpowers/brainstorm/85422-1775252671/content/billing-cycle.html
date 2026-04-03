@@ -1,0 +1,28 @@
+<h2>Does the pricing page show monthly vs yearly billing?</h2>
+<p class="subtitle">Yearly billing typically offers a discount (~17% off = 2 months free)</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Monthly only (for now)</h3>
+      <p>Show only monthly prices. Simpler to build and explain. Add yearly later once you have paying customers.</p>
+      <div style="margin-top:12px;padding:10px;background:#f8fafc;border-radius:8px;font-size:12px;color:#64748b">
+        Pro — <strong>29,99 €/mois</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Monthly + Yearly toggle</h3>
+      <p>Toggle switch at the top of the pricing page. Yearly shows discounted price with a "2 mois offerts" badge. Industry standard — increases average revenue per user.</p>
+      <div style="margin-top:12px;padding:10px;background:#f8fafc;border-radius:8px;font-size:12px;color:#64748b;display:flex;gap:16px;align-items:center">
+        <span>Mensuel</span>
+        <span style="background:#0f172a;color:white;padding:2px 8px;border-radius:20px;font-size:11px">● Annuel</span>
+        <span style="background:#dcfce7;color:#16a34a;padding:2px 6px;border-radius:4px;font-size:11px">2 mois offerts</span>
+      </div>
+    </div>
+  </div>
+</div>

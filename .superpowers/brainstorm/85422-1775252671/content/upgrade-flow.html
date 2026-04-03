@@ -1,0 +1,111 @@
+<h2>Design Section 2 — Upgrade flow + hard block modal</h2>
+<p class="subtitle">What happens when a user upgrades, and when they hit a plan limit</p>
+
+<div class="split">
+
+  <!-- LEFT: Upgrade flow -->
+  <div class="mockup">
+    <div class="mockup-header">Upgrade flow (3 steps)</div>
+    <div class="mockup-body" style="padding:20px;display:flex;flex-direction:column;gap:0">
+
+      <!-- Step 1 -->
+      <div style="display:flex;gap:14px;padding-bottom:20px;position:relative">
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+          <div style="width:28px;height:28px;background:#ec4899;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">1</div>
+          <div style="width:2px;flex:1;background:#e2e8f0;margin-top:4px"></div>
+        </div>
+        <div style="padding-top:4px">
+          <div style="font-size:13px;font-weight:600;color:#0f172a">Clic sur "S'abonner →"</div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px">Depuis la page Abonnement dans Réglages</div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="display:flex;gap:14px;padding-bottom:20px;position:relative">
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+          <div style="width:28px;height:28px;background:#ec4899;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">2</div>
+          <div style="width:2px;flex:1;background:#e2e8f0;margin-top:4px"></div>
+        </div>
+        <div style="padding-top:4px">
+          <div style="font-size:13px;font-weight:600;color:#0f172a">Stripe Checkout (hosted)</div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px">Redirection vers la page Stripe sécurisée. Vous ne touchez jamais aux données de carte.</div>
+          <div style="margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;font-size:11px;color:#475569">
+            🔒 checkout.stripe.com/pay/cs_live_...
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="display:flex;gap:14px;padding-bottom:20px;position:relative">
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+          <div style="width:28px;height:28px;background:#ec4899;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">3</div>
+          <div style="width:2px;flex:1;background:#e2e8f0;margin-top:4px"></div>
+        </div>
+        <div style="padding-top:4px">
+          <div style="font-size:13px;font-weight:600;color:#0f172a">Stripe webhook → Edge Function</div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px">Stripe notifie votre app. L'Edge Function met à jour <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px">subscription_tier</code> en base.</div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div style="display:flex;gap:14px">
+        <div style="flex-shrink:0">
+          <div style="width:28px;height:28px;background:#22c55e;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px">✓</div>
+        </div>
+        <div style="padding-top:4px">
+          <div style="font-size:13px;font-weight:600;color:#0f172a">Retour app → succès</div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px">L'utilisateur voit un toast "Abonnement Pro activé !" et le plan se met à jour en temps réel.</div>
+          <div style="margin-top:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;font-size:12px;color:#16a34a;font-weight:500">
+            ✓ Abonnement Pro activé !
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT: Hard block modal -->
+  <div class="mockup">
+    <div class="mockup-header">Hard block modal (plan limit hit)</div>
+    <div class="mockup-body" style="padding:20px;display:flex;flex-direction:column;gap:16px">
+
+      <div style="font-size:12px;color:#64748b;background:#f8fafc;border-radius:8px;padding:10px">
+        Exemple : salon Free essaie d'ajouter un 3ème membre d'équipe (limite = 2)
+      </div>
+
+      <!-- Modal -->
+      <div style="background:white;border:1px solid #e2e8f0;border-radius:16px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,0.1)">
+        <div style="text-align:center;margin-bottom:18px">
+          <div style="width:52px;height:52px;background:#fce7f3;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:22px">🔒</div>
+          <div style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:6px">Limite du plan atteinte</div>
+          <div style="font-size:13px;color:#64748b;line-height:1.5">Votre plan <strong>Free</strong> est limité à <strong>2 membres</strong>.<br>Passez en Pro pour ajouter plus de membres.</div>
+        </div>
+
+        <!-- Plan comparison mini -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+          <div style="border:1px solid #e2e8f0;border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:#94a3b8;font-weight:600;margin-bottom:4px">FREE ACTUEL</div>
+            <div style="font-size:18px;font-weight:800;color:#94a3b8">2</div>
+            <div style="font-size:11px;color:#94a3b8">membres max</div>
+          </div>
+          <div style="border:2px solid #ec4899;border-radius:10px;padding:12px;text-align:center;background:#fff5f9">
+            <div style="font-size:11px;color:#ec4899;font-weight:700;margin-bottom:4px">PRO — 29,99 €</div>
+            <div style="font-size:18px;font-weight:800;color:#0f172a">10</div>
+            <div style="font-size:11px;color:#475569">membres max</div>
+          </div>
+        </div>
+
+        <button style="width:100%;padding:12px;background:#ec4899;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">
+          Passer en Pro — 29,99 €/mois →
+        </button>
+        <button style="width:100%;padding:10px;background:transparent;color:#94a3b8;border:none;font-size:12px;cursor:pointer">
+          Rester sur Free
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px">Does this flow make sense? The modal appears anywhere in the app a limit is hit.</p>
