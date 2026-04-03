@@ -1,13 +1,14 @@
 
 import React, { useState } from 'react';
-import { 
-  Store, 
-  Users, 
-  MapPin, 
-  Bell, 
-  CreditCard, 
-  Shield, 
-  Globe, 
+import { useSearchParams } from 'react-router-dom';
+import {
+  Store,
+  Users,
+  MapPin,
+  Bell,
+  CreditCard,
+  Shield,
+  Globe,
   Calculator,
   ChevronRight,
   Smartphone,
@@ -62,6 +63,13 @@ const PlaceholderSettingsPage: React.FC<{ title: string, onBack: () => void }> =
 
 export const SettingsModule: React.FC = () => {
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+
+  // Auto-navigate to section from URL (e.g. after Stripe redirect)
+  React.useEffect(() => {
+    const section = searchParams.get('section');
+    if (section) setActiveSection(section);
+  }, [searchParams]);
 
   const sections = [
     { id: 'billing', icon: CreditCard, title: 'Abonnement & Facturation', description: 'Plan actuel, usage, factures.' },
