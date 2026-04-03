@@ -17,6 +17,7 @@ import {
 import { AccountingSettings } from './components/AccountingSettings';
 import { GeneralSettings } from './components/GeneralSettings';
 import { OpeningHoursSettings } from './components/OpeningHoursSettings';
+import { BillingModule } from '../billing/BillingModule';
 
 const SettingCard = ({ icon: Icon, title, description, onClick }: {
   icon: React.ComponentType<{ size?: number }>;
@@ -63,6 +64,7 @@ export const SettingsModule: React.FC = () => {
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
   const sections = [
+    { id: 'billing', icon: CreditCard, title: 'Abonnement & Facturation', description: 'Plan actuel, usage, factures.' },
     { id: 'general', icon: Store, title: 'Général', description: 'Nom du salon, coordonnées, devise.' },
     { id: 'schedule', icon: Clock, title: 'Horaires', description: "Heures d'ouverture du salon." },
     { id: 'accounting', icon: Calculator, title: 'Comptabilité', description: 'TVA, catégories, charges fixes.' },
@@ -84,6 +86,10 @@ export const SettingsModule: React.FC = () => {
 
   if (activeSection === 'schedule') {
     return <OpeningHoursSettings onBack={() => setActiveSection(null)} />;
+  }
+
+  if (activeSection === 'billing') {
+    return <BillingModule onBack={() => setActiveSection(null)} />;
   }
 
   if (activeSection) {
