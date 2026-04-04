@@ -18,6 +18,15 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { useAuth } from './context/AuthContext';
+import { AdminRoute } from './components/AdminRoute';
+import { AdminLayout } from './components/AdminLayout';
+import { AdminDashboard } from './modules/admin/components/AdminDashboard';
+import { AdminAccountList } from './modules/admin/components/AdminAccountList';
+import { AdminAccountDetail } from './modules/admin/components/AdminAccountDetail';
+import { AdminTrialsPipeline } from './modules/admin/components/AdminTrialsPipeline';
+import { AdminFailedPayments } from './modules/admin/components/AdminFailedPayments';
+import { AdminRecentSignups } from './modules/admin/components/AdminRecentSignups';
+import { AdminChurnLog } from './modules/admin/components/AdminChurnLog';
 
 // Lightweight auth guard — requires authentication but not an active salon
 const AuthRequired: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -136,6 +145,17 @@ export default function App() {
               {/* Auth-required, no-salon routes */}
               <Route path="/create-salon" element={<AuthRequired><CreateSalonPage /></AuthRequired>} />
               <Route path="/select-salon" element={<AuthRequired><SalonPickerPage /></AuthRequired>} />
+
+              {/* Admin routes — own layout, own guard, outside salon Layout */}
+              <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="accounts" element={<AdminAccountList />} />
+                <Route path="accounts/:id" element={<AdminAccountDetail />} />
+                <Route path="trials" element={<AdminTrialsPipeline />} />
+                <Route path="billing" element={<AdminFailedPayments />} />
+                <Route path="signups" element={<AdminRecentSignups />} />
+                <Route path="churn" element={<AdminChurnLog />} />
+              </Route>
 
               {/* Protected app routes */}
               <Route path="/*" element={
