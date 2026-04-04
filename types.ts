@@ -144,7 +144,9 @@ export interface StaffMember {
   bio?: string;
   skills: string[]; // IDs of categories or services they can perform
   active: boolean;
-  
+  membershipId?: string;
+  deletedAt?: string;
+
   // HR & Contract
   startDate: string;
   endDate?: string; // For fixed term
@@ -166,6 +168,42 @@ export interface StaffMember {
   emergencyContactPhone?: string;
 
   schedule: WorkSchedule;
+}
+
+export type PayoutType = 'SALARY' | 'COMMISSION' | 'BONUS' | 'OTHER';
+export type PayoutStatus = 'PENDING' | 'PAID' | 'CANCELLED';
+
+export interface StaffPayout {
+  id: string;
+  salonId: string;
+  staffId: string;
+  type: PayoutType;
+  status: PayoutStatus;
+  amount: number;
+  referenceAmount?: number;
+  rateSnapshot?: number;
+  periodStart: string;
+  periodEnd: string;
+  paidAt?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface StaffActivityEvent {
+  eventType: 'appointment_completed' | 'appointment_cancelled' | 'appointment_no_show' | 'sale';
+  eventDate: string;
+  description: string;
+  clientName: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface StaffClient {
+  clientId: string;
+  clientFirstName: string;
+  clientLastName: string;
+  visitCount: number;
+  totalRevenue: number;
+  lastVisit: string;
 }
 
 // Client Domain

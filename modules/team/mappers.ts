@@ -20,7 +20,7 @@ interface StaffMemberRow {
   weekly_hours: number | null;
   commission_rate: number;
   base_salary: unknown; // BYTEA encrypted — read via get_staff_pii RPC
-  bonus_tiers: BonusTier[] | null;
+  bonus_tiers: unknown;
   iban: unknown; // BYTEA encrypted — read via get_staff_pii RPC
   social_security_number: unknown; // BYTEA encrypted — read via get_staff_pii RPC
   birth_date: string | null;
@@ -49,6 +49,8 @@ export function toStaffMember(row: StaffMemberRow): StaffMember {
     bio: row.bio ?? undefined,
     skills: row.skills ?? [],
     active: row.active,
+    membershipId: row.membership_id ?? undefined,
+    deletedAt: row.deleted_at ?? undefined,
     startDate: row.start_date ?? '',
     endDate: row.end_date ?? undefined,
     contractType: (row.contract_type as StaffMember['contractType']) ?? undefined,
@@ -56,7 +58,7 @@ export function toStaffMember(row: StaffMemberRow): StaffMember {
     commissionRate: row.commission_rate,
     // PII fields are encrypted BYTEA — populated separately via get_staff_pii RPC
     baseSalary: undefined,
-    bonusTiers: row.bonus_tiers ?? undefined,
+    bonusTiers: (row.bonus_tiers as BonusTier[] | null) ?? undefined,
     iban: undefined,
     socialSecurityNumber: undefined,
     birthDate: row.birth_date ?? undefined,
@@ -97,12 +99,12 @@ export function toStaffMemberInsert(staff: StaffMember, salonId: string) {
     commission_rate: staff.commissionRate,
     // PII fields (base_salary, iban, social_security_number) are excluded here
     // They must be written via the update_staff_pii RPC to ensure encryption
-    bonus_tiers: staff.bonusTiers ?? null,
+    bonus_tiers: (staff.bonusTiers ?? null) as unknown as null,
     birth_date: staff.birthDate ?? null,
     address: staff.address ?? null,
     emergency_contact_name: staff.emergencyContactName ?? null,
     emergency_contact_relation: staff.emergencyContactRelation ?? null,
     emergency_contact_phone: staff.emergencyContactPhone ?? null,
-    schedule: staff.schedule ?? null,
+    schedule: (staff.schedule ?? null) as unknown as null,
   };
 }
