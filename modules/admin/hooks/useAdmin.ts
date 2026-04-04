@@ -84,7 +84,7 @@ export function useAdminMRR() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_admin_mrr');
       if (error) throw error;
-      return data as AdminMRR;
+      return data as unknown as AdminMRR;
     },
   });
 }
@@ -106,7 +106,7 @@ export function useAdminAccount(salonId: string) {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_admin_account_detail', { p_salon_id: salonId });
       if (error) throw error;
-      return data as AdminAccountDetail;
+      return data as unknown as AdminAccountDetail;
     },
     enabled: !!salonId,
   });

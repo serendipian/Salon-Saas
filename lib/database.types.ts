@@ -80,6 +80,20 @@ export type Database = {
             foreignKeyName: "appointment_groups_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_groups_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_groups_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -177,6 +191,20 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "appointment_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
             referencedColumns: ["id"]
           },
           {
@@ -397,6 +425,20 @@ export type Database = {
             foreignKeyName: "clients_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -441,6 +483,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "expense_categories_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_categories_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "expense_categories_salon_id_fkey"
             columns: ["salon_id"]
@@ -515,6 +571,20 @@ export type Database = {
             foreignKeyName: "expenses_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -545,6 +615,7 @@ export type Database = {
           invited_by: string
           role: string
           salon_id: string
+          staff_member_id: string | null
           token: string
         }
         Insert: {
@@ -557,6 +628,7 @@ export type Database = {
           invited_by: string
           role: string
           salon_id: string
+          staff_member_id?: string | null
           token: string
         }
         Update: {
@@ -569,6 +641,7 @@ export type Database = {
           invited_by?: string
           role?: string
           salon_id?: string
+          staff_member_id?: string | null
           token?: string
         }
         Relationships: [
@@ -583,7 +656,102 @@ export type Database = {
             foreignKeyName: "invitations_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          hosted_invoice_url: string | null
+          id: string
+          invoice_pdf_url: string | null
+          paid_at: string | null
+          salon_id: string
+          status: string
+          stripe_event_id: string
+          stripe_invoice_id: string
+          subscription_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          hosted_invoice_url?: string | null
+          id?: string
+          invoice_pdf_url?: string | null
+          paid_at?: string | null
+          salon_id: string
+          status: string
+          stripe_event_id: string
+          stripe_invoice_id: string
+          subscription_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          hosted_invoice_url?: string | null
+          id?: string
+          invoice_pdf_url?: string | null
+          paid_at?: string | null
+          salon_id?: string
+          status?: string
+          stripe_event_id?: string
+          stripe_invoice_id?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -662,6 +830,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "product_categories_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_categories_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "product_categories_salon_id_fkey"
             columns: ["salon_id"]
@@ -748,6 +930,20 @@ export type Database = {
             foreignKeyName: "products_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -770,29 +966,47 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
           email: string
           first_name: string | null
           id: string
+          is_admin: boolean
+          language: string
           last_name: string | null
+          notification_email: boolean
+          notification_sms: boolean
+          phone: string | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           email: string
           first_name?: string | null
           id: string
+          is_admin?: boolean
+          language?: string
           last_name?: string | null
+          notification_email?: boolean
+          notification_sms?: boolean
+          phone?: string | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           email?: string
           first_name?: string | null
           id?: string
+          is_admin?: boolean
+          language?: string
           last_name?: string | null
+          notification_email?: boolean
+          notification_sms?: boolean
+          phone?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -843,6 +1057,20 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "expense_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_expenses_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_expenses_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
             referencedColumns: ["id"]
           },
           {
@@ -913,6 +1141,20 @@ export type Database = {
             foreignKeyName: "salon_memberships_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_memberships_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_memberships_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -926,6 +1168,7 @@ export type Database = {
           deleted_at: string | null
           email: string | null
           id: string
+          is_suspended: boolean
           logo_url: string | null
           name: string
           phone: string | null
@@ -946,6 +1189,7 @@ export type Database = {
           deleted_at?: string | null
           email?: string | null
           id?: string
+          is_suspended?: boolean
           logo_url?: string | null
           name: string
           phone?: string | null
@@ -966,6 +1210,7 @@ export type Database = {
           deleted_at?: string | null
           email?: string | null
           id?: string
+          is_suspended?: boolean
           logo_url?: string | null
           name?: string
           phone?: string | null
@@ -1028,6 +1273,20 @@ export type Database = {
             foreignKeyName: "service_categories_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_categories_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_categories_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -1077,6 +1336,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "service_variants_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_variants_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "service_variants_salon_id_fkey"
             columns: ["salon_id"]
@@ -1146,6 +1419,20 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
             referencedColumns: ["id"]
           },
           {
@@ -1289,6 +1576,20 @@ export type Database = {
             foreignKeyName: "staff_members_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_members_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_members_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -1297,6 +1598,86 @@ export type Database = {
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          billing_cycle: string
+          cancelled_at: string | null
+          created_at: string
+          currency: string
+          current_period_end: string | null
+          id: string
+          plan_id: string
+          salon_id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_price_id: string | null
+          stripe_subscription_id: string | null
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          billing_cycle?: string
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          id?: string
+          plan_id: string
+          salon_id: string
+          status: string
+          stripe_customer_id?: string | null
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          billing_cycle?: string
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          id?: string
+          plan_id?: string
+          salon_id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: true
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: true
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: true
+            referencedRelation: "salons"
             referencedColumns: ["id"]
           },
         ]
@@ -1371,6 +1752,20 @@ export type Database = {
             foreignKeyName: "suppliers_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suppliers_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suppliers_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -1437,6 +1832,20 @@ export type Database = {
             foreignKeyName: "transaction_items_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_items_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_items_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -1479,6 +1888,20 @@ export type Database = {
           transaction_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "transaction_payments_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_payments_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transaction_payments_salon_id_fkey"
             columns: ["salon_id"]
@@ -1569,6 +1992,20 @@ export type Database = {
             foreignKeyName: "transactions_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -1576,6 +2013,44 @@ export type Database = {
       }
     }
     Views: {
+      admin_accounts_overview: {
+        Row: {
+          client_count: number | null
+          created_at: string | null
+          current_period_end: string | null
+          id: string | null
+          is_suspended: boolean | null
+          name: string | null
+          slug: string | null
+          staff_count: number | null
+          stripe_subscription_id: string | null
+          subscription_status: string | null
+          subscription_tier: string | null
+          trial_ends_at: string | null
+        }
+        Relationships: []
+      }
+      admin_mrr_summary: {
+        Row: {
+          free_count: number | null
+          past_due_count: number | null
+          premium_count: number | null
+          pro_count: number | null
+          total_mrr: number | null
+          total_salons: number | null
+          trial_count: number | null
+        }
+        Relationships: []
+      }
+      admin_trials_pipeline: {
+        Row: {
+          days_remaining: number | null
+          id: string | null
+          name: string | null
+          trial_ends_at: string | null
+        }
+        Relationships: []
+      }
       appointment_details: {
         Row: {
           client_id: string | null
@@ -1610,6 +2085,20 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
             referencedColumns: ["id"]
           },
           {
@@ -1656,6 +2145,20 @@ export type Database = {
             foreignKeyName: "clients_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -1676,7 +2179,29 @@ export type Database = {
       }
     }
     Functions: {
+      _assert_admin: { Args: never; Returns: undefined }
       accept_invitation: { Args: { p_token: string }; Returns: string }
+      add_coiffure_services: {
+        Args: { p_salon_id: string }
+        Returns: undefined
+      }
+      add_onglerie_services: {
+        Args: { p_salon_id: string }
+        Returns: undefined
+      }
+      admin_extend_trial: {
+        Args: { p_days: number; p_salon_id: string }
+        Returns: undefined
+      }
+      admin_reactivate_salon: {
+        Args: { p_salon_id: string }
+        Returns: undefined
+      }
+      admin_set_plan: {
+        Args: { p_salon_id: string; p_tier: string }
+        Returns: undefined
+      }
+      admin_suspend_salon: { Args: { p_salon_id: string }; Returns: undefined }
       appointment_range: {
         Args: { dur_min: number; start_at: string }
         Returns: unknown
@@ -1732,6 +2257,63 @@ export type Database = {
       encrypt_pii: { Args: { plaintext: string }; Returns: string }
       gdpr_delete_client: { Args: { p_client_id: string }; Returns: undefined }
       get_active_salon: { Args: never; Returns: string }
+      get_admin_account_detail: { Args: { p_salon_id: string }; Returns: Json }
+      get_admin_accounts: {
+        Args: never
+        Returns: {
+          client_count: number
+          created_at: string
+          current_period_end: string
+          id: string
+          is_suspended: boolean
+          name: string
+          slug: string
+          staff_count: number
+          stripe_subscription_id: string
+          subscription_status: string
+          subscription_tier: string
+          trial_ends_at: string
+        }[]
+      }
+      get_admin_churn: {
+        Args: never
+        Returns: {
+          cancelled_at: string
+          id: string
+          name: string
+        }[]
+      }
+      get_admin_failed_payments: {
+        Args: never
+        Returns: {
+          current_period_end: string
+          days_overdue: number
+          id: string
+          name: string
+          stripe_subscription_id: string
+          subscription_tier: string
+        }[]
+      }
+      get_admin_mrr: { Args: never; Returns: Json }
+      get_admin_recent_signups: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: string
+          name: string
+          staff_count: number
+          subscription_tier: string
+        }[]
+      }
+      get_admin_trials: {
+        Args: never
+        Returns: {
+          days_remaining: number
+          id: string
+          name: string
+          trial_ends_at: string
+        }[]
+      }
       get_client_stats: { Args: { p_client_id: string }; Returns: Json }
       get_dashboard_stats: {
         Args: { p_date_from: string; p_date_to: string; p_salon_id: string }
@@ -1756,6 +2338,11 @@ export type Database = {
         }[]
       }
       get_user_role: { Args: never; Returns: string }
+      initialize_salon_trial: {
+        Args: { p_salon_id: string }
+        Returns: undefined
+      }
+      leave_salon: { Args: { p_salon_id: string }; Returns: undefined }
       revoke_membership: {
         Args: { p_membership_id: string }
         Returns: undefined

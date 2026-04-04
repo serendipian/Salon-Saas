@@ -13,9 +13,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Workaround: some browsers return null from navigator.locks.request(),
 // causing getSession() to hang. We use a JS-level mutex instead so token
 // refreshes are serialized without risk of hanging or concurrent corruption.
-interface AuthWithLock extends SupabaseClientOptions<'public'>['auth'] {
+type _SupabaseAuth = SupabaseClientOptions<'public'>['auth'];
+type AuthWithLock = NonNullable<_SupabaseAuth> & {
   lock: (name: string, acquireTimeout: number, fn: () => Promise<unknown>) => Promise<unknown>;
-}
+};
 
 const _authLocks = new Map<string, Promise<unknown>>();
 
