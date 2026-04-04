@@ -17,6 +17,8 @@ interface PlanCardsProps {
   plans: Plan[];
   currentTier: SubscriptionTier;
   onSelectPlan: (planId: string) => void;
+  onDowngrade: () => void;
+  onEnterprise: () => void;
   isLoading: boolean;
 }
 
@@ -26,7 +28,7 @@ const TIER_FROM_NAME: Record<string, SubscriptionTier> = {
   Enterprise: 'enterprise',
 };
 
-export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSelectPlan, isLoading }) => {
+export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSelectPlan, onDowngrade, onEnterprise, isLoading }) => {
   if (currentTier === 'past_due') {
     return (
       <div className="bg-rose-50 border border-rose-200 rounded-2xl p-5 text-center">
@@ -89,11 +91,19 @@ export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSele
               </button>
             ) : isDowngrade ? (
               <button
-                onClick={() => onSelectPlan(plan.id)}
-                disabled={isLoading || !plan.stripe_price_id_monthly}
+                onClick={onDowngrade}
+                disabled={isLoading}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
               >
                 Rétrograder
+              </button>
+            ) : plan.name === 'Enterprise' ? (
+              <button
+                onClick={onEnterprise}
+                disabled={isLoading}
+                className="w-full py-2.5 rounded-xl text-sm font-bold bg-brand-500 text-white hover:bg-brand-600 disabled:opacity-50 transition-colors"
+              >
+                Passer en Enterprise →
               </button>
             ) : (
               <button

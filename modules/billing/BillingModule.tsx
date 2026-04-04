@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { useBilling } from './hooks/useBilling';
 import { TrialBanner } from './components/TrialBanner';
 import { CurrentPlanCard } from './components/CurrentPlanCard';
@@ -19,6 +20,7 @@ interface BillingModuleProps {
 
 export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
   const { activeSalon } = useAuth();
+  const { addToast } = useToast();
   const [searchParams] = useSearchParams();
   const isSuccess = searchParams.get('success') === 'true';
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -71,6 +73,24 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
     if (proPlan) await createCheckoutSession(proPlan.id);
   };
 
+  const handleDowngrade = () => {
+    if (tier === 'trial') {
+      addToast({
+        type: 'info',
+        message: 'Votre essai expire automatiquement. Vous passerez en Free sans action de votre part.',
+      });
+    } else {
+      createPortalSession();
+    }
+  };
+
+  const handleEnterprise = () => {
+    addToast({
+      type: 'info',
+      message: 'Pour une offre Enterprise sur mesure, contactez-nous à contact@lumiere.app',
+    });
+  };
+
   if (isSuccess) {
     return (
       <div className="w-full py-8 px-4 animate-in fade-in duration-500">
@@ -118,6 +138,8 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
           plans={plans}
           currentTier={tier}
           onSelectPlan={createCheckoutSession}
+          onDowngrade={handleDowngrade}
+          onEnterprise={handleEnterprise}
           isLoading={isLoadingCheckout}
         />
 

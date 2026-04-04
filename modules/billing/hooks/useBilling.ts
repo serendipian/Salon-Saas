@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
+import { useToast } from '../../../context/ToastContext';
 import type { Subscription, SubscriptionTier } from '../../../lib/auth.types';
 
 export const PLAN_LIMITS: Record<SubscriptionTier, { staff: number | null; clients: number | null; products: number | null }> = {
@@ -15,6 +16,7 @@ export const PLAN_LIMITS: Record<SubscriptionTier, { staff: number | null; clien
 
 export function useBilling() {
   const { activeSalon } = useAuth();
+  const { addToast } = useToast();
   const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
   const [isLoadingPortal, setIsLoadingPortal] = useState(false);
 
@@ -50,8 +52,11 @@ export function useBilling() {
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: { salon_id: activeSalon!.id, plan_id: planId },
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
       window.location.href = data.url;
+    } catch (err) {
+      addToast({ type: 'error', message: (err as Error).message || 'Erreur lors de la création du paiement.' });
     } finally {
       setIsLoadingCheckout(false);
     }
@@ -63,8 +68,11 @@ export function useBilling() {
       const { data, error } = await supabase.functions.invoke('create-portal-session', {
         body: { salon_id: activeSalon!.id },
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
       window.location.href = data.url;
+    } catch (err) {
+      addToast({ type: 'error', message: (err as Error).message || 'Erreur lors de l\'ouverture du portail.' });
     } finally {
       setIsLoadingPortal(false);
     }
