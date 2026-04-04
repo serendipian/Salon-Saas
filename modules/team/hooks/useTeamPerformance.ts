@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { useQueries } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useTransactions } from '../../../hooks/useTransactions';
-import type { StaffMember, BonusTier, DateRange, Transaction, CartItem, WorkSchedule } from '../../../types';
+import type { StaffMember, DateRange, Transaction, CartItem } from '../../../types';
+import { countWorkingDays, calcBonus } from '../utils';
 
 export interface StaffPerformance {
   staff: StaffMember;
@@ -14,30 +15,13 @@ export interface StaffPerformance {
   ratio: number | null;
 }
 
-const DAY_KEYS: (keyof WorkSchedule)[] = [
-  'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
-];
-
-function countWorkingDays(from: Date, to: Date, schedule: WorkSchedule | undefined): number {
-  if (!schedule) return 0;
-  let count = 0;
-  const current = new Date(from);
-  while (current <= to) {
-    const dayKey = DAY_KEYS[current.getDay()];
-    if (schedule[dayKey]?.isOpen) count++;
-    current.setDate(current.getDate() + 1);
-  }
-  return count;
-}
-
-function calcBonus(revenue: number, tiers?: BonusTier[]): number {
-  if (!tiers || tiers.length === 0) return 0;
-  const sorted = [...tiers].sort((a, b) => b.target - a.target);
-  const applicable = sorted.find(t => revenue >= t.target);
-  return applicable?.bonus ?? 0;
-}
-
-export const useTeamPerformance = (staff: StaffMember[]) => {
+export const useTeamPerformance = (staff: StaffMember[]): {
+  performances: StaffPerformance[];
+  dateRange: DateRange;
+  setDateRange: (range: DateRange) => void;
+  totalRevenue: number;
+  isLoadingPii: boolean;
+} => {
   const { transactions } = useTransactions();
 
   const [dateRange, setDateRange] = useState<DateRange>(() => {
