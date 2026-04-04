@@ -10,6 +10,11 @@ export interface Profile {
   first_name: string | null;
   last_name: string | null;
   avatar_url: string | null;
+  phone: string | null;
+  bio: string | null;
+  language: string;
+  notification_email: boolean;
+  notification_sms: boolean;
 }
 
 export interface SalonMembership {

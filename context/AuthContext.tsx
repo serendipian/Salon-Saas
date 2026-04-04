@@ -28,6 +28,10 @@ interface AuthContextType {
   updatePassword: (newPassword: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 
+  // Profile actions
+  updateProfile: (data: Partial<Profile>) => Promise<{ error: string | null }>;
+  refreshProfile: () => Promise<void>;
+
   // Salon actions
   switchSalon: (salonId: string) => Promise<void>;
   refreshActiveSalon: (updates: Partial<ActiveSalon>) => void;
@@ -63,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, email, first_name, last_name, avatar_url')
+      .select('id, email, first_name, last_name, avatar_url, phone, bio, language, notification_email, notification_sms')
       .eq('id', userId)
       .single();
 
@@ -338,6 +342,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
   }, []);
 
+  const updateProfile = useCallback(async (data: Partial<Profile>) => {
+    if (!user) return { error: 'Not authenticated' };
+    const { error } = await supabase
+      .from('profiles')
+      .update(data)
+      .eq('id', user.id);
+    if (error) return { error: error.message };
+    const updated = await fetchProfile(user.id);
+    if (updated) setProfile(updated);
+    return { error: null };
+  }, [user, fetchProfile]);
+
+  const refreshProfile = useCallback(async () => {
+    if (!user) return;
+    const updated = await fetchProfile(user.id);
+    if (updated) setProfile(updated);
+  }, [user, fetchProfile]);
+
   const refreshActiveSalon = useCallback((updates: Partial<ActiveSalon>) => {
     setActiveSalon(prev => prev ? { ...prev, ...updates } : prev);
   }, []);
@@ -389,6 +411,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     resetPassword,
     updatePassword,
     signOut,
+    updateProfile,
+    refreshProfile,
     switchSalon,
     refreshActiveSalon,
     createSalon,
