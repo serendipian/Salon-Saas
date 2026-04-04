@@ -14,6 +14,8 @@ import { SignupPage } from './pages/SignupPage';
 import { CreateSalonPage } from './pages/CreateSalonPage';
 import { SalonPickerPage } from './pages/SalonPickerPage';
 import { AcceptInvitationPage } from './pages/AcceptInvitationPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { useAuth } from './context/AuthContext';
 
 // Lightweight auth guard — requires authentication but not an active salon
@@ -123,6 +125,8 @@ export default function App() {
               {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
 
               {/* Auth-required, no-salon routes */}
