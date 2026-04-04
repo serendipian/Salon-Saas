@@ -29,6 +29,16 @@ modules/
 
 Active modules: `dashboard`, `clients`, `services`, `products`, `appointments`, `pos`, `team`, `suppliers`, `accounting`, `settings`, `billing`
 
+### Team Module (Enterprise)
+Nested routes under `#/team` with `<Outlet>` pattern:
+- `/team` — TeamListPage (list + performance tabs, archive toggle)
+- `/team/new` — NewStaffPage (creation form)
+- `/team/:id` — StaffDetailPage (pinned header + 5 tabs: Profil, Performance, Rémunération, Agenda, Activité)
+
+Team-specific hooks: `useStaffDetail`, `useStaffPayouts`, `useStaffCompensation`, `useStaffClients`, `useStaffAppointments`, `useStaffActivity`, `useInvitation`
+
+Staff detail uses inline section editing (edit mode per section, not per field). PII fields (salary, IBAN, SSN) encrypted via pgcrypto RPCs.
+
 ### Shared Components (Active)
 ```
 components/
@@ -184,20 +194,22 @@ npm run preview      # Preview production build
 
 - **Backend**: Supabase (PostgreSQL 15, Auth, Realtime, Storage — `avatars` bucket for profile photos)
 - **Local dev**: `npm run db:start` / `npm run db:stop` (requires Docker Desktop)
-- **Migrations**: `supabase/migrations/` — 43 migration files, applied in order
+- **Migrations**: `supabase/migrations/` — 56 migration files, applied in order
 - **Seed data**: `supabase/seed.sql` — subscription plans (Free, Premium, Pro)
 - **Types**: Auto-generated via `npm run db:types` → `lib/database.types.ts`
+- **Types (remote)**: `npx supabase gen types typescript --project-id izsycdmrwscdnxebptsx > lib/database.types.ts` (no Docker/local dev)
 - **Reset**: `npm run db:reset` — drops and recreates everything
 - **Studio**: http://127.0.0.1:54323 (local Supabase dashboard)
 
 ### Schema Overview
-- 22 tables + 3 views
+- 23 tables + 3 views
 - RLS enabled on every table
 - Membership-based RLS via `user_salon_ids()` / `user_salon_ids_with_role()` functions
 - Custom Postgres functions across migration files (identity, RPC, encryption, etc.)
 - Audit logging on all business tables via triggers
 
 ### Key Patterns
+- RLS SELECT policies include `deleted_at IS NULL` — to query archived records, add a separate additive policy for owner/manager
 - `salon_id` on every business table for multi-tenancy
 - Soft-delete via `deleted_at` column (NULL = active)
 - `updated_at` auto-set by trigger on every table
