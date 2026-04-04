@@ -73,6 +73,11 @@ export interface AdminChurn {
   cancelled_at: string;
 }
 
+export interface AdminHistoryPoint {
+  month: string;
+  value: number;
+}
+
 // ─── Read hooks ──────────────────────────────────────────────────────────────
 
 export function useAdminMRR() {
@@ -161,6 +166,45 @@ export function useAdminChurn() {
       const { data, error } = await supabase.rpc('get_admin_churn');
       if (error) throw error;
       return (data ?? []) as AdminChurn[];
+    },
+    staleTime: 60_000,
+    retry: false,
+  });
+}
+
+export function useAdminMRRHistory() {
+  return useQuery<AdminHistoryPoint[]>({
+    queryKey: ['admin', 'mrr_history'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_admin_mrr_history', { months_back: 6 });
+      if (error) throw error;
+      return ((data as { month: string; mrr: number }[]) ?? []).map(d => ({ month: d.month, value: Number(d.mrr) }));
+    },
+    staleTime: 60_000,
+    retry: false,
+  });
+}
+
+export function useAdminSignupsHistory() {
+  return useQuery<AdminHistoryPoint[]>({
+    queryKey: ['admin', 'signups_history'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_admin_signups_history', { months_back: 6 });
+      if (error) throw error;
+      return ((data as { month: string; count: number }[]) ?? []).map(d => ({ month: d.month, value: Number(d.count) }));
+    },
+    staleTime: 60_000,
+    retry: false,
+  });
+}
+
+export function useAdminTrialsHistory() {
+  return useQuery<AdminHistoryPoint[]>({
+    queryKey: ['admin', 'trials_history'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_admin_trials_history', { months_back: 6 });
+      if (error) throw error;
+      return ((data as { month: string; count: number }[]) ?? []).map(d => ({ month: d.month, value: Number(d.count) }));
     },
     staleTime: 60_000,
     retry: false,

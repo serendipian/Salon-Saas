@@ -2,13 +2,44 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Info } from 'lucide-react';
-import { useAdminMRR, useAdminTrials, useAdminFailedPayments, useAdminRecentSignups } from '../hooks/useAdmin';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import {
+  useAdminMRR,
+  useAdminMRRHistory,
+  useAdminSignupsHistory,
+  useAdminTrialsHistory,
+  useAdminFailedPayments,
+  type AdminHistoryPoint,
+} from '../hooks/useAdmin';
 import { ADMIN_FONT } from '../constants';
 import { AdminErrorState } from './AdminShared';
 
+// Unique gradient IDs per sparkline to avoid SVG defs collision
+const MiniSparkline: React.FC<{ data: AdminHistoryPoint[]; gradId: string }> = ({ data, gradId }) => (
+  <ResponsiveContainer width="100%" height={80}>
+    <AreaChart data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor="#635bff" stopOpacity={0.15} />
+          <stop offset="95%" stopColor="#635bff" stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <Area
+        type="monotone"
+        dataKey="value"
+        stroke="#635bff"
+        strokeWidth={1.5}
+        fill={`url(#${gradId})`}
+        dot={false}
+        isAnimationActive={false}
+      />
+    </AreaChart>
+  </ResponsiveContainer>
+);
+
 const EmptyChart: React.FC = () => (
   <div
-    className="w-full h-[110px] rounded-[6px] flex items-center justify-center"
+    className="w-full h-[80px] rounded-[6px] flex items-center justify-center"
     style={{ border: '1.5px dashed #e3e8ef' }}
   >
     <span className="text-[13px]" style={{ color: '#c1cfe0' }}>Aucune donnée</span>
@@ -21,9 +52,11 @@ interface MetricCardProps {
   subtitle?: string;
   to?: string;
   loading?: boolean;
+  chartData?: AdminHistoryPoint[];
+  gradId?: string;
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, to, loading }) => {
+const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, to, loading, chartData, gradId }) => {
   const inner = (
     <div className="bg-white rounded-[8px] border border-[#e3e8ef] p-5 flex flex-col h-full transition-shadow hover:shadow-sm">
       <div className="flex items-center gap-1.5 mb-1">
@@ -37,9 +70,15 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, to, loa
           {value}
         </div>
       )}
-      {subtitle && <div className="text-[13px] mb-4" style={{ color: '#697386' }}>{subtitle}</div>}
+      {subtitle && <div className="text-[13px] mb-2" style={{ color: '#697386' }}>{subtitle}</div>}
       <div className="flex-1 mt-2">
-        {loading ? <div className="w-full h-[110px] bg-[#f7fafc] rounded-[6px] animate-pulse" /> : <EmptyChart />}
+        {loading ? (
+          <div className="w-full h-[80px] bg-[#f7fafc] rounded-[6px] animate-pulse" />
+        ) : chartData && chartData.length > 0 && gradId ? (
+          <MiniSparkline data={chartData} gradId={gradId} />
+        ) : (
+          <EmptyChart />
+        )}
       </div>
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#f0f0f0]">
         <span className="text-[11px]" style={{ color: '#c1cfe0' }}>Mis à jour il y a quelques secondes</span>
@@ -53,12 +92,12 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, to, loa
 
 export const AdminDashboard: React.FC = () => {
   const { data: mrr, isLoading: loadingMRR, isError: errorMRR } = useAdminMRR();
-  const { data: trials } = useAdminTrials();
-  const { data: failedPayments } = useAdminFailedPayments();
-  const { data: signups } = useAdminRecentSignups();
+  const { data: mrrHistory,     isLoading: loadingMRRHistory } = useAdminMRRHistory();
+  const { data: signupsHistory, isLoading: loadingSignups }    = useAdminSignupsHistory();
+  const { data: trialsHistory,  isLoading: loadingTrials }     = useAdminTrialsHistory();
+  const { data: failedPayments }                               = useAdminFailedPayments();
 
   const activeSubs = (mrr?.premium_count ?? 0) + (mrr?.pro_count ?? 0);
-  const expiringThisWeek = (trials ?? []).filter(t => t.days_remaining <= 7).length;
 
   return (
     <div className="p-8" style={ADMIN_FONT}>
@@ -71,27 +110,35 @@ export const AdminDashboard: React.FC = () => {
           title="MRR"
           value={(mrr?.total_mrr ?? 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
           subtitle={`${mrr?.premium_count ?? 0} premium · ${mrr?.pro_count ?? 0} pro · ${mrr?.trial_count ?? 0} essai`}
-          loading={loadingMRR}
+          loading={loadingMRR || loadingMRRHistory}
+          chartData={mrrHistory}
+          gradId="spark-mrr"
         />
         <MetricCard
           title="Abonnements actifs"
           value={activeSubs}
           subtitle={`${mrr?.trial_count ?? 0} en essai · ${mrr?.free_count ?? 0} en free`}
-          loading={loadingMRR}
+          loading={loadingMRR || loadingMRRHistory}
+          chartData={mrrHistory}
+          gradId="spark-subs"
           to="/admin/accounts"
         />
         <MetricCard
           title="Total salons"
           value={mrr?.total_salons ?? 0}
           subtitle={`${mrr?.premium_count ?? 0} premium · ${mrr?.pro_count ?? 0} pro · ${mrr?.free_count ?? 0} free`}
-          loading={loadingMRR}
+          loading={loadingMRR || loadingSignups}
+          chartData={signupsHistory}
+          gradId="spark-total"
           to="/admin/accounts"
         />
         <MetricCard
           title="Essais actifs"
           value={mrr?.trial_count ?? 0}
-          subtitle={`${expiringThisWeek} expire(nt) cette semaine`}
-          loading={loadingMRR}
+          subtitle={`${mrr?.trial_count ?? 0} essai${(mrr?.trial_count ?? 0) !== 1 ? 's' : ''} en cours`}
+          loading={loadingMRR || loadingTrials}
+          chartData={trialsHistory}
+          gradId="spark-trials"
           to="/admin/trials"
         />
         <MetricCard
@@ -102,8 +149,11 @@ export const AdminDashboard: React.FC = () => {
         />
         <MetricCard
           title="Nouvelles inscriptions (30j)"
-          value={signups?.length ?? 0}
+          value={signupsHistory?.at(-1)?.value ?? 0}
           subtitle="Salons inscrits ce mois"
+          loading={loadingSignups}
+          chartData={signupsHistory}
+          gradId="spark-signups"
           to="/admin/signups"
         />
       </div>
