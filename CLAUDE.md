@@ -27,12 +27,12 @@ modules/
     schemas.ts            # Zod validation schemas (where applicable)
 ```
 
-Active modules: `dashboard`, `clients`, `services`, `products`, `appointments`, `pos`, `team`, `suppliers`, `accounting`, `settings`
+Active modules: `dashboard`, `clients`, `services`, `products`, `appointments`, `pos`, `team`, `suppliers`, `accounting`, `settings`, `billing`
 
 ### Shared Components (Active)
 ```
 components/
-  Layout.tsx              # App shell: sidebar + topbar
+  Layout.tsx              # App shell: sidebar + topbar (avatar dropdown with profile link)
   FormElements.tsx        # Input, Select, TextArea, Section
   DatePicker.tsx          # Single date picker
   DateRangePicker.tsx     # Range picker with presets
@@ -59,6 +59,32 @@ pages/
   SalonPickerPage.tsx      # Multi-salon user selection
   AcceptInvitationPage.tsx # Token-based invitation acceptance
 ```
+
+### Profile Page (`/profile`)
+```
+pages/
+  ProfilePage.tsx                    # Container, conditional section rendering by role
+  profile/
+    ProfileIdentity.tsx              # Avatar upload + personal info (name, phone, bio)
+    ProfileSalonRole.tsx             # Active salon, role badge, member since, multi-salon list
+    ProfileSchedule.tsx              # Weekly schedule (linked staff members only)
+    ProfilePerformance.tsx           # Monthly stats (linked stylists only)
+    ProfileSecurity.tsx              # Password change
+    ProfilePreferences.tsx           # Language selector (fr/ar/en) + notification toggles
+    ProfileDangerZone.tsx            # Leave salon (via leave_salon RPC, hidden for sole owners)
+```
+- Accessible from topbar avatar dropdown (desktop) and MobileDrawer (mobile)
+- No ProtectedRoute permission check — all authenticated users can access
+- `hooks/useAvatarUpload.ts` — uploads to Supabase Storage `avatars` bucket
+- `hooks/useLinkedStaffMember.ts` — queries `staff_members` by `membership_id` to find linked record
+- `AuthContext` provides `updateProfile()` and `refreshProfile()` for profile mutations
+- Profile type (`lib/auth.types.ts`): id, email, first_name, last_name, avatar_url, phone, bio, language, notification_email, notification_sms
+
+### Staff-Profile Linking
+- `staff_members.membership_id` links a staff record to a `salon_memberships` entry
+- `invitations.staff_member_id` (nullable) links an invitation to an existing staff member
+- `accept_invitation` RPC: if `staff_member_id` is set, links existing staff; otherwise creates new one for stylists
+- `leave_salon` RPC: SECURITY DEFINER function that soft-deletes membership + linked staff atomically
 
 ### State Management
 - All modules use TanStack Query + Supabase for data fetching and persistence
@@ -156,16 +182,16 @@ npm run preview      # Preview production build
 
 ## Database
 
-- **Backend**: Supabase (PostgreSQL 15, Auth, Realtime, Storage)
+- **Backend**: Supabase (PostgreSQL 15, Auth, Realtime, Storage — `avatars` bucket for profile photos)
 - **Local dev**: `npm run db:start` / `npm run db:stop` (requires Docker Desktop)
-- **Migrations**: `supabase/migrations/` — 30 migration files, applied in order
-- **Seed data**: `supabase/seed.sql` — subscription plans (Free, Pro, Enterprise)
+- **Migrations**: `supabase/migrations/` — 43 migration files, applied in order
+- **Seed data**: `supabase/seed.sql` — subscription plans (Free, Premium, Pro)
 - **Types**: Auto-generated via `npm run db:types` → `lib/database.types.ts`
 - **Reset**: `npm run db:reset` — drops and recreates everything
 - **Studio**: http://127.0.0.1:54323 (local Supabase dashboard)
 
 ### Schema Overview
-- 20 tables + 3 views
+- 22 tables + 3 views
 - RLS enabled on every table
 - Membership-based RLS via `user_salon_ids()` / `user_salon_ids_with_role()` functions
 - Custom Postgres functions across migration files (identity, RPC, encryption, etc.)
@@ -182,12 +208,12 @@ npm run preview      # Preview production build
 ## Authentication & Authorization
 
 - **Auth Provider**: Supabase Auth (email+password, magic link)
-- **Auth Context**: `context/AuthContext.tsx` — provides user, session, profile, activeSalon, role, memberships
+- **Auth Context**: `context/AuthContext.tsx` — provides user, session, profile, activeSalon, role, memberships, updateProfile, refreshProfile
 - **Access Hook**: `useAuth()` — access auth state from any component
 - **Permissions**: `hooks/usePermissions.ts` — static role-based permission matrix (UX only, RLS is authoritative)
 - **Route Guards**: `components/ProtectedRoute.tsx` — redirects unauthorized users
 - **Supabase Client**: `lib/supabase.ts` — typed singleton, uses `Database` from `lib/database.types.ts`
-- **Auth Types**: `lib/auth.types.ts` — Role, Profile, SalonMembership, permission types
+- **Auth Types**: `lib/auth.types.ts` — Role, Profile (with phone/bio/language/notifications), SalonMembership (with created_at), permission types
 
 ### Auth Flow
 1. Unauthenticated → `/login` or `/signup`
@@ -202,6 +228,70 @@ npm run preview      # Preview production build
 
 ### RLS Model (Membership-Based)
 RLS uses `user_salon_ids()` and `user_salon_ids_with_role()` functions that derive access from `salon_memberships` using `auth.uid()` from the JWT. No session variables are needed — `set_session_context` is legacy and no longer called by the application. All data isolation is enforced via membership-based RLS policies (migration `20260328120000`).
+
+## Billing & Subscriptions
+
+### Subscription Tiers
+The `salons.subscription_tier` column uses these internal identifiers — **do not confuse with plan display names**:
+
+| Internal tier | Display name | Price | Limits |
+|---|---|---|---|
+| `trial` | Premium (Essai) | Free, 14 days | 10 staff, unlimited clients |
+| `free` | Free | 0€ | 2 staff, 50 clients, 20 products |
+| `premium` | Premium | 59€/mo | 10 staff, unlimited clients |
+| `pro` | Pro | 89€/mo | Unlimited everything |
+| `past_due` | — | — | Treated like `premium`, payment failed |
+
+`SubscriptionTier` type is in `lib/auth.types.ts`. Limits are in `PLAN_LIMITS` in `modules/billing/hooks/useBilling.ts`.
+
+### Plan Limit Enforcement
+Server-side: `check_plan_limits()` trigger fires BEFORE INSERT on `staff_members`, `clients`, `products`. Raises `PLAN_LIMIT_EXCEEDED:table.limit` with ERRCODE `P0001`. Client-side: `canAddStaff/canAddClient/canAddProduct` helpers in `useBilling` (UX-only gate).
+
+### Billing Module
+```
+modules/billing/
+  BillingModule.tsx              # Container: loads plans + usage, shows success screen
+  hooks/useBilling.ts            # PLAN_LIMITS, createCheckoutSession, createPortalSession
+  components/
+    CurrentPlanCard.tsx          # Current tier display + usage bars
+    PlanCards.tsx                # Plan comparison grid with upgrade/downgrade CTAs
+    TrialBanner.tsx              # Top banner showing trial days remaining
+    PastDueBanner.tsx            # App-wide payment failure banner (rendered in Layout.tsx)
+    UpgradeModal.tsx             # Upsell modal triggered when hitting plan limits
+    UpgradeSuccess.tsx           # Post-checkout success screen (reads plan from ?plan= URL param)
+    StripePortalSection.tsx      # Link to Stripe Customer Portal for paid plans
+```
+
+### Edge Functions (all deployed with --no-verify-jwt)
+All 4 Edge Functions perform their own auth internally. Deploy via:
+`npx supabase functions deploy <name> --no-verify-jwt --use-api`
+
+| Function | Trigger | Auth method |
+|---|---|---|
+| `create-checkout-session` | Frontend upgrade button | `getUser()` via user JWT |
+| `create-portal-session` | Frontend "Gérer la facturation" | `getUser()` via user JWT |
+| `stripe-webhook` | Stripe events | Stripe signature verification |
+| `expire-trials` | pg_cron daily at 02:00 UTC | None (open, idempotent) |
+
+### Stripe Webhook Events Handled
+`checkout.session.completed` → sets subscription active, updates `salons.subscription_tier`
+`customer.subscription.updated` → syncs status/tier on plan change or past_due
+`invoice.paid` → inserts invoice record, resets status to active
+`invoice.payment_failed` → sets status/tier to `past_due`
+`customer.subscription.deleted` → sets status to cancelled, tier to `free`
+
+### Real-Time Tier Updates
+`AuthContext` subscribes to `salons` table UPDATE events (channel `salon-tier:{id}`) to update `activeSalon.subscription_tier` in memory immediately when the webhook fires — no sign-out required.
+
+### Checkout Flow
+1. User clicks upgrade → `create-checkout-session` creates Stripe Checkout session
+2. User pays on Stripe → redirected to `?section=billing&success=true&plan={PlanName}`
+3. `UpgradeSuccess` component reads `?plan=` to display correct plan name and features
+4. Stripe sends webhook → `salons.subscription_tier` updated → realtime pushes to client
+
+### Token Auth for Edge Functions
+`useBilling.ts` uses raw `fetch` (not `supabase.functions.invoke`) with an explicit `Authorization` header. Always call `supabase.auth.getSession()` first to ensure a fresh token.
+`lib/supabase.ts` has a JS mutex for the `auth.lock` option to serialize token refreshes safely in environments without Web Locks API.
 
 ## Code Conventions
 
@@ -226,6 +316,7 @@ RLS uses `user_salon_ids()` and `user_salon_ids_with_role()` functions that deri
 8. ~~No form validation~~ DONE — Plan 4, Zod schemas
 9. ~~No error boundaries~~ DONE — Plan 4, module-level ErrorBoundary
 10. ~~Not responsive for mobile~~ DONE — Plan 5A infrastructure + nav + forms
+11. ~~No billing/subscriptions~~ DONE — Stripe checkout, webhook, portal, trial expiry cron
 
 ## Environment Variables
 
