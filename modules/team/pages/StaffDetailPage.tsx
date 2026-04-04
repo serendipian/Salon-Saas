@@ -1,0 +1,142 @@
+import React, { useState, useMemo } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { ChevronLeft, User, TrendingUp, Wallet, CalendarDays, Activity } from 'lucide-react';
+import { useStaffDetail } from '../hooks/useStaffDetail';
+import { useInvitation } from '../hooks/useInvitation';
+import { useTransactions } from '../../../hooks/useTransactions';
+import { useAppointments } from '../../appointments/hooks/useAppointments';
+import { useSettings } from '../../settings/hooks/useSettings';
+import { StaffHeader } from '../components/StaffHeader';
+import { StaffProfileTab } from '../components/StaffProfileTab';
+import { StaffPerformanceTab } from '../components/StaffPerformanceTab';
+import { StaffRemunerationTab } from '../components/StaffRemunerationTab';
+import { StaffAgendaTab } from '../components/StaffAgendaTab';
+import { StaffActivityTab } from '../components/StaffActivityTab';
+import { InvitationModal } from '../components/InvitationModal';
+
+const TABS = [
+  { key: 'profil', label: 'Profil', icon: User },
+  { key: 'performance', label: 'Performance', icon: TrendingUp },
+  { key: 'remuneration', label: 'Rémunération', icon: Wallet },
+  { key: 'agenda', label: 'Agenda', icon: CalendarDays },
+  { key: 'activite', label: 'Activité', icon: Activity },
+] as const;
+
+type TabKey = (typeof TABS)[number]['key'];
+
+export const StaffDetailPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const defaultTab = (searchParams.get('tab') as TabKey) || 'profil';
+  const [activeTab, setActiveTab] = useState<TabKey>(defaultTab);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+
+  const { staff, isLoading, isArchived, updateSection, isUpdating, archive, restore, loadPii } = useStaffDetail(id!);
+  const { invitation, createInvitation } = useInvitation(id!);
+  const { transactions } = useTransactions();
+  const { allAppointments } = useAppointments();
+  const { salonSettings } = useSettings();
+
+  const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
+
+  // Monthly stats for header
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const monthlyStats = useMemo(() => {
+    if (!staff || !transactions) return { revenue: 0, appointments: 0 };
+    const revenue = (transactions || [])
+      .filter((t: any) => new Date(t.date) >= monthStart)
+      .reduce((sum: number, t: any) => {
+        return sum + (t.items || [])
+          .filter((i: any) => i.staffId === staff.id)
+          .reduce((s: number, i: any) => s + i.price * i.quantity, 0);
+      }, 0);
+    const apptCount = (allAppointments || [])
+      .filter((a: any) => a.staffId === staff.id && new Date(a.date) >= monthStart && a.status !== 'CANCELLED')
+      .length;
+    return { revenue, appointments: apptCount };
+  }, [staff, transactions, allAppointments]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-8 w-32 bg-slate-200 rounded animate-pulse" />
+        <div className="h-48 bg-slate-200 rounded-xl animate-pulse" />
+      </div>
+    );
+  }
+
+  if (!staff) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-slate-500">Membre introuvable</p>
+        <button onClick={() => navigate('/team')} className="mt-4 text-pink-600 hover:text-pink-700 text-sm">
+          Retour à l'équipe
+        </button>
+      </div>
+    );
+  }
+
+  const handleArchive = async () => {
+    await archive();
+    navigate('/team');
+  };
+
+  return (
+    <div className="space-y-6">
+      <button onClick={() => navigate('/team')} className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900">
+        <ChevronLeft className="w-4 h-4" /> Équipe
+      </button>
+
+      <StaffHeader
+        staff={staff}
+        isArchived={isArchived}
+        monthlyRevenue={monthlyStats.revenue}
+        monthlyAppointments={monthlyStats.appointments}
+        currencySymbol={currencySymbol}
+        hasPendingInvitation={!!invitation}
+        invitationExpiresAt={invitation?.expires_at}
+        onInvite={() => setShowInviteModal(true)}
+        onArchive={handleArchive}
+        onRestore={restore}
+      />
+
+      {!isArchived && (
+        <>
+          <div className="flex gap-1 bg-slate-100 p-1 rounded-lg overflow-x-auto">
+            {TABS.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
+                  activeTab === key ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Icon className="w-4 h-4" /> {label}
+              </button>
+            ))}
+          </div>
+
+          {activeTab === 'profil' && (
+            <StaffProfileTab staff={staff} loadPii={loadPii} onSave={updateSection} isSaving={isUpdating} currencySymbol={currencySymbol} onArchive={handleArchive} />
+          )}
+          {activeTab === 'performance' && <StaffPerformanceTab staffId={staff.id} currencySymbol={currencySymbol} />}
+          {activeTab === 'remuneration' && <StaffRemunerationTab staff={staff} currencySymbol={currencySymbol} onSave={updateSection} />}
+          {activeTab === 'agenda' && <StaffAgendaTab staff={staff} />}
+          {activeTab === 'activite' && <StaffActivityTab staffId={staff.id} />}
+        </>
+      )}
+
+      {showInviteModal && (
+        <InvitationModal
+          staffEmail={staff.email}
+          staffRole={staff.role}
+          onSubmit={async (email) => { await createInvitation(email); setShowInviteModal(false); }}
+          onClose={() => setShowInviteModal(false)}
+        />
+      )}
+    </div>
+  );
+};
