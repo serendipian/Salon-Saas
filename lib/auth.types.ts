@@ -2,7 +2,7 @@ import type { Session, User } from '@supabase/supabase-js';
 
 export type Role = 'owner' | 'manager' | 'stylist' | 'receptionist';
 
-export type SubscriptionTier = 'trial' | 'free' | 'pro' | 'enterprise' | 'past_due';
+export type SubscriptionTier = 'trial' | 'free' | 'premium' | 'pro' | 'past_due';
 
 export interface Profile {
   id: string;

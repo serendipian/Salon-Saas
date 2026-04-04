@@ -23,8 +23,8 @@ interface PlanCardsProps {
 
 const TIER_FROM_NAME: Record<string, SubscriptionTier> = {
   Free: 'free',
-  Premium: 'pro',
-  Pro: 'enterprise',
+  Premium: 'premium',
+  Pro: 'pro',
 };
 
 export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSelectPlan, onDowngrade, isLoading }) => {
@@ -43,7 +43,7 @@ export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSele
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {plans.map((plan) => {
         const planTier = TIER_FROM_NAME[plan.name] ?? 'free';
-        const isCurrent = planTier === currentTier || (currentTier === 'trial' && planTier === 'pro');
+        const isCurrent = planTier === currentTier || (currentTier === 'trial' && planTier === 'premium');
         const isUpgrade = plan.price_monthly > 0 && !isCurrent;
         const isDowngrade = planTier === 'free' && currentTier !== 'free' && currentTier !== 'trial';
 

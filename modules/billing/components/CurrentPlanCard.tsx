@@ -33,19 +33,19 @@ const UsageBar: React.FC<UsageBarProps> = ({ label, current, max }) => {
 };
 
 const TIER_LABELS: Record<SubscriptionTier, string> = {
-  trial: 'Premium (Essai)',
-  free: 'Free',
-  pro: 'Premium',
-  enterprise: 'Pro',
+  trial:    'Premium (Essai)',
+  free:     'Free',
+  premium:  'Premium',
+  pro:      'Pro',
   past_due: 'Premium',
 };
 
 const TIER_BADGES: Record<SubscriptionTier, { label: string; className: string }> = {
-  trial:      { label: 'ESSAI',    className: 'bg-blue-100 text-blue-700' },
-  free:       { label: 'FREE',     className: 'bg-slate-100 text-slate-600' },
-  pro:        { label: 'PREMIUM',  className: 'bg-brand-100 text-brand-700' },
-  enterprise: { label: 'PRO',      className: 'bg-purple-100 text-purple-700' },
-  past_due:   { label: 'IMPAYÉ',   className: 'bg-rose-100 text-rose-700' },
+  trial:    { label: 'ESSAI',   className: 'bg-blue-100 text-blue-700' },
+  free:     { label: 'FREE',    className: 'bg-slate-100 text-slate-600' },
+  premium:  { label: 'PREMIUM', className: 'bg-brand-100 text-brand-700' },
+  pro:      { label: 'PRO',     className: 'bg-purple-100 text-purple-700' },
+  past_due: { label: 'IMPAYÉ',  className: 'bg-rose-100 text-rose-700' },
 };
 
 interface CurrentPlanCardProps {

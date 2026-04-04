@@ -41,9 +41,9 @@ Deno.serve(async (req) => {
           .eq('stripe_price_id_monthly', stripeSubscription.items.data[0].price.id)
           .single();
 
-        // 'Premium' plan → 'pro' tier, 'Pro' plan → 'enterprise' tier
-        const PLAN_TIER: Record<string, string> = { premium: 'pro', pro: 'enterprise' };
-        const tier = PLAN_TIER[plans?.name?.toLowerCase() ?? ''] ?? 'pro';
+        // 'Premium' plan → 'premium' tier, 'Pro' plan → 'pro' tier
+        const PLAN_TIER: Record<string, string> = { premium: 'premium', pro: 'pro' };
+        const tier = PLAN_TIER[plans?.name?.toLowerCase() ?? ''] ?? 'premium';
 
         await supabase.from('subscriptions').upsert({
           salon_id: salonId,
@@ -77,8 +77,8 @@ Deno.serve(async (req) => {
           .eq('stripe_price_id_monthly', sub.items.data[0].price.id)
           .single();
 
-        const PLAN_TIER: Record<string, string> = { premium: 'pro', pro: 'enterprise' };
-        const tier = PLAN_TIER[plan?.name?.toLowerCase() ?? ''] ?? 'pro';
+        const PLAN_TIER: Record<string, string> = { premium: 'premium', pro: 'pro' };
+        const tier = PLAN_TIER[plan?.name?.toLowerCase() ?? ''] ?? 'premium';
 
         await supabase.from('subscriptions').update({
           status: sub.status === 'past_due' ? 'past_due' : 'active',

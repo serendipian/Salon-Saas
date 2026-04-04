@@ -10,11 +10,11 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
 export const PLAN_LIMITS: Record<SubscriptionTier, { staff: number | null; clients: number | null; products: number | null }> = {
-  trial:     { staff: 10,   clients: null, products: null },
-  free:      { staff: 2,    clients: 50,   products: 20   },
-  pro:       { staff: 10,   clients: null, products: null },
-  enterprise:{ staff: null, clients: null, products: null },
-  past_due:  { staff: 10,   clients: null, products: null },
+  trial:   { staff: 10,   clients: null, products: null },
+  free:    { staff: 2,    clients: 50,   products: 20   },
+  premium: { staff: 10,   clients: null, products: null },
+  pro:     { staff: null, clients: null, products: null },
+  past_due:{ staff: 10,   clients: null, products: null },
 };
 
 export function useBilling() {
