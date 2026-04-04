@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { X, UserCircle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface DrawerNavItem {
@@ -207,6 +207,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                 onClick={() => { onProfilePress(); onClose(); }}
                 className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all min-h-[44px]"
               >
+                <UserCircle size={20} strokeWidth={1.5} />
                 Mon profil
               </button>
             </>

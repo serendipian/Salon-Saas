@@ -1,6 +1,8 @@
 import React from 'react';
 import { Building2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
 import { Section } from '../../components/FormElements';
 import type { Role } from '../../lib/auth.types';
 
@@ -21,6 +23,22 @@ const ROLE_COLORS: Record<Role, string> = {
 export const ProfileSalonRole: React.FC = () => {
   const { activeSalon, role, memberships } = useAuth();
 
+  const { data: memberSince } = useQuery({
+    queryKey: ['membership-date', activeSalon?.id],
+    queryFn: async () => {
+      const membership = memberships.find(m => m.salon_id === activeSalon?.id);
+      if (!membership) return null;
+      const { data, error } = await supabase
+        .from('salon_memberships')
+        .select('created_at')
+        .eq('id', membership.id)
+        .single();
+      if (error) return null;
+      return data.created_at;
+    },
+    enabled: !!activeSalon?.id,
+  });
+
   return (
     <Section title="Salon & Rôle">
       {activeSalon && role && (
@@ -33,6 +51,11 @@ export const ProfileSalonRole: React.FC = () => {
             <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[role]}`}>
               {ROLE_LABELS[role]}
             </span>
+            {memberSince && (
+              <p className="text-xs text-slate-500 mt-2">
+                Membre depuis {new Date(memberSince).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+              </p>
+            )}
           </div>
         </div>
       )}

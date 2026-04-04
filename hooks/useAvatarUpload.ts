@@ -47,7 +47,6 @@ export function useAvatarUpload() {
 
       addToast({ type: 'success', message: 'Photo mise à jour' });
     } catch (err) {
-      console.error('Avatar upload failed:', err);
       addToast({ type: 'error', message: 'Impossible de mettre à jour la photo' });
     } finally {
       setIsUploading(false);

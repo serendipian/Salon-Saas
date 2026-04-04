@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useAvatarUpload } from '../../hooks/useAvatarUpload';
@@ -16,6 +16,13 @@ export const ProfileIdentity: React.FC = () => {
   const [lastName, setLastName] = useState(profile?.last_name ?? '');
   const [phone, setPhone] = useState(profile?.phone ?? '');
   const [bio, setBio] = useState(profile?.bio ?? '');
+
+  useEffect(() => {
+    setFirstName(profile?.first_name ?? '');
+    setLastName(profile?.last_name ?? '');
+    setPhone(profile?.phone ?? '');
+    setBio(profile?.bio ?? '');
+  }, [profile?.first_name, profile?.last_name, profile?.phone, profile?.bio]);
 
   const initials = `${(profile?.first_name || '?')[0]}${(profile?.last_name || '?')[0]}`.toUpperCase();
 

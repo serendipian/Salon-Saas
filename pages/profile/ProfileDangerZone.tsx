@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AlertTriangle, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -15,9 +16,22 @@ export const ProfileDangerZone: React.FC = () => {
   const salonId = activeSalon?.id ?? '';
   const currentMembership = memberships.find(m => m.salon_id === salonId);
 
-  // Check if the user is the sole owner
-  const isSoleOwner = currentMembership?.role === 'owner' &&
-    !memberships.some(m => m.salon_id === salonId && m.role === 'owner' && m.profile_id !== user?.id);
+  // Check if the user is the sole owner by querying all owners in the salon
+  const isOwner = currentMembership?.role === 'owner';
+  const { data: isSoleOwner = isOwner } = useQuery({
+    queryKey: ['sole-owner-check', salonId],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('salon_memberships')
+        .select('*', { count: 'exact', head: true })
+        .eq('salon_id', salonId)
+        .eq('role', 'owner')
+        .is('deleted_at', null);
+      if (error) return true; // Err on the safe side
+      return (count ?? 0) <= 1;
+    },
+    enabled: !!salonId && isOwner,
+  });
 
   if (isSoleOwner || !currentMembership) return null;
 
