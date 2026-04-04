@@ -6,6 +6,9 @@ import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import type { Subscription, SubscriptionTier } from '../../../lib/auth.types';
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
 export const PLAN_LIMITS: Record<SubscriptionTier, { staff: number | null; clients: number | null; products: number | null }> = {
   trial:     { staff: 10,   clients: null, products: null },
   free:      { staff: 2,    clients: 50,   products: 20   },
@@ -47,16 +50,18 @@ export function useBilling() {
     limits.products === null || currentCount < limits.products;
 
   const invokeWithErrorHandling = async (fnName: string, body: object): Promise<{ url: string } | null> => {
-    const { data, error } = await supabase.functions.invoke(fnName, {
-      body,
-      headers: session?.access_token
-        ? { Authorization: `Bearer ${session.access_token}` }
-        : undefined,
+    if (!session?.access_token) throw new Error('Session expirée. Veuillez vous reconnecter.');
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify(body),
     });
-    if (error) {
-      const errBody = await (error as { context?: Response }).context?.json?.().catch(() => null);
-      throw new Error(errBody?.error || error.message);
-    }
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.error || `Erreur ${res.status}`);
     if (data?.error) throw new Error(data.error);
     return data;
   };
