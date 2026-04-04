@@ -2,7 +2,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export const UpgradeSuccess: React.FC = () => {
+interface UpgradeSuccessProps {
+  planName?: string;
+}
+
+export const UpgradeSuccess: React.FC<UpgradeSuccessProps> = ({ planName = 'Premium' }) => {
   const navigate = useNavigate();
 
   const handleContinue = () => {
@@ -14,13 +18,13 @@ export const UpgradeSuccess: React.FC = () => {
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 max-w-md mx-auto text-center animate-in fade-in zoom-in-95 duration-300">
       <div className="text-6xl mb-3">🎉</div>
       <div className="text-[10px] font-bold text-brand-500 uppercase tracking-[.2em] mb-3">
-        Bienvenue sur Pro
+        Bienvenue sur {planName}
       </div>
       <h2 className="text-2xl font-extrabold text-slate-900 mb-2 leading-snug">
-        Votre salon est maintenant<br />sur le plan Pro !
+        Votre salon est maintenant<br />sur le plan {planName} !
       </h2>
       <p className="text-sm text-slate-500 mb-7 leading-relaxed">
-        Toutes vos fonctionnalités Pro sont immédiatement disponibles.
+        Toutes vos fonctionnalités {planName} sont immédiatement disponibles.
       </p>
 
       <div className="bg-slate-50 rounded-xl p-4 mb-7 text-left space-y-3">

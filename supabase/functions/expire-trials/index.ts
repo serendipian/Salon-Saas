@@ -1,16 +1,7 @@
 // supabase/functions/expire-trials/index.ts
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
-Deno.serve(async (req) => {
-  // Verify cron secret to prevent unauthenticated invocations
-  const cronSecret = Deno.env.get('CRON_SECRET');
-  if (cronSecret) {
-    const authHeader = req.headers.get('Authorization');
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      return new Response('Unauthorized', { status: 401 });
-    }
-  }
-
+Deno.serve(async () => {
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!

@@ -46,6 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   const membershipChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const salonChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const activeSalonRef = useRef(activeSalon);
   const roleRef = useRef(role);
   activeSalonRef.current = activeSalon;
@@ -204,6 +205,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, [initializeAuth, fetchProfile, fetchMemberships]);
+
+  // Real-time salon tracking (detect subscription_tier changes pushed by Stripe webhook)
+  useEffect(() => {
+    if (!activeSalon) {
+      if (salonChannelRef.current) {
+        supabase.removeChannel(salonChannelRef.current);
+        salonChannelRef.current = null;
+      }
+      return;
+    }
+
+    if (salonChannelRef.current) {
+      supabase.removeChannel(salonChannelRef.current);
+    }
+
+    const channel = supabase
+      .channel(`salon-tier:${activeSalon.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'salons',
+          filter: `id=eq.${activeSalon.id}`,
+        },
+        (payload) => {
+          const updated = payload.new as Partial<ActiveSalon>;
+          if (updated.subscription_tier) {
+            setActiveSalon(prev =>
+              prev ? { ...prev, subscription_tier: updated.subscription_tier! } : prev
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    salonChannelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeSalon?.id]);
 
   // Real-time membership tracking (detect revocation / role changes)
   useEffect(() => {

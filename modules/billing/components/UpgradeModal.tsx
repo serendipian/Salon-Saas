@@ -5,15 +5,15 @@ import { X } from 'lucide-react';
 const RESOURCE_COPY = {
   staff: {
     headline: 'Débloquez une équipe illimitée',
-    description: 'Passez en Pro pour inviter jusqu\'à 10 membres et gérer votre salon en équipe.',
+    description: 'Passez en Premium pour inviter jusqu\'à 10 membres et gérer votre salon en équipe.',
   },
   clients: {
     headline: 'Débloquez des clients illimités',
-    description: 'Passez en Pro pour gérer un nombre illimité de clients.',
+    description: 'Passez en Premium pour gérer un nombre illimité de clients.',
   },
   products: {
     headline: 'Débloquez des produits illimités',
-    description: 'Passez en Pro pour ajouter autant de produits que vous le souhaitez.',
+    description: 'Passez en Premium pour ajouter autant de produits que vous le souhaitez.',
   },
 };
 
@@ -58,7 +58,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ resource, priceMonth
 
         <div className="bg-brand-50 border border-brand-100 rounded-xl p-4 mb-5">
           <div className="text-[10px] font-bold text-brand-500 uppercase tracking-widest mb-2.5">
-            Ce que vous débloquez avec Pro
+            Ce que vous débloquez avec Premium
           </div>
           <ul className="space-y-2 text-sm text-slate-800">
             <li className="flex items-center gap-2">
@@ -85,7 +85,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ resource, priceMonth
           disabled={isLoading}
           className="w-full py-3.5 bg-brand-500 text-white font-bold rounded-xl hover:bg-brand-600 disabled:opacity-50 transition-colors text-sm"
         >
-          {isLoading ? 'Redirection...' : 'Passer en Pro →'}
+          {isLoading ? 'Redirection...' : 'Passer en Premium →'}
         </button>
 
         <div className="flex justify-center gap-5 mt-4 text-xs text-slate-400">

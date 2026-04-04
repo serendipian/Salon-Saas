@@ -21,6 +21,7 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
   const { activeSalon } = useAuth();
   const [searchParams] = useSearchParams();
   const isSuccess = searchParams.get('success') === 'true';
+  const successPlanName = searchParams.get('plan') ?? undefined;
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const {
@@ -74,7 +75,7 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
   if (isSuccess) {
     return (
       <div className="w-full py-8 px-4 animate-in fade-in duration-500">
-        <UpgradeSuccess />
+        <UpgradeSuccess planName={successPlanName} />
       </div>
     );
   }

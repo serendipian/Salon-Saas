@@ -12,9 +12,9 @@ export const TrialBanner: React.FC<TrialBannerProps> = ({ daysLeft, onUpgradeCli
     <div className="flex items-center gap-3">
       <Sparkles size={16} className="shrink-0" />
       <div>
-        <span className="font-semibold text-sm">Essai Pro — {daysLeft} jour{daysLeft > 1 ? 's' : ''} restant{daysLeft > 1 ? 's' : ''}</span>
+        <span className="font-semibold text-sm">Essai Premium — {daysLeft} jour{daysLeft > 1 ? 's' : ''} restant{daysLeft > 1 ? 's' : ''}</span>
         <span className="text-white/80 text-sm ml-2 hidden sm:inline">
-          Toutes les fonctionnalités Pro gratuitement.
+          Toutes les fonctionnalités Premium gratuitement.
         </span>
       </div>
     </div>
