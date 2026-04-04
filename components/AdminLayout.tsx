@@ -1,7 +1,7 @@
 // components/AdminLayout.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Clock, CreditCard, UserPlus, TrendingDown, LogOut, Search, Settings, Bell } from 'lucide-react';
+import { LayoutDashboard, Users, Clock, CreditCard, UserPlus, TrendingDown, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const NAV_ITEMS = [
@@ -16,7 +16,6 @@ const NAV_ITEMS = [
 export const AdminLayout: React.FC = () => {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
-  const [search, setSearch] = useState('');
 
   const handleSignOut = async () => {
     await signOut();
@@ -103,29 +102,9 @@ export const AdminLayout: React.FC = () => {
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Topbar */}
         <header
-          className="h-[52px] shrink-0 flex items-center gap-3 px-6"
+          className="h-[52px] shrink-0 flex items-center px-6"
           style={{ backgroundColor: '#fff', borderBottom: '1px solid #e3e8ef' }}
-        >
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#c1cfe0' }} />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Rechercher..."
-              className="h-9 pl-9 pr-3 text-[13px] bg-white border border-[#e3e8ef] rounded-[6px] outline-none w-64 placeholder:text-[#c1cfe0] transition-all"
-              style={{ color: '#1a1f36' }}
-              onFocus={e => { e.currentTarget.style.borderColor = '#635bff'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,91,255,0.15)'; }}
-              onBlur={e => { e.currentTarget.style.borderColor = '#e3e8ef'; e.currentTarget.style.boxShadow = 'none'; }}
-            />
-          </div>
-          <div className="flex-1" />
-          <button className="w-8 h-8 flex items-center justify-center rounded-[6px] hover:bg-[#f7fafc] transition-colors" style={{ color: '#697386' }}>
-            <Bell className="w-4 h-4" />
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded-[6px] hover:bg-[#f7fafc] transition-colors" style={{ color: '#697386' }}>
-            <Settings className="w-4 h-4" />
-          </button>
-        </header>
+        />
 
         {/* Main content */}
         <main className="flex-1 overflow-y-auto min-w-0" style={{ backgroundColor: '#fff' }}>
