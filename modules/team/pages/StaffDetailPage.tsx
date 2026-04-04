@@ -133,7 +133,7 @@ export const StaffDetailPage: React.FC = () => {
         <InvitationModal
           staffEmail={staff.email}
           staffRole={staff.role}
-          onSubmit={async (email) => { await createInvitation(email); setShowInviteModal(false); }}
+          onCreateInvitation={createInvitation}
           onClose={() => setShowInviteModal(false)}
         />
       )}
