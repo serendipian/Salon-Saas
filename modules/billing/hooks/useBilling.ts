@@ -46,15 +46,23 @@ export function useBilling() {
   const canAddProduct = (currentCount: number) =>
     limits.products === null || currentCount < limits.products;
 
+  const invokeWithErrorHandling = async (fnName: string, body: object): Promise<{ url: string } | null> => {
+    const { data, error } = await supabase.functions.invoke(fnName, { body });
+    if (error) {
+      const body = await (error as { context?: Response }).context?.json?.().catch(() => null);
+      throw new Error(body?.error || error.message);
+    }
+    if (data?.error) throw new Error(data.error);
+    return data;
+  };
+
   const createCheckoutSession = async (planId: string) => {
     setIsLoadingCheckout(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { salon_id: activeSalon!.id, plan_id: planId },
+      const data = await invokeWithErrorHandling('create-checkout-session', {
+        salon_id: activeSalon!.id, plan_id: planId,
       });
-      if (error) throw new Error(error.message);
-      if (data?.error) throw new Error(data.error);
-      window.location.href = data.url;
+      if (data?.url) window.location.href = data.url;
     } catch (err) {
       addToast({ type: 'error', message: (err as Error).message || 'Erreur lors de la création du paiement.' });
     } finally {
@@ -65,14 +73,10 @@ export function useBilling() {
   const createPortalSession = async () => {
     setIsLoadingPortal(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-portal-session', {
-        body: { salon_id: activeSalon!.id },
-      });
-      if (error) throw new Error(error.message);
-      if (data?.error) throw new Error(data.error);
-      window.location.href = data.url;
+      const data = await invokeWithErrorHandling('create-portal-session', { salon_id: activeSalon!.id });
+      if (data?.url) window.location.href = data.url;
     } catch (err) {
-      addToast({ type: 'error', message: (err as Error).message || 'Erreur lors de l\'ouverture du portail.' });
+      addToast({ type: 'error', message: (err as Error).message || "Erreur lors de l'ouverture du portail." });
     } finally {
       setIsLoadingPortal(false);
     }

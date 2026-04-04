@@ -33,19 +33,19 @@ const UsageBar: React.FC<UsageBarProps> = ({ label, current, max }) => {
 };
 
 const TIER_LABELS: Record<SubscriptionTier, string> = {
-  trial: 'Pro (Essai)',
+  trial: 'Premium (Essai)',
   free: 'Free',
-  pro: 'Pro',
-  enterprise: 'Enterprise',
-  past_due: 'Pro',
+  pro: 'Premium',
+  enterprise: 'Pro',
+  past_due: 'Premium',
 };
 
 const TIER_BADGES: Record<SubscriptionTier, { label: string; className: string }> = {
-  trial:      { label: 'ESSAI',     className: 'bg-blue-100 text-blue-700' },
-  free:       { label: 'FREE',      className: 'bg-slate-100 text-slate-600' },
-  pro:        { label: 'PRO',       className: 'bg-brand-100 text-brand-700' },
-  enterprise: { label: 'ENTERPRISE',className: 'bg-purple-100 text-purple-700' },
-  past_due:   { label: 'IMPAYÉ',    className: 'bg-rose-100 text-rose-700' },
+  trial:      { label: 'ESSAI',    className: 'bg-blue-100 text-blue-700' },
+  free:       { label: 'FREE',     className: 'bg-slate-100 text-slate-600' },
+  pro:        { label: 'PREMIUM',  className: 'bg-brand-100 text-brand-700' },
+  enterprise: { label: 'PRO',      className: 'bg-purple-100 text-purple-700' },
+  past_due:   { label: 'IMPAYÉ',   className: 'bg-rose-100 text-rose-700' },
 };
 
 interface CurrentPlanCardProps {
@@ -92,16 +92,18 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
-        <button
-          onClick={onManageBilling}
-          disabled={isLoadingPortal}
-          className="bg-slate-900 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors"
-        >
-          {isLoadingPortal ? '...' : 'Gérer la facturation ↗'}
-        </button>
-        <p className="text-xs text-slate-400 text-right">Factures, carte bancaire,<br className="hidden sm:block" /> annulation via Stripe</p>
-      </div>
+      {tier !== 'trial' && tier !== 'free' && (
+        <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
+          <button
+            onClick={onManageBilling}
+            disabled={isLoadingPortal}
+            className="bg-slate-900 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors"
+          >
+            {isLoadingPortal ? '...' : 'Gérer la facturation ↗'}
+          </button>
+          <p className="text-xs text-slate-400 text-right">Factures, carte bancaire,<br className="hidden sm:block" /> annulation via Stripe</p>
+        </div>
+      )}
     </div>
   );
 };

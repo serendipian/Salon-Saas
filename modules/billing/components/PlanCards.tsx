@@ -18,17 +18,16 @@ interface PlanCardsProps {
   currentTier: SubscriptionTier;
   onSelectPlan: (planId: string) => void;
   onDowngrade: () => void;
-  onEnterprise: () => void;
   isLoading: boolean;
 }
 
 const TIER_FROM_NAME: Record<string, SubscriptionTier> = {
   Free: 'free',
-  Pro: 'pro',
-  Enterprise: 'enterprise',
+  Premium: 'pro',
+  Pro: 'enterprise',
 };
 
-export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSelectPlan, onDowngrade, onEnterprise, isLoading }) => {
+export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSelectPlan, onDowngrade, isLoading }) => {
   if (currentTier === 'past_due') {
     return (
       <div className="bg-rose-50 border border-rose-200 rounded-2xl p-5 text-center">
@@ -46,7 +45,7 @@ export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSele
         const planTier = TIER_FROM_NAME[plan.name] ?? 'free';
         const isCurrent = planTier === currentTier || (currentTier === 'trial' && planTier === 'pro');
         const isUpgrade = plan.price_monthly > 0 && !isCurrent;
-        const isDowngrade = planTier === 'free' && currentTier !== 'free';
+        const isDowngrade = planTier === 'free' && currentTier !== 'free' && currentTier !== 'trial';
 
         return (
           <div
@@ -96,14 +95,6 @@ export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSele
                 className="w-full py-2.5 rounded-xl text-sm font-semibold border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
               >
                 Rétrograder
-              </button>
-            ) : plan.name === 'Enterprise' ? (
-              <button
-                onClick={onEnterprise}
-                disabled={isLoading}
-                className="w-full py-2.5 rounded-xl text-sm font-bold bg-brand-500 text-white hover:bg-brand-600 disabled:opacity-50 transition-colors"
-              >
-                Passer en Enterprise →
               </button>
             ) : (
               <button

@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../context/ToastContext';
 import { useBilling } from './hooks/useBilling';
 import { TrialBanner } from './components/TrialBanner';
 import { CurrentPlanCard } from './components/CurrentPlanCard';
@@ -20,7 +19,6 @@ interface BillingModuleProps {
 
 export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
   const { activeSalon } = useAuth();
-  const { addToast } = useToast();
   const [searchParams] = useSearchParams();
   const isSuccess = searchParams.get('success') === 'true';
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -66,29 +64,11 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
     enabled: !!activeSalon,
   });
 
-  // Find Pro plan for upgrade modal
-  const proPlan = plans.find(p => p.name === 'Pro');
+  // Find Premium plan for upgrade modal
+  const premiumPlan = plans.find(p => p.name === 'Premium');
 
   const handleUpgradeFromModal = async () => {
-    if (proPlan) await createCheckoutSession(proPlan.id);
-  };
-
-  const handleDowngrade = () => {
-    if (tier === 'trial') {
-      addToast({
-        type: 'info',
-        message: 'Votre essai expire automatiquement. Vous passerez en Free sans action de votre part.',
-      });
-    } else {
-      createPortalSession();
-    }
-  };
-
-  const handleEnterprise = () => {
-    addToast({
-      type: 'info',
-      message: 'Pour une offre Enterprise sur mesure, contactez-nous à contact@lumiere.app',
-    });
+    if (premiumPlan) await createCheckoutSession(premiumPlan.id);
   };
 
   if (isSuccess) {
@@ -139,20 +119,21 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
           currentTier={tier}
           onSelectPlan={createCheckoutSession}
           onDowngrade={handleDowngrade}
-          onEnterprise={handleEnterprise}
           isLoading={isLoadingCheckout}
         />
 
-        <StripePortalSection
-          onOpenPortal={createPortalSession}
-          isLoading={isLoadingPortal}
-        />
+        {tier !== 'trial' && tier !== 'free' && (
+          <StripePortalSection
+            onOpenPortal={createPortalSession}
+            isLoading={isLoadingPortal}
+          />
+        )}
       </div>
 
-      {showUpgradeModal && proPlan && (
+      {showUpgradeModal && premiumPlan && (
         <UpgradeModal
           resource="staff"
-          priceMonthly={proPlan?.price_monthly ?? 0}
+          priceMonthly={premiumPlan?.price_monthly ?? 0}
           onUpgrade={handleUpgradeFromModal}
           onClose={() => setShowUpgradeModal(false)}
           isLoading={isLoadingCheckout}
