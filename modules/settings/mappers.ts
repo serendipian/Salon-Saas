@@ -7,10 +7,21 @@ interface SalonRow {
   name: string;
   slug: string | null;
   address: string | null;
+  street: string | null;
+  city: string | null;
+  postal_code: string | null;
+  country: string | null;
+  neighborhood: string | null;
   phone: string | null;
+  whatsapp: string | null;
   email: string | null;
   website: string | null;
   logo_url: string | null;
+  instagram: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  google_maps_url: string | null;
+  business_registration: string | null;
   currency: string;
   vat_rate: number;
   timezone: string;
@@ -27,10 +38,21 @@ export function toSalonSettings(row: SalonRow): SalonSettings {
   return {
     name: row.name,
     address: row.address ?? '',
+    street: row.street ?? '',
+    city: row.city ?? '',
+    postalCode: row.postal_code ?? '',
+    country: row.country ?? '',
+    neighborhood: row.neighborhood ?? '',
     phone: row.phone ?? '',
+    whatsapp: row.whatsapp ?? '',
     email: row.email ?? '',
     website: row.website ?? '',
     logoUrl: row.logo_url,
+    instagram: row.instagram ?? '',
+    facebook: row.facebook ?? '',
+    tiktok: row.tiktok ?? '',
+    googleMapsUrl: row.google_maps_url ?? '',
+    businessRegistration: row.business_registration ?? '',
     currency: row.currency,
     vatRate: row.vat_rate,
     schedule: row.schedule ?? undefined,
@@ -41,10 +63,21 @@ export function toSalonUpdate(settings: SalonSettings) {
   return {
     name: settings.name,
     address: settings.address || null,
+    street: settings.street || null,
+    city: settings.city || null,
+    postal_code: settings.postalCode || null,
+    country: settings.country || null,
+    neighborhood: settings.neighborhood || null,
     phone: settings.phone || null,
+    whatsapp: settings.whatsapp || null,
     email: settings.email || null,
     website: settings.website || null,
     logo_url: settings.logoUrl,
+    instagram: settings.instagram || null,
+    facebook: settings.facebook || null,
+    tiktok: settings.tiktok || null,
+    google_maps_url: settings.googleMapsUrl || null,
+    business_registration: settings.businessRegistration || null,
     currency: settings.currency,
     vat_rate: settings.vatRate,
     schedule: settings.schedule ?? null,

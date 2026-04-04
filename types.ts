@@ -11,11 +11,26 @@ export enum AppointmentStatus {
 // General Settings Domain
 export interface SalonSettings {
   name: string;
+  // Address (structured)
   address: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  neighborhood: string;
+  // Contact
   phone: string;
+  whatsapp: string;
   email: string;
   website: string;
   logoUrl: string | null;
+  // Social media
+  instagram: string;
+  facebook: string;
+  tiktok: string;
+  googleMapsUrl: string;
+  // Business
+  businessRegistration: string;
   currency: string;
   vatRate: number;
   schedule?: WorkSchedule;
