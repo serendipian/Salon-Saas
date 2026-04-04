@@ -47,10 +47,16 @@ export function useBilling() {
     limits.products === null || currentCount < limits.products;
 
   const invokeWithErrorHandling = async (fnName: string, body: object): Promise<{ url: string } | null> => {
-    const { data, error } = await supabase.functions.invoke(fnName, { body });
+    const { data: { session } } = await supabase.auth.getSession();
+    const { data, error } = await supabase.functions.invoke(fnName, {
+      body,
+      headers: session?.access_token
+        ? { Authorization: `Bearer ${session.access_token}` }
+        : undefined,
+    });
     if (error) {
-      const body = await (error as { context?: Response }).context?.json?.().catch(() => null);
-      throw new Error(body?.error || error.message);
+      const errBody = await (error as { context?: Response }).context?.json?.().catch(() => null);
+      throw new Error(errBody?.error || error.message);
     }
     if (data?.error) throw new Error(data.error);
     return data;
