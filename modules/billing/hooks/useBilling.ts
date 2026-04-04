@@ -50,12 +50,15 @@ export function useBilling() {
     limits.products === null || currentCount < limits.products;
 
   const invokeWithErrorHandling = async (fnName: string, body: object): Promise<{ url: string } | null> => {
-    if (!session?.access_token) throw new Error('Session expirée. Veuillez vous reconnecter.');
+    // Always get a fresh token (triggers refresh if expired)
+    const { data: sd } = await supabase.auth.getSession();
+    const token = sd.session?.access_token ?? session?.access_token;
+    if (!token) throw new Error('Session expirée. Veuillez vous reconnecter.');
     const res = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
+        'Authorization': `Bearer ${token}`,
         'apikey': SUPABASE_ANON_KEY,
       },
       body: JSON.stringify(body),
