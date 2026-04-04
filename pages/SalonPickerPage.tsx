@@ -11,7 +11,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export const SalonPickerPage: React.FC = () => {
-  const { isAuthenticated, isLoading, memberships, activeSalon, switchSalon, signOut } = useAuth();
+  const { isAuthenticated, isLoading, memberships, activeSalon, switchSalon, signOut, profile } = useAuth();
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -24,6 +24,10 @@ export const SalonPickerPage: React.FC = () => {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (profile?.is_admin) {
+    return <Navigate to="/admin" replace />;
   }
 
   if (memberships.length === 0) {

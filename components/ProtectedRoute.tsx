@@ -17,7 +17,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, action
   const { can } = usePermissions(role);
   const location = useLocation();
 
-  if (isLoading) {
+  // Also hold spinner if authenticated but profile not yet loaded (SIGNED_IN fires before profile fetch completes)
+  if (isLoading || (isAuthenticated && profile === null)) {
     return (
       <div className="flex items-center justify-center h-screen bg-[#f8fafc]">
         <div className="flex flex-col items-center gap-4">

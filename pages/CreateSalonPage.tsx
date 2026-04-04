@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Store, Loader2, Globe, Banknote } from 'lucide-react';
 
 export const CreateSalonPage: React.FC = () => {
-  const { isAuthenticated, isLoading, memberships, activeSalon, createSalon, signOut } = useAuth();
+  const { isAuthenticated, isLoading, memberships, activeSalon, createSalon, signOut, profile } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState('');
@@ -23,6 +23,10 @@ export const CreateSalonPage: React.FC = () => {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (profile?.is_admin) {
+    return <Navigate to="/admin" replace />;
   }
 
   if (activeSalon) {

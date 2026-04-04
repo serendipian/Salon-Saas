@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, Loader2, Sparkles } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
-  const { signIn, signInWithMagicLink, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { signIn, signInWithMagicLink, isAuthenticated, isLoading: authLoading, profile } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,7 +14,8 @@ export const LoginPage: React.FC = () => {
   const [mode, setMode] = useState<'password' | 'magic'>('password');
 
   if (!authLoading && isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    if (profile === null) return null; // profile still loading — ProtectedRoute will handle final redirect
+    return <Navigate to={profile.is_admin ? '/admin' : '/dashboard'} replace />;
   }
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
