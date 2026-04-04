@@ -1602,6 +1602,109 @@ export type Database = {
           },
         ]
       }
+      staff_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          notes: string | null
+          paid_at: string | null
+          period_end: string
+          period_start: string
+          rate_snapshot: number | null
+          reference_amount: number | null
+          salon_id: string
+          staff_id: string
+          status: string
+          type: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_end: string
+          period_start: string
+          rate_snapshot?: number | null
+          reference_amount?: number | null
+          salon_id: string
+          staff_id: string
+          status?: string
+          type: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_end?: string
+          period_start?: string
+          rate_snapshot?: number | null
+          reference_amount?: number | null
+          salon_id?: string
+          staff_id?: string
+          status?: string
+          type?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_payouts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_payouts_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_payouts_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_payouts_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_payouts_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_payouts_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           billing_cycle: string
@@ -2318,6 +2421,27 @@ export type Database = {
       get_dashboard_stats: {
         Args: { p_date_from: string; p_date_to: string; p_salon_id: string }
         Returns: Json
+      }
+      get_staff_activity: {
+        Args: { p_limit?: number; p_offset?: number; p_staff_id: string }
+        Returns: {
+          client_name: string
+          description: string
+          event_date: string
+          event_type: string
+          metadata: Json
+        }[]
+      }
+      get_staff_clients: {
+        Args: { p_limit?: number; p_staff_id: string }
+        Returns: {
+          client_first_name: string
+          client_id: string
+          client_last_name: string
+          last_visit: string
+          total_revenue: number
+          visit_count: number
+        }[]
       }
       get_staff_id: { Args: never; Returns: string }
       get_staff_performance: {

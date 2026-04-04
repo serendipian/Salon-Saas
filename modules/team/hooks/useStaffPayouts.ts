@@ -41,13 +41,13 @@ export const useStaffPayouts = (staffId: string) => {
   const { data: payouts = [], isLoading } = useQuery({
     queryKey: ['staff_payouts', salonId, staffId],
     queryFn: async () => {
-      const { data, error } = await (supabase
-        .from('staff_payouts' as any)
+      const { data, error } = await supabase
+        .from('staff_payouts')
         .select('*')
         .eq('staff_id', staffId)
         .eq('salon_id', salonId!)
         .is('deleted_at', null)
-        .order('period_start', { ascending: false }) as any);
+        .order('period_start', { ascending: false });
       if (error) throw error;
       return (data || []).map(toStaffPayout);
     },
@@ -56,7 +56,7 @@ export const useStaffPayouts = (staffId: string) => {
 
   const addPayoutMutation = useMutation({
     mutationFn: async (input: CreatePayoutInput) => {
-      const { error } = await (supabase.from('staff_payouts' as any).insert({
+      const { error } = await supabase.from('staff_payouts').insert({
         salon_id: salonId!,
         staff_id: staffId,
         type: input.type,
@@ -67,7 +67,7 @@ export const useStaffPayouts = (staffId: string) => {
         period_end: input.periodEnd,
         notes: input.notes,
         created_by: profile?.id,
-      }) as any);
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -78,10 +78,10 @@ export const useStaffPayouts = (staffId: string) => {
 
   const markAsPaidMutation = useMutation({
     mutationFn: async (payoutId: string) => {
-      const { error } = await (supabase
-        .from('staff_payouts' as any)
+      const { error } = await supabase
+        .from('staff_payouts')
         .update({ status: 'PAID', paid_at: new Date().toISOString(), updated_by: profile?.id })
-        .eq('id', payoutId) as any);
+        .eq('id', payoutId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -92,10 +92,10 @@ export const useStaffPayouts = (staffId: string) => {
 
   const cancelPayoutMutation = useMutation({
     mutationFn: async (payoutId: string) => {
-      const { error } = await (supabase
-        .from('staff_payouts' as any)
+      const { error } = await supabase
+        .from('staff_payouts')
         .update({ status: 'CANCELLED', updated_by: profile?.id })
-        .eq('id', payoutId) as any);
+        .eq('id', payoutId);
       if (error) throw error;
     },
     onSuccess: () => {
