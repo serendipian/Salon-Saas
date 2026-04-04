@@ -6,10 +6,10 @@ import { EmptyState } from '../../../components/EmptyState';
 interface TeamTableProps {
   team: StaffMember[];
   appointments: Appointment[];
-  onEdit: (id: string) => void;
+  onSelect: (id: string) => void;
 }
 
-export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, onEdit }) => {
+export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, onSelect }) => {
   const getMemberStats = (memberId: string) => {
     const memberAppointments = appointments.filter(a => a.staffId === memberId);
     const today = new Date().toISOString().slice(0, 10);
@@ -53,7 +53,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, onEdit
             return (
               <tr
                 key={member.id}
-                onClick={() => onEdit(member.id)}
+                onClick={() => onSelect(member.id)}
                 className="hover:bg-slate-50 transition-colors group cursor-pointer"
               >
                 <td className="px-6 py-4">

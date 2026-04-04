@@ -6,10 +6,10 @@ import { EmptyState } from '../../../components/EmptyState';
 interface TeamCardProps {
   team: StaffMember[];
   appointments: Appointment[];
-  onEdit: (id: string) => void;
+  onSelect: (id: string) => void;
 }
 
-export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, onEdit }) => {
+export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, onSelect }) => {
   const getMemberStats = (memberId: string) => {
     const memberAppointments = appointments.filter(a => a.staffId === memberId);
     const today = new Date().toISOString().slice(0, 10);
@@ -42,7 +42,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, onEdit }
           <button
             key={member.id}
             type="button"
-            onClick={() => onEdit(member.id)}
+            onClick={() => onSelect(member.id)}
             aria-label={`Voir le profil de ${member.firstName} ${member.lastName}`}
             className="bg-white rounded-xl border border-slate-200 text-left transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 overflow-hidden group"
           >

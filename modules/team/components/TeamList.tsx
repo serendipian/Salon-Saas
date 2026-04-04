@@ -13,10 +13,10 @@ interface TeamListProps {
   searchTerm: string;
   onSearchChange: (val: string) => void;
   onAdd: () => void;
-  onEdit: (id: string) => void;
+  onSelect: (id: string) => void;
 }
 
-export const TeamList: React.FC<TeamListProps> = ({ team, appointments, searchTerm, onSearchChange, onAdd, onEdit }) => {
+export const TeamList: React.FC<TeamListProps> = ({ team, appointments, searchTerm, onSearchChange, onAdd, onSelect }) => {
   const { viewMode, setViewMode } = useViewMode('team');
 
   return (
@@ -50,9 +50,9 @@ export const TeamList: React.FC<TeamListProps> = ({ team, appointments, searchTe
 
         {/* Content */}
         {viewMode === 'table' ? (
-          <TeamTable team={team} appointments={appointments} onEdit={onEdit} />
+          <TeamTable team={team} appointments={appointments} onSelect={onSelect} />
         ) : (
-          <TeamCard team={team} appointments={appointments} onEdit={onEdit} />
+          <TeamCard team={team} appointments={appointments} onSelect={onSelect} />
         )}
       </div>
     </div>

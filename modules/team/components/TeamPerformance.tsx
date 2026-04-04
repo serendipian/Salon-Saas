@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TrendingUp, Award, Wallet, BarChart2, ChevronRight } from 'lucide-react';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { DateRangePicker } from '../../../components/DateRangePicker';
 import { formatPrice } from '../../../lib/format';
-import { StaffKpiModal } from './StaffKpiModal';
 import type { StaffMember } from '../../../types';
 import { useTeamPerformance, StaffPerformance } from '../hooks/useTeamPerformance';
 
@@ -144,7 +144,7 @@ function PerformanceRow({ perf, totalRevenue, onClick }: { perf: StaffPerformanc
 
 export const TeamPerformance: React.FC<TeamPerformanceProps> = ({ staff }) => {
   const { performances, dateRange, setDateRange, totalRevenue, isLoadingPii } = useTeamPerformance(staff);
-  const [selectedPerf, setSelectedPerf] = useState<StaffPerformance | null>(null);
+  const navigate = useNavigate();
 
   const activeStaff = performances.filter(p => p.staff.active).sort((a, b) => b.revenue - a.revenue);
 
@@ -212,7 +212,7 @@ export const TeamPerformance: React.FC<TeamPerformanceProps> = ({ staff }) => {
                   key={perf.staff.id}
                   perf={perf}
                   totalRevenue={totalRevenue}
-                  onClick={() => setSelectedPerf(perf)}
+                  onClick={() => navigate(`/team/${perf.staff.id}?tab=performance`)}
                 />
               ))
             )}
@@ -229,20 +229,12 @@ export const TeamPerformance: React.FC<TeamPerformanceProps> = ({ staff }) => {
             <PerformanceCard
               key={perf.staff.id}
               perf={perf}
-              onClick={() => setSelectedPerf(perf)}
+              onClick={() => navigate(`/team/${perf.staff.id}?tab=performance`)}
             />
           ))
         )}
       </div>
 
-      {/* KPI Modal */}
-      {selectedPerf && (
-        <StaffKpiModal
-          staff={selectedPerf.staff}
-          baseSalary={selectedPerf.baseSalary}
-          onClose={() => setSelectedPerf(null)}
-        />
-      )}
     </div>
   );
 };

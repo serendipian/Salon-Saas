@@ -49,7 +49,7 @@ export const TeamListPage: React.FC = () => {
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onAdd={() => navigate('/team/new')}
-          onEdit={(id) => navigate(`/team/${id}`)}
+          onSelect={(id) => navigate(`/team/${id}`)}
         />
       )}
 
