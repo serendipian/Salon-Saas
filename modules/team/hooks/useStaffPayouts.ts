@@ -33,7 +33,7 @@ function toStaffPayout(row: any): StaffPayout {
 }
 
 export const useStaffPayouts = (staffId: string) => {
-  const { activeSalon } = useAuth();
+  const { activeSalon, profile } = useAuth();
   const salonId = activeSalon?.id;
   const queryClient = useQueryClient();
   const { toastOnError } = useMutationToast();
@@ -66,6 +66,7 @@ export const useStaffPayouts = (staffId: string) => {
         period_start: input.periodStart,
         period_end: input.periodEnd,
         notes: input.notes,
+        created_by: profile?.id,
       }) as any);
       if (error) throw error;
     },
@@ -79,7 +80,7 @@ export const useStaffPayouts = (staffId: string) => {
     mutationFn: async (payoutId: string) => {
       const { error } = await (supabase
         .from('staff_payouts' as any)
-        .update({ status: 'PAID', paid_at: new Date().toISOString() })
+        .update({ status: 'PAID', paid_at: new Date().toISOString(), updated_by: profile?.id })
         .eq('id', payoutId) as any);
       if (error) throw error;
     },
@@ -93,7 +94,7 @@ export const useStaffPayouts = (staffId: string) => {
     mutationFn: async (payoutId: string) => {
       const { error } = await (supabase
         .from('staff_payouts' as any)
-        .update({ status: 'CANCELLED' })
+        .update({ status: 'CANCELLED', updated_by: profile?.id })
         .eq('id', payoutId) as any);
       if (error) throw error;
     },

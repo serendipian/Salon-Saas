@@ -137,7 +137,7 @@ export const StaffAgendaTab: React.FC<StaffAgendaTabProps> = ({ staff }) => {
                 <span className="text-sm text-slate-700 font-medium w-24">{DAY_LABELS[day]}</span>
                 {slot?.isOpen ? (
                   <span className="text-sm text-slate-600">
-                    {slot.open} — {slot.close}
+                    {slot.start} — {slot.end}
                   </span>
                 ) : (
                   <span className="text-sm text-slate-400 italic">Fermé</span>
