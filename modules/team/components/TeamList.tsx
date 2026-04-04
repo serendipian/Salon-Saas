@@ -14,9 +14,11 @@ interface TeamListProps {
   onSearchChange: (val: string) => void;
   onAdd: () => void;
   onSelect: (id: string) => void;
+  showArchived: boolean;
+  onToggleArchived: () => void;
 }
 
-export const TeamList: React.FC<TeamListProps> = ({ team, appointments, searchTerm, onSearchChange, onAdd, onSelect }) => {
+export const TeamList: React.FC<TeamListProps> = ({ team, appointments, searchTerm, onSearchChange, onAdd, onSelect, showArchived, onToggleArchived }) => {
   const { viewMode, setViewMode } = useViewMode('team');
 
   return (
@@ -45,6 +47,12 @@ export const TeamList: React.FC<TeamListProps> = ({ team, appointments, searchTe
               className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent text-sm transition-all shadow-sm placeholder:text-slate-400"
             />
           </div>
+          <button
+            onClick={onToggleArchived}
+            className={`text-sm px-3 py-1.5 rounded-lg whitespace-nowrap ${showArchived ? 'bg-amber-100 text-amber-700' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            {showArchived ? 'Masquer les archivés' : 'Voir les archivés'}
+          </button>
           <ViewToggle viewMode={viewMode} onChange={setViewMode} />
         </div>
 

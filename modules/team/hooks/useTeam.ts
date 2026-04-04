@@ -7,7 +7,7 @@ import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { StaffMember } from '../../../types';
 
-export const useTeam = () => {
+export const useTeam = (includeArchived = false) => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
@@ -16,14 +16,16 @@ export const useTeam = () => {
   useRealtimeSync('staff_members');
 
   const { data: staff = [], isLoading } = useQuery({
-    queryKey: ['staff_members', salonId],
+    queryKey: ['staff_members', salonId, { includeArchived }],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('staff_members')
         .select('*')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null)
-        .order('last_name');
+        .eq('salon_id', salonId);
+      if (!includeArchived) {
+        query = query.is('deleted_at', null);
+      }
+      const { data, error } = await query.order('last_name');
       if (error) throw error;
       return (data ?? []).map(row => toStaffMember(row as unknown as Parameters<typeof toStaffMember>[0]));
     },

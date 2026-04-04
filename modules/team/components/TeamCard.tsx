@@ -44,7 +44,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, onSelect
             type="button"
             onClick={() => onSelect(member.id)}
             aria-label={`Voir le profil de ${member.firstName} ${member.lastName}`}
-            className="bg-white rounded-xl border border-slate-200 text-left transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 overflow-hidden group"
+            className={`bg-white rounded-xl border border-slate-200 text-left transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 overflow-hidden group ${member.deletedAt ? 'opacity-50' : ''}`}
           >
             <div className={`h-2 ${member.color}`}></div>
             <div className="p-6">
@@ -63,6 +63,11 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, onSelect
                     <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
                       {member.role}
                     </span>
+                    {member.deletedAt && (
+                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-600">
+                        Archivé
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

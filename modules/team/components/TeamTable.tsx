@@ -54,7 +54,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, onSele
               <tr
                 key={member.id}
                 onClick={() => onSelect(member.id)}
-                className="hover:bg-slate-50 transition-colors group cursor-pointer"
+                className={`hover:bg-slate-50 transition-colors group cursor-pointer ${member.deletedAt ? 'opacity-50' : ''}`}
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
@@ -93,7 +93,11 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, onSele
                   <span className="text-sm font-bold text-slate-900">{member.commissionRate}%</span>
                 </td>
                 <td className="px-6 py-4">
-                  {member.active ? (
+                  {member.deletedAt ? (
+                    <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600 border border-red-200">
+                      Archivé
+                    </span>
+                  ) : member.active ? (
                     <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
                       Actif
                     </span>

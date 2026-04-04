@@ -10,7 +10,8 @@ import { useAppointments } from '../../appointments/hooks/useAppointments';
 type Tab = 'members' | 'performance';
 
 export const TeamListPage: React.FC = () => {
-  const { team, allStaff, searchTerm, setSearchTerm } = useTeam();
+  const [showArchived, setShowArchived] = useState(false);
+  const { team, allStaff, searchTerm, setSearchTerm } = useTeam(showArchived);
   const { allAppointments: appointments } = useAppointments();
   const [activeTab, setActiveTab] = useState<Tab>('members');
   const navigate = useNavigate();
@@ -50,6 +51,8 @@ export const TeamListPage: React.FC = () => {
           onSearchChange={setSearchTerm}
           onAdd={() => navigate('/team/new')}
           onSelect={(id) => navigate(`/team/${id}`)}
+          showArchived={showArchived}
+          onToggleArchived={() => setShowArchived(!showArchived)}
         />
       )}
 
