@@ -15,9 +15,11 @@ import { ArrowUpRight, ArrowDownRight, Calendar, Users, DollarSign, ChevronRight
 import { useTransactions } from '../../hooks/useTransactions';
 import { useClients } from '../clients/hooks/useClients';
 import { useAppointments } from '../appointments/hooks/useAppointments';
+import { useServices } from '../services/hooks/useServices';
 import { formatPrice } from '../../lib/format';
 import { DateRange } from '../../types';
 import { DateRangePicker } from '../../components/DateRangePicker';
+import { TodayCalendarCard } from './components/TodayCalendarCard';
 
 interface MetricCardProps {
   title: string;
@@ -57,6 +59,7 @@ export const DashboardModule: React.FC = () => {
   const { transactions } = useTransactions();
   const { allAppointments: appointments } = useAppointments();
   const { allClients: clients } = useClients();
+  const { services, serviceCategories } = useServices();
 
   // State for Date Range (Default: This Month)
   const [dateRange, setDateRange] = useState<DateRange>(() => {
@@ -242,6 +245,13 @@ export const DashboardModule: React.FC = () => {
           icon={Users}
         />
       </div>
+
+      {/* Today's Calendar */}
+      <TodayCalendarCard
+        appointments={appointments}
+        services={services}
+        serviceCategories={serviceCategories}
+      />
 
       {/* Charts Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
