@@ -15,6 +15,7 @@ export interface Profile {
   language: string;
   notification_email: boolean;
   notification_sms: boolean;
+  is_admin: boolean;
 }
 
 export interface SalonMembership {
@@ -32,6 +33,7 @@ export interface SalonMembership {
     currency: string;
     timezone: string;
     subscription_tier: SubscriptionTier;
+    is_suspended: boolean;
   };
 }
 
@@ -43,6 +45,7 @@ export interface ActiveSalon {
   currency: string;
   timezone: string;
   subscription_tier: SubscriptionTier;
+  is_suspended: boolean;
 }
 
 export interface AuthState {

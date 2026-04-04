@@ -7,6 +7,7 @@ import type {
   Profile,
   SalonMembership,
   ActiveSalon,
+  SubscriptionTier,
 } from '../lib/auth.types';
 
 interface AuthContextType {
@@ -67,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, email, first_name, last_name, avatar_url, phone, bio, language, notification_email, notification_sms')
+      .select('id, email, first_name, last_name, avatar_url, phone, bio, language, notification_email, notification_sms, is_admin')
       .eq('id', userId)
       .single();
 
@@ -84,7 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .from('salon_memberships')
       .select(`
         id, salon_id, profile_id, role, status, created_at,
-        salon:salons!inner(id, name, slug, logo_url, currency, timezone, subscription_tier)
+        salon:salons!inner(id, name, slug, logo_url, currency, timezone, subscription_tier, is_suspended)
       `)
       .eq('profile_id', userId)
       .eq('status', 'active')
@@ -237,13 +238,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         (payload) => {
           const updated = payload.new as Record<string, unknown>;
-          const patch: Partial<ActiveSalon> = {};
-          if (updated.subscription_tier) patch.subscription_tier = updated.subscription_tier as ActiveSalon['subscription_tier'];
-          if ('logo_url' in updated) patch.logo_url = updated.logo_url as string | null;
-          if (updated.name) patch.name = updated.name as string;
-          if (Object.keys(patch).length > 0) {
-            setActiveSalon(prev => prev ? { ...prev, ...patch } : prev);
-          }
+          setActiveSalon(prev => {
+            if (!prev) return prev;
+            const patch: Partial<ActiveSalon> = {};
+            if (updated.subscription_tier !== undefined) patch.subscription_tier = updated.subscription_tier as SubscriptionTier;
+            if (updated.is_suspended !== undefined) patch.is_suspended = updated.is_suspended as boolean;
+            return Object.keys(patch).length > 0 ? { ...prev, ...patch } : prev;
+          });
         }
       )
       .subscribe();
