@@ -15,7 +15,7 @@ export const PLAN_LIMITS: Record<SubscriptionTier, { staff: number | null; clien
 };
 
 export function useBilling() {
-  const { activeSalon } = useAuth();
+  const { activeSalon, session } = useAuth();
   const { addToast } = useToast();
   const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
   const [isLoadingPortal, setIsLoadingPortal] = useState(false);
@@ -47,7 +47,6 @@ export function useBilling() {
     limits.products === null || currentCount < limits.products;
 
   const invokeWithErrorHandling = async (fnName: string, body: object): Promise<{ url: string } | null> => {
-    const { data: { session } } = await supabase.auth.getSession();
     const { data, error } = await supabase.functions.invoke(fnName, {
       body,
       headers: session?.access_token
