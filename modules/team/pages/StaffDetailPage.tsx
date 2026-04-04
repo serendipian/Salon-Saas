@@ -120,7 +120,7 @@ export const StaffDetailPage: React.FC = () => {
           </div>
 
           {activeTab === 'profil' && (
-            <StaffProfileTab staff={staff} loadPii={loadPii} onSave={updateSection} isSaving={isUpdating} currencySymbol={currencySymbol} onArchive={handleArchive} />
+            <StaffProfileTab staff={staff} loadPii={loadPii} onSave={updateSection} isSaving={isUpdating} currencySymbol={currencySymbol} onArchive={handleArchive} onSwitchTab={setActiveTab} />
           )}
           {activeTab === 'performance' && <StaffPerformanceTab staffId={staff.id} currencySymbol={currencySymbol} />}
           {activeTab === 'remuneration' && <StaffRemunerationTab staff={staff} currencySymbol={currencySymbol} onSave={updateSection} />}

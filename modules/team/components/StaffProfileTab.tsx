@@ -7,6 +7,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useServices } from '../../services/hooks/useServices';
 import { useStaffClients } from '../hooks/useStaffClients';
 import { useStaffActivity } from '../hooks/useStaffActivity';
+import { formatPrice } from '../../../lib/format';
 
 interface StaffProfileTabProps {
   staff: StaffMember;
@@ -15,6 +16,7 @@ interface StaffProfileTabProps {
   isSaving: boolean;
   currencySymbol: string;
   onArchive: () => void;
+  onSwitchTab?: (tab: string) => void;
 }
 
 type EditingSection = 'none' | 'personal' | 'contract' | 'pii';
@@ -100,6 +102,7 @@ export const StaffProfileTab: React.FC<StaffProfileTabProps> = ({
   isSaving,
   currencySymbol,
   onArchive,
+  onSwitchTab,
 }) => {
   const { role } = useAuth();
   const { serviceCategories } = useServices();
@@ -534,7 +537,7 @@ export const StaffProfileTab: React.FC<StaffProfileTabProps> = ({
                     </td>
                     <td className="py-2.5 text-center text-slate-600">{client.visitCount}</td>
                     <td className="py-2.5 text-right text-slate-900 font-medium">
-                      {client.totalRevenue.toFixed(2)} {currencySymbol}
+                      {formatPrice(client.totalRevenue)}
                     </td>
                     <td className="py-2.5 text-right text-slate-500 hidden sm:table-cell">
                       {client.lastVisit ? new Date(client.lastVisit).toLocaleDateString('fr-FR') : '—'}
@@ -564,7 +567,7 @@ export const StaffProfileTab: React.FC<StaffProfileTabProps> = ({
         ) : (
           <div className="space-y-3">
             {recentEvents.slice(0, 10).map((event, i) => (
-              <div key={i} className="flex items-start gap-3 text-sm">
+              <div key={`${event.eventType}-${event.eventDate}-${i}`} className="flex items-start gap-3 text-sm">
                 <div className="mt-0.5">
                   <Clock size={14} className="text-slate-400" />
                 </div>
@@ -579,6 +582,15 @@ export const StaffProfileTab: React.FC<StaffProfileTabProps> = ({
                 </span>
               </div>
             ))}
+            {onSwitchTab && (
+              <button
+                type="button"
+                onClick={() => onSwitchTab('activite')}
+                className="text-sm text-pink-600 hover:text-pink-700 font-medium mt-2"
+              >
+                Voir toute l'activité →
+              </button>
+            )}
           </div>
         )}
       </div>
