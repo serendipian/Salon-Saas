@@ -25,7 +25,7 @@ export const useTeam = () => {
         .is('deleted_at', null)
         .order('last_name');
       if (error) throw error;
-      return (data ?? []).map(toStaffMember);
+      return (data ?? []).map(row => toStaffMember(row as unknown as Parameters<typeof toStaffMember>[0]));
     },
     enabled: !!salonId,
   });
@@ -67,6 +67,7 @@ export const useTeam = () => {
         .single();
       if (error) throw error;
       await savePiiFields(data.id, member);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });
@@ -107,7 +108,7 @@ export const useTeam = () => {
     searchTerm,
     setSearchTerm,
     loadStaffPii,
-    addStaffMember: (member: StaffMember) => addStaffMemberMutation.mutate(member),
+    addStaffMember: (member: StaffMember) => addStaffMemberMutation.mutateAsync(member),
     updateStaffMember: (member: StaffMember) => updateStaffMemberMutation.mutate(member),
   };
 };

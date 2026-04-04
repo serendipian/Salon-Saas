@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MediaQueryProvider } from './context/MediaQueryContext';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
@@ -41,6 +41,8 @@ import { DashboardModule } from './modules/dashboard/DashboardModule';
 import { ServicesModule } from './modules/services/ServicesModule';
 import { ClientsModule } from './modules/clients/ClientsModule';
 import { TeamModule } from './modules/team/TeamModule';
+import { TeamListPage } from './modules/team/pages/TeamListPage';
+import { NewStaffPage } from './modules/team/pages/NewStaffPage';
 import { ProductsModule } from './modules/products/ProductsModule';
 import { AppointmentsModule } from './modules/appointments/AppointmentsModule';
 import { SuppliersModule } from './modules/suppliers/SuppliersModule';
@@ -51,6 +53,11 @@ import { FinancesOverview } from './modules/accounting/components/FinancesOvervi
 import { RevenuesPage } from './modules/accounting/components/RevenuesPage';
 import { DepensesPage } from './modules/accounting/components/DepensesPage';
 import { JournalPage } from './modules/accounting/components/JournalPage';
+
+const StaffDetailPlaceholder: React.FC = () => {
+  const { id } = useParams();
+  return <div className="p-8 text-slate-500">Staff detail page for {id} — coming soon</div>;
+};
 
 const AppContent = () => {
   const location = useLocation();
@@ -80,7 +87,11 @@ const AppContent = () => {
           <ProtectedRoute action="view" resource="team">
             <ErrorBoundary moduleName="Équipe"><TeamModule /></ErrorBoundary>
           </ProtectedRoute>
-        } />
+        }>
+          <Route index element={<TeamListPage />} />
+          <Route path="new" element={<NewStaffPage />} />
+          <Route path=":id" element={<StaffDetailPlaceholder />} />
+        </Route>
         <Route path="/calendar" element={
           <ProtectedRoute action="view" resource="appointments">
             <ErrorBoundary moduleName="Rendez-vous"><AppointmentsModule /></ErrorBoundary>
