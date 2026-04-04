@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -17,8 +17,10 @@ import {
   LogOut,
   ChevronDown,
   Menu,
+  UserCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
 import { useMediaQuery } from '../context/MediaQueryContext';
@@ -105,8 +107,29 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
   const { profile, activeSalon, role, memberships, switchSalon, signOut } = useAuth();
   const { can } = usePermissions(role);
   const { isMobile } = useMediaQuery();
+  const navigate = useNavigate();
   const sidebar = useSidebar();
   const [showSalonMenu, setShowSalonMenu] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showProfileMenu) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowProfileMenu(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [showProfileMenu]);
 
   const mainNavItems: NavItem[] = [
     { id: 'dashboard', label: 'Accueil', icon: LayoutDashboard, resource: 'dashboard' },
@@ -332,21 +355,59 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
 
                 <div className="h-8 w-px bg-slate-200" />
 
-                <div className="flex items-center gap-3">
-                  <div className="text-right hidden sm:block leading-tight">
-                    <div className="text-sm font-bold text-slate-800">{displayName}</div>
-                    <div className="text-[11px] text-slate-500 font-medium">{roleLabel}</div>
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md ring-2 ring-white">
-                    <span className="font-bold text-sm">{initials}</span>
-                  </div>
+                <div className="relative" ref={profileMenuRef}>
                   <button
-                    onClick={signOut}
-                    className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-full transition-all"
-                    title="Se déconnecter"
+                    onClick={() => setShowProfileMenu(!showProfileMenu)}
+                    className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-slate-50 transition-all"
                   >
-                    <LogOut size={18} strokeWidth={1.5} />
+                    <div className="text-right hidden sm:block leading-tight">
+                      <div className="text-sm font-bold text-slate-800">{displayName}</div>
+                      <div className="text-[11px] text-slate-500 font-medium">{roleLabel}</div>
+                    </div>
+                    {profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-md" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md ring-2 ring-white">
+                        <span className="font-bold text-sm">{initials}</span>
+                      </div>
+                    )}
+                    <ChevronDown size={14} className={`text-slate-400 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
                   </button>
+
+                  {showProfileMenu && (
+                    <div
+                      className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200/60 py-2"
+                      style={{ zIndex: 'var(--z-dropdown, 50)' }}
+                    >
+                      <div className="px-4 py-3 border-b border-slate-100">
+                        <p className="text-sm font-semibold text-slate-900">{displayName}</p>
+                        <p className="text-xs text-slate-500 truncate">{profile?.email}</p>
+                        <span className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                          role === 'owner' ? 'bg-slate-100 text-slate-700' :
+                          role === 'manager' ? 'bg-blue-50 text-blue-700' :
+                          role === 'stylist' ? 'bg-pink-50 text-pink-700' :
+                          'bg-amber-50 text-amber-700'
+                        }`}>
+                          {roleLabel}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => { navigate('/profile'); setShowProfileMenu(false); }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-all"
+                      >
+                        <UserCircle size={16} className="text-slate-400" />
+                        Mon profil
+                      </button>
+                      <div className="my-1 border-t border-slate-100" />
+                      <button
+                        onClick={() => { signOut(); setShowProfileMenu(false); }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-all"
+                      >
+                        <LogOut size={16} />
+                        Déconnexion
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </>
@@ -389,6 +450,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
           managementNavItems={visibleMgmtNav}
           settingsItem={canViewSettings ? { id: 'settings', label: 'Réglages', icon: Settings } : undefined}
           salonName={activeSalon?.name || 'Salon'}
+          onProfilePress={() => navigate('/profile')}
         />
       )}
 

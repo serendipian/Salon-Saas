@@ -17,6 +17,7 @@ interface MobileDrawerProps {
   managementNavItems: DrawerNavItem[];
   settingsItem?: DrawerNavItem;
   salonName: string;
+  onProfilePress?: () => void;
 }
 
 export const MobileDrawer: React.FC<MobileDrawerProps> = ({
@@ -28,6 +29,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   managementNavItems,
   settingsItem,
   salonName,
+  onProfilePress,
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -195,6 +197,18 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             <>
               <div className="my-3 border-t border-slate-100 mx-2" />
               {renderItem(settingsItem)}
+            </>
+          )}
+
+          {onProfilePress && (
+            <>
+              <div className="my-3 border-t border-slate-100 mx-2" />
+              <button
+                onClick={() => { onProfilePress(); onClose(); }}
+                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all min-h-[44px]"
+              >
+                Mon profil
+              </button>
             </>
           )}
         </div>

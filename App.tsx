@@ -16,6 +16,7 @@ import { SalonPickerPage } from './pages/SalonPickerPage';
 import { AcceptInvitationPage } from './pages/AcceptInvitationPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { useAuth } from './context/AuthContext';
 
 // Lightweight auth guard — requires authentication but not an active salon
@@ -108,6 +109,9 @@ const AppContent = () => {
           <Route path="depenses" element={<DepensesPage />} />
           <Route path="journal" element={<JournalPage />} />
         </Route>
+        <Route path="/profile" element={
+          <ErrorBoundary moduleName="Profil"><ProfilePage /></ErrorBoundary>
+        } />
         {/* Redirect old route */}
         <Route path="/accounting" element={<Navigate to="/finances" replace />} />
       </Routes>
