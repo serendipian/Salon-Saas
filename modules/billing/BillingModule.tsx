@@ -118,7 +118,7 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
           plans={plans}
           currentTier={tier}
           onSelectPlan={createCheckoutSession}
-          onDowngrade={handleDowngrade}
+          onDowngrade={createPortalSession}
           isLoading={isLoadingCheckout}
         />
 
