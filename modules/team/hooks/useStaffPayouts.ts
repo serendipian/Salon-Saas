@@ -4,7 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { StaffPayout, PayoutType } from '../../../types';
 
-interface CreatePayoutInput {
+export interface CreatePayoutInput {
   type: PayoutType;
   amount: number;
   referenceAmount?: number;
