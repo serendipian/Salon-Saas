@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Pencil, Save, X, Check, ChevronDown, ChevronRight, AlertTriangle, Users, Loader2 } from 'lucide-react';
+import { Pencil, Save, X, Check, ChevronDown, ChevronRight, AlertTriangle, Users, Loader2, Activity, Clock } from 'lucide-react';
 import { StaffMember, WorkSchedule } from '../../../types';
 import { Input, Select, TextArea } from '../../../components/FormElements';
 import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
 import { useAuth } from '../../../context/AuthContext';
 import { useServices } from '../../services/hooks/useServices';
+import { useStaffClients } from '../hooks/useStaffClients';
+import { useStaffActivity } from '../hooks/useStaffActivity';
 
 interface StaffProfileTabProps {
   staff: StaffMember;
@@ -101,6 +103,8 @@ export const StaffProfileTab: React.FC<StaffProfileTabProps> = ({
 }) => {
   const { role } = useAuth();
   const { serviceCategories } = useServices();
+  const { clients, isLoading: clientsLoading } = useStaffClients(staff.id);
+  const { events: recentEvents, isLoading: activityLoading } = useStaffActivity(staff.id);
 
   const [editing, setEditing] = useState<EditingSection>('none');
   const [draft, setDraft] = useState<Partial<StaffMember>>({});
@@ -497,15 +501,89 @@ export const StaffProfileTab: React.FC<StaffProfileTabProps> = ({
         </div>
       )}
 
-      {/* ===== Section 4: Portfolio clients (placeholder) ===== */}
+      {/* ===== Section 4: Portfolio clients ===== */}
       <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <div className="flex items-center gap-3 text-slate-400">
-          <Users size={20} />
-          <span className="text-sm font-medium">Portfolio clients — a implementer</span>
-        </div>
+        <h3 className="text-lg font-semibold text-slate-900 mb-5">Portfolio clients</h3>
+
+        {clientsLoading ? (
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <Loader2 size={16} className="animate-spin" />
+            Chargement...
+          </div>
+        ) : clients.length === 0 ? (
+          <div className="flex items-center gap-3 text-slate-400">
+            <Users size={20} />
+            <span className="text-sm">Aucun client associé pour le moment.</span>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-slate-200">
+                <tr>
+                  <th className="pb-2 font-medium text-slate-500">Client</th>
+                  <th className="pb-2 font-medium text-slate-500 text-center">Visites</th>
+                  <th className="pb-2 font-medium text-slate-500 text-right">Revenus</th>
+                  <th className="pb-2 font-medium text-slate-500 text-right hidden sm:table-cell">Dernière visite</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {clients.map(client => (
+                  <tr key={client.clientId}>
+                    <td className="py-2.5 text-slate-900 font-medium">
+                      {client.clientFirstName} {client.clientLastName}
+                    </td>
+                    <td className="py-2.5 text-center text-slate-600">{client.visitCount}</td>
+                    <td className="py-2.5 text-right text-slate-900 font-medium">
+                      {client.totalRevenue.toFixed(2)} {currencySymbol}
+                    </td>
+                    <td className="py-2.5 text-right text-slate-500 hidden sm:table-cell">
+                      {client.lastVisit ? new Date(client.lastVisit).toLocaleDateString('fr-FR') : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* ===== Section 5: Zone de danger ===== */}
+      {/* ===== Section 5: Activité récente ===== */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <h3 className="text-lg font-semibold text-slate-900 mb-5">Activité récente</h3>
+
+        {activityLoading ? (
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <Loader2 size={16} className="animate-spin" />
+            Chargement...
+          </div>
+        ) : recentEvents.length === 0 ? (
+          <div className="flex items-center gap-3 text-slate-400">
+            <Activity size={20} />
+            <span className="text-sm">Aucune activité récente.</span>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {recentEvents.slice(0, 10).map((event, i) => (
+              <div key={i} className="flex items-start gap-3 text-sm">
+                <div className="mt-0.5">
+                  <Clock size={14} className="text-slate-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-slate-900">{event.description}</p>
+                  {event.clientName && (
+                    <p className="text-slate-500 text-xs mt-0.5">Client : {event.clientName}</p>
+                  )}
+                </div>
+                <span className="text-xs text-slate-400 whitespace-nowrap">
+                  {new Date(event.eventDate).toLocaleDateString('fr-FR')}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ===== Section 6: Zone de danger ===== */}
       <div className="bg-red-50/50 rounded-xl border border-red-200 p-6">
         <button
           type="button"
