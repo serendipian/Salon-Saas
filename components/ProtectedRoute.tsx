@@ -1,7 +1,9 @@
+// components/ProtectedRoute.tsx
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
+import { SuspendedPage } from '../pages/SuspendedPage';
 import type { AuthAction, AuthResource } from '../lib/auth.types';
 
 interface ProtectedRouteProps {
@@ -11,8 +13,9 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, action, resource }) => {
-  const { isAuthenticated, isLoading, activeSalon, memberships, role } = useAuth();
+  const { isAuthenticated, isLoading, activeSalon, memberships, role, profile } = useAuth();
   const { can } = usePermissions(role);
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -25,16 +28,19 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, action
     );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+
+  // Admin users don't need a salon — redirect them to admin panel
+  if (profile?.is_admin && !location.pathname.startsWith('/admin')) {
+    return <Navigate to="/admin" replace />;
   }
 
   if (!activeSalon) {
-    if (memberships.length > 0) {
-      return <Navigate to="/select-salon" replace />;
-    }
+    if (memberships.length > 0) return <Navigate to="/select-salon" replace />;
     return <Navigate to="/create-salon" replace />;
   }
+
+  if (activeSalon.is_suspended) return <SuspendedPage />;
 
   if (action && resource && !can(action, resource)) {
     return <Navigate to="/dashboard" replace />;
