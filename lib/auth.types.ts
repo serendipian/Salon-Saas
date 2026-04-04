@@ -23,6 +23,7 @@ export interface SalonMembership {
   profile_id: string;
   role: Role;
   status: 'pending' | 'active' | 'suspended';
+  created_at: string;
   salon: {
     id: string;
     name: string;

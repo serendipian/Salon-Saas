@@ -37,10 +37,7 @@ export const ProfileDangerZone: React.FC = () => {
 
   const handleLeave = async () => {
     setIsLeaving(true);
-    const { error } = await supabase
-      .from('salon_memberships')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', currentMembership.id);
+    const { error } = await supabase.rpc('leave_salon', { p_salon_id: salonId });
 
     setIsLeaving(false);
 

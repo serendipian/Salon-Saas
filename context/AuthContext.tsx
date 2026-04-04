@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data, error } = await supabase
       .from('salon_memberships')
       .select(`
-        id, salon_id, profile_id, role, status,
+        id, salon_id, profile_id, role, status, created_at,
         salon:salons!inner(id, name, slug, logo_url, currency, timezone, subscription_tier)
       `)
       .eq('profile_id', userId)
@@ -102,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       profile_id: m.profile_id,
       role: m.role as Role,
       status: m.status,
+      created_at: m.created_at,
       salon: m.salon as unknown as SalonMembership['salon'],
     }));
   }, []);
