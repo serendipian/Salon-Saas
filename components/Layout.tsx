@@ -180,9 +180,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
           <div className={`h-20 flex items-center transition-all shrink-0 ${collapsed ? 'justify-center px-0' : 'justify-between px-6'}`}>
             {!collapsed && (
               <div className="relative flex items-center gap-3 animate-in fade-in duration-300">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center text-white font-bold text-base shrink-0 shadow-md shadow-slate-900/20">
-                  {activeSalon?.name ? activeSalon.name.charAt(0) : 'L'}
-                </div>
+                {activeSalon?.logo_url ? (
+                  <img src={activeSalon.logo_url} alt="" className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-md" />
+                ) : (
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center text-white font-bold text-base shrink-0 shadow-md shadow-slate-900/20">
+                    {activeSalon?.name ? activeSalon.name.charAt(0) : 'L'}
+                  </div>
+                )}
                 <div className="flex flex-col">
                   {memberships.length > 1 ? (
                     <button
@@ -214,9 +218,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                           m.salon_id === activeSalon?.id ? 'bg-slate-50 font-medium' : ''
                         }`}
                       >
-                        <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                          {m.salon.name.charAt(0)}
-                        </div>
+                        {m.salon.logo_url ? (
+                          <img src={m.salon.logo_url} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0" />
+                        ) : (
+                          <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                            {m.salon.name.charAt(0)}
+                          </div>
+                        )}
                         <div>
                           <div className="text-slate-900">{m.salon.name}</div>
                           <div className="text-xs text-slate-400">{ROLE_LABELS[m.role]}</div>

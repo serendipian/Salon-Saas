@@ -15,6 +15,7 @@ export interface SalonSettings {
   phone: string;
   email: string;
   website: string;
+  logoUrl: string | null;
   currency: string;
   vatRate: number;
   schedule?: WorkSchedule;

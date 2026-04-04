@@ -56,7 +56,7 @@ export const useSettings = () => {
     onSuccess: (settings) => {
       queryClient.invalidateQueries({ queryKey: ['salon_settings', salonId] });
       // Sync AuthContext so sidebar/header reflect updated name etc.
-      refreshActiveSalon({ name: settings.name, currency: settings.currency });
+      refreshActiveSalon({ name: settings.name, currency: settings.currency, logo_url: settings.logoUrl });
       toastOnSuccess('Paramètres enregistrés')();
     },
     onError: toastOnError("Impossible de modifier les paramètres du salon"),
@@ -196,6 +196,7 @@ export const useSettings = () => {
     phone: '',
     email: '',
     website: '',
+    logoUrl: activeSalon?.logo_url ?? null,
     currency: activeSalon?.currency ?? 'EUR',
     vatRate: 20,
   };

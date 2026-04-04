@@ -236,11 +236,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           filter: `id=eq.${activeSalon.id}`,
         },
         (payload) => {
-          const updated = payload.new as Partial<ActiveSalon>;
-          if (updated.subscription_tier) {
-            setActiveSalon(prev =>
-              prev ? { ...prev, subscription_tier: updated.subscription_tier! } : prev
-            );
+          const updated = payload.new as Record<string, unknown>;
+          const patch: Partial<ActiveSalon> = {};
+          if (updated.subscription_tier) patch.subscription_tier = updated.subscription_tier as ActiveSalon['subscription_tier'];
+          if ('logo_url' in updated) patch.logo_url = updated.logo_url as string | null;
+          if (updated.name) patch.name = updated.name as string;
+          if (Object.keys(patch).length > 0) {
+            setActiveSalon(prev => prev ? { ...prev, ...patch } : prev);
           }
         }
       )
