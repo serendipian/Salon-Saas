@@ -1,4 +1,4 @@
--- supabase/migrations/20260404120000_admin_is_admin.sql
+-- supabase/migrations/20260404130000_admin_is_admin.sql
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT false;
 
 -- Block authenticated users from updating is_admin on their own profile
