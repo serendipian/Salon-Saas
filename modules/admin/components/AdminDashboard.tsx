@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Info } from 'lucide-react';
-import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, Tooltip, type TooltipProps } from 'recharts';
 import {
   useAdminMRR,
   useAdminMRRHistory,
@@ -14,8 +14,34 @@ import {
 import { ADMIN_FONT } from '../constants';
 import { AdminErrorState } from './AdminShared';
 
+const SparkTooltip: React.FC<TooltipProps<number, string> & { isCurrency?: boolean }> = ({ active, payload, isCurrency }) => {
+  if (!active || !payload?.length) return null;
+  const point = payload[0].payload as AdminHistoryPoint;
+  const date = new Date(point.month);
+  const label = date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  const val = payload[0].value ?? 0;
+  const formatted = isCurrency
+    ? val.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
+    : val.toLocaleString('fr-FR');
+  return (
+    <div
+      style={{
+        backgroundColor: '#1a1f36',
+        border: 'none',
+        borderRadius: 6,
+        padding: '6px 10px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+        fontFamily: "'Inter', -apple-system, sans-serif",
+      }}
+    >
+      <div style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>{formatted}</div>
+      <div style={{ color: '#a3acbe', fontSize: 11, marginTop: 1 }}>{label}</div>
+    </div>
+  );
+};
+
 // Unique gradient IDs per sparkline to avoid SVG defs collision
-const MiniSparkline: React.FC<{ data: AdminHistoryPoint[]; gradId: string }> = ({ data, gradId }) => (
+const MiniSparkline: React.FC<{ data: AdminHistoryPoint[]; gradId: string; isCurrency?: boolean }> = ({ data, gradId, isCurrency }) => (
   <ResponsiveContainer width="100%" height={80}>
     <AreaChart data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
       <defs>
@@ -24,6 +50,10 @@ const MiniSparkline: React.FC<{ data: AdminHistoryPoint[]; gradId: string }> = (
           <stop offset="95%" stopColor="#635bff" stopOpacity={0} />
         </linearGradient>
       </defs>
+      <Tooltip
+        content={<SparkTooltip isCurrency={isCurrency} />}
+        cursor={{ stroke: '#635bff', strokeWidth: 1, strokeDasharray: '3 3' }}
+      />
       <Area
         type="monotone"
         dataKey="value"
@@ -31,6 +61,7 @@ const MiniSparkline: React.FC<{ data: AdminHistoryPoint[]; gradId: string }> = (
         strokeWidth={1.5}
         fill={`url(#${gradId})`}
         dot={false}
+        activeDot={{ r: 3, fill: '#635bff', stroke: '#fff', strokeWidth: 2 }}
         isAnimationActive={false}
       />
     </AreaChart>
@@ -54,9 +85,10 @@ interface MetricCardProps {
   loading?: boolean;
   chartData?: AdminHistoryPoint[];
   gradId?: string;
+  isCurrency?: boolean;
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, to, loading, chartData, gradId }) => {
+const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, to, loading, chartData, gradId, isCurrency }) => {
   const inner = (
     <div className="bg-white rounded-[8px] border border-[#e3e8ef] p-5 flex flex-col h-full transition-shadow hover:shadow-sm">
       <div className="flex items-center gap-1.5 mb-1">
@@ -75,7 +107,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, to, loa
         {loading ? (
           <div className="w-full h-[80px] bg-[#f7fafc] rounded-[6px] animate-pulse" />
         ) : chartData && chartData.length > 0 && gradId ? (
-          <MiniSparkline data={chartData} gradId={gradId} />
+          <MiniSparkline data={chartData} gradId={gradId} isCurrency={isCurrency} />
         ) : (
           <EmptyChart />
         )}
@@ -113,6 +145,7 @@ export const AdminDashboard: React.FC = () => {
           loading={loadingMRR || loadingMRRHistory}
           chartData={mrrHistory}
           gradId="spark-mrr"
+          isCurrency
         />
         <MetricCard
           title="Abonnements actifs"
