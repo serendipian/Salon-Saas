@@ -10,7 +10,6 @@ import type { DateRange, Transaction, CartItem } from '../../../types';
 
 interface StaffPerformanceTabProps {
   staffId: string;
-  currencySymbol: string;
 }
 
 function KpiCard({ icon: Icon, label, value, sub, color = 'text-slate-900' }: {

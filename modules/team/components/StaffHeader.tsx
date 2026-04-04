@@ -8,7 +8,6 @@ interface StaffHeaderProps {
   isArchived: boolean;
   monthlyRevenue: number;
   monthlyAppointments: number;
-  currencySymbol: string;
   hasPendingInvitation: boolean;
   invitationExpiresAt?: string;
   onInvite: () => void;
@@ -18,7 +17,7 @@ interface StaffHeaderProps {
 
 export const StaffHeader: React.FC<StaffHeaderProps> = ({
   staff, isArchived, monthlyRevenue, monthlyAppointments,
-  currencySymbol, hasPendingInvitation, invitationExpiresAt,
+  hasPendingInvitation, invitationExpiresAt,
   onInvite, onArchive, onRestore,
 }) => {
   const seniority = staff.startDate

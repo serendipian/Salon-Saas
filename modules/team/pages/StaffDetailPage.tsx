@@ -41,11 +41,11 @@ export const StaffDetailPage: React.FC = () => {
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
 
   // Monthly stats for header
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
   const monthlyStats = useMemo(() => {
     if (!staff || !transactions) return { revenue: 0, appointments: 0 };
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
     const revenue = (transactions || [])
       .filter((t: any) => new Date(t.date) >= monthStart)
       .reduce((sum: number, t: any) => {
@@ -95,7 +95,6 @@ export const StaffDetailPage: React.FC = () => {
         isArchived={isArchived}
         monthlyRevenue={monthlyStats.revenue}
         monthlyAppointments={monthlyStats.appointments}
-        currencySymbol={currencySymbol}
         hasPendingInvitation={!!invitation}
         invitationExpiresAt={invitation?.expires_at}
         onInvite={() => setShowInviteModal(true)}
@@ -122,7 +121,7 @@ export const StaffDetailPage: React.FC = () => {
           {activeTab === 'profil' && (
             <StaffProfileTab staff={staff} loadPii={loadPii} onSave={updateSection} isSaving={isUpdating} currencySymbol={currencySymbol} onArchive={handleArchive} onSwitchTab={setActiveTab} />
           )}
-          {activeTab === 'performance' && <StaffPerformanceTab staffId={staff.id} currencySymbol={currencySymbol} />}
+          {activeTab === 'performance' && <StaffPerformanceTab staffId={staff.id} />}
           {activeTab === 'remuneration' && <StaffRemunerationTab staff={staff} currencySymbol={currencySymbol} onSave={updateSection} />}
           {activeTab === 'agenda' && <StaffAgendaTab staff={staff} />}
           {activeTab === 'activite' && <StaffActivityTab staffId={staff.id} />}
