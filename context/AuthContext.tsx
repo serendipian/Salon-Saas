@@ -10,6 +10,8 @@ import type {
   SubscriptionTier,
 } from '../lib/auth.types';
 
+export type ProfileUpdates = Omit<Partial<Profile>, 'is_admin' | 'id' | 'email' | 'created_at' | 'updated_at'>;
+
 interface AuthContextType {
   // State
   user: User | null;
@@ -30,7 +32,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 
   // Profile actions
-  updateProfile: (data: Partial<Profile>) => Promise<{ error: string | null }>;
+  updateProfile: (data: ProfileUpdates) => Promise<{ error: string | null }>;
   refreshProfile: () => Promise<void>;
 
   // Salon actions
@@ -346,7 +348,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
   }, []);
 
-  const updateProfile = useCallback(async (data: Partial<Profile>) => {
+  const updateProfile = useCallback(async (data: ProfileUpdates) => {
     if (!user) return { error: 'Not authenticated' };
     const { error } = await supabase
       .from('profiles')

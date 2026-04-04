@@ -22,10 +22,14 @@ export const useStaffCompensation = (
   return useMemo(() => {
     const base = baseSalary ?? 0;
 
+    // Compare using date strings (YYYY-MM-DD) to avoid timezone edge issues
+    const startStr = periodStart.toISOString().slice(0, 10);
+    const endStr = periodEnd.toISOString().slice(0, 10);
+
     const periodRevenue = (transactions || [])
       .filter((t: any) => {
-        const d = new Date(t.date);
-        return d >= periodStart && d <= periodEnd;
+        const dateStr = new Date(t.date).toISOString().slice(0, 10);
+        return dateStr >= startStr && dateStr <= endStr;
       })
       .reduce((sum: number, t: any) => {
         return sum + (t.items || [])
@@ -43,5 +47,5 @@ export const useStaffCompensation = (
       totalExpected: base + commissionEarned + bonusEarned,
       periodRevenue,
     };
-  }, [transactions, staff, periodStart, periodEnd, baseSalary]);
+  }, [transactions, staff, periodStart.getTime(), periodEnd.getTime(), baseSalary]);
 };

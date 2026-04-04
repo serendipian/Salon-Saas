@@ -8,6 +8,8 @@ interface PayoutFormProps {
   defaultType: PayoutType;
   periodStart: string;
   periodEnd: string;
+  referenceAmount?: number;
+  rateSnapshot?: number;
   onSubmit: (input: CreatePayoutInput) => Promise<void>;
   onClose: () => void;
 }
@@ -24,6 +26,8 @@ export const PayoutForm: React.FC<PayoutFormProps> = ({
   defaultType,
   periodStart,
   periodEnd,
+  referenceAmount: refAmount,
+  rateSnapshot: rateSnap,
   onSubmit,
   onClose,
 }) => {
@@ -39,9 +43,12 @@ export const PayoutForm: React.FC<PayoutFormProps> = ({
     if (submitting) return;
     setSubmitting(true);
     try {
+      if (end < start) return;
       await onSubmit({
         type,
         amount,
+        referenceAmount: refAmount,
+        rateSnapshot: rateSnap,
         periodStart: start,
         periodEnd: end,
         notes: notes.trim() || undefined,
@@ -127,6 +134,7 @@ export const PayoutForm: React.FC<PayoutFormProps> = ({
               <input
                 type="date"
                 value={end}
+                min={start}
                 onChange={(e) => setEnd(e.target.value)}
                 className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm"
               />

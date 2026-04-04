@@ -236,9 +236,9 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
                  error={errors.role}
                  options={[
                    { value: 'Manager', label: 'Manager' },
-                   { value: 'Stylist', label: 'Stylist' },
-                   { value: 'Assistant', label: 'Assistant' },
-                   { value: 'Receptionist', label: 'Receptionist' }
+                   { value: 'Stylist', label: 'Styliste' },
+                   { value: 'Assistant', label: 'Assistant(e)' },
+                   { value: 'Receptionist', label: 'Réceptionniste' }
                  ]}
               />
               
@@ -291,11 +291,14 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
                       value={formData.weeklyHours}
                       onChange={e => setFormData({...formData, weeklyHours: parseFloat(e.target.value)})}
                     />
-                    <Input 
+                    <Input
                       label="Commission (%)"
                       type="number"
+                      min={0}
+                      max={100}
                       value={formData.commissionRate}
-                      onChange={e => setFormData({...formData, commissionRate: parseFloat(e.target.value)})}
+                      onChange={e => setFormData({...formData, commissionRate: Math.min(100, Math.max(0, parseFloat(e.target.value) || 0))})}
+                      error={errors.commissionRate}
                     />
                  </div>
                  <Input 

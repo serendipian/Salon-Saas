@@ -56,6 +56,21 @@ export const useStaffPayouts = (staffId: string) => {
 
   const addPayoutMutation = useMutation({
     mutationFn: async (input: CreatePayoutInput) => {
+      // Check for duplicate payout (same type + overlapping period, non-cancelled)
+      const { data: existing } = await supabase
+        .from('staff_payouts')
+        .select('id')
+        .eq('staff_id', staffId)
+        .eq('salon_id', salonId!)
+        .eq('type', input.type)
+        .eq('period_start', input.periodStart)
+        .eq('period_end', input.periodEnd)
+        .neq('status', 'CANCELLED')
+        .is('deleted_at', null)
+        .limit(1);
+      if (existing && existing.length > 0) {
+        throw new Error('Un paiement existe déjà pour cette période et ce type');
+      }
       const { error } = await supabase.from('staff_payouts').insert({
         salon_id: salonId!,
         staff_id: staffId,
@@ -81,7 +96,9 @@ export const useStaffPayouts = (staffId: string) => {
       const { error } = await supabase
         .from('staff_payouts')
         .update({ status: 'PAID', paid_at: new Date().toISOString(), updated_by: profile?.id })
-        .eq('id', payoutId);
+        .eq('id', payoutId)
+        .eq('salon_id', salonId!)
+        .eq('status', 'PENDING');
       if (error) throw error;
     },
     onSuccess: () => {
@@ -95,7 +112,9 @@ export const useStaffPayouts = (staffId: string) => {
       const { error } = await supabase
         .from('staff_payouts')
         .update({ status: 'CANCELLED', updated_by: profile?.id })
-        .eq('id', payoutId);
+        .eq('id', payoutId)
+        .eq('salon_id', salonId!)
+        .eq('status', 'PENDING');
       if (error) throw error;
     },
     onSuccess: () => {

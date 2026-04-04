@@ -113,15 +113,16 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
     const completed = staffAppts.filter(a => a.status === 'COMPLETED').length;
     const cancelled = staffAppts.filter(a => a.status === 'CANCELLED').length;
     const noShow = staffAppts.filter(a => a.status === 'NO_SHOW').length;
+    const resolved = completed + cancelled + noShow;
     const total = staffAppts.length;
-    return { completed, cancelled, noShow, total };
+    return { completed, cancelled, noShow, resolved, total };
   }, [appointments, staffId, dateRange]);
 
-  const cancellationRate = appointmentStats.total > 0
-    ? ((appointmentStats.cancelled / appointmentStats.total) * 100).toFixed(1)
+  const cancellationRate = appointmentStats.resolved > 0
+    ? ((appointmentStats.cancelled / appointmentStats.resolved) * 100).toFixed(1)
     : '0';
-  const noShowRate = appointmentStats.total > 0
-    ? ((appointmentStats.noShow / appointmentStats.total) * 100).toFixed(1)
+  const noShowRate = appointmentStats.resolved > 0
+    ? ((appointmentStats.noShow / appointmentStats.resolved) * 100).toFixed(1)
     : '0';
 
   // Show chart only if range <= 31 days
@@ -148,7 +149,7 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <KpiCard
           icon={CalendarCheck}
-          label="RDV effectues"
+          label="RDV effectués"
           value={String(appointmentStats.completed)}
           sub={`sur ${appointmentStats.total} total`}
         />
@@ -227,7 +228,7 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
       {revenueStats.totalRevenue === 0 && appointmentStats.total === 0 && (
         <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
           <TrendingUp size={32} className="mx-auto text-slate-300 mb-3" />
-          <p className="text-sm text-slate-500">Aucune donnee pour cette periode</p>
+          <p className="text-sm text-slate-500">Aucune donnée pour cette période</p>
         </div>
       )}
     </div>

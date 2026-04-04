@@ -21,6 +21,7 @@ export const useStaffDetail = (staffId: string) => {
         .from('staff_members')
         .select('*')
         .eq('id', staffId)
+        .eq('salon_id', salonId)
         .single();
       if (error) throw error;
       return toStaffMember(data as unknown as Parameters<typeof toStaffMember>[0]);
@@ -57,12 +58,13 @@ export const useStaffDetail = (staffId: string) => {
 
   const updateSectionMutation = useMutation({
     mutationFn: async (updates: Partial<StaffMember>) => {
+      if (!staff) throw new Error('Staff data not loaded');
       const hasPii = 'baseSalary' in updates || 'iban' in updates || 'socialSecurityNumber' in updates;
 
       // Separate PII from non-PII fields
       const { baseSalary, iban, socialSecurityNumber, ...rest } = updates;
       if (Object.keys(rest).length > 0) {
-        const current = staff!;
+        const current = staff;
         const merged = { ...current, ...rest };
         const { id: _id, salon_id: _sid, ...updatePayload } = toStaffMemberInsert(merged, salonId);
         const { error } = await supabase
@@ -98,7 +100,8 @@ export const useStaffDetail = (staffId: string) => {
         const { error } = await supabase
           .from('staff_members')
           .update({ deleted_at: new Date().toISOString() })
-          .eq('id', staffId);
+          .eq('id', staffId)
+          .eq('salon_id', salonId);
         if (error) throw error;
       }
 
@@ -119,8 +122,9 @@ export const useStaffDetail = (staffId: string) => {
     mutationFn: async () => {
       const { error } = await supabase
         .from('staff_members')
-        .update({ deleted_at: null })
-        .eq('id', staffId);
+        .update({ deleted_at: null, active: true })
+        .eq('id', staffId)
+        .eq('salon_id', salonId);
       if (error) throw error;
     },
     onSuccess: () => {

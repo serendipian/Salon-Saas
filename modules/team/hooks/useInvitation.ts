@@ -2,8 +2,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import type { StaffMember } from '../../../types';
 
-const ROLE_MAP: Record<string, string> = {
+const ROLE_MAP: Record<StaffMember['role'], string> = {
   Manager: 'manager',
   Stylist: 'stylist',
   Receptionist: 'receptionist',
@@ -37,13 +38,13 @@ export const useInvitation = (staffId: string) => {
 
   const createMutation = useMutation({
     mutationFn: async ({ email, role }: { email: string; role: string }) => {
-      // Expire existing pending invitations for this staff
+      // Expire existing pending invitations for this staff AND same email across salon
       await supabase
         .from('invitations')
         .update({ expires_at: new Date().toISOString() })
-        .eq('staff_member_id', staffId)
         .eq('salon_id', salonId!)
-        .is('accepted_at', null);
+        .is('accepted_at', null)
+        .or(`staff_member_id.eq.${staffId},email.eq.${email}`);
 
       const token = crypto.randomUUID();
       const expiresAt = new Date();
@@ -54,7 +55,7 @@ export const useInvitation = (staffId: string) => {
         .insert({
           salon_id: salonId!,
           email,
-          role: ROLE_MAP[role] || 'stylist',
+          role: ROLE_MAP[role as StaffMember['role']] || 'stylist',
           token,
           invited_by: profile!.id,
           expires_at: expiresAt.toISOString(),
@@ -72,18 +73,26 @@ export const useInvitation = (staffId: string) => {
     onError: toastOnError('Erreur lors de la création de l\'invitation'),
   });
 
+  const cancelMutation = useMutation({
+    mutationFn: async () => {
+      if (!invitation) return;
+      const { error } = await supabase
+        .from('invitations')
+        .update({ expires_at: new Date().toISOString() })
+        .eq('id', invitation.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invitation', salonId, staffId] });
+    },
+    onError: toastOnError('Erreur lors de l\'annulation de l\'invitation'),
+  });
+
   return {
     invitation,
     createInvitation: async (email: string, role: string = 'Stylist') => {
       return await createMutation.mutateAsync({ email, role });
     },
-    cancelInvitation: async () => {
-      if (!invitation) return;
-      await supabase
-        .from('invitations')
-        .update({ expires_at: new Date().toISOString() })
-        .eq('id', invitation.id);
-      queryClient.invalidateQueries({ queryKey: ['invitation', salonId, staffId] });
-    },
+    cancelInvitation: () => cancelMutation.mutateAsync(),
   };
 };

@@ -235,6 +235,8 @@ export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({ staf
           defaultType="SALARY"
           periodStart={startStr}
           periodEnd={endStr}
+          referenceAmount={compensation.periodRevenue}
+          rateSnapshot={staff.commissionRate}
           onSubmit={addPayout}
           onClose={() => setShowPayoutForm(false)}
         />

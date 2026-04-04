@@ -63,8 +63,8 @@ export const PayoutHistory: React.FC<PayoutHistoryProps> = ({ payouts, onMarkAsP
                   </span>
                 )}
                 {p.status === 'PAID' && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                    Payé
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                    Payé{p.paidAt && ` le ${new Date(p.paidAt).toLocaleDateString('fr-FR')}`}
                   </span>
                 )}
                 {p.status === 'CANCELLED' && (

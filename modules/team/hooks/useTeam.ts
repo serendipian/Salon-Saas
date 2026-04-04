@@ -68,7 +68,14 @@ export const useTeam = (includeArchived = false) => {
         .select('id')
         .single();
       if (error) throw error;
-      await savePiiFields(data.id, member);
+      try {
+        await savePiiFields(data.id, member);
+      } catch (piiError) {
+        // Staff record was created but PII save failed — return the id
+        // so user can navigate and retry PII via section edit
+        console.warn('Staff created but PII save failed:', piiError);
+        return { id: data.id, piiError: true };
+      }
       return data;
     },
     onSuccess: () => {
@@ -111,6 +118,6 @@ export const useTeam = (includeArchived = false) => {
     setSearchTerm,
     loadStaffPii,
     addStaffMember: (member: StaffMember) => addStaffMemberMutation.mutateAsync(member),
-    updateStaffMember: (member: StaffMember) => updateStaffMemberMutation.mutate(member),
+    updateStaffMember: (member: StaffMember) => updateStaffMemberMutation.mutateAsync(member),
   };
 };

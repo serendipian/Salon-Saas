@@ -22,6 +22,16 @@ export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   }
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+
+  // Profile is still loading after session established
+  if (isAuthenticated && profile === null) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="w-5 h-5 border-2 border-[#e3e8ef] border-t-[#635bff] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   if (!profile?.is_admin) return <Navigate to="/" replace />;
 
   return <>{children}</>;

@@ -15,7 +15,7 @@ export const useStaffAppointments = (staffId: string, schedule?: WorkSchedule) =
   weekEnd.setDate(weekEnd.getDate() + 7);
 
   const { data: appointments = [], isLoading } = useQuery({
-    queryKey: ['staff_appointments', salonId, staffId],
+    queryKey: ['staff_appointments', salonId, staffId, today.toISOString()],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('appointments')
@@ -40,13 +40,26 @@ export const useStaffAppointments = (staffId: string, schedule?: WorkSchedule) =
 
   const bookingRate = useMemo(() => {
     if (!schedule) return null;
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const workDays = countWorkingDays(monthStart, now, schedule);
+    // Use the same 7-day window as the query for consistency
+    const workDays = countWorkingDays(today, weekEnd, schedule);
     if (workDays === 0) return null;
-    const totalSlots = workDays * 8;
-    const bookedCount = appointments.length;
-    return Math.min(100, Math.round((bookedCount / totalSlots) * 100));
-  }, [appointments, schedule, now]);
+    // Calculate slots from actual schedule hours, not hardcoded 8
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+    let totalSlots = 0;
+    const d = new Date(today);
+    while (d <= weekEnd) {
+      const day = schedule[dayNames[d.getDay()]];
+      if (day?.isOpen && day.start && day.end) {
+        const [sh, sm] = day.start.split(':').map(Number);
+        const [eh, em] = day.end.split(':').map(Number);
+        const hours = (eh + em / 60) - (sh + sm / 60);
+        totalSlots += Math.max(0, Math.floor(hours));
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    if (totalSlots === 0) return null;
+    return Math.min(100, Math.round((appointments.length / totalSlots) * 100));
+  }, [appointments, schedule, today, weekEnd]);
 
   return { upcoming: appointments, today: todayAppointments, bookingRate, isLoading };
 };

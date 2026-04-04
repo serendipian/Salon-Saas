@@ -11,7 +11,7 @@ type Tab = 'members' | 'performance';
 
 export const TeamListPage: React.FC = () => {
   const [showArchived, setShowArchived] = useState(false);
-  const { team, allStaff, searchTerm, setSearchTerm } = useTeam(showArchived);
+  const { team, allStaff, isLoading, searchTerm, setSearchTerm } = useTeam(showArchived);
   const { allAppointments: appointments } = useAppointments();
   const [activeTab, setActiveTab] = useState<Tab>('members');
   const navigate = useNavigate();
@@ -43,7 +43,13 @@ export const TeamListPage: React.FC = () => {
         </button>
       </div>
 
-      {activeTab === 'members' && (
+      {activeTab === 'members' && isLoading && (
+        <div className="flex items-center justify-center py-16">
+          <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" />
+        </div>
+      )}
+
+      {activeTab === 'members' && !isLoading && (
         <TeamList
           team={team}
           appointments={appointments}

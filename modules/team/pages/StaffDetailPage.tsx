@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, User, TrendingUp, Wallet, CalendarDays, Activity } from 'lucide-react';
 import { useStaffDetail } from '../hooks/useStaffDetail';
@@ -32,8 +32,15 @@ export const StaffDetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>(defaultTab);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
-  const { staff, isLoading, isArchived, updateSection, isUpdating, archive, restore, loadPii } = useStaffDetail(id!);
-  const { invitation, createInvitation } = useInvitation(id!);
+  // Sync tab when URL param changes
+  useEffect(() => {
+    const tab = searchParams.get('tab') as TabKey;
+    if (tab && TABS.some(t => t.key === tab)) setActiveTab(tab);
+  }, [searchParams]);
+
+  const staffId = id ?? '';
+  const { staff, isLoading, isArchived, updateSection, isUpdating, archive, restore, loadPii } = useStaffDetail(staffId);
+  const { invitation, createInvitation } = useInvitation(staffId);
   const { transactions } = useTransactions();
   const { allAppointments } = useAppointments();
   const { salonSettings } = useSettings();

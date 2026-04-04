@@ -152,9 +152,15 @@ export const StaffAgendaTab: React.FC<StaffAgendaTabProps> = ({ staff }) => {
 };
 
 function AppointmentRow({ appointment }: { appointment: any }) {
-  const isCompleted = appointment.status === 'COMPLETED';
-  const statusColor = isCompleted ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200';
-  const statusLabel = isCompleted ? 'Terminé' : 'Planifié';
+  const statusMap: Record<string, { color: string; label: string }> = {
+    COMPLETED: { color: 'bg-emerald-50 text-emerald-700 border-emerald-200', label: 'Terminé' },
+    CONFIRMED: { color: 'bg-blue-50 text-blue-700 border-blue-200', label: 'Confirmé' },
+    NO_SHOW: { color: 'bg-red-50 text-red-700 border-red-200', label: 'Absent' },
+    CANCELLED: { color: 'bg-slate-50 text-slate-500 border-slate-200', label: 'Annulé' },
+  };
+  const status = statusMap[appointment.status] || { color: 'bg-blue-50 text-blue-700 border-blue-200', label: 'Planifié' };
+  const statusColor = status.color;
+  const statusLabel = status.label;
 
   const clientName = appointment.clients
     ? `${appointment.clients.first_name} ${appointment.clients.last_name}`

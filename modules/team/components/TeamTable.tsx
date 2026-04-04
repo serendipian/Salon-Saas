@@ -14,7 +14,9 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, onSele
     const memberAppointments = appointments.filter(a => a.staffId === memberId);
     const today = new Date().toISOString().slice(0, 10);
     const todaysAppointments = memberAppointments.filter(a => a.date.startsWith(today));
-    const totalRevenue = memberAppointments.reduce((sum, a) => sum + a.price, 0);
+    const totalRevenue = memberAppointments
+      .filter(a => a.status === 'COMPLETED')
+      .reduce((sum, a) => sum + a.price, 0);
     return {
       totalAppointments: memberAppointments.length,
       todayCount: todaysAppointments.length,
@@ -48,7 +50,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, onSele
         <tbody className="divide-y divide-slate-100">
           {team.map((member) => {
             const stats = getMemberStats(member.id);
-            const initials = `${member.firstName[0]}${member.lastName[0]}`;
+            const initials = `${member.firstName?.[0] || ''}${member.lastName?.[0] || ''}`;
 
             return (
               <tr

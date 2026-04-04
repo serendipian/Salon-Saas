@@ -20,9 +20,14 @@ export const StaffHeader: React.FC<StaffHeaderProps> = ({
   hasPendingInvitation, invitationExpiresAt,
   onInvite, onArchive, onRestore,
 }) => {
-  const seniority = staff.startDate
-    ? Math.floor((Date.now() - new Date(staff.startDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+  const seniorityMonths = staff.startDate
+    ? Math.floor((Date.now() - new Date(staff.startDate).getTime()) / (30.44 * 24 * 60 * 60 * 1000))
     : null;
+  const seniorityLabel = seniorityMonths !== null
+    ? seniorityMonths >= 12
+      ? `${Math.floor(seniorityMonths / 12)} an${Math.floor(seniorityMonths / 12) !== 1 ? 's' : ''}`
+      : `${seniorityMonths} mois`
+    : '—';
 
   const roleColors: Record<string, string> = {
     Manager: 'bg-purple-100 text-purple-700',
@@ -46,9 +51,8 @@ export const StaffHeader: React.FC<StaffHeaderProps> = ({
 
       <div className="flex flex-col sm:flex-row gap-6">
         <div className="flex items-start gap-4 flex-1">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold shrink-0"
-            style={{ backgroundColor: staff.color || '#64748b' }}>
-            {staff.firstName[0]}{staff.lastName?.[0] || ''}
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold shrink-0 ${staff.color || 'bg-slate-500 text-white'}`}>
+            {staff.firstName?.[0] || ''}{staff.lastName?.[0] || ''}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
@@ -58,8 +62,10 @@ export const StaffHeader: React.FC<StaffHeaderProps> = ({
               </span>
               {isArchived ? (
                 <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Archivé</span>
-              ) : (
+              ) : staff.active ? (
                 <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">Actif</span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">Inactif</span>
               )}
             </div>
             <div className="flex items-center gap-4 mt-1 text-sm text-slate-500 flex-wrap">
@@ -107,7 +113,7 @@ export const StaffHeader: React.FC<StaffHeaderProps> = ({
         <div>
           <p className="text-xs text-slate-500 uppercase tracking-wide">Ancienneté</p>
           <p className="text-lg font-semibold text-slate-900 mt-0.5">
-            {seniority !== null ? `${seniority} an${seniority !== 1 ? 's' : ''}` : '—'}
+            {seniorityLabel}
           </p>
         </div>
       </div>

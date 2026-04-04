@@ -3,19 +3,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useToast } from '../../../context/ToastContext';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface AdminMRR {
-  total_mrr: number;
-  premium_count: number;
-  pro_count: number;
-  free_count: number;
-  trial_count: number;
+  total_mrr: number | null;
+  premium_count: number | null;
+  pro_count: number | null;
+  free_count: number | null;
+  trial_count: number | null;
   past_due_count: number;
-  total_salons: number;
+  total_salons: number | null;
 }
 
 export interface AdminAccount {
@@ -86,6 +83,8 @@ export function useAdminMRR() {
       if (error) throw error;
       return data as unknown as AdminMRR;
     },
+    staleTime: 60_000,
+    retry: false,
   });
 }
 
@@ -97,6 +96,8 @@ export function useAdminAccounts() {
       if (error) throw error;
       return (data ?? []) as AdminAccount[];
     },
+    staleTime: 60_000,
+    retry: false,
   });
 }
 
@@ -109,6 +110,8 @@ export function useAdminAccount(salonId: string) {
       return data as unknown as AdminAccountDetail;
     },
     enabled: !!salonId,
+    staleTime: 60_000,
+    retry: false,
   });
 }
 
@@ -120,6 +123,8 @@ export function useAdminTrials() {
       if (error) throw error;
       return (data ?? []) as AdminTrial[];
     },
+    staleTime: 60_000,
+    retry: false,
   });
 }
 
@@ -131,6 +136,8 @@ export function useAdminFailedPayments() {
       if (error) throw error;
       return (data ?? []) as AdminFailedPayment[];
     },
+    staleTime: 60_000,
+    retry: false,
   });
 }
 
@@ -142,6 +149,8 @@ export function useAdminRecentSignups() {
       if (error) throw error;
       return (data ?? []) as AdminSignup[];
     },
+    staleTime: 60_000,
+    retry: false,
   });
 }
 
@@ -153,6 +162,8 @@ export function useAdminChurn() {
       if (error) throw error;
       return (data ?? []) as AdminChurn[];
     },
+    staleTime: 60_000,
+    retry: false,
   });
 }
 
@@ -232,20 +243,10 @@ export function useAdminCancelSubscription(salonId: string) {
   const { addToast } = useToast();
   return useMutation({
     mutationFn: async () => {
-      const { data: sd } = await supabase.auth.getSession();
-      const token = sd.session?.access_token;
-      if (!token) throw new Error('Session expirée.');
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-cancel-subscription`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'apikey': SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify({ salon_id: salonId }),
+      const { error: fnError } = await supabase.functions.invoke('admin-cancel-subscription', {
+        body: { salon_id: salonId },
       });
-      const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.error || `Erreur ${res.status}`);
+      if (fnError) throw fnError;
     },
     onSuccess: () => {
       addToast({ type: 'success', message: 'Abonnement annulé. Le salon passera en Free à la fin de la période.' });

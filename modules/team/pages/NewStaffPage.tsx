@@ -11,11 +11,14 @@ export const NewStaffPage: React.FC = () => {
   const { addStaffMember } = useTeam();
 
   const handleSave = async (member: StaffMember) => {
-    const result = await addStaffMember(member);
-    if (result?.id) {
-      navigate(`/team/${result.id}`);
-    } else {
-      navigate('/team');
+    try {
+      const result = await addStaffMember(member);
+      if (result?.id) {
+        navigate(`/team/${result.id}`);
+      }
+    } catch {
+      // Error toast is handled by the mutation's onError callback
+      // Stay on the form so the user can retry
     }
   };
 
