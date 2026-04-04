@@ -67,6 +67,8 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
 
   // Find Premium plan for upgrade modal
   const premiumPlan = plans.find(p => p.name === 'Premium');
+  // Find the purchased plan for the success screen (matched by URL param)
+  const successPlan = successPlanName ? plans.find(p => p.name === successPlanName) : undefined;
 
   const handleUpgradeFromModal = async () => {
     if (premiumPlan) await createCheckoutSession(premiumPlan.id);
@@ -75,7 +77,7 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
   if (isSuccess) {
     return (
       <div className="w-full py-8 px-4 animate-in fade-in duration-500">
-        <UpgradeSuccess planName={successPlanName} />
+        <UpgradeSuccess plan={successPlan} planName={successPlanName} />
       </div>
     );
   }
