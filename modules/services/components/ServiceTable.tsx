@@ -39,8 +39,8 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Catégorie</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Variants</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Prix</th>
-            {showCosts && <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Coût</th>}
-            {showCosts && <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Marge</th>}
+            {showCosts && <th className="hidden sm:table-cell px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Coût</th>}
+            {showCosts && <th className="hidden sm:table-cell px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Marge</th>}
             <th className="px-6 py-3 text-right"></th>
           </tr>
         </thead>
@@ -74,7 +74,7 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
                   {minPrice === maxPrice ? formatPrice(minPrice) : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`}
                 </td>
                 {showCosts && (
-                  <td className="hidden sm:table-cell px-4 py-3 text-sm text-slate-600">
+                  <td className="hidden sm:table-cell px-6 py-3 text-sm text-slate-600">
                     {(() => {
                       const costs = service.variants.map((v) => v.cost + v.additionalCost);
                       const minCost = Math.min(...costs);
@@ -84,7 +84,7 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
                   </td>
                 )}
                 {showCosts && (
-                  <td className="hidden sm:table-cell px-4 py-3 text-sm font-medium text-emerald-600">
+                  <td className="hidden sm:table-cell px-6 py-3 text-sm font-medium text-emerald-600">
                     {(() => {
                       const margins = service.variants.map((v) => v.price - v.cost - v.additionalCost);
                       const minMargin = Math.min(...margins);

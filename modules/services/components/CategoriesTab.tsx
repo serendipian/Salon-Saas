@@ -13,6 +13,11 @@ export function CategoriesTab() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const toggleExpand = (id: string) => {
+    setExpandedId(expandedId === id ? null : id);
+    setSearchTerm('');
+  };
+
   useEffect(() => {
     setLocalCategories(serviceCategories);
     setLocalAssignments({});
@@ -154,7 +159,7 @@ export function CategoriesTab() {
 
             <button
               type="button"
-              onClick={() => setExpandedId(expandedId === cat.id ? null : cat.id)}
+              onClick={() => toggleExpand(cat.id)}
               className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors"
             >
               {expandedId === cat.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
