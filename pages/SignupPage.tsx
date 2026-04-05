@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, User, Loader2 } from 'lucide-react';
 
 export const SignupPage: React.FC = () => {
   const { signUp, isAuthenticated, isLoading: authLoading } = useAuth();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('redirect');
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -15,7 +17,7 @@ export const SignupPage: React.FC = () => {
   const [success, setSuccess] = useState(false);
 
   if (!authLoading && isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={redirect || '/dashboard'} replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -135,7 +137,7 @@ export const SignupPage: React.FC = () => {
 
         <p className="text-center text-sm text-slate-500 mt-6">
           Déjà un compte ?{' '}
-          <Link to="/login" className="text-slate-900 font-medium hover:underline">
+          <Link to={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : '/login'} className="text-slate-900 font-medium hover:underline">
             Se connecter
           </Link>
         </p>

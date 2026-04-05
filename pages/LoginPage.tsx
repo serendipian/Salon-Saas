@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, Loader2, Sparkles } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { signIn, signInWithMagicLink, isAuthenticated, isLoading: authLoading, profile } = useAuth();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('redirect');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,6 +16,7 @@ export const LoginPage: React.FC = () => {
   const [mode, setMode] = useState<'password' | 'magic'>('password');
 
   if (!authLoading && isAuthenticated) {
+    if (redirect) return <Navigate to={redirect} replace />;
     if (profile === null) return null; // profile still loading — ProtectedRoute will handle final redirect
     return <Navigate to={profile.is_admin ? '/admin' : '/dashboard'} replace />;
   }
@@ -166,7 +169,7 @@ export const LoginPage: React.FC = () => {
 
         <p className="text-center text-sm text-slate-500 mt-6">
           Pas encore de compte ?{' '}
-          <Link to="/signup" className="text-slate-900 font-medium hover:underline">
+          <Link to={redirect ? `/signup?redirect=${encodeURIComponent(redirect)}` : '/signup'} className="text-slate-900 font-medium hover:underline">
             Créer un compte
           </Link>
         </p>

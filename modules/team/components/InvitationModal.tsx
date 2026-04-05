@@ -22,7 +22,7 @@ export const InvitationModal: React.FC<InvitationModalProps> = ({
     setIsSubmitting(true);
     try {
       const token = await onCreateInvitation(email, staffRole);
-      setInvitationLink(`${window.location.origin}/#/accept-invitation?token=${token}`);
+      setInvitationLink(`${window.location.origin}/accept-invitation?token=${token}`);
     } catch {
       // Error handled by hook toast
     } finally {
