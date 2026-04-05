@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useQueries } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useTransactions } from '../../../hooks/useTransactions';
 import type { StaffMember, DateRange, Transaction, CartItem } from '../../../types';
@@ -53,38 +53,40 @@ export const useTeamPerformance = (staff: StaffMember[]): {
     return map;
   }, [filtered]);
 
-  const piiQueries = useQueries({
-    queries: staff.map(m => ({
-      queryKey: ['staff_pii', m.id],
-      queryFn: async () => {
-        const { data, error } = await supabase.rpc('get_staff_pii', { p_staff_id: m.id });
-        if (error) return null;
-        const row = (data as { base_salary: string | null }[] | null)?.[0];
-        return row?.base_salary ? parseFloat(row.base_salary) : null;
-      },
-      staleTime: 5 * 60 * 1000,
-      enabled: !!m.id,
-    })),
+  const staffIds = useMemo(() => staff.map(m => m.id), [staff]);
+
+  const { data: piiMap = new Map<string, number | null>(), isLoading: isLoadingPii } = useQuery({
+    queryKey: ['staff_pii_batch', staffIds],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_staff_pii_batch', { p_staff_ids: staffIds });
+      const map = new Map<string, number | null>();
+      if (error || !data) return map;
+      for (const row of data as { staff_id: string; base_salary: string | null }[]) {
+        map.set(row.staff_id, row.base_salary ? parseFloat(row.base_salary) : null);
+      }
+      return map;
+    },
+    staleTime: 5 * 60 * 1000,
+    enabled: staffIds.length > 0,
   });
 
   const performances = useMemo((): StaffPerformance[] => {
     const from = new Date(dateRange.from);
     const to = new Date(dateRange.to);
 
-    return staff.map((member, idx) => {
+    return staff.map((member) => {
       const revenue = revenueByStaff.get(member.id) || 0;
       const workingDays = countWorkingDays(from, to, member.schedule);
       const revenuePerDay = workingDays > 0 ? revenue / workingDays : 0;
       const bonusAttribue = calcBonus(revenue, member.bonusTiers);
-      const baseSalary = piiQueries[idx]?.data ?? null;
+      const baseSalary = piiMap.get(member.id) ?? null;
       const ratio = baseSalary && baseSalary > 0 ? revenue / baseSalary : null;
 
       return { staff: member, revenue, revenuePerDay, workingDays, bonusAttribue, baseSalary, ratio };
     });
-  }, [staff, revenueByStaff, piiQueries, dateRange]);
+  }, [staff, revenueByStaff, piiMap, dateRange]);
 
   const totalRevenue = useMemo(() => performances.reduce((s, p) => s + p.revenue, 0), [performances]);
-  const isLoadingPii = piiQueries.some(q => q.isLoading);
 
   return { performances, dateRange, setDateRange, totalRevenue, isLoadingPii };
 };

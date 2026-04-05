@@ -117,30 +117,39 @@ export const useServices = () => {
         if (error) throw error;
       }
 
-      // Upsert remaining variants
+      // Upsert remaining variants — batched inserts, parallel updates
+      const toUpdate: { id: string; row: ReturnType<typeof toVariantInsert> }[] = [];
+      const toInsert: ReturnType<typeof toVariantInsert>[] = [];
       for (let i = 0; i < service.variants.length; i++) {
         const v = service.variants[i];
         const row = toVariantInsert(v, service.id, salonId, i);
         if (v.id && existingIds.has(v.id)) {
-          const { error } = await supabase
-            .from('service_variants')
-            .update({
-              name: row.name,
-              duration_minutes: row.duration_minutes,
-              price: row.price,
-              cost: row.cost,
-              additional_cost: row.additional_cost,
-              sort_order: row.sort_order,
-            })
-            .eq('id', v.id);
-          if (error) throw error;
+          toUpdate.push({ id: v.id, row });
         } else {
-          const { error } = await supabase
-            .from('service_variants')
-            .insert(row);
-          if (error) throw error;
+          toInsert.push(row);
         }
       }
+
+      const updatePromises = toUpdate.map(({ id, row }) =>
+        supabase
+          .from('service_variants')
+          .update({
+            name: row.name,
+            duration_minutes: row.duration_minutes,
+            price: row.price,
+            cost: row.cost,
+            additional_cost: row.additional_cost,
+            sort_order: row.sort_order,
+          })
+          .eq('id', id)
+          .then(({ error }) => { if (error) throw error; })
+      );
+
+      const insertPromise = toInsert.length > 0
+        ? supabase.from('service_variants').insert(toInsert).then(({ error }) => { if (error) throw error; })
+        : Promise.resolve();
+
+      await Promise.all([...updatePromises, insertPromise]);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
@@ -197,34 +206,43 @@ export const useServices = () => {
         if (error) throw error;
       }
 
+      // Batch inserts, parallel updates for categories
+      const catUpdates: Promise<void>[] = [];
+      const catInserts: ReturnType<typeof toServiceCategoryInsert>[] = [];
       for (let i = 0; i < categories.length; i++) {
         const cat = categories[i];
         const row = toServiceCategoryInsert({ ...cat, sortOrder: i }, salonId);
         if (existingIds.has(cat.id)) {
-          const { error } = await supabase
-            .from('service_categories')
-            .update({ name: row.name, color: row.color, icon: row.icon, sort_order: row.sort_order })
-            .eq('id', cat.id)
-            .eq('salon_id', salonId);
-          if (error) throw error;
+          catUpdates.push(
+            supabase
+              .from('service_categories')
+              .update({ name: row.name, color: row.color, icon: row.icon, sort_order: row.sort_order })
+              .eq('id', cat.id)
+              .eq('salon_id', salonId)
+              .then(({ error }) => { if (error) throw error; })
+          );
         } else {
-          const { error } = await supabase
-            .from('service_categories')
-            .insert(row);
-          if (error) throw error;
+          catInserts.push(row);
         }
       }
 
-      // Batch-update service category assignments
+      const catInsertPromise = catInserts.length > 0
+        ? supabase.from('service_categories').insert(catInserts).then(({ error }) => { if (error) throw error; })
+        : Promise.resolve();
+
+      await Promise.all([...catUpdates, catInsertPromise]);
+
+      // Parallel service category assignments
       if (assignments) {
-        for (const [serviceId, categoryId] of Object.entries(assignments)) {
-          const { error } = await supabase
+        const assignmentPromises = Object.entries(assignments).map(([serviceId, categoryId]) =>
+          supabase
             .from('services')
             .update({ category_id: categoryId })
             .eq('id', serviceId)
-            .eq('salon_id', salonId);
-          if (error) throw error;
-        }
+            .eq('salon_id', salonId)
+            .then(({ error }) => { if (error) throw error; })
+        );
+        await Promise.all(assignmentPromises);
       }
     },
     onSuccess: () => {
