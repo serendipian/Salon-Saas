@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { CalendarClock, Check, Clock, User, Scissors, Tag, X, StickyNote } from 'lucide-react';
 import { Appointment, AppointmentStatus, Service, ServiceCategory, StaffMember } from '../../../types';
 import { HOURS, isSameDay } from '../../appointments/components/calendarUtils';
-import { getCategoryCalendarColors } from '../../appointments/components/calendarColors';
 import { StatusBadge } from '../../appointments/components/StatusBadge';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { formatPrice } from '../../../lib/format';
@@ -32,27 +31,31 @@ function getNowOffset(): number | null {
   return ((h - 8) * 60 + m) / 60 * ROW_H;
 }
 
-const COLOR_HEX: Record<string, string> = {
-  rose: '#f43f5e', blue: '#3b82f6', emerald: '#10b981', purple: '#a855f7',
-  pink: '#ec4899', amber: '#f59e0b', red: '#ef4444', cyan: '#06b6d4',
-  indigo: '#6366f1', teal: '#14b8a6', slate: '#64748b',
-};
+// Blue-only palette for dashboard calendar (staff columns cycle through shades)
+const BLUE_HEX_PALETTE = [
+  '#3b82f6', '#2563eb', '#60a5fa', '#1d4ed8', '#93c5fd',
+  '#1e40af', '#7dd3fc', '#0ea5e9', '#38bdf8', '#0284c7',
+];
 
-function staffHex(color: string): string {
-  const match = color.match(/bg-(\w+)-\d+/);
-  return COLOR_HEX[match?.[1] ?? ''] ?? '#64748b';
+const BLUE_BG_PALETTE = [
+  'bg-blue-50/60', 'bg-blue-100/40', 'bg-sky-50/60', 'bg-indigo-50/40', 'bg-blue-50/40',
+  'bg-sky-100/40', 'bg-blue-100/30', 'bg-sky-50/40', 'bg-indigo-50/30', 'bg-blue-50/50',
+];
+
+function staffHexByIndex(index: number): string {
+  return BLUE_HEX_PALETTE[index % BLUE_HEX_PALETTE.length];
 }
 
-const COLUMN_BG: Record<string, string> = {
-  rose: 'bg-rose-50/60', blue: 'bg-blue-50/60', emerald: 'bg-emerald-50/60', purple: 'bg-purple-50/60',
-  pink: 'bg-pink-50/60', amber: 'bg-amber-50/60', red: 'bg-red-50/60', cyan: 'bg-cyan-50/60',
-  indigo: 'bg-indigo-50/60', teal: 'bg-teal-50/60', slate: 'bg-slate-50/60',
-};
-
-function staffColumnBg(color: string): string {
-  const match = color.match(/bg-(\w+)-\d+/);
-  return COLUMN_BG[match?.[1] ?? ''] ?? 'bg-slate-50/60';
+function staffColumnBgByIndex(index: number): string {
+  return BLUE_BG_PALETTE[index % BLUE_BG_PALETTE.length];
 }
+
+// Blue-only appointment block colors (override category colors on dashboard)
+const BLUE_BLOCK = {
+  bg: 'bg-blue-50',
+  border: 'border-blue-400',
+  text: 'text-blue-800',
+};
 
 // ── Popover ──────────────────────────────────────────────
 
@@ -152,7 +155,7 @@ const AppointmentPopover: React.FC<{
         </div>
         <div className="flex items-center gap-2.5 text-[13px]">
           <Tag size={14} className="text-slate-400 shrink-0" />
-          <span className="font-semibold text-pink-600">{formatPrice(appointment.price)}</span>
+          <span className="font-semibold text-blue-600">{formatPrice(appointment.price)}</span>
         </div>
         {appointment.notes && (
           <div className="flex items-start gap-2.5 text-[13px] text-slate-500">
@@ -172,7 +175,7 @@ const AppointmentPopover: React.FC<{
         </button>
         <button
           onClick={onEdit}
-          className="flex-1 px-3 py-2 text-sm font-medium bg-pink-500 hover:bg-pink-600 text-white rounded-lg transition-colors"
+          className="flex-1 px-3 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
         >
           Modifier
         </button>
@@ -223,17 +226,6 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     );
   }, [appointments]);
 
-  const categoryByServiceId = useMemo(() => {
-    const catMap = new Map<string, ServiceCategory>();
-    for (const cat of serviceCategories) catMap.set(cat.id, cat);
-    const map = new Map<string, ServiceCategory>();
-    for (const svc of services) {
-      const cat = catMap.get(svc.categoryId);
-      if (cat) map.set(svc.id, cat);
-    }
-    return map;
-  }, [services, serviceCategories]);
-
   const staffColumns = useMemo(() => {
     const withAppts = new Set(todayAppts.map(a => a.staffId));
     const active = staff.filter(s => s.active && !s.deletedAt);
@@ -266,7 +258,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
         <div className="flex items-center gap-3">
           {todayAppts.length > 0 && (
             <div className="flex items-center gap-2 text-[11px]">
-              <span className="flex items-center gap-1 text-emerald-600 font-medium bg-emerald-50 px-2 py-1 rounded-lg">
+              <span className="flex items-center gap-1 text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-lg">
                 <Check size={12} />
                 {completedCount}
               </span>
@@ -291,9 +283,9 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
           {/* ── Sticky staff headers ── */}
           <div className="flex border-b border-slate-100 bg-white sticky top-0 z-20">
             <div className="w-[52px] shrink-0" />
-            {staffColumns.map(s => {
+            {staffColumns.map((s, sIdx) => {
               const count = (apptsByStaff.get(s.id) || []).length;
-              const colBg = staffColumnBg(s.color);
+              const colBg = staffColumnBgByIndex(sIdx);
               return (
                 <div
                   key={s.id}
@@ -304,7 +296,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                       firstName={s.firstName}
                       lastName={s.lastName}
                       photoUrl={s.photoUrl}
-                      color={staffHex(s.color)}
+                      color={staffHexByIndex(sIdx)}
                       size={28}
                     />
                     <div className="min-w-0">
@@ -364,8 +356,6 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                       const dur = Math.min(appt.durationMinutes, maxMin - startMin);
                       const height = Math.max((dur / 60) * ROW_H, 28);
 
-                      const cat = categoryByServiceId.get(appt.serviceId);
-                      const colors = cat ? getCategoryCalendarColors(cat.color) : null;
                       const done = appt.status === AppointmentStatus.COMPLETED;
                       const end = new Date(start.getTime() + appt.durationMinutes * 60000);
                       const isSelected = popover?.appointment.id === appt.id;
@@ -378,10 +368,10 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                             absolute left-1.5 right-1.5 rounded-lg overflow-hidden
                             transition-all duration-200 cursor-pointer group/block
                             border-l-[3px]
-                            ${isSelected ? 'ring-2 ring-slate-900/20 shadow-lg z-20' : ''}
+                            ${isSelected ? 'ring-2 ring-blue-300/40 shadow-lg z-20' : ''}
                             ${done
                               ? 'border-slate-300 bg-slate-50/80 text-slate-400 hover:bg-slate-100/80'
-                              : `${colors?.border ?? 'border-slate-400'} ${colors?.bg ?? 'bg-slate-50'} ${colors?.text ?? 'text-slate-800'} hover:shadow-md hover:shadow-slate-200/50 hover:-translate-y-[1px]`
+                              : `${BLUE_BLOCK.border} ${BLUE_BLOCK.bg} ${BLUE_BLOCK.text} hover:shadow-md hover:shadow-blue-100/50 hover:-translate-y-[1px]`
                             }
                           `}
                           style={{ top: top + 1, height: Math.max(height - 2, 26) }}
