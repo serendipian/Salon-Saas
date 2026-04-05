@@ -12,11 +12,12 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, Clock, RefreshCw, Crown, TrendingUp } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useClients } from '../clients/hooks/useClients';
 import { useAppointments } from '../appointments/hooks/useAppointments';
 import { useServices } from '../services/hooks/useServices';
+import { useTeam } from '../team/hooks/useTeam';
 import { formatPrice } from '../../lib/format';
 import { DateRange, AppointmentStatus } from '../../types';
 import { DateRangePicker } from '../../components/DateRangePicker';
@@ -71,6 +72,7 @@ export const DashboardModule: React.FC = () => {
   const { allAppointments: appointments } = useAppointments();
   const { allClients: clients } = useClients();
   const { services, serviceCategories } = useServices();
+  const { allStaff } = useTeam();
 
   // State for Date Range (Default: This Month)
   const [dateRange, setDateRange] = useState<DateRange>(() => {
@@ -222,6 +224,101 @@ export const DashboardModule: React.FC = () => {
       .slice(0, 3);
   }, [appointments]);
 
+  // --- 5. Top Services by Revenue ---
+  const topServices = useMemo(() => {
+    const serviceMap = new Map<string, { name: string; revenue: number; count: number }>();
+    data.current.transactions.forEach(t => {
+      t.items.filter(i => i.type === 'SERVICE').forEach(item => {
+        const key = item.name;
+        const existing = serviceMap.get(key) || { name: key, revenue: 0, count: 0 };
+        existing.revenue += item.price * item.quantity;
+        existing.count += item.quantity;
+        serviceMap.set(key, existing);
+      });
+    });
+    return Array.from(serviceMap.values())
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+  }, [data.current.transactions]);
+
+  // --- 6. Revenue by Staff ---
+  const staffRevenue = useMemo(() => {
+    const staffMap = new Map<string, { name: string; revenue: number; appointments: number }>();
+    // From transaction items (revenue)
+    data.current.transactions.forEach(t => {
+      t.items.forEach(item => {
+        if (!item.staffId || !item.staffName) return;
+        const existing = staffMap.get(item.staffId) || { name: item.staffName, revenue: 0, appointments: 0 };
+        existing.revenue += item.price * item.quantity;
+        staffMap.set(item.staffId, existing);
+      });
+    });
+    // From appointments (count completed)
+    data.current.appointments
+      .filter(a => a.status === AppointmentStatus.COMPLETED)
+      .forEach(a => {
+        if (!a.staffId) return;
+        const existing = staffMap.get(a.staffId) || { name: a.staffName, revenue: 0, appointments: 0 };
+        existing.appointments += 1;
+        staffMap.set(a.staffId, existing);
+      });
+    return Array.from(staffMap.values())
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+  }, [data.current.transactions, data.current.appointments]);
+
+  // --- 7. Staff Occupancy Rate ---
+  const occupancyRate = useMemo(() => {
+    const from = dateRange.from;
+    const to = dateRange.to;
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+
+    // Calculate total available hours for active staff in the period
+    let totalAvailableMinutes = 0;
+    const activeStaff = allStaff.filter(s => s.active && !s.deletedAt);
+
+    const current = new Date(from);
+    while (current <= to) {
+      const dayName = dayNames[current.getDay()];
+      activeStaff.forEach(staff => {
+        const day = staff.schedule?.[dayName];
+        if (day?.isOpen && day.start && day.end) {
+          const [sh, sm] = day.start.split(':').map(Number);
+          const [eh, em] = day.end.split(':').map(Number);
+          totalAvailableMinutes += (eh * 60 + em) - (sh * 60 + sm);
+        }
+      });
+      current.setDate(current.getDate() + 1);
+    }
+
+    // Calculate total booked minutes (non-cancelled appointments)
+    const bookedMinutes = data.current.appointments
+      .filter(a => a.status !== AppointmentStatus.CANCELLED)
+      .reduce((sum, a) => sum + (a.durationMinutes || 0), 0);
+
+    const rate = totalAvailableMinutes > 0 ? (bookedMinutes / totalAvailableMinutes) * 100 : 0;
+    return { rate, bookedMinutes, totalAvailableMinutes };
+  }, [data.current.appointments, allStaff, dateRange]);
+
+  // --- 8. Client Retention ---
+  const clientRetention = useMemo(() => {
+    // Clients who had appointments in this period
+    const clientIdsInPeriod = new Set(
+      data.current.appointments
+        .filter(a => a.status !== AppointmentStatus.CANCELLED)
+        .map(a => a.clientId)
+    );
+    const totalClientsServed = clientIdsInPeriod.size;
+
+    // Of those, who are returning (totalVisits > 1 at this point)?
+    const returningClients = clients.filter(
+      c => clientIdsInPeriod.has(c.id) && c.totalVisits > 1
+    ).length;
+
+    const retentionRate = totalClientsServed > 0 ? (returningClients / totalClientsServed) * 100 : 0;
+    return { retentionRate, returningClients, totalClientsServed };
+  }, [data.current.appointments, clients]);
+
   return (
     <div className="w-full space-y-8">
       {/* Header */}
@@ -278,6 +375,26 @@ export const DashboardModule: React.FC = () => {
           isPositive={stats.cancellationTrend <= 0}
           subtitle="vs période préc."
           icon={XCircle}
+        />
+      </div>
+
+      {/* Secondary KPIs */}
+      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-2 gap-4">
+        <MetricCard
+          title="Taux d'Occupation"
+          value={`${occupancyRate.rate.toFixed(1)}%`}
+          trend={null}
+          isPositive={true}
+          subtitle={`${Math.round(occupancyRate.bookedMinutes / 60)}h réservées / ${Math.round(occupancyRate.totalAvailableMinutes / 60)}h disponibles`}
+          icon={Clock}
+        />
+        <MetricCard
+          title="Clients Fidèles"
+          value={`${clientRetention.retentionRate.toFixed(1)}%`}
+          trend={null}
+          isPositive={true}
+          subtitle={`${clientRetention.returningClients} fidèles sur ${clientRetention.totalClientsServed} servis`}
+          icon={RefreshCw}
         />
       </div>
 
@@ -386,6 +503,85 @@ export const DashboardModule: React.FC = () => {
                 Voir le planning complet
               </button>
            </div>
+        </div>
+      </div>
+
+      {/* Rankings Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Services */}
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <Crown size={16} className="text-amber-500" />
+              Top Services
+            </h3>
+            <button onClick={() => navigate('/services')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
+              Tous <ChevronRight size={12} />
+            </button>
+          </div>
+          {topServices.length > 0 ? (
+            <div className="space-y-3">
+              {topServices.map((svc, i) => {
+                const maxRevenue = topServices[0]?.revenue || 1;
+                const barWidth = (svc.revenue / maxRevenue) * 100;
+                return (
+                  <div key={svc.name} className="flex items-center gap-3">
+                    <span className="text-xs font-bold text-slate-400 w-4 text-right">{i + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline mb-1">
+                        <span className="text-sm font-medium text-slate-700 truncate">{svc.name}</span>
+                        <span className="text-sm font-bold text-slate-900 ml-2 shrink-0">{formatPrice(svc.revenue)}</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-slate-700 rounded-full transition-all duration-500" style={{ width: `${barWidth}%` }} />
+                      </div>
+                      <span className="text-[10px] text-slate-400 mt-0.5 block">{svc.count} prestation{svc.count > 1 ? 's' : ''}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400 italic text-center py-6">Aucune donnée pour cette période.</p>
+          )}
+        </div>
+
+        {/* Staff Revenue */}
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <TrendingUp size={16} className="text-emerald-500" />
+              Performance Équipe
+            </h3>
+            <button onClick={() => navigate('/team')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
+              Voir <ChevronRight size={12} />
+            </button>
+          </div>
+          {staffRevenue.length > 0 ? (
+            <div className="space-y-3">
+              {staffRevenue.map((staff, i) => {
+                const maxRevenue = staffRevenue[0]?.revenue || 1;
+                const barWidth = (staff.revenue / maxRevenue) * 100;
+                return (
+                  <div key={staff.name} className="flex items-center gap-3">
+                    <span className="text-xs font-bold text-slate-400 w-4 text-right">{i + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline mb-1">
+                        <span className="text-sm font-medium text-slate-700 truncate">{staff.name}</span>
+                        <span className="text-sm font-bold text-slate-900 ml-2 shrink-0">{formatPrice(staff.revenue)}</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${barWidth}%` }} />
+                      </div>
+                      <span className="text-[10px] text-slate-400 mt-0.5 block">{staff.appointments} rdv complété{staff.appointments > 1 ? 's' : ''}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400 italic text-center py-6">Aucune donnée pour cette période.</p>
+          )}
         </div>
       </div>
     </div>
