@@ -22,7 +22,7 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
     phone: '',
     website: '',
     address: '',
-    category: 'Produits',
+    category: 'Produits Coiffure',
     paymentTerms: '30 jours',
     active: true,
     notes: ''
@@ -76,9 +76,8 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
            </Section>
 
            <Section title="Contact Principal">
-              <Input 
+              <Input
                 label="Nom du contact"
-                required
                 value={formData.contactName}
                 onChange={e => setFormData({...formData, contactName: e.target.value})}
                 placeholder="Ex: Jean Dupont"
@@ -87,16 +86,14 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
                 <Input
                   label="Email"
                   type="email"
-                  required
                   value={formData.email}
                   onChange={e => { clearFieldError('email'); setFormData({...formData, email: e.target.value}); }}
                   placeholder="contact@email.com"
                   error={errors.email}
                 />
-                <Input 
+                <Input
                   label="Téléphone"
                   type="tel"
-                  required
                   value={formData.phone}
                   onChange={e => setFormData({...formData, phone: e.target.value})}
                   placeholder="01 23 45 67 89"
