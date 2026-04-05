@@ -403,6 +403,7 @@ export const DashboardModule: React.FC = () => {
         appointments={appointments}
         services={services}
         serviceCategories={serviceCategories}
+        staff={allStaff}
       />
 
       {/* Charts Area */}
