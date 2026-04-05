@@ -12,7 +12,7 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, Clock, RefreshCw, Crown, TrendingUp } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, Clock, Crown, TrendingUp } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useClients } from '../clients/hooks/useClients';
 import { useAppointments } from '../appointments/hooks/useAppointments';
@@ -300,24 +300,6 @@ export const DashboardModule: React.FC = () => {
     return { rate, bookedMinutes, totalAvailableMinutes };
   }, [data.current.appointments, allStaff, dateRange]);
 
-  // --- 8. Client Retention ---
-  const clientRetention = useMemo(() => {
-    // Clients who had appointments in this period
-    const clientIdsInPeriod = new Set(
-      data.current.appointments
-        .filter(a => a.status !== AppointmentStatus.CANCELLED)
-        .map(a => a.clientId)
-    );
-    const totalClientsServed = clientIdsInPeriod.size;
-
-    // Of those, who are returning (totalVisits > 1 at this point)?
-    const returningClients = clients.filter(
-      c => clientIdsInPeriod.has(c.id) && c.totalVisits > 1
-    ).length;
-
-    const retentionRate = totalClientsServed > 0 ? (returningClients / totalClientsServed) * 100 : 0;
-    return { retentionRate, returningClients, totalClientsServed };
-  }, [data.current.appointments, clients]);
 
   return (
     <div className="w-full space-y-8">
@@ -333,7 +315,7 @@ export const DashboardModule: React.FC = () => {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <MetricCard
           title="Chiffre d'Affaires"
           value={stats.revenue}
@@ -341,6 +323,15 @@ export const DashboardModule: React.FC = () => {
           isPositive={stats.revenueTrend >= 0}
           subtitle="vs période préc."
           icon={DollarSign}
+          isCurrency
+        />
+        <MetricCard
+          title="Panier Moyen"
+          value={stats.avgBasket}
+          trend={stats.basketTrend}
+          isPositive={stats.basketTrend >= 0}
+          subtitle="vs période préc."
+          icon={ShoppingBag}
           isCurrency
         />
         <MetricCard
@@ -360,13 +351,12 @@ export const DashboardModule: React.FC = () => {
           icon={Users}
         />
         <MetricCard
-          title="Panier Moyen"
-          value={stats.avgBasket}
-          trend={stats.basketTrend}
-          isPositive={stats.basketTrend >= 0}
-          subtitle="vs période préc."
-          icon={ShoppingBag}
-          isCurrency
+          title="Taux d'Occupation"
+          value={`${occupancyRate.rate.toFixed(1)}%`}
+          trend={null}
+          isPositive={true}
+          subtitle={`${Math.round(occupancyRate.bookedMinutes / 60)}h / ${Math.round(occupancyRate.totalAvailableMinutes / 60)}h dispo.`}
+          icon={Clock}
         />
         <MetricCard
           title="Annulations"
@@ -375,26 +365,6 @@ export const DashboardModule: React.FC = () => {
           isPositive={stats.cancellationTrend <= 0}
           subtitle="vs période préc."
           icon={XCircle}
-        />
-      </div>
-
-      {/* Secondary KPIs */}
-      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-2 gap-4">
-        <MetricCard
-          title="Taux d'Occupation"
-          value={`${occupancyRate.rate.toFixed(1)}%`}
-          trend={null}
-          isPositive={true}
-          subtitle={`${Math.round(occupancyRate.bookedMinutes / 60)}h réservées / ${Math.round(occupancyRate.totalAvailableMinutes / 60)}h disponibles`}
-          icon={Clock}
-        />
-        <MetricCard
-          title="Clients Fidèles"
-          value={`${clientRetention.retentionRate.toFixed(1)}%`}
-          trend={null}
-          isPositive={true}
-          subtitle={`${clientRetention.returningClients} fidèles sur ${clientRetention.totalClientsServed} servis`}
-          icon={RefreshCw}
         />
       </div>
 

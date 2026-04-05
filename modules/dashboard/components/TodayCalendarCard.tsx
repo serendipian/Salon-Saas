@@ -291,7 +291,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
           <p className="text-xs text-slate-300 mt-1">Profitez de la pause !</p>
         </div>
       ) : (
-        <div className="flex flex-col">
+        <div ref={scrollRef} className="overflow-x-auto overflow-y-auto max-h-[560px] relative">
           {/* ── Sticky staff headers ── */}
           <div className="flex border-b border-slate-100 bg-white sticky top-0 z-20">
             <div className="w-[52px] shrink-0" />
@@ -325,9 +325,8 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
             })}
           </div>
 
-          {/* ── Scrollable grid ── */}
-          <div ref={scrollRef} className="overflow-x-auto overflow-y-auto max-h-[520px] relative">
-            <div className="flex relative" style={{ minHeight: totalHeight }}>
+          {/* ── Grid body ── */}
+          <div className="flex relative" style={{ minHeight: totalHeight }}>
               {/* ── Hour gutter ── */}
               <div className="w-[52px] shrink-0 relative" style={{ height: totalHeight }}>
                 {HOURS.map((hour, i) => (
@@ -451,7 +450,6 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
               )}
             </div>
           </div>
-        </div>
       )}
     </div>
   );
