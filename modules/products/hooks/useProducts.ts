@@ -7,12 +7,17 @@ import type { Product, ProductCategory } from '../../../types';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 
+export interface CategoryUpdatePayload {
+  categories: ProductCategory[];
+  assignments?: Record<string, string | null>;
+}
+
 export const useProducts = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
-  const { toastOnError } = useMutationToast();
+  const { toastOnError, toastOnSuccess } = useMutationToast();
   useRealtimeSync('products');
   useRealtimeSync('product_categories');
 
@@ -79,51 +84,27 @@ export const useProducts = () => {
     onError: toastOnError("Impossible de modifier le produit"),
   });
 
-  // Update product categories (upsert with soft-delete)
+  // Update product categories (via RPC for atomic operation)
   const updateProductCategoriesMutation = useMutation({
-    mutationFn: async (categories: ProductCategory[]) => {
-      const { data: existing, error: fetchErr } = await supabase
-        .from('product_categories')
-        .select('id')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null);
-      if (fetchErr) throw fetchErr;
+    mutationFn: async ({ categories, assignments }: CategoryUpdatePayload) => {
+      const p_categories = categories.map((cat, i) => ({
+        id: cat.id,
+        name: cat.name,
+        color: cat.color,
+        sort_order: i,
+      }));
 
-      const existingIds = new Set((existing ?? []).map(c => c.id));
-      const newIds = new Set(categories.map(c => c.id));
-
-      // Soft-delete removed categories
-      const toDelete = [...existingIds].filter(id => !newIds.has(id));
-      if (toDelete.length > 0) {
-        const { error } = await supabase
-          .from('product_categories')
-          .update({ deleted_at: new Date().toISOString() })
-          .in('id', toDelete)
-          .eq('salon_id', salonId);
-        if (error) throw error;
-      }
-
-      // Upsert remaining categories
-      for (let i = 0; i < categories.length; i++) {
-        const cat = categories[i];
-        const row = toProductCategoryInsert({ ...cat, sortOrder: i }, salonId);
-        if (existingIds.has(cat.id)) {
-          const { error } = await supabase
-            .from('product_categories')
-            .update({ name: row.name, color: row.color, sort_order: row.sort_order })
-            .eq('id', cat.id)
-            .eq('salon_id', salonId);
-          if (error) throw error;
-        } else {
-          const { error } = await supabase
-            .from('product_categories')
-            .insert(row);
-          if (error) throw error;
-        }
-      }
+      const { error } = await supabase.rpc('save_product_categories', {
+        p_salon_id: salonId,
+        p_categories: p_categories,
+        p_assignments: assignments ?? null,
+      });
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product_categories', salonId] });
+      queryClient.invalidateQueries({ queryKey: ['products', salonId] });
+      toastOnSuccess('Catégories enregistrées')();
     },
     onError: toastOnError("Impossible de modifier les catégories de produits"),
   });
@@ -149,7 +130,7 @@ export const useProducts = () => {
       addProductMutation.mutate({ product, supplierId }),
     updateProduct: (product: Product, supplierId?: string | null) =>
       updateProductMutation.mutate({ product, supplierId }),
-    updateProductCategories: (categories: ProductCategory[]) =>
-      updateProductCategoriesMutation.mutate(categories),
+    updateProductCategories: (payload: CategoryUpdatePayload) =>
+      updateProductCategoriesMutation.mutate(payload),
   };
 };

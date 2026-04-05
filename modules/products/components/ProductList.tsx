@@ -1,9 +1,12 @@
 
 import React from 'react';
-import { Plus, Search, Layers } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Search, Settings } from 'lucide-react';
 import { Product, ProductCategory } from '../../../types';
 import { useViewMode } from '../../../hooks/useViewMode';
 import { ViewToggle } from '../../../components/ViewToggle';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { useAuth } from '../../../context/AuthContext';
 import { ProductTable } from './ProductTable';
 import { ProductCard } from './ProductCard';
 
@@ -14,7 +17,6 @@ interface ProductListProps {
   onSearchChange: (val: string) => void;
   onAdd: () => void;
   onEdit: (id: string) => void;
-  onManageCategories: () => void;
 }
 
 export const ProductList: React.FC<ProductListProps> = ({
@@ -24,8 +26,11 @@ export const ProductList: React.FC<ProductListProps> = ({
   onSearchChange,
   onAdd,
   onEdit,
-  onManageCategories
 }) => {
+  const navigate = useNavigate();
+  const { role } = useAuth();
+  const { can } = usePermissions(role);
+  const canEditProducts = can('edit', 'products');
   const { viewMode, setViewMode } = useViewMode('products');
 
   return (
@@ -33,13 +38,15 @@ export const ProductList: React.FC<ProductListProps> = ({
       <div className="flex justify-between items-end">
         <h1 className="text-2xl font-bold text-slate-900">Produits</h1>
         <div className="flex gap-3">
-           <button
-            onClick={onManageCategories}
-            className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
-          >
-            <Layers size={16} />
-            Catégories
-          </button>
+          {canEditProducts && (
+            <button
+              onClick={() => navigate('/products/settings')}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors"
+              title="Paramètres des produits"
+            >
+              <Settings size={18} className="text-slate-600" />
+            </button>
+          )}
           <button
             onClick={onAdd}
             className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"

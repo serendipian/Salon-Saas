@@ -79,6 +79,12 @@ export interface Service {
   durationMinutes?: number;
 }
 
+export interface ProductSettings {
+  lowStockThreshold: number;
+  showCostsInList: boolean;
+  defaultView: 'card' | 'table';
+}
+
 // Product Domain
 export interface ProductCategory {
   id: string;

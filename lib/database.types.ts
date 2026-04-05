@@ -1181,6 +1181,7 @@ export type Database = {
           phone: string | null
           plan_id: string | null
           postal_code: string | null
+          product_settings: Json | null
           schedule: Json | null
           service_settings: Json | null
           slug: string | null
@@ -1214,6 +1215,7 @@ export type Database = {
           phone?: string | null
           plan_id?: string | null
           postal_code?: string | null
+          product_settings?: Json | null
           schedule?: Json | null
           service_settings?: Json | null
           slug?: string | null
@@ -1247,6 +1249,7 @@ export type Database = {
           phone?: string | null
           plan_id?: string | null
           postal_code?: string | null
+          product_settings?: Json | null
           schedule?: Json | null
           service_settings?: Json | null
           slug?: string | null
@@ -2545,6 +2548,10 @@ export type Database = {
       leave_salon: { Args: { p_salon_id: string }; Returns: undefined }
       revoke_membership: {
         Args: { p_membership_id: string }
+        Returns: undefined
+      }
+      save_product_categories: {
+        Args: { p_assignments?: Json; p_categories: Json; p_salon_id: string }
         Returns: undefined
       }
       save_service_categories: {

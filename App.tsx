@@ -46,6 +46,7 @@ import { TeamListPage } from './modules/team/pages/TeamListPage';
 import { NewStaffPage } from './modules/team/pages/NewStaffPage';
 import { StaffDetailPage } from './modules/team/pages/StaffDetailPage';
 import { ProductsModule } from './modules/products/ProductsModule';
+import { ProductSettingsPage } from './modules/products/ProductSettingsPage';
 import { AppointmentsModule } from './modules/appointments/AppointmentsModule';
 import { AppointmentListPage } from './modules/appointments/pages/AppointmentListPage';
 import { AppointmentDetailPage } from './modules/appointments/pages/AppointmentDetailPage';
@@ -112,6 +113,11 @@ const AppContent = () => {
         <Route path="/products" element={
           <ProtectedRoute action="view" resource="products">
             <ErrorBoundary moduleName="Produits"><ProductsModule /></ErrorBoundary>
+          </ProtectedRoute>
+        } />
+        <Route path="/products/settings" element={
+          <ProtectedRoute action="edit" resource="products">
+            <ErrorBoundary moduleName="Paramètres des produits"><ProductSettingsPage /></ErrorBoundary>
           </ProtectedRoute>
         } />
         <Route path="/suppliers" element={
