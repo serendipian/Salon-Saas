@@ -12,7 +12,7 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, Clock, Crown, TrendingUp } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, ChevronDown, ChevronUp, Clock, Crown, TrendingUp, Scissors, MapPin } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useClients } from '../clients/hooks/useClients';
 import { useAppointments } from '../appointments/hooks/useAppointments';
@@ -216,12 +216,13 @@ export const DashboardModule: React.FC = () => {
   }, [data.current, dateRange]);
 
   // --- 4. Operational Data ---
+  const [upcomingExpanded, setUpcomingExpanded] = useState(false);
   const upcomingAppointments = useMemo(() => {
     const now = new Date();
     return appointments
-      .filter(a => new Date(a.date) > now)
+      .filter(a => new Date(a.date) > now && a.status !== AppointmentStatus.CANCELLED)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(0, 3);
+      .slice(0, 10);
   }, [appointments]);
 
   // --- 5. Top Services by Revenue ---
@@ -380,6 +381,105 @@ export const DashboardModule: React.FC = () => {
         </div>
 
         <div className="space-y-6">
+           {/* Upcoming Appointments */}
+           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="px-5 pt-5 pb-3 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center">
+                    <Clock size={14} className="text-pink-500" />
+                  </div>
+                  <h3 className="font-bold text-slate-800">Prochains RDV</h3>
+                </div>
+                <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Live
+                </span>
+              </div>
+
+              <div className="px-3 pb-2">
+                 {upcomingAppointments.length > 0 ? (
+                   <>
+                     <div className="space-y-0.5">
+                       {(upcomingExpanded ? upcomingAppointments : upcomingAppointments.slice(0, 3)).map((apt, i) => {
+                         const date = new Date(apt.date);
+                         const endDate = new Date(date.getTime() + apt.durationMinutes * 60000);
+                         const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                         const endStr = endDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                         const isToday = date.toDateString() === new Date().toDateString();
+                         const isTomorrow = date.toDateString() === new Date(Date.now() + 86400000).toDateString();
+                         const dayLabel = isToday ? "Aujourd'hui" : isTomorrow ? 'Demain' : date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+
+                         return (
+                           <div
+                             key={apt.id}
+                             onClick={() => navigate(`/calendar/${apt.id}`)}
+                             className="group flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 cursor-pointer transition-all duration-150"
+                           >
+                             {/* Time block */}
+                             <div className="w-[52px] shrink-0 text-center">
+                               <div className="text-sm font-bold text-slate-900 leading-tight">{timeStr}</div>
+                               <div className="text-[10px] text-slate-400 leading-tight">{endStr}</div>
+                             </div>
+
+                             {/* Accent line */}
+                             <div className={`w-0.5 h-9 rounded-full shrink-0 ${isToday ? 'bg-pink-400' : 'bg-slate-200'}`} />
+
+                             {/* Details */}
+                             <div className="flex-1 min-w-0">
+                               <div className="flex items-center gap-1.5">
+                                 <span className="text-sm font-semibold text-slate-800 truncate">{apt.clientName}</span>
+                               </div>
+                               <div className="flex items-center gap-2 mt-0.5">
+                                 <span className="text-xs text-slate-500 truncate flex items-center gap-1">
+                                   <Scissors size={10} className="text-slate-400 shrink-0" />
+                                   {apt.serviceName}
+                                 </span>
+                               </div>
+                             </div>
+
+                             {/* Day badge */}
+                             <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${isToday ? 'bg-pink-50 text-pink-600' : 'bg-slate-50 text-slate-500'}`}>
+                               {dayLabel}
+                             </span>
+
+                             <ChevronRight size={14} className="text-slate-300 group-hover:text-slate-500 transition-colors shrink-0" />
+                           </div>
+                         );
+                       })}
+                     </div>
+
+                     {/* Expand / Collapse */}
+                     {upcomingAppointments.length > 3 && (
+                       <button
+                         onClick={() => setUpcomingExpanded(!upcomingExpanded)}
+                         className="w-full mt-1 py-2 text-xs font-medium text-slate-500 hover:text-slate-700 flex items-center justify-center gap-1 transition-colors"
+                       >
+                         {upcomingExpanded ? (
+                           <>Voir moins <ChevronUp size={14} /></>
+                         ) : (
+                           <>+{upcomingAppointments.length - 3} autres <ChevronDown size={14} /></>
+                         )}
+                       </button>
+                     )}
+                   </>
+                 ) : (
+                   <div className="text-center py-8 px-4">
+                     <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-2">
+                       <Calendar size={18} className="text-slate-300" />
+                     </div>
+                     <p className="text-sm text-slate-400">Aucun rendez-vous à venir</p>
+                   </div>
+                 )}
+              </div>
+
+              <div className="border-t border-slate-100 px-5 py-3">
+                <button onClick={() => navigate('/calendar')} className="w-full py-2 text-xs font-semibold text-pink-600 hover:text-pink-700 hover:bg-pink-50 rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                  Voir tout le planning <ChevronRight size={14} />
+                </button>
+              </div>
+           </div>
+
+           {/* Volume Chart */}
            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
              <h3 className="font-bold text-slate-800 mb-6">Rendez-vous (Volume)</h3>
              <div className="h-48">
@@ -395,32 +495,6 @@ export const DashboardModule: React.FC = () => {
                  </BarChart>
                </ResponsiveContainer>
              </div>
-           </div>
-
-           {/* Upcoming Appointments */}
-           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold text-slate-800">À Venir (Futur)</h3>
-                <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">Temps réel</span>
-              </div>
-              <div className="space-y-3">
-                 {upcomingAppointments.length > 0 ? upcomingAppointments.map(apt => (
-                   <div key={apt.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
-                      <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-600 flex flex-col items-center justify-center text-[10px] font-bold shrink-0">
-                         <span>{new Date(apt.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-slate-800">{apt.clientName}</div>
-                        <div className="text-xs text-slate-500">{apt.serviceName}</div>
-                      </div>
-                   </div>
-                 )) : (
-                   <p className="text-xs text-slate-400 italic text-center py-4">Aucun rendez-vous à venir.</p>
-                 )}
-              </div>
-              <button onClick={() => navigate('/calendar')} className="w-full mt-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors border border-slate-200 border-dashed">
-                Voir le planning complet
-              </button>
            </div>
         </div>
       </div>

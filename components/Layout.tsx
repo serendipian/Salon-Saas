@@ -177,8 +177,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
           style={{ zIndex: 'var(--z-sidebar)' }}
         >
           {/* Header: Salon name + switcher */}
-          <div className={`h-20 flex items-center transition-all shrink-0 ${collapsed ? 'justify-center px-0' : 'justify-between px-6'}`}>
-            {!collapsed && (
+          <div className={`h-20 flex items-center transition-all shrink-0 ${collapsed ? 'justify-center px-0' : 'px-6'}`}>
+            {!collapsed ? (
               <div className="relative flex items-center gap-3 animate-in fade-in duration-300">
                 {activeSalon?.logo_url ? (
                   <img src={activeSalon.logo_url} alt="" className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-md" />
@@ -234,14 +234,18 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                   </div>
                 )}
               </div>
+            ) : (
+              /* Collapsed: show salon initial */
+              <div className="flex flex-col items-center gap-1">
+                {activeSalon?.logo_url ? (
+                  <img src={activeSalon.logo_url} alt="" className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-md" />
+                ) : (
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center text-white font-bold text-base shrink-0 shadow-md shadow-slate-900/20">
+                    {activeSalon?.name ? activeSalon.name.charAt(0) : 'L'}
+                  </div>
+                )}
+              </div>
             )}
-
-            <button
-              onClick={sidebar.toggleExpanded}
-              className={`p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all ${collapsed ? 'mx-auto' : ''}`}
-            >
-              {collapsed ? <PanelLeftOpen size={18} strokeWidth={1.5} /> : <PanelLeftClose size={18} strokeWidth={1.5} />}
-            </button>
           </div>
 
           {/* Navigation Items */}
@@ -345,14 +349,23 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
             </>
           ) : (
             <>
-              {/* Desktop top bar */}
-              <div className="relative max-w-md w-full hidden md:block group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-600 transition-colors" size={18} strokeWidth={1.5} />
-                <input
-                  type="text"
-                  placeholder="Rechercher (Clients, Services, Factures...)"
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm outline-none ring-1 ring-transparent focus:ring-slate-200 focus:bg-white transition-all placeholder:text-slate-400"
-                />
+              {/* Desktop/Tablet top bar */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={sidebar.toggleExpanded}
+                  className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all"
+                  aria-label={collapsed ? 'Déplier le menu' : 'Replier le menu'}
+                >
+                  {collapsed ? <PanelLeftOpen size={20} strokeWidth={1.5} /> : <PanelLeftClose size={20} strokeWidth={1.5} />}
+                </button>
+                <div className="relative max-w-md w-full hidden md:block group">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-600 transition-colors" size={18} strokeWidth={1.5} />
+                  <input
+                    type="text"
+                    placeholder="Rechercher (Clients, Services, Factures...)"
+                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm outline-none ring-1 ring-transparent focus:ring-slate-200 focus:bg-white transition-all placeholder:text-slate-400"
+                  />
+                </div>
               </div>
 
               <div className="flex items-center gap-5 ml-auto">
