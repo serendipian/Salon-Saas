@@ -46,9 +46,10 @@ export const ItemEditorModal: React.FC<{
   };
 
   const handleSave = () => {
+    const safePrice = isNaN(price) || price < 0 ? 0 : price;
     onSave({
       ...item,
-      price,
+      price: safePrice,
       quantity,
       note,
       originalPrice: originalPrice

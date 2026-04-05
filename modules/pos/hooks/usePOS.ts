@@ -37,22 +37,22 @@ export const usePOS = () => {
         originalPrice: item.price // Store reference for discounts
     };
 
-    const existingItemIndex = cart.findIndex(
-      i => i.referenceId === item.referenceId && i.variantName === item.variantName && i.staffId === item.staffId
-    );
-
-    if (existingItemIndex >= 0) {
-      const newCart = cart.map((item, i) =>
-        i === existingItemIndex ? { ...item, quantity: item.quantity + 1 } : item
+    setCart(prev => {
+      const existingItemIndex = prev.findIndex(
+        i => i.referenceId === item.referenceId && i.variantName === item.variantName
       );
-      setCart(newCart);
-    } else {
-      setCart([...cart, itemWithMeta]);
-    }
+
+      if (existingItemIndex >= 0) {
+        return prev.map((existing, i) =>
+          i === existingItemIndex ? { ...existing, quantity: existing.quantity + 1 } : existing
+        );
+      }
+      return [...prev, itemWithMeta];
+    });
   };
 
   const updateCartItem = (id: string, updates: Partial<CartItem>) => {
-    setCart(cart.map(item => item.id === id ? { ...item, ...updates } : item));
+    setCart(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
   };
 
   const updateQuantity = (id: string, delta: number) => {
@@ -66,7 +66,7 @@ export const usePOS = () => {
   };
 
   const removeFromCart = (id: string) => {
-    setCart(cart.filter(item => item.id !== id));
+    setCart(prev => prev.filter(item => item.id !== id));
   };
 
   const clearCart = () => {
@@ -88,6 +88,7 @@ export const usePOS = () => {
   const filteredItems = useMemo(() => {
     if (viewMode === 'SERVICES') {
       return services.filter(s => {
+        if (!s.active || s.variants.length === 0) return false;
         const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === 'ALL' || s.categoryId === selectedCategory;
         return matchesSearch && matchesCategory;
@@ -140,7 +141,7 @@ export const usePOS = () => {
     // Convert each appointment in the group to a cart item
     const cartItems: CartItem[] = groupAppointments.map(appt => ({
       id: crypto.randomUUID(),
-      referenceId: appt.serviceId,
+      referenceId: appt.variantId || appt.serviceId,
       type: 'SERVICE' as const,
       name: appt.serviceName,
       variantName: appt.variantName || undefined,

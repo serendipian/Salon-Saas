@@ -44,11 +44,11 @@ export const POSModule: React.FC = () => {
 
   // Handlers
   const handleServiceClick = (service: Service) => {
+    if (service.variants.length === 0) return;
     if (service.variants.length > 1) {
       setVariantModalData({ service });
     } else {
-      const variant = service.variants[0];
-      addVariantToCart(variant, service.name);
+      addVariantToCart(service.variants[0], service.name);
     }
   };
 
@@ -61,6 +61,7 @@ export const POSModule: React.FC = () => {
       variantName: variant.name,
       price: variant.price,
       originalPrice: variant.price,
+      cost: variant.cost,
       quantity: 1
     });
     setVariantModalData(null);
@@ -172,7 +173,12 @@ export const POSModule: React.FC = () => {
         <ItemEditorModal
           item={editingItem}
           onClose={() => setEditingItem(null)}
-          onSave={(updated) => updateCartItem(updated.id, updated)}
+          onSave={(updated) => updateCartItem(updated.id, {
+            price: updated.price,
+            quantity: updated.quantity,
+            note: updated.note,
+            originalPrice: updated.originalPrice,
+          })}
         />
       )}
 

@@ -98,15 +98,17 @@ export function toTransactionRpcPayload(
   salonId: string,
   appointmentId?: string
 ) {
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+
   const p_items = cart.map(item => ({
     reference_id: item.referenceId,
     type: item.type,
     name: item.name,
     variant_name: item.variantName ?? null,
-    price: item.price,
-    original_price: item.originalPrice ?? item.price,
+    price: round2(item.price),
+    original_price: round2(item.originalPrice ?? item.price),
     quantity: item.quantity,
-    cost: item.cost ?? 0,
+    cost: round2(item.cost ?? 0),
     note: item.note ?? null,
     staff_id: item.staffId ?? null,
     staff_name: item.staffName ?? null,
