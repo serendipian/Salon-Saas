@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, Calendar, Users } from 'lucide-react';
+import { Mail, Calendar, Clock, Users } from 'lucide-react';
 import { StaffMember, Appointment, ServiceCategory } from '../../../types';
 import { EmptyState } from '../../../components/EmptyState';
 
@@ -117,14 +117,16 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, serviceC
 
               <div className="space-y-2 mb-4">
                 <div className="flex items-center gap-2 text-sm text-slate-500">
-                  <Mail size={14} /> {member.email}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-500">
-                  <Phone size={14} /> {member.phone}
+                  <Mail size={14} /> {member.email || '-'}
                 </div>
                 {member.startDate && (
                   <div className="flex items-center gap-2 text-sm text-slate-500">
                     <Calendar size={14} /> Depuis {formatStartDate(member.startDate)}
+                  </div>
+                )}
+                {member.weeklyHours && (
+                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <Clock size={14} /> {member.weeklyHours}h/sem
                   </div>
                 )}
               </div>

@@ -1,7 +1,7 @@
 
 import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarClock, Check, Clock, User, Scissors, Tag, X, StickyNote, ExternalLink } from 'lucide-react';
+import { CalendarClock, Check, Clock, User, Scissors, Tag, X, StickyNote } from 'lucide-react';
 import { Appointment, AppointmentStatus, Service, ServiceCategory, StaffMember } from '../../../types';
 import { HOURS, isSameDay } from '../../appointments/components/calendarUtils';
 import { getCategoryCalendarColors } from '../../appointments/components/calendarColors';
@@ -64,10 +64,10 @@ interface PopoverState {
 const AppointmentPopover: React.FC<{
   appointment: Appointment;
   anchorRect: DOMRect;
-  containerRect: DOMRect;
   onClose: () => void;
-  onNavigate: () => void;
-}> = ({ appointment, anchorRect, containerRect, onClose, onNavigate }) => {
+  onViewDetails: () => void;
+  onEdit: () => void;
+}> = ({ appointment, anchorRect, onClose, onViewDetails, onEdit }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -85,34 +85,34 @@ const AppointmentPopover: React.FC<{
     };
   }, [onClose]);
 
-  // Position relative to the calendar container
+  // Fixed positioning relative to viewport using anchorRect (which is viewport-relative)
   const popoverWidth = 280;
-  const popoverHeight = 260;
 
-  // Prefer showing to the right of the block, fall back to left
-  let left = anchorRect.right - containerRect.left + 8;
-  if (left + popoverWidth > containerRect.width) {
-    left = anchorRect.left - containerRect.left - popoverWidth - 8;
+  // Prefer right of block, fall back to left
+  let left = anchorRect.right + 8;
+  if (left + popoverWidth > window.innerWidth - 16) {
+    left = anchorRect.left - popoverWidth - 8;
   }
-  // Keep within horizontal bounds
-  left = Math.max(4, Math.min(left, containerRect.width - popoverWidth - 4));
+  left = Math.max(8, left);
 
-  // Prefer below the click, fall back to above
-  let top = anchorRect.top - containerRect.top;
-  if (top + popoverHeight > containerRect.height + containerRect.top) {
-    top = anchorRect.bottom - containerRect.top - popoverHeight;
-  }
-  top = Math.max(4, top);
+  // Vertically align to top of block, shift up if it overflows bottom
+  const spaceBelow = window.innerHeight - anchorRect.top;
+  const showAbove = spaceBelow < 280;
+
+  const style: React.CSSProperties = {
+    position: 'fixed',
+    left,
+    zIndex: 50,
+    ...(showAbove
+      ? { bottom: window.innerHeight - anchorRect.top + 4 }
+      : { top: anchorRect.top }),
+  };
 
   const start = new Date(appointment.date);
   const end = new Date(start.getTime() + appointment.durationMinutes * 60000);
 
   return (
-    <div
-      ref={ref}
-      className="absolute z-30 w-[280px] bg-white rounded-xl shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
-      style={{ left, top }}
-    >
+    <div ref={ref} style={style} className="w-[280px] bg-white rounded-xl shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden">
       {/* Header */}
       <div className="px-4 pt-3.5 pb-3 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white">
         <div className="flex items-start justify-between gap-2">
@@ -162,14 +162,19 @@ const AppointmentPopover: React.FC<{
         )}
       </div>
 
-      {/* Action */}
-      <div className="px-4 pb-3">
+      {/* Actions */}
+      <div className="px-4 pb-3 flex gap-2">
         <button
-          onClick={onNavigate}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium bg-slate-900 hover:bg-slate-800 text-white rounded-lg transition-colors"
+          onClick={onViewDetails}
+          className="flex-1 px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors"
         >
-          <ExternalLink size={14} />
-          Voir dans l'agenda
+          Voir détails
+        </button>
+        <button
+          onClick={onEdit}
+          className="flex-1 px-3 py-2 text-sm font-medium bg-pink-500 hover:bg-pink-600 text-white rounded-lg transition-colors"
+        >
+          Modifier
         </button>
       </div>
     </div>
@@ -188,7 +193,6 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   const [nowOffset, setNowOffset] = useState<number | null>(getNowOffset);
   const [popover, setPopover] = useState<PopoverState | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const hasScrolled = useRef(false);
 
   // Tick every minute
@@ -253,7 +257,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   const nowLabel = nowOffset !== null ? fmt(new Date()) : null;
 
   return (
-    <div ref={containerRef} className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden relative">
+    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden relative">
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white">
         <div className="flex items-center gap-3">
@@ -435,21 +439,25 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                 </div>
               )}
 
-              {/* ── Popover ── */}
-              {popover && containerRef.current && (
-                <AppointmentPopover
-                  appointment={popover.appointment}
-                  anchorRect={popover.rect}
-                  containerRect={containerRef.current.getBoundingClientRect()}
-                  onClose={() => setPopover(null)}
-                  onNavigate={() => {
-                    setPopover(null);
-                    navigate('/calendar');
-                  }}
-                />
-              )}
             </div>
           </div>
+      )}
+
+      {/* ── Popover (fixed positioning, outside scroll container) ── */}
+      {popover && (
+        <AppointmentPopover
+          appointment={popover.appointment}
+          anchorRect={popover.rect}
+          onClose={() => setPopover(null)}
+          onViewDetails={() => {
+            setPopover(null);
+            navigate('/calendar');
+          }}
+          onEdit={() => {
+            setPopover(null);
+            navigate('/calendar');
+          }}
+        />
       )}
     </div>
   );

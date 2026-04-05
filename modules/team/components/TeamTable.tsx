@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, ChevronRight, Users } from 'lucide-react';
+import { ChevronRight, Users } from 'lucide-react';
 import { StaffMember, Appointment, ServiceCategory } from '../../../types';
 import { EmptyState } from '../../../components/EmptyState';
 
@@ -27,7 +27,7 @@ const CONTRACT_COLORS: Record<string, string> = {
 };
 
 function formatStartDate(dateStr?: string): string {
-  if (!dateStr) return '—';
+  if (!dateStr) return '-';
   return new Date(dateStr).toLocaleDateString('fr-FR', {
     day: '2-digit',
     month: 'short',
@@ -76,6 +76,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Contact</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Début</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Contrat</th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell text-center">Heures/sem</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden xl:table-cell">Compétences</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Activité</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Commission</th>
@@ -111,8 +112,9 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
                   </div>
                 </td>
                 <td className="px-6 py-4 hidden md:table-cell">
-                  <div className="text-sm text-slate-600 flex flex-col gap-1">
-                    <span className="flex items-center gap-2"><Phone size={14} /> {member.phone}</span>
+                  <div className="text-sm text-slate-600 flex flex-col gap-0.5">
+                    <span className="truncate max-w-[180px]">{member.email || '-'}</span>
+                    <span className="text-xs text-slate-400">{member.phone || '-'}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4 hidden lg:table-cell">
@@ -124,7 +126,14 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
                       {CONTRACT_LABELS[member.contractType] || member.contractType}
                     </span>
                   ) : (
-                    <span className="text-xs text-slate-400">—</span>
+                    <span className="text-sm text-slate-400">-</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 hidden lg:table-cell text-center">
+                  {member.weeklyHours ? (
+                    <span className="text-sm font-medium text-slate-700">{member.weeklyHours}h</span>
+                  ) : (
+                    <span className="text-sm text-slate-400">-</span>
                   )}
                 </td>
                 <td className="px-6 py-4 hidden xl:table-cell">
@@ -139,7 +148,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
                         </span>
                       ))
                     ) : (
-                      <span className="text-xs text-slate-400">—</span>
+                      <span className="text-sm text-slate-400">-</span>
                     )}
                   </div>
                 </td>
