@@ -38,6 +38,9 @@ Nested routes under `#/team` with `<Outlet>` pattern:
 Team-specific hooks: `useStaffDetail`, `useStaffPayouts`, `useStaffCompensation`, `useStaffClients`, `useStaffAppointments`, `useStaffActivity`, `useInvitation`
 
 Staff detail uses inline section editing (edit mode per section, not per field). PII fields (salary, IBAN, SSN) encrypted via pgcrypto RPCs.
+PII write is two-step (insert/update row, then call `update_staff_pii` RPC) — handle partial failure gracefully.
+`staff.color` is a Tailwind class string (e.g., `bg-rose-100 text-rose-800`), not a hex color — use as className, not inline style.
+WorkSchedule day slots use `start`/`end` properties (not `open`/`close`). WorkDay type: `{ isOpen, start, end }`.
 
 ### Shared Components (Active)
 ```
@@ -194,7 +197,7 @@ npm run preview      # Preview production build
 
 - **Backend**: Supabase (PostgreSQL 15, Auth, Realtime, Storage — `avatars` bucket for profile photos)
 - **Local dev**: `npm run db:start` / `npm run db:stop` (requires Docker Desktop)
-- **Migrations**: `supabase/migrations/` — 56 migration files, applied in order
+- **Migrations**: `supabase/migrations/` — 61 migration files, applied in order
 - **Seed data**: `supabase/seed.sql` — subscription plans (Free, Premium, Pro)
 - **Types**: Auto-generated via `npm run db:types` → `lib/database.types.ts`
 - **Types (remote)**: `npx supabase gen types typescript --project-id izsycdmrwscdnxebptsx > lib/database.types.ts` (no Docker/local dev)
@@ -202,7 +205,7 @@ npm run preview      # Preview production build
 - **Studio**: http://127.0.0.1:54323 (local Supabase dashboard)
 
 ### Schema Overview
-- 23 tables + 3 views
+- 24 tables + 3 views
 - RLS enabled on every table
 - Membership-based RLS via `user_salon_ids()` / `user_salon_ids_with_role()` functions
 - Custom Postgres functions across migration files (identity, RPC, encryption, etc.)
@@ -216,6 +219,9 @@ npm run preview      # Preview production build
 - Immutable transactions (no UPDATE policy)
 - Price snapshotting on transaction_items
 - Computed client stats via `client_stats` view (not denormalized)
+- `staff_payouts` has unique index on `(staff_id, type, period_start, period_end)` WHERE non-cancelled
+- Restore from archive must set `active: true` (archive sets it to false via `revoke_membership` RPC)
+- All mutations MUST include `.eq('salon_id', salonId)` even when RLS enforces it (defense in depth)
 
 ## Authentication & Authorization
 
