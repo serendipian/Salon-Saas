@@ -368,69 +368,17 @@ export const DashboardModule: React.FC = () => {
         />
       </div>
 
-      {/* Today's Calendar */}
-      <TodayCalendarCard
-        appointments={appointments}
-        services={services}
-        serviceCategories={serviceCategories}
-        staff={allStaff}
-      />
-
-      {/* Charts Area */}
+      {/* Today's Calendar + Side Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Chart */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
-          <div className="flex justify-between items-center mb-6">
-             <h3 className="font-bold text-slate-800">Activité Financière</h3>
-             <button onClick={() => navigate('/finances')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
-               Voir détails <ChevronRight size={12} />
-             </button>
-          </div>
-          <div className="h-80 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorVentes" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0f172a" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#0f172a" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#64748b', fontSize: 11}} 
-                  dy={10} 
-                  minTickGap={30}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{fill: '#64748b', fontSize: 11}}
-                  tickFormatter={(value) => formatPrice(value)}
-                  width={90}
-                />
-                <Tooltip 
-                  contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)'}}
-                  cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
-                  formatter={(value: number) => [formatPrice(value), 'Ventes']}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="ventes" 
-                  stroke="#0f172a" 
-                  strokeWidth={2} 
-                  fillOpacity={1} 
-                  fill="url(#colorVentes)" 
-                  animationDuration={800}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+        <div className="lg:col-span-2">
+          <TodayCalendarCard
+            appointments={appointments}
+            services={services}
+            serviceCategories={serviceCategories}
+            staff={allStaff}
+          />
         </div>
 
-        {/* Secondary Chart / Tasks */}
         <div className="space-y-6">
            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
              <h3 className="font-bold text-slate-800 mb-6">Rendez-vous (Volume)</h3>
@@ -439,7 +387,7 @@ export const DashboardModule: React.FC = () => {
                  <BarChart data={chartData}>
                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} dy={5} minTickGap={30}/>
-                   <Tooltip 
+                   <Tooltip
                      cursor={{fill: '#f8fafc'}}
                      contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
                    />
@@ -474,6 +422,58 @@ export const DashboardModule: React.FC = () => {
                 Voir le planning complet
               </button>
            </div>
+        </div>
+      </div>
+
+      {/* Financial Chart */}
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+        <div className="flex justify-between items-center mb-6">
+           <h3 className="font-bold text-slate-800">Activité Financière</h3>
+           <button onClick={() => navigate('/finances')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
+             Voir détails <ChevronRight size={12} />
+           </button>
+        </div>
+        <div className="h-80 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="colorVentes" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#0f172a" stopOpacity={0.1}/>
+                  <stop offset="95%" stopColor="#0f172a" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{fill: '#64748b', fontSize: 11}}
+                dy={10}
+                minTickGap={30}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{fill: '#64748b', fontSize: 11}}
+                tickFormatter={(value) => formatPrice(value)}
+                width={90}
+              />
+              <Tooltip
+                contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)'}}
+                cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
+                formatter={(value: number) => [formatPrice(value), 'Ventes']}
+              />
+              <Area
+                type="monotone"
+                dataKey="ventes"
+                stroke="#0f172a"
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#colorVentes)"
+                animationDuration={800}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
