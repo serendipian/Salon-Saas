@@ -4,6 +4,7 @@ import { Service, ServiceCategory } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import { EmptyState } from '../../../components/EmptyState';
+import { useServiceSettings } from '../hooks/useServiceSettings';
 
 interface ServiceTableProps {
   services: Service[];
@@ -16,6 +17,9 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
   categories,
   onEdit,
 }) => {
+  const { serviceSettings } = useServiceSettings();
+  const showCosts = serviceSettings.showCostsInList;
+
   if (services.length === 0) {
     return (
       <EmptyState
@@ -35,6 +39,8 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Catégorie</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Variants</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Prix</th>
+            {showCosts && <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Coût</th>}
+            {showCosts && <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Marge</th>}
             <th className="px-6 py-3 text-right"></th>
           </tr>
         </thead>
@@ -67,6 +73,26 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
                 <td className="px-6 py-4 align-top text-sm font-medium text-slate-900">
                   {minPrice === maxPrice ? formatPrice(minPrice) : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`}
                 </td>
+                {showCosts && (
+                  <td className="hidden sm:table-cell px-4 py-3 text-sm text-slate-600">
+                    {(() => {
+                      const costs = service.variants.map((v) => v.cost + v.additionalCost);
+                      const minCost = Math.min(...costs);
+                      const maxCost = Math.max(...costs);
+                      return minCost === maxCost ? formatPrice(minCost) : `${formatPrice(minCost)} - ${formatPrice(maxCost)}`;
+                    })()}
+                  </td>
+                )}
+                {showCosts && (
+                  <td className="hidden sm:table-cell px-4 py-3 text-sm font-medium text-emerald-600">
+                    {(() => {
+                      const margins = service.variants.map((v) => v.price - v.cost - v.additionalCost);
+                      const minMargin = Math.min(...margins);
+                      const maxMargin = Math.max(...margins);
+                      return minMargin === maxMargin ? formatPrice(minMargin) : `${formatPrice(minMargin)} - ${formatPrice(maxMargin)}`;
+                    })()}
+                  </td>
+                )}
                 <td className="px-6 py-4 align-top text-right">
                   <button className="p-1 text-slate-300 hover:text-slate-900 transition-colors">
                     <ChevronRight size={16} />
