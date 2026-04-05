@@ -32,6 +32,34 @@ export const useTeam = (includeArchived = false) => {
     enabled: !!salonId,
   });
 
+  // Batch-fetch baseSalary for all staff via decrypted RPC (one call, not N)
+  const staffIds = useMemo(() => staff.map(m => m.id), [staff]);
+
+  const { data: salaryMap = new Map<string, number>() } = useQuery({
+    queryKey: ['staff_pii_batch', salonId, staffIds],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_staff_pii_batch', { p_staff_ids: staffIds });
+      const map = new Map<string, number>();
+      if (error || !data) return map;
+      for (const row of data as { staff_id: string; base_salary: string | null }[]) {
+        if (row.base_salary != null) {
+          map.set(row.staff_id, parseFloat(row.base_salary));
+        }
+      }
+      return map;
+    },
+    staleTime: 5 * 60 * 1000,
+    enabled: staffIds.length > 0,
+  });
+
+  // Merge baseSalary into staff members
+  const staffWithSalary = useMemo(() =>
+    staff.map(m => {
+      const salary = salaryMap.get(m.id);
+      return salary !== undefined ? { ...m, baseSalary: salary } : m;
+    }),
+  [staff, salaryMap]);
+
   // Load PII fields for a specific staff member via decrypted RPC
   const loadStaffPii = async (staffId: string): Promise<Partial<StaffMember>> => {
     const { data, error } = await supabase.rpc('get_staff_pii', { p_staff_id: staffId });
@@ -102,17 +130,17 @@ export const useTeam = (includeArchived = false) => {
   });
 
   const filteredStaff = useMemo(() => {
-    if (!searchTerm) return staff;
+    if (!searchTerm) return staffWithSalary;
     const term = searchTerm.toLowerCase();
-    return staff.filter(m =>
+    return staffWithSalary.filter(m =>
       m.firstName.toLowerCase().includes(term) ||
       m.lastName.toLowerCase().includes(term)
     );
-  }, [staff, searchTerm]);
+  }, [staffWithSalary, searchTerm]);
 
   return {
     team: filteredStaff,
-    allStaff: staff,
+    allStaff: staffWithSalary,
     isLoading,
     searchTerm,
     setSearchTerm,
