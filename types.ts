@@ -61,6 +61,13 @@ export interface ServiceCategory {
   sortOrder?: number;
 }
 
+export interface ServiceSettings {
+  defaultDuration: number;
+  defaultVariantName: string;
+  showCostsInList: boolean;
+  defaultView: 'card' | 'table';
+}
+
 export interface Service {
   id: string;
   name: string;
