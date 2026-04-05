@@ -260,17 +260,9 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden relative">
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center">
-            <CalendarClock size={18} className="text-white" />
-          </div>
-          <div>
-            <h3 className="font-bold text-slate-900 text-sm leading-tight">Agenda du jour</h3>
-            <p className="text-[11px] text-slate-400 leading-tight mt-0.5 capitalize">
-              {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </p>
-          </div>
-        </div>
+        <h3 className="font-bold text-slate-800 capitalize">
+          {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+        </h3>
         <div className="flex items-center gap-3">
           {todayAppts.length > 0 && (
             <div className="flex items-center gap-2 text-[11px]">

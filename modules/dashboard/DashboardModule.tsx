@@ -384,16 +384,10 @@ export const DashboardModule: React.FC = () => {
            {/* Upcoming Appointments */}
            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="px-5 pt-5 pb-3 flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center">
-                    <Clock size={14} className="text-pink-500" />
-                  </div>
-                  <h3 className="font-bold text-slate-800">Prochains RDV</h3>
-                </div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Live
-                </span>
+                <h3 className="font-bold text-slate-800">Prochains RDV</h3>
+                <button onClick={() => navigate('/calendar')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
+                  Voir tout <ChevronRight size={12} />
+                </button>
               </div>
 
               <div className="px-3 pb-2">
@@ -472,26 +466,35 @@ export const DashboardModule: React.FC = () => {
                  )}
               </div>
 
-              <div className="border-t border-slate-100 px-5 py-3">
-                <button onClick={() => navigate('/calendar')} className="w-full py-2 text-xs font-semibold text-pink-600 hover:text-pink-700 hover:bg-pink-50 rounded-lg transition-colors flex items-center justify-center gap-1.5">
-                  Voir tout le planning <ChevronRight size={14} />
-                </button>
-              </div>
            </div>
 
            {/* Volume Chart */}
            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-             <h3 className="font-bold text-slate-800 mb-6">Rendez-vous (Volume)</h3>
+             <div className="flex justify-between items-center mb-6">
+               <h3 className="font-bold text-slate-800">Rendez-vous</h3>
+               <button onClick={() => navigate('/calendar')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
+                 Détails <ChevronRight size={12} />
+               </button>
+             </div>
              <div className="h-48">
                <ResponsiveContainer width="100%" height="100%">
-                 <BarChart data={chartData}>
+                 <BarChart data={chartData} barCategoryGap="25%">
+                   <defs>
+                     <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                       <stop offset="0%" stopColor="#6366f1" stopOpacity={0.9}/>
+                       <stop offset="100%" stopColor="#6366f1" stopOpacity={0.4}/>
+                     </linearGradient>
+                   </defs>
                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} dy={5} minTickGap={30}/>
+                   <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} width={28} allowDecimals={false} />
                    <Tooltip
-                     cursor={{fill: '#f8fafc'}}
-                     contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
+                     cursor={{fill: 'rgba(99, 102, 241, 0.04)', radius: 4}}
+                     contentStyle={{borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgb(0 0 0 / 0.08)', fontSize: 12}}
+                     formatter={(value: number) => [`${value} rdv`, '']}
+                     labelStyle={{fontWeight: 600, color: '#1e293b', marginBottom: 2}}
                    />
-                   <Bar dataKey="rdv" fill="#334155" radius={[3, 3, 0, 0]} barSize={16} animationDuration={800} />
+                   <Bar dataKey="rdv" fill="url(#barGradient)" radius={[6, 6, 0, 0]} maxBarSize={24} animationDuration={800} />
                  </BarChart>
                </ResponsiveContainer>
              </div>
@@ -499,60 +502,60 @@ export const DashboardModule: React.FC = () => {
         </div>
       </div>
 
-      {/* Financial Chart */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
-        <div className="flex justify-between items-center mb-6">
-           <h3 className="font-bold text-slate-800">Activité Financière</h3>
-           <button onClick={() => navigate('/finances')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
-             Voir détails <ChevronRight size={12} />
-           </button>
+      {/* Financial Chart + Rankings */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Financial Chart */}
+        <div className="lg:col-span-1 bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+             <h3 className="font-bold text-slate-800">Activité Financière</h3>
+             <button onClick={() => navigate('/finances')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
+               Détails <ChevronRight size={12} />
+             </button>
+          </div>
+          <div className="h-64 w-full flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorVentes" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#0f172a" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#0f172a" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{fill: '#64748b', fontSize: 10}}
+                  dy={10}
+                  minTickGap={40}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{fill: '#64748b', fontSize: 10}}
+                  tickFormatter={(value) => formatPrice(value)}
+                  width={70}
+                />
+                <Tooltip
+                  contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)'}}
+                  cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
+                  formatter={(value: number) => [formatPrice(value), 'Ventes']}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="ventes"
+                  stroke="#0f172a"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#colorVentes)"
+                  animationDuration={800}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData}>
-              <defs>
-                <linearGradient id="colorVentes" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0f172a" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="#0f172a" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis
-                dataKey="name"
-                axisLine={false}
-                tickLine={false}
-                tick={{fill: '#64748b', fontSize: 11}}
-                dy={10}
-                minTickGap={30}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={{fill: '#64748b', fontSize: 11}}
-                tickFormatter={(value) => formatPrice(value)}
-                width={90}
-              />
-              <Tooltip
-                contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)'}}
-                cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
-                formatter={(value: number) => [formatPrice(value), 'Ventes']}
-              />
-              <Area
-                type="monotone"
-                dataKey="ventes"
-                stroke="#0f172a"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorVentes)"
-                animationDuration={800}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
 
-      {/* Rankings Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Services */}
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-4">
