@@ -112,10 +112,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
                   </div>
                 </td>
                 <td className="px-6 py-4 hidden md:table-cell">
-                  <div className="text-sm text-slate-600 flex flex-col gap-0.5">
-                    <span className="truncate max-w-[180px]">{member.email || '-'}</span>
-                    <span className="text-xs text-slate-400">{member.phone || '-'}</span>
-                  </div>
+                  <span className="text-sm text-slate-600">{member.phone || '-'}</span>
                 </td>
                 <td className="px-6 py-4 hidden lg:table-cell">
                   <span className="text-sm text-slate-600">{formatStartDate(member.startDate)}</span>
