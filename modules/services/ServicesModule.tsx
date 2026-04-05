@@ -162,7 +162,7 @@ export const ServicesModule: React.FC = () => {
         <CategoryManagerModal 
           categories={serviceCategories}
           onClose={() => setShowCategoryManager(false)}
-          onSave={updateServiceCategories}
+          onSave={(cats) => updateServiceCategories({ categories: cats })}
         />
       )}
     </div>

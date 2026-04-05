@@ -10,6 +10,11 @@ import type { Service, ServiceCategory } from '../../../types';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 
+export interface CategoryUpdatePayload {
+  categories: ServiceCategory[];
+  assignments?: Record<string, string | null>; // serviceId → categoryId (or null for unassigned)
+}
+
 export const useServices = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
@@ -145,7 +150,7 @@ export const useServices = () => {
 
   // Update Service Categories (upsert with soft-delete)
   const updateServiceCategoriesMutation = useMutation({
-    mutationFn: async (categories: ServiceCategory[]) => {
+    mutationFn: async ({ categories, assignments }: CategoryUpdatePayload) => {
       const { data: existing, error: fetchErr } = await supabase
         .from('service_categories')
         .select('id')
@@ -172,7 +177,7 @@ export const useServices = () => {
         if (existingIds.has(cat.id)) {
           const { error } = await supabase
             .from('service_categories')
-            .update({ name: row.name, color: row.color, sort_order: row.sort_order })
+            .update({ name: row.name, color: row.color, icon: row.icon, sort_order: row.sort_order })
             .eq('id', cat.id);
           if (error) throw error;
         } else {
@@ -182,9 +187,22 @@ export const useServices = () => {
           if (error) throw error;
         }
       }
+
+      // --- Batch-update service category assignments ---
+      if (assignments) {
+        for (const [serviceId, categoryId] of Object.entries(assignments)) {
+          const { error } = await supabase
+            .from('services')
+            .update({ category_id: categoryId })
+            .eq('id', serviceId)
+            .eq('salon_id', salonId);
+          if (error) throw error;
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service_categories', salonId] });
+      queryClient.invalidateQueries({ queryKey: ['services', salonId] });
     },
     onError: toastOnError("Impossible de modifier les catégories de services"),
   });
@@ -205,7 +223,7 @@ export const useServices = () => {
     setSearchTerm,
     addService: (service: Service) => addServiceMutation.mutate(service),
     updateService: (service: Service) => updateServiceMutation.mutate(service),
-    updateServiceCategories: (categories: ServiceCategory[]) =>
-      updateServiceCategoriesMutation.mutate(categories),
+    updateServiceCategories: (payload: CategoryUpdatePayload) =>
+      updateServiceCategoriesMutation.mutate(payload),
   };
 };
