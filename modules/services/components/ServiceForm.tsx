@@ -12,10 +12,11 @@ interface ServiceFormProps {
   existingService?: Service;
   categories: ServiceCategory[];
   onSave: (s: Service) => void;
+  onDelete?: (id: string) => void;
   onCancel: () => void;
 }
 
-export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categories, onSave, onCancel }) => {
+export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categories, onSave, onDelete, onCancel }) => {
   const { salonSettings } = useSettings();
   const { serviceSettings } = useServiceSettings();
   const [formData, setFormData] = useState<Service>(existingService || {
@@ -184,12 +185,25 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
                <Save size={16} />
                Enregistrer
              </button>
-             <button 
+             <button
               onClick={onCancel}
               className="w-full py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium transition-all text-sm"
             >
                Annuler
              </button>
+             {existingService && onDelete && (
+               <button
+                 onClick={() => {
+                   if (window.confirm('Supprimer ce service ? Cette action est irréversible.')) {
+                     onDelete(existingService.id);
+                   }
+                 }}
+                 className="w-full py-2.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg font-medium transition-all text-sm flex justify-center items-center gap-2"
+               >
+                 <Trash2 size={16} />
+                 Supprimer
+               </button>
+             )}
            </div>
         </div>
       </div>

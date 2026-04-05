@@ -13,6 +13,7 @@ export const ServicesModule: React.FC = () => {
     setSearchTerm,
     addService,
     updateService,
+    deleteService,
   } = useServices();
 
   const [view, setView] = useState<ViewState>('LIST');
@@ -54,6 +55,7 @@ export const ServicesModule: React.FC = () => {
           existingService={services.find(s => s.id === selectedServiceId)}
           categories={serviceCategories}
           onSave={handleSaveService}
+          onDelete={(id) => { deleteService(id); setView('LIST'); }}
           onCancel={() => setView('LIST')}
         />
       )}

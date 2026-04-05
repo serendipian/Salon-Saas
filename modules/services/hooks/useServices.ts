@@ -20,7 +20,7 @@ export const useServices = () => {
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
-  const { toastOnError } = useMutationToast();
+  const { toastOnError, toastOnSuccess } = useMutationToast();
   useRealtimeSync('services');
   useRealtimeSync('service_variants');
   useRealtimeSync('service_categories');
@@ -148,6 +148,32 @@ export const useServices = () => {
     onError: toastOnError("Impossible de modifier le service"),
   });
 
+  // Delete Service (soft-delete)
+  const deleteServiceMutation = useMutation({
+    mutationFn: async (serviceId: string) => {
+      // Soft-delete the service
+      const { error: svcErr } = await supabase
+        .from('services')
+        .update({ deleted_at: new Date().toISOString(), active: false })
+        .eq('id', serviceId)
+        .eq('salon_id', salonId);
+      if (svcErr) throw svcErr;
+
+      // Soft-delete its variants
+      const { error: varErr } = await supabase
+        .from('service_variants')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('service_id', serviceId)
+        .eq('salon_id', salonId);
+      if (varErr) throw varErr;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['services', salonId] });
+      toastOnSuccess('Service supprimé')();
+    },
+    onError: toastOnError("Impossible de supprimer le service"),
+  });
+
   // Update Service Categories (upsert with soft-delete)
   const updateServiceCategoriesMutation = useMutation({
     mutationFn: async ({ categories, assignments }: CategoryUpdatePayload) => {
@@ -178,7 +204,8 @@ export const useServices = () => {
           const { error } = await supabase
             .from('service_categories')
             .update({ name: row.name, color: row.color, icon: row.icon, sort_order: row.sort_order })
-            .eq('id', cat.id);
+            .eq('id', cat.id)
+            .eq('salon_id', salonId);
           if (error) throw error;
         } else {
           const { error } = await supabase
@@ -188,7 +215,7 @@ export const useServices = () => {
         }
       }
 
-      // --- Batch-update service category assignments ---
+      // Batch-update service category assignments
       if (assignments) {
         for (const [serviceId, categoryId] of Object.entries(assignments)) {
           const { error } = await supabase
@@ -203,6 +230,7 @@ export const useServices = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service_categories', salonId] });
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
+      toastOnSuccess('Catégories enregistrées')();
     },
     onError: toastOnError("Impossible de modifier les catégories de services"),
   });
@@ -223,6 +251,7 @@ export const useServices = () => {
     setSearchTerm,
     addService: (service: Service) => addServiceMutation.mutate(service),
     updateService: (service: Service) => updateServiceMutation.mutate(service),
+    deleteService: (serviceId: string) => deleteServiceMutation.mutate(serviceId),
     updateServiceCategories: (payload: CategoryUpdatePayload) =>
       updateServiceCategoriesMutation.mutate(payload),
   };
