@@ -2287,7 +2287,17 @@ export type Database = {
     Functions: {
       _assert_admin: { Args: never; Returns: undefined }
       accept_invitation: { Args: { p_token: string }; Returns: string }
+      add_bien_etre_services: {
+        Args: { p_salon_id: string }
+        Returns: undefined
+      }
+      add_casa_staff: { Args: { p_salon_id: string }; Returns: undefined }
+      add_cils_services: { Args: { p_salon_id: string }; Returns: undefined }
       add_coiffure_services: {
+        Args: { p_salon_id: string }
+        Returns: undefined
+      }
+      add_epilation_services: {
         Args: { p_salon_id: string }
         Returns: undefined
       }
@@ -2485,6 +2495,15 @@ export type Database = {
           social_security_number: string
         }[]
       }
+      get_staff_pii_batch: {
+        Args: { p_staff_ids: string[] }
+        Returns: {
+          base_salary: string
+          iban: string
+          social_security_number: string
+          staff_id: string
+        }[]
+      }
       get_user_role: { Args: never; Returns: string }
       initialize_salon_trial: {
         Args: { p_salon_id: string }
@@ -2493,6 +2512,10 @@ export type Database = {
       leave_salon: { Args: { p_salon_id: string }; Returns: undefined }
       revoke_membership: {
         Args: { p_membership_id: string }
+        Returns: undefined
+      }
+      save_service_categories: {
+        Args: { p_assignments?: Json; p_categories: Json; p_salon_id: string }
         Returns: undefined
       }
       seed_salon_demo_data: {
@@ -2508,6 +2531,10 @@ export type Database = {
         Returns: undefined
       }
       soft_delete_client: { Args: { p_client_id: string }; Returns: undefined }
+      soft_delete_service: {
+        Args: { p_service_id: string }
+        Returns: undefined
+      }
       transfer_ownership: {
         Args: { p_new_owner_id: string; p_salon_id: string }
         Returns: undefined

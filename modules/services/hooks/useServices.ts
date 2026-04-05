@@ -4,7 +4,7 @@ import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import {
   toService, toServiceInsert, toVariantInsert,
-  toServiceCategory, toServiceCategoryInsert,
+  toServiceCategory,
 } from '../mappers';
 import type { Service, ServiceCategory } from '../../../types';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
@@ -157,24 +157,13 @@ export const useServices = () => {
     onError: toastOnError("Impossible de modifier le service"),
   });
 
-  // Delete Service (soft-delete)
+  // Delete Service (soft-delete via RPC)
   const deleteServiceMutation = useMutation({
     mutationFn: async (serviceId: string) => {
-      // Soft-delete the service
-      const { error: svcErr } = await supabase
-        .from('services')
-        .update({ deleted_at: new Date().toISOString(), active: false })
-        .eq('id', serviceId)
-        .eq('salon_id', salonId);
-      if (svcErr) throw svcErr;
-
-      // Soft-delete its variants
-      const { error: varErr } = await supabase
-        .from('service_variants')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('service_id', serviceId)
-        .eq('salon_id', salonId);
-      if (varErr) throw varErr;
+      const { error } = await supabase.rpc('soft_delete_service', {
+        p_service_id: serviceId,
+      });
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
@@ -183,67 +172,23 @@ export const useServices = () => {
     onError: toastOnError("Impossible de supprimer le service"),
   });
 
-  // Update Service Categories (upsert with soft-delete)
+  // Update Service Categories (via RPC for atomic operation)
   const updateServiceCategoriesMutation = useMutation({
     mutationFn: async ({ categories, assignments }: CategoryUpdatePayload) => {
-      const { data: existing, error: fetchErr } = await supabase
-        .from('service_categories')
-        .select('id')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null);
-      if (fetchErr) throw fetchErr;
+      const p_categories = categories.map((cat, i) => ({
+        id: cat.id,
+        name: cat.name,
+        color: cat.color,
+        icon: cat.icon ?? null,
+        sort_order: i,
+      }));
 
-      const existingIds = new Set((existing ?? []).map(c => c.id));
-      const newIds = new Set(categories.map(c => c.id));
-
-      const toDelete = [...existingIds].filter(id => !newIds.has(id));
-      if (toDelete.length > 0) {
-        const { error } = await supabase
-          .from('service_categories')
-          .update({ deleted_at: new Date().toISOString() })
-          .in('id', toDelete)
-          .eq('salon_id', salonId);
-        if (error) throw error;
-      }
-
-      // Batch inserts, parallel updates for categories
-      const catUpdates: Promise<void>[] = [];
-      const catInserts: ReturnType<typeof toServiceCategoryInsert>[] = [];
-      for (let i = 0; i < categories.length; i++) {
-        const cat = categories[i];
-        const row = toServiceCategoryInsert({ ...cat, sortOrder: i }, salonId);
-        if (existingIds.has(cat.id)) {
-          catUpdates.push(
-            supabase
-              .from('service_categories')
-              .update({ name: row.name, color: row.color, icon: row.icon, sort_order: row.sort_order })
-              .eq('id', cat.id)
-              .eq('salon_id', salonId)
-              .then(({ error }) => { if (error) throw error; })
-          );
-        } else {
-          catInserts.push(row);
-        }
-      }
-
-      const catInsertPromise = catInserts.length > 0
-        ? supabase.from('service_categories').insert(catInserts).then(({ error }) => { if (error) throw error; })
-        : Promise.resolve();
-
-      await Promise.all([...catUpdates, catInsertPromise]);
-
-      // Parallel service category assignments
-      if (assignments) {
-        const assignmentPromises = Object.entries(assignments).map(([serviceId, categoryId]) =>
-          supabase
-            .from('services')
-            .update({ category_id: categoryId })
-            .eq('id', serviceId)
-            .eq('salon_id', salonId)
-            .then(({ error }) => { if (error) throw error; })
-        );
-        await Promise.all(assignmentPromises);
-      }
+      const { error } = await supabase.rpc('save_service_categories', {
+        p_salon_id: salonId,
+        p_categories: p_categories,
+        p_assignments: assignments ?? null,
+      });
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service_categories', salonId] });
