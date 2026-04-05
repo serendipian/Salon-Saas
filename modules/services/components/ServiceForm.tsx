@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Clock, Trash2 } from 'lucide-react';
 import { Service, ServiceCategory, ServiceVariant } from '../../../types';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { useSettings } from '../../settings/hooks/useSettings';
+import { useServiceSettings } from '../hooks/useServiceSettings';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import { serviceSchema } from '../schemas';
 
@@ -16,12 +17,13 @@ interface ServiceFormProps {
 
 export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categories, onSave, onCancel }) => {
   const { salonSettings } = useSettings();
+  const { serviceSettings } = useServiceSettings();
   const [formData, setFormData] = useState<Service>(existingService || {
     id: '',
     name: '',
     categoryId: categories[0]?.id || '',
     description: '',
-    variants: [{ id: crypto.randomUUID(), name: 'Standard', durationMinutes: 30, price: 0, cost: 0, additionalCost: 0 }],
+    variants: [{ id: crypto.randomUUID(), name: serviceSettings.defaultVariantName, durationMinutes: serviceSettings.defaultDuration, price: 0, cost: 0, additionalCost: 0 }],
     active: true
   });
 
@@ -46,7 +48,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
   const addVariant = () => {
     setFormData(prev => ({
       ...prev,
-      variants: [...prev.variants, { id: crypto.randomUUID(), name: '', durationMinutes: 30, price: 0, cost: 0, additionalCost: 0 }]
+      variants: [...prev.variants, { id: crypto.randomUUID(), name: '', durationMinutes: serviceSettings.defaultDuration, price: 0, cost: 0, additionalCost: 0 }]
     }));
   };
 
