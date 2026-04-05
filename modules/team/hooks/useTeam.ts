@@ -35,15 +35,15 @@ export const useTeam = (includeArchived = false) => {
   // Batch-fetch baseSalary for all staff via decrypted RPC (one call, not N)
   const staffIds = useMemo(() => staff.map(m => m.id), [staff]);
 
-  const { data: salaryMap = new Map<string, number>() } = useQuery({
+  const { data: salaryMap = {} as Record<string, number> } = useQuery({
     queryKey: ['staff_pii_batch', salonId, staffIds],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_staff_pii_batch', { p_staff_ids: staffIds });
-      const map = new Map<string, number>();
+      const map: Record<string, number> = {};
       if (error || !data) return map;
       for (const row of data as { staff_id: string; base_salary: string | null }[]) {
         if (row.base_salary != null) {
-          map.set(row.staff_id, parseFloat(row.base_salary));
+          map[row.staff_id] = parseFloat(row.base_salary);
         }
       }
       return map;
@@ -55,7 +55,7 @@ export const useTeam = (includeArchived = false) => {
   // Merge baseSalary into staff members
   const staffWithSalary = useMemo(() =>
     staff.map(m => {
-      const salary = salaryMap.get(m.id);
+      const salary = salaryMap[m.id];
       return salary !== undefined ? { ...m, baseSalary: salary } : m;
     }),
   [staff, salaryMap]);
