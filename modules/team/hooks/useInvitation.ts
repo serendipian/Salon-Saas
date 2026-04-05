@@ -79,7 +79,8 @@ export const useInvitation = (staffId: string) => {
       const { error } = await supabase
         .from('invitations')
         .update({ expires_at: new Date().toISOString() })
-        .eq('id', invitation.id);
+        .eq('id', invitation.id)
+        .eq('salon_id', salonId!);
       if (error) throw error;
     },
     onSuccess: () => {

@@ -311,9 +311,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // --- Auth Actions ---
 
+  const sanitizeAuthError = (message: string): string => {
+    const lower = message.toLowerCase();
+    if (lower.includes('invalid login credentials') || lower.includes('invalid_credentials'))
+      return 'Email ou mot de passe incorrect.';
+    if (lower.includes('email not confirmed'))
+      return 'Veuillez confirmer votre email avant de vous connecter.';
+    if (lower.includes('user already registered') || lower.includes('already been registered'))
+      return 'Un compte existe déjà avec cet email.';
+    if (lower.includes('rate limit') || lower.includes('too many requests'))
+      return 'Trop de tentatives. Veuillez réessayer dans quelques minutes.';
+    if (lower.includes('password') && lower.includes('least'))
+      return 'Le mot de passe doit contenir au moins 6 caractères.';
+    if (lower.includes('network') || lower.includes('fetch'))
+      return 'Erreur de connexion. Vérifiez votre connexion internet.';
+    return 'Une erreur est survenue. Veuillez réessayer.';
+  };
+
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null };
+    return { error: error ? sanitizeAuthError(error.message) : null };
   }, []);
 
   const signUp = useCallback(async (email: string, password: string, firstName: string, lastName: string) => {
@@ -324,12 +341,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         data: { first_name: firstName, last_name: lastName },
       },
     });
-    return { error: error?.message ?? null };
+    return { error: error ? sanitizeAuthError(error.message) : null };
   }, []);
 
   const signInWithMagicLink = useCallback(async (email: string) => {
     const { error } = await supabase.auth.signInWithOtp({ email });
-    return { error: error?.message ?? null };
+    return { error: error ? sanitizeAuthError(error.message) : null };
   }, []);
 
   const resetPassword = useCallback(async (email: string) => {

@@ -1,7 +1,13 @@
 // supabase/functions/expire-trials/index.ts
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  // Auth: require shared secret (set EXPIRE_TRIALS_SECRET in Edge Function env)
+  const secret = req.headers.get('x-function-secret');
+  if (secret !== Deno.env.get('EXPIRE_TRIALS_SECRET')) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!

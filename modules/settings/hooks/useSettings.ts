@@ -110,7 +110,8 @@ export const useSettings = () => {
           const { error } = await supabase
             .from('expense_categories')
             .update({ name: row.name, color: row.color, sort_order: row.sort_order })
-            .eq('id', cat.id);
+            .eq('id', cat.id)
+            .eq('salon_id', salonId);
           if (error) throw error;
         } else {
           const { error } = await supabase
@@ -173,7 +174,8 @@ export const useSettings = () => {
           const { error } = await supabase
             .from('recurring_expenses')
             .update({ name: row.name, amount: row.amount, frequency: row.frequency, next_date: row.next_date })
-            .eq('id', expense.id);
+            .eq('id', expense.id)
+            .eq('salon_id', salonId);
           if (error) throw error;
         } else {
           const { error } = await supabase

@@ -111,7 +111,8 @@ export const useProducts = () => {
           const { error } = await supabase
             .from('product_categories')
             .update({ name: row.name, color: row.color, sort_order: row.sort_order })
-            .eq('id', cat.id);
+            .eq('id', cat.id)
+            .eq('salon_id', salonId);
           if (error) throw error;
         } else {
           const { error } = await supabase

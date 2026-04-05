@@ -31,7 +31,7 @@ export const AcceptInvitationPage: React.FC = () => {
             ? "Cette invitation a expiré. Demandez une nouvelle invitation."
             : error.message.includes('already')
             ? "Vous êtes déjà membre de ce salon."
-            : error.message
+            : "Une erreur est survenue. Veuillez réessayer."
         );
       } else {
         setStatus('success');

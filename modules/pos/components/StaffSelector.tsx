@@ -100,8 +100,7 @@ export const StaffSelector: React.FC<StaffSelectorProps> = ({
                 <img src={member.photoUrl} alt="" className="w-5 h-5 rounded-full object-cover" />
               ) : (
                 <div
-                  className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px] font-bold"
-                  style={{ backgroundColor: member.color || '#64748b' }}
+                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold ${member.color || 'bg-slate-500 text-white'}`}
                 >
                   {member.firstName[0]}{member.lastName[0]}
                 </div>
