@@ -1174,6 +1174,7 @@ export type Database = {
           phone: string | null
           plan_id: string | null
           schedule: Json | null
+          service_settings: Json | null
           slug: string | null
           subscription_tier: string
           timezone: string
@@ -1195,6 +1196,7 @@ export type Database = {
           phone?: string | null
           plan_id?: string | null
           schedule?: Json | null
+          service_settings?: Json | null
           slug?: string | null
           subscription_tier?: string
           timezone?: string
@@ -1216,6 +1218,7 @@ export type Database = {
           phone?: string | null
           plan_id?: string | null
           schedule?: Json | null
+          service_settings?: Json | null
           slug?: string | null
           subscription_tier?: string
           timezone?: string
@@ -2398,6 +2401,13 @@ export type Database = {
         }[]
       }
       get_admin_mrr: { Args: never; Returns: Json }
+      get_admin_mrr_history: {
+        Args: { months_back?: number }
+        Returns: {
+          month: string
+          mrr: number
+        }[]
+      }
       get_admin_recent_signups: {
         Args: never
         Returns: {
@@ -2408,6 +2418,13 @@ export type Database = {
           subscription_tier: string
         }[]
       }
+      get_admin_signups_history: {
+        Args: { months_back?: number }
+        Returns: {
+          count: number
+          month: string
+        }[]
+      }
       get_admin_trials: {
         Args: never
         Returns: {
@@ -2415,6 +2432,13 @@ export type Database = {
           id: string
           name: string
           trial_ends_at: string
+        }[]
+      }
+      get_admin_trials_history: {
+        Args: { months_back?: number }
+        Returns: {
+          count: number
+          month: string
         }[]
       }
       get_client_stats: { Args: { p_client_id: string }; Returns: Json }
