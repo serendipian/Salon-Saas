@@ -39,6 +39,7 @@ const AuthRequired: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 // Module imports (unchanged)
 import { DashboardModule } from './modules/dashboard/DashboardModule';
 import { ServicesModule } from './modules/services/ServicesModule';
+import { ServiceSettingsPage } from './modules/services/ServiceSettingsPage';
 import { ClientsModule } from './modules/clients/ClientsModule';
 import { TeamModule } from './modules/team/TeamModule';
 import { TeamListPage } from './modules/team/pages/TeamListPage';
@@ -73,6 +74,11 @@ const AppContent = () => {
         <Route path="/services" element={
           <ProtectedRoute action="view" resource="services">
             <ErrorBoundary moduleName="Services"><ServicesModule /></ErrorBoundary>
+          </ProtectedRoute>
+        } />
+        <Route path="/services/settings" element={
+          <ProtectedRoute action="edit" resource="services">
+            <ErrorBoundary moduleName="Paramètres des services"><ServiceSettingsPage /></ErrorBoundary>
           </ProtectedRoute>
         } />
         <Route path="/clients" element={
