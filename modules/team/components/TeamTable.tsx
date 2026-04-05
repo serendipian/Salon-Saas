@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronRight, Users } from 'lucide-react';
 import { StaffMember, Appointment, ServiceCategory } from '../../../types';
 import { EmptyState } from '../../../components/EmptyState';
+import { formatPrice } from '../../../lib/format';
 
 interface TeamTableProps {
   team: StaffMember[];
@@ -76,6 +77,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Contact</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Début</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Contrat</th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell text-right">Salaire</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell text-center">Heures/sem</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden xl:table-cell">Compétences</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Activité</th>
@@ -122,6 +124,13 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium border ${CONTRACT_COLORS[member.contractType] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                       {CONTRACT_LABELS[member.contractType] || member.contractType}
                     </span>
+                  ) : (
+                    <span className="text-sm text-slate-400">-</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 hidden lg:table-cell text-right">
+                  {member.baseSalary != null ? (
+                    <span className="text-sm font-medium text-slate-900">{formatPrice(member.baseSalary)}</span>
                   ) : (
                     <span className="text-sm text-slate-400">-</span>
                   )}

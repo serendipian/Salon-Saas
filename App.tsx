@@ -47,6 +47,10 @@ import { NewStaffPage } from './modules/team/pages/NewStaffPage';
 import { StaffDetailPage } from './modules/team/pages/StaffDetailPage';
 import { ProductsModule } from './modules/products/ProductsModule';
 import { AppointmentsModule } from './modules/appointments/AppointmentsModule';
+import { AppointmentListPage } from './modules/appointments/pages/AppointmentListPage';
+import { AppointmentDetailPage } from './modules/appointments/pages/AppointmentDetailPage';
+import { AppointmentEditPage } from './modules/appointments/pages/AppointmentEditPage';
+import { AppointmentNewPage } from './modules/appointments/pages/AppointmentNewPage';
 import { SuppliersModule } from './modules/suppliers/SuppliersModule';
 import { SettingsModule } from './modules/settings/SettingsModule';
 import { POSModule } from './modules/pos/POSModule';
@@ -99,7 +103,12 @@ const AppContent = () => {
           <ProtectedRoute action="view" resource="appointments">
             <ErrorBoundary moduleName="Rendez-vous"><AppointmentsModule /></ErrorBoundary>
           </ProtectedRoute>
-        } />
+        }>
+          <Route index element={<AppointmentListPage />} />
+          <Route path="new" element={<AppointmentNewPage />} />
+          <Route path=":id" element={<AppointmentDetailPage />} />
+          <Route path=":id/edit" element={<AppointmentEditPage />} />
+        </Route>
         <Route path="/products" element={
           <ProtectedRoute action="view" resource="products">
             <ErrorBoundary moduleName="Produits"><ProductsModule /></ErrorBoundary>

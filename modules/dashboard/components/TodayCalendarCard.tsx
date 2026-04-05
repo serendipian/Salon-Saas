@@ -451,11 +451,11 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
           onClose={() => setPopover(null)}
           onViewDetails={() => {
             setPopover(null);
-            navigate('/calendar');
+            navigate(`/calendar/${popover.appointment.id}`);
           }}
           onEdit={() => {
             setPopover(null);
-            navigate('/calendar');
+            navigate(`/calendar/${popover.appointment.id}/edit`);
           }}
         />
       )}
