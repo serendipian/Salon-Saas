@@ -5,7 +5,7 @@ export type ViewMode = 'card' | 'table';
 
 const STORAGE_PREFIX = 'lumiere_viewMode_';
 
-export const useViewMode = (moduleName: string): {
+export const useViewMode = (moduleName: string, serverDefault?: ViewMode): {
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
 } => {
@@ -16,7 +16,7 @@ export const useViewMode = (moduleName: string): {
     if (isMobile) return 'card';
     const saved = localStorage.getItem(storageKey);
     if (saved === 'card' || saved === 'table') return saved;
-    return 'table';
+    return serverDefault ?? 'table';
   });
 
   const setViewMode = useCallback((mode: ViewMode) => {

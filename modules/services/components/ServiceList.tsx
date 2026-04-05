@@ -1,8 +1,12 @@
 
 import React from 'react';
-import { Plus, Search, Layers } from 'lucide-react';
+import { Plus, Search, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Service, ServiceCategory } from '../../../types';
+import { useAuth } from '../../../context/AuthContext';
+import { usePermissions } from '../../../hooks/usePermissions';
 import { useViewMode } from '../../../hooks/useViewMode';
+import { useServiceSettings } from '../hooks/useServiceSettings';
 import { ViewToggle } from '../../../components/ViewToggle';
 import { ServiceTable } from './ServiceTable';
 import { ServiceCard } from './ServiceCard';
@@ -14,7 +18,6 @@ interface ServiceListProps {
   onSearchChange: (val: string) => void;
   onAdd: () => void;
   onEdit: (id: string) => void;
-  onManageCategories: () => void;
 }
 
 export const ServiceList: React.FC<ServiceListProps> = ({
@@ -24,22 +27,28 @@ export const ServiceList: React.FC<ServiceListProps> = ({
   onSearchChange,
   onAdd,
   onEdit,
-  onManageCategories
 }) => {
-  const { viewMode, setViewMode } = useViewMode('services');
+  const navigate = useNavigate();
+  const { role } = useAuth();
+  const { can } = usePermissions(role);
+  const canEditServices = can('edit', 'services');
+  const { serviceSettings } = useServiceSettings();
+  const { viewMode, setViewMode } = useViewMode('services', serviceSettings.defaultView);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
       <div className="flex justify-between items-end">
         <h1 className="text-2xl font-bold text-slate-900">Services</h1>
         <div className="flex gap-3">
-           <button
-            onClick={onManageCategories}
-            className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
-          >
-            <Layers size={16} />
-            Catégories
-          </button>
+          {canEditServices && (
+            <button
+              onClick={() => navigate('/services/settings')}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors"
+              title="Paramètres des services"
+            >
+              <Settings size={18} className="text-slate-600" />
+            </button>
+          )}
           <button
             onClick={onAdd}
             className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
