@@ -1163,69 +1163,102 @@ export type Database = {
       salons: {
         Row: {
           address: string | null
+          business_registration: string | null
+          city: string | null
+          country: string | null
           created_at: string
           currency: string
           deleted_at: string | null
           email: string | null
+          facebook: string | null
+          google_maps_url: string | null
           id: string
+          instagram: string | null
           is_suspended: boolean
           logo_url: string | null
           name: string
+          neighborhood: string | null
           phone: string | null
           plan_id: string | null
+          postal_code: string | null
           schedule: Json | null
           service_settings: Json | null
           slug: string | null
+          street: string | null
           subscription_tier: string
+          tiktok: string | null
           timezone: string
           trial_ends_at: string | null
           updated_at: string
           vat_rate: number | null
           website: string | null
+          whatsapp: string | null
         }
         Insert: {
           address?: string | null
+          business_registration?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           currency?: string
           deleted_at?: string | null
           email?: string | null
+          facebook?: string | null
+          google_maps_url?: string | null
           id?: string
+          instagram?: string | null
           is_suspended?: boolean
           logo_url?: string | null
           name: string
+          neighborhood?: string | null
           phone?: string | null
           plan_id?: string | null
+          postal_code?: string | null
           schedule?: Json | null
           service_settings?: Json | null
           slug?: string | null
+          street?: string | null
           subscription_tier?: string
+          tiktok?: string | null
           timezone?: string
           trial_ends_at?: string | null
           updated_at?: string
           vat_rate?: number | null
           website?: string | null
+          whatsapp?: string | null
         }
         Update: {
           address?: string | null
+          business_registration?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           currency?: string
           deleted_at?: string | null
           email?: string | null
+          facebook?: string | null
+          google_maps_url?: string | null
           id?: string
+          instagram?: string | null
           is_suspended?: boolean
           logo_url?: string | null
           name?: string
+          neighborhood?: string | null
           phone?: string | null
           plan_id?: string | null
+          postal_code?: string | null
           schedule?: Json | null
           service_settings?: Json | null
           slug?: string | null
+          street?: string | null
           subscription_tier?: string
+          tiktok?: string | null
           timezone?: string
           trial_ends_at?: string | null
           updated_at?: string
           vat_rate?: number | null
           website?: string | null
+          whatsapp?: string | null
         }
         Relationships: [
           {
