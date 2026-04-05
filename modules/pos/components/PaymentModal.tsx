@@ -12,9 +12,10 @@ interface PaymentModalProps {
   cart?: CartItem[];
   onClose: () => void;
   onComplete: (payments: PaymentEntry[]) => void;
+  isProcessing?: boolean;
 }
 
-export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], onClose, onComplete }) => {
+export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], onClose, onComplete, isProcessing }) => {
   const { salonSettings } = useSettings();
   const { isMobile } = useMediaQuery();
   const [summaryExpanded, setSummaryExpanded] = useState(false);
@@ -70,7 +71,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
   };
 
   const handleFinalize = () => {
-    if (isComplete) {
+    if (isComplete && !isProcessing) {
       onComplete(payments);
     }
   };
@@ -210,14 +211,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
           )}
           <button
             onClick={handleFinalize}
-            disabled={!isComplete}
+            disabled={!isComplete || isProcessing}
             className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all shadow-sm ${
-              isComplete
+              isComplete && !isProcessing
               ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
               : 'bg-slate-100 text-slate-400 border border-slate-200'
             }`}
           >
-            {isComplete ? (
+            {isProcessing ? (
+              <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Traitement en cours...</>
+            ) : isComplete ? (
               <><CheckCircle size={24} /> Valider la transaction</>
             ) : (
               <span>Reste {formatPrice(remaining)} à payer</span>
@@ -356,16 +359,21 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
 
           {/* Validation */}
           <div className="mt-6 pt-6 border-t border-slate-100">
-             <button 
+             <button
                onClick={handleFinalize}
-               disabled={!isComplete}
+               disabled={!isComplete || isProcessing}
                className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all shadow-sm ${
-                 isComplete 
-                 ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer' 
+                 isComplete && !isProcessing
+                 ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
                  : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
                }`}
              >
-               {isComplete ? (
+               {isProcessing ? (
+                 <>
+                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                   Traitement en cours...
+                 </>
+               ) : isComplete ? (
                  <>
                    <CheckCircle size={24} />
                    Valider la transaction

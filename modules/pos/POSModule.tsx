@@ -35,6 +35,7 @@ export const POSModule: React.FC = () => {
 
   // Modal States
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [variantModalData, setVariantModalData] = useState<{service: Service} | null>(null);
   const [receiptTransaction, setReceiptTransaction] = useState<Transaction | null>(null);
@@ -77,9 +78,18 @@ export const POSModule: React.FC = () => {
     });
   };
 
-  const handleCompletePayment = (payments: PaymentEntry[]) => {
-    processTransaction(payments);
-    setShowPaymentModal(false);
+  const handleCompletePayment = async (payments: PaymentEntry[]) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    try {
+      await processTransaction(payments);
+      setShowPaymentModal(false);
+    } catch {
+      // Error toast is handled by the mutation's onError callback
+      // Keep modal open so user can retry
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -154,6 +164,7 @@ export const POSModule: React.FC = () => {
           cart={cart}
           onClose={() => setShowPaymentModal(false)}
           onComplete={handleCompletePayment}
+          isProcessing={isProcessing}
         />
       )}
 
