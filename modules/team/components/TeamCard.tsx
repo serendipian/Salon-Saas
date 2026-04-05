@@ -1,15 +1,41 @@
 import React from 'react';
-import { Mail, Phone, Users } from 'lucide-react';
-import { StaffMember, Appointment } from '../../../types';
+import { Mail, Phone, Calendar, Users } from 'lucide-react';
+import { StaffMember, Appointment, ServiceCategory } from '../../../types';
 import { EmptyState } from '../../../components/EmptyState';
 
 interface TeamCardProps {
   team: StaffMember[];
   appointments: Appointment[];
+  serviceCategories: ServiceCategory[];
   onSelect: (id: string) => void;
 }
 
-export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, onSelect }) => {
+const CONTRACT_LABELS: Record<string, string> = {
+  CDI: 'CDI',
+  CDD: 'CDD',
+  Freelance: 'Freelance',
+  Apprentissage: 'Apprenti',
+  Stage: 'Stage',
+};
+
+const CONTRACT_COLORS: Record<string, string> = {
+  CDI: 'bg-blue-100 text-blue-700',
+  CDD: 'bg-amber-100 text-amber-700',
+  Freelance: 'bg-purple-100 text-purple-700',
+  Apprentissage: 'bg-teal-100 text-teal-700',
+  Stage: 'bg-slate-100 text-slate-600',
+};
+
+function formatStartDate(dateStr?: string): string {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, serviceCategories, onSelect }) => {
   const getMemberStats = (memberId: string) => {
     const memberAppointments = appointments.filter(a => a.staffId === memberId);
     const today = new Date().toISOString().slice(0, 10);
@@ -23,6 +49,13 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, onSelect
       totalRevenue,
     };
   };
+
+  const categoryMap = new Map(serviceCategories.map(c => [c.id, c]));
+
+  const resolveSkills = (skills: string[]) =>
+    skills
+      .map(id => categoryMap.get(id))
+      .filter((c): c is ServiceCategory => !!c);
 
   if (team.length === 0) {
     return (
@@ -39,6 +72,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, onSelect
       {team.map((member) => {
         const stats = getMemberStats(member.id);
         const initials = `${member.firstName?.[0] || ''}${member.lastName?.[0] || ''}`;
+        const skills = resolveSkills(member.skills || []);
 
         return (
           <button
@@ -62,26 +96,51 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, onSelect
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-900 text-lg">{member.firstName} {member.lastName}</h3>
-                    <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
-                      {member.role}
-                    </span>
-                    {member.deletedAt && (
-                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-600">
-                        Archivé
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
+                        {member.role}
                       </span>
-                    )}
+                      {member.contractType && (
+                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${CONTRACT_COLORS[member.contractType] || 'bg-slate-100 text-slate-600'}`}>
+                          {CONTRACT_LABELS[member.contractType] || member.contractType}
+                        </span>
+                      )}
+                      {member.deletedAt && (
+                        <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-600">
+                          Archivé
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-2 mb-6">
+              <div className="space-y-2 mb-4">
                 <div className="flex items-center gap-2 text-sm text-slate-500">
                   <Mail size={14} /> {member.email}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-500">
                   <Phone size={14} /> {member.phone}
                 </div>
+                {member.startDate && (
+                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <Calendar size={14} /> Depuis {formatStartDate(member.startDate)}
+                  </div>
+                )}
               </div>
+
+              {skills.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-4">
+                  {skills.map(cat => (
+                    <span
+                      key={cat.id}
+                      className="inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200"
+                    >
+                      {cat.name}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100">
                 <div className="text-center">

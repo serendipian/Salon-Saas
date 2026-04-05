@@ -1,15 +1,41 @@
 import React from 'react';
 import { Phone, ChevronRight, Users } from 'lucide-react';
-import { StaffMember, Appointment } from '../../../types';
+import { StaffMember, Appointment, ServiceCategory } from '../../../types';
 import { EmptyState } from '../../../components/EmptyState';
 
 interface TeamTableProps {
   team: StaffMember[];
   appointments: Appointment[];
+  serviceCategories: ServiceCategory[];
   onSelect: (id: string) => void;
 }
 
-export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, onSelect }) => {
+const CONTRACT_LABELS: Record<string, string> = {
+  CDI: 'CDI',
+  CDD: 'CDD',
+  Freelance: 'Freelance',
+  Apprentissage: 'Apprenti',
+  Stage: 'Stage',
+};
+
+const CONTRACT_COLORS: Record<string, string> = {
+  CDI: 'bg-blue-100 text-blue-700 border-blue-200',
+  CDD: 'bg-amber-100 text-amber-700 border-amber-200',
+  Freelance: 'bg-purple-100 text-purple-700 border-purple-200',
+  Apprentissage: 'bg-teal-100 text-teal-700 border-teal-200',
+  Stage: 'bg-slate-100 text-slate-600 border-slate-200',
+};
+
+function formatStartDate(dateStr?: string): string {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, serviceCategories, onSelect }) => {
   const getMemberStats = (memberId: string) => {
     const memberAppointments = appointments.filter(a => a.staffId === memberId);
     const today = new Date().toISOString().slice(0, 10);
@@ -23,6 +49,13 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, onSele
       totalRevenue,
     };
   };
+
+  const categoryMap = new Map(serviceCategories.map(c => [c.id, c]));
+
+  const resolveSkills = (skills: string[]) =>
+    skills
+      .map(id => categoryMap.get(id))
+      .filter((c): c is ServiceCategory => !!c);
 
   if (team.length === 0) {
     return (
@@ -41,6 +74,9 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, onSele
           <tr>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Membre</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Contact</th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Début</th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Contrat</th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden xl:table-cell">Compétences</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Activité</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Commission</th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
@@ -51,6 +87,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, onSele
           {team.map((member) => {
             const stats = getMemberStats(member.id);
             const initials = `${member.firstName?.[0] || ''}${member.lastName?.[0] || ''}`;
+            const skills = resolveSkills(member.skills || []);
 
             return (
               <tr
@@ -76,6 +113,34 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, onSele
                 <td className="px-6 py-4 hidden md:table-cell">
                   <div className="text-sm text-slate-600 flex flex-col gap-1">
                     <span className="flex items-center gap-2"><Phone size={14} /> {member.phone}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 hidden lg:table-cell">
+                  <span className="text-sm text-slate-600">{formatStartDate(member.startDate)}</span>
+                </td>
+                <td className="px-6 py-4 hidden lg:table-cell">
+                  {member.contractType ? (
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium border ${CONTRACT_COLORS[member.contractType] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                      {CONTRACT_LABELS[member.contractType] || member.contractType}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-400">—</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 hidden xl:table-cell">
+                  <div className="flex flex-wrap gap-1 max-w-[200px]">
+                    {skills.length > 0 ? (
+                      skills.map(cat => (
+                        <span
+                          key={cat.id}
+                          className="inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap"
+                        >
+                          {cat.name}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-slate-400">—</span>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-4">

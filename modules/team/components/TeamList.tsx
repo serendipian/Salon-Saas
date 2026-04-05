@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Plus, Search } from 'lucide-react';
-import { StaffMember, Appointment } from '../../../types';
+import { StaffMember, Appointment, ServiceCategory } from '../../../types';
 import { useViewMode } from '../../../hooks/useViewMode';
 import { ViewToggle } from '../../../components/ViewToggle';
 import { TeamTable } from './TeamTable';
@@ -10,6 +10,7 @@ import { TeamCard } from './TeamCard';
 interface TeamListProps {
   team: StaffMember[];
   appointments: Appointment[];
+  serviceCategories: ServiceCategory[];
   searchTerm: string;
   onSearchChange: (val: string) => void;
   onAdd: () => void;
@@ -18,7 +19,7 @@ interface TeamListProps {
   onToggleArchived: () => void;
 }
 
-export const TeamList: React.FC<TeamListProps> = ({ team, appointments, searchTerm, onSearchChange, onAdd, onSelect, showArchived, onToggleArchived }) => {
+export const TeamList: React.FC<TeamListProps> = ({ team, appointments, serviceCategories, searchTerm, onSearchChange, onAdd, onSelect, showArchived, onToggleArchived }) => {
   const { viewMode, setViewMode } = useViewMode('team');
 
   return (
@@ -58,9 +59,9 @@ export const TeamList: React.FC<TeamListProps> = ({ team, appointments, searchTe
 
         {/* Content */}
         {viewMode === 'table' ? (
-          <TeamTable team={team} appointments={appointments} onSelect={onSelect} />
+          <TeamTable team={team} appointments={appointments} serviceCategories={serviceCategories} onSelect={onSelect} />
         ) : (
-          <TeamCard team={team} appointments={appointments} onSelect={onSelect} />
+          <TeamCard team={team} appointments={appointments} serviceCategories={serviceCategories} onSelect={onSelect} />
         )}
       </div>
     </div>

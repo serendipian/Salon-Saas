@@ -6,6 +6,7 @@ import { TeamList } from '../components/TeamList';
 import { TeamPerformance } from '../components/TeamPerformance';
 import { useTeam } from '../hooks/useTeam';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
+import { useServices } from '../../services/hooks/useServices';
 
 type Tab = 'members' | 'performance';
 
@@ -13,6 +14,7 @@ export const TeamListPage: React.FC = () => {
   const [showArchived, setShowArchived] = useState(false);
   const { team, allStaff, isLoading, searchTerm, setSearchTerm } = useTeam(showArchived);
   const { allAppointments: appointments } = useAppointments();
+  const { serviceCategories } = useServices();
   const [activeTab, setActiveTab] = useState<Tab>('members');
   const navigate = useNavigate();
 
@@ -53,6 +55,7 @@ export const TeamListPage: React.FC = () => {
         <TeamList
           team={team}
           appointments={appointments}
+          serviceCategories={serviceCategories}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onAdd={() => navigate('/team/new')}
