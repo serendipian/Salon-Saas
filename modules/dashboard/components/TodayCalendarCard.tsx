@@ -1,13 +1,16 @@
 
 import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
-import { CalendarClock, Check, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CalendarClock, Check, Clock, User, Scissors, Tag, X, StickyNote, ExternalLink } from 'lucide-react';
 import { Appointment, AppointmentStatus, Service, ServiceCategory, StaffMember } from '../../../types';
 import { HOURS, isSameDay } from '../../appointments/components/calendarUtils';
 import { getCategoryCalendarColors } from '../../appointments/components/calendarColors';
+import { StatusBadge } from '../../appointments/components/StatusBadge';
 import { StaffAvatar } from '../../../components/StaffAvatar';
+import { formatPrice } from '../../../lib/format';
 
 // --- Constants ---
-const ROW_H = 72; // px per hour — taller for a more spacious feel
+const ROW_H = 72;
 const HALF_HOUR_H = ROW_H / 2;
 
 interface TodayCalendarCardProps {
@@ -29,7 +32,6 @@ function getNowOffset(): number | null {
   return ((h - 8) * 60 + m) / 60 * ROW_H;
 }
 
-/** Map staff Tailwind color class → inline hex for avatar fallback */
 const COLOR_HEX: Record<string, string> = {
   rose: '#f43f5e', blue: '#3b82f6', emerald: '#10b981', purple: '#a855f7',
   pink: '#ec4899', amber: '#f59e0b', red: '#ef4444', cyan: '#06b6d4',
@@ -41,7 +43,6 @@ function staffHex(color: string): string {
   return COLOR_HEX[match?.[1] ?? ''] ?? '#64748b';
 }
 
-/** Soft bg for staff column header from staff color */
 const COLUMN_BG: Record<string, string> = {
   rose: 'bg-rose-50/60', blue: 'bg-blue-50/60', emerald: 'bg-emerald-50/60', purple: 'bg-purple-50/60',
   pink: 'bg-pink-50/60', amber: 'bg-amber-50/60', red: 'bg-red-50/60', cyan: 'bg-cyan-50/60',
@@ -53,14 +54,141 @@ function staffColumnBg(color: string): string {
   return COLUMN_BG[match?.[1] ?? ''] ?? 'bg-slate-50/60';
 }
 
+// ── Popover ──────────────────────────────────────────────
+
+interface PopoverState {
+  appointment: Appointment;
+  rect: DOMRect;
+}
+
+const AppointmentPopover: React.FC<{
+  appointment: Appointment;
+  anchorRect: DOMRect;
+  containerRect: DOMRect;
+  onClose: () => void;
+  onNavigate: () => void;
+}> = ({ appointment, anchorRect, containerRect, onClose, onNavigate }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [onClose]);
+
+  // Position relative to the calendar container
+  const popoverWidth = 280;
+  const popoverHeight = 260;
+
+  // Prefer showing to the right of the block, fall back to left
+  let left = anchorRect.right - containerRect.left + 8;
+  if (left + popoverWidth > containerRect.width) {
+    left = anchorRect.left - containerRect.left - popoverWidth - 8;
+  }
+  // Keep within horizontal bounds
+  left = Math.max(4, Math.min(left, containerRect.width - popoverWidth - 4));
+
+  // Prefer below the click, fall back to above
+  let top = anchorRect.top - containerRect.top;
+  if (top + popoverHeight > containerRect.height + containerRect.top) {
+    top = anchorRect.bottom - containerRect.top - popoverHeight;
+  }
+  top = Math.max(4, top);
+
+  const start = new Date(appointment.date);
+  const end = new Date(start.getTime() + appointment.durationMinutes * 60000);
+
+  return (
+    <div
+      ref={ref}
+      className="absolute z-30 w-[280px] bg-white rounded-xl shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+      style={{ left, top }}
+    >
+      {/* Header */}
+      <div className="px-4 pt-3.5 pb-3 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h4 className="text-sm font-bold text-slate-900 truncate">{appointment.serviceName}</h4>
+            {appointment.variantName && (
+              <span className="text-[11px] text-slate-400">{appointment.variantName}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <StatusBadge status={appointment.status} />
+            <button
+              onClick={onClose}
+              className="p-1 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Details */}
+      <div className="px-4 py-3 space-y-2">
+        <div className="flex items-center gap-2.5 text-[13px] text-slate-600">
+          <Clock size={14} className="text-slate-400 shrink-0" />
+          <span className="tabular-nums">{fmt(start)} – {fmt(end)}</span>
+          <span className="text-slate-300">·</span>
+          <span className="text-slate-400">{appointment.durationMinutes} min</span>
+        </div>
+        <div className="flex items-center gap-2.5 text-[13px] text-slate-600">
+          <User size={14} className="text-slate-400 shrink-0" />
+          <span className="truncate">{appointment.clientName}</span>
+        </div>
+        <div className="flex items-center gap-2.5 text-[13px] text-slate-600">
+          <Scissors size={14} className="text-slate-400 shrink-0" />
+          <span className="truncate">{appointment.staffName}</span>
+        </div>
+        <div className="flex items-center gap-2.5 text-[13px]">
+          <Tag size={14} className="text-slate-400 shrink-0" />
+          <span className="font-semibold text-pink-600">{formatPrice(appointment.price)}</span>
+        </div>
+        {appointment.notes && (
+          <div className="flex items-start gap-2.5 text-[13px] text-slate-500">
+            <StickyNote size={14} className="text-slate-400 shrink-0 mt-0.5" />
+            <span className="line-clamp-2 italic">{appointment.notes}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Action */}
+      <div className="px-4 pb-3">
+        <button
+          onClick={onNavigate}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium bg-slate-900 hover:bg-slate-800 text-white rounded-lg transition-colors"
+        >
+          <ExternalLink size={14} />
+          Voir dans l'agenda
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ── Main component ───────────────────────────────────────
+
 export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   appointments,
   services,
   serviceCategories,
   staff,
 }) => {
+  const navigate = useNavigate();
   const [nowOffset, setNowOffset] = useState<number | null>(getNowOffset);
+  const [popover, setPopover] = useState<PopoverState | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const hasScrolled = useRef(false);
 
   // Tick every minute
@@ -77,6 +205,12 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   }, [nowOffset]);
 
   useEffect(() => { scrollToCurrent(); }, [scrollToCurrent]);
+
+  const handleBlockClick = useCallback((appt: Appointment, e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setPopover({ appointment: appt, rect });
+  }, []);
 
   const todayAppts = useMemo(() => {
     const today = new Date();
@@ -113,14 +247,13 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     return m;
   }, [todayAppts]);
 
-  // Count completed / total for header summary
   const completedCount = useMemo(() => todayAppts.filter(a => a.status === AppointmentStatus.COMPLETED).length, [todayAppts]);
 
   const totalHeight = HOURS.length * ROW_H;
   const nowLabel = nowOffset !== null ? fmt(new Date()) : null;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+    <div ref={containerRef} className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden relative">
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white">
         <div className="flex items-center gap-3">
@@ -161,7 +294,6 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
         <div className="flex flex-col">
           {/* ── Sticky staff headers ── */}
           <div className="flex border-b border-slate-100 bg-white sticky top-0 z-20">
-            {/* Hour gutter */}
             <div className="w-[52px] shrink-0" />
             {staffColumns.map(s => {
               const count = (apptsByStaff.get(s.id) || []).length;
@@ -216,15 +348,12 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                     className="flex-1 min-w-[160px] relative border-l border-slate-100/80"
                     style={{ height: totalHeight }}
                   >
-                    {/* Hour + half-hour grid lines */}
                     {HOURS.map((hour, i) => (
                       <React.Fragment key={hour}>
-                        {/* Full hour */}
                         <div
                           className="absolute left-0 right-0 border-t border-slate-100"
                           style={{ top: i * ROW_H }}
                         />
-                        {/* Half hour */}
                         <div
                           className="absolute left-0 right-0 border-t border-dashed border-slate-50"
                           style={{ top: i * ROW_H + HALF_HOUR_H }}
@@ -232,7 +361,6 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                       </React.Fragment>
                     ))}
 
-                    {/* ── Appointment blocks ── */}
                     {staffAppts.map(appt => {
                       const start = new Date(appt.date);
                       const startMin = Math.max((start.getHours() - 8) * 60 + start.getMinutes(), 0);
@@ -245,37 +373,36 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                       const colors = cat ? getCategoryCalendarColors(cat.color) : null;
                       const done = appt.status === AppointmentStatus.COMPLETED;
                       const end = new Date(start.getTime() + appt.durationMinutes * 60000);
+                      const isSelected = popover?.appointment.id === appt.id;
 
                       return (
                         <div
                           key={appt.id}
+                          onClick={(e) => handleBlockClick(appt, e)}
                           className={`
                             absolute left-1.5 right-1.5 rounded-lg overflow-hidden
-                            transition-all duration-200 cursor-default group/block
+                            transition-all duration-200 cursor-pointer group/block
                             border-l-[3px]
+                            ${isSelected ? 'ring-2 ring-slate-900/20 shadow-lg z-20' : ''}
                             ${done
                               ? 'border-slate-300 bg-slate-50/80 text-slate-400 hover:bg-slate-100/80'
                               : `${colors?.border ?? 'border-slate-400'} ${colors?.bg ?? 'bg-slate-50'} ${colors?.text ?? 'text-slate-800'} hover:shadow-md hover:shadow-slate-200/50 hover:-translate-y-[1px]`
                             }
                           `}
                           style={{ top: top + 1, height: Math.max(height - 2, 26) }}
-                          title={`${appt.serviceName} — ${appt.clientName}\n${fmt(start)} – ${fmt(end)}`}
                         >
                           <div className="px-2 py-1 h-full flex flex-col justify-center">
-                            {/* Service name — always visible */}
                             <div className="flex items-center gap-1">
                               {done && <Check size={10} className="text-slate-400 shrink-0" />}
                               <span className={`text-[11px] font-semibold truncate leading-tight ${done ? 'line-through decoration-slate-300' : ''}`}>
                                 {appt.serviceName}
                               </span>
                             </div>
-                            {/* Time range */}
                             {height >= 40 && (
                               <div className="text-[10px] opacity-60 truncate leading-tight mt-0.5 tabular-nums">
                                 {fmt(start)} – {fmt(end)}
                               </div>
                             )}
-                            {/* Client name */}
                             {height >= 56 && (
                               <div className="text-[10px] font-medium opacity-50 truncate leading-tight mt-0.5">
                                 {appt.clientName}
@@ -296,19 +423,31 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                   style={{ top: nowOffset }}
                 >
                   <div className="flex items-center">
-                    {/* Time label */}
                     <div className="w-[52px] shrink-0 flex justify-end pr-1.5">
                       <span className="text-[9px] font-bold text-red-500 bg-red-50 px-1 py-[1px] rounded tabular-nums">
                         {nowLabel}
                       </span>
                     </div>
-                    {/* Dot + line */}
                     <div className="flex-1 flex items-center">
                       <div className="w-2.5 h-2.5 rounded-full bg-red-500 -ml-[5px] shadow-[0_0_0_3px_rgba(239,68,68,0.15)] animate-pulse" />
                       <div className="flex-1 h-[2px] bg-gradient-to-r from-red-500 to-red-500/0" />
                     </div>
                   </div>
                 </div>
+              )}
+
+              {/* ── Popover ── */}
+              {popover && containerRef.current && (
+                <AppointmentPopover
+                  appointment={popover.appointment}
+                  anchorRect={popover.rect}
+                  containerRect={containerRef.current.getBoundingClientRect()}
+                  onClose={() => setPopover(null)}
+                  onNavigate={() => {
+                    setPopover(null);
+                    navigate('/calendar');
+                  }}
+                />
               )}
             </div>
           </div>
