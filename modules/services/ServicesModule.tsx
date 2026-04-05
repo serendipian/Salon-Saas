@@ -6,62 +6,7 @@ import { ServiceList } from './components/ServiceList';
 import { ServiceForm } from './components/ServiceForm';
 import { X, Plus, Trash2, ChevronDown } from 'lucide-react';
 import { CategoryIcon, RegistryIcon, ICON_PICKER_LIST, hasIcon } from '../../lib/categoryIcons';
-
-// --- Icon Picker Dropdown ---
-const IconPicker: React.FC<{
-  selectedIcon?: string;
-  onSelect: (iconName: string) => void;
-}> = ({ selectedIcon, onSelect }) => {
-  const [open, setOpen] = useState(false);
-  const hasSelected = selectedIcon && hasIcon(selectedIcon);
-
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 p-2 border border-slate-300 rounded-lg hover:border-slate-400 bg-white transition-colors"
-        title="Choisir une icône"
-      >
-        {hasSelected ? (
-          <RegistryIcon name={selectedIcon} size={16} className="text-slate-700" />
-        ) : (
-          <span className="w-4 h-4 rounded bg-slate-200" />
-        )}
-        <ChevronDown size={12} className="text-slate-400" />
-      </button>
-
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute top-full left-0 mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-xl p-2 w-[260px]">
-            <div className="grid grid-cols-5 gap-1">
-              {ICON_PICKER_LIST.map(({ name, label }) => {
-                const isActive = selectedIcon === name;
-                return (
-                  <button
-                    key={name}
-                    type="button"
-                    onClick={() => { onSelect(name); setOpen(false); }}
-                    className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-colors ${
-                      isActive
-                        ? 'bg-pink-100 text-pink-600'
-                        : 'hover:bg-slate-100 text-slate-500'
-                    }`}
-                    title={label}
-                  >
-                    <RegistryIcon name={name} size={18} />
-                    <span className="text-[8px] leading-tight truncate w-full text-center">{label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
+import { IconPicker } from './components/IconPicker';
 
 // --- Category Manager Modal ---
 const CategoryManagerModal: React.FC<{
