@@ -1,23 +1,24 @@
 
 import React, { useState, useMemo } from 'react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import { useNavigate } from 'react-router-dom';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   AreaChart,
   Area
 } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Calendar, Users, DollarSign, ChevronRight } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useClients } from '../clients/hooks/useClients';
 import { useAppointments } from '../appointments/hooks/useAppointments';
 import { useServices } from '../services/hooks/useServices';
 import { formatPrice } from '../../lib/format';
-import { DateRange } from '../../types';
+import { DateRange, AppointmentStatus } from '../../types';
 import { DateRangePicker } from '../../components/DateRangePicker';
 import { TodayCalendarCard } from './components/TodayCalendarCard';
 
@@ -28,9 +29,18 @@ interface MetricCardProps {
   isPositive: boolean;
   subtitle?: string;
   icon?: React.ComponentType<{ size?: number; className?: string }>;
+  isCurrency?: boolean;
 }
 
-const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon }: MetricCardProps) => {
+const formatCount = (n: number) => new Intl.NumberFormat('fr-FR').format(n);
+
+const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon, isCurrency = false }: MetricCardProps) => {
+  const trendIsZero = trend !== null && Math.abs(trend) < 0.05;
+  const trendColor = trendIsZero
+    ? 'bg-slate-50 text-slate-500'
+    : isPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700';
+  const TrendIcon = trendIsZero ? Minus : isPositive ? ArrowUpRight : ArrowDownRight;
+
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4 md:p-5 shadow-sm hover:shadow-md transition-all duration-200 h-full flex flex-col justify-between group">
       <div>
@@ -39,13 +49,13 @@ const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon }: M
           {Icon && <Icon size={16} className="text-slate-400 group-hover:text-slate-600 transition-colors shrink-0" />}
         </div>
         <div className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight break-words">
-          {typeof value === 'number' ? formatPrice(value) : value}
+          {typeof value === 'number' ? (isCurrency ? formatPrice(value) : formatCount(value)) : value}
         </div>
       </div>
       <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-2 mt-3 md:mt-4 pt-2 md:pt-3 border-t border-slate-50">
           {trend !== null && (
-             <span className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${isPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-               {isPositive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+             <span className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${trendColor}`}>
+               <TrendIcon size={12} />
                {Math.abs(trend).toFixed(1)}%
              </span>
           )}
@@ -56,6 +66,7 @@ const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon }: M
 };
 
 export const DashboardModule: React.FC = () => {
+  const navigate = useNavigate();
   const { transactions } = useTransactions();
   const { allAppointments: appointments } = useAppointments();
   const { allClients: clients } = useClients();
@@ -113,27 +124,41 @@ export const DashboardModule: React.FC = () => {
     const newClientsCount = data.current.newClients.length;
     const avgBasket = data.current.transactions.length > 0 ? revenue / data.current.transactions.length : 0;
 
+    // Cancellation rate (cancelled + no-show vs total booked)
+    const cancelledAppts = data.current.appointments.filter(
+      a => a.status === AppointmentStatus.CANCELLED || a.status === AppointmentStatus.NO_SHOW
+    ).length;
+    const cancellationRate = totalAppts > 0 ? (cancelledAppts / totalAppts) * 100 : 0;
+
     // Previous Metrics
     const prevRevenue = data.previous.transactions.reduce((sum, t) => sum + t.total, 0);
     const prevAppts = data.previous.appointments.length;
     const prevClientsCount = data.previous.newClients.length;
     const prevAvgBasket = data.previous.transactions.length > 0 ? prevRevenue / data.previous.transactions.length : 0;
 
+    const prevCancelledAppts = data.previous.appointments.filter(
+      a => a.status === AppointmentStatus.CANCELLED || a.status === AppointmentStatus.NO_SHOW
+    ).length;
+    const prevCancellationRate = prevAppts > 0 ? (prevCancelledAppts / prevAppts) * 100 : 0;
+
     // Calculate Trends
     const calcTrend = (curr: number, prev: number) => prev === 0 ? (curr > 0 ? 100 : 0) : ((curr - prev) / prev) * 100;
 
-    return { 
-      revenue, 
+    return {
+      revenue,
       revenueTrend: calcTrend(revenue, prevRevenue),
-      
-      totalAppts, 
+
+      totalAppts,
       apptsTrend: calcTrend(totalAppts, prevAppts),
-      
-      newClients: newClientsCount, 
+
+      newClients: newClientsCount,
       clientsTrend: calcTrend(newClientsCount, prevClientsCount),
-      
-      avgBasket, 
-      basketTrend: calcTrend(avgBasket, prevAvgBasket)
+
+      avgBasket,
+      basketTrend: calcTrend(avgBasket, prevAvgBasket),
+
+      cancellationRate,
+      cancellationTrend: calcTrend(cancellationRate, prevCancellationRate),
     };
   }, [data]);
 
@@ -211,38 +236,48 @@ export const DashboardModule: React.FC = () => {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard 
-          title="Chiffre d'Affaires" 
+      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-5 gap-4">
+        <MetricCard
+          title="Chiffre d'Affaires"
           value={stats.revenue}
           trend={stats.revenueTrend}
           isPositive={stats.revenueTrend >= 0}
           subtitle="vs période préc."
           icon={DollarSign}
+          isCurrency
         />
-        <MetricCard 
-          title="Rendez-vous" 
-          value={stats.totalAppts} 
+        <MetricCard
+          title="Rendez-vous"
+          value={stats.totalAppts}
           trend={stats.apptsTrend}
           isPositive={stats.apptsTrend >= 0}
           subtitle="vs période préc."
           icon={Calendar}
         />
-        <MetricCard 
-          title="Nouveaux Clients" 
-          value={stats.newClients} 
+        <MetricCard
+          title="Nouveaux Clients"
+          value={stats.newClients}
           trend={stats.clientsTrend}
           isPositive={stats.clientsTrend >= 0}
           subtitle="vs période préc."
           icon={Users}
         />
-        <MetricCard 
-          title="Panier Moyen" 
+        <MetricCard
+          title="Panier Moyen"
           value={stats.avgBasket}
           trend={stats.basketTrend}
           isPositive={stats.basketTrend >= 0}
           subtitle="vs période préc."
-          icon={Users}
+          icon={ShoppingBag}
+          isCurrency
+        />
+        <MetricCard
+          title="Annulations"
+          value={`${stats.cancellationRate.toFixed(1)}%`}
+          trend={stats.cancellationTrend}
+          isPositive={stats.cancellationTrend <= 0}
+          subtitle="vs période préc."
+          icon={XCircle}
         />
       </div>
 
@@ -259,7 +294,7 @@ export const DashboardModule: React.FC = () => {
         <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-6">
              <h3 className="font-bold text-slate-800">Activité Financière</h3>
-             <button className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
+             <button onClick={() => navigate('/finances')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
                Voir détails <ChevronRight size={12} />
              </button>
           </div>
@@ -281,16 +316,17 @@ export const DashboardModule: React.FC = () => {
                   dy={10} 
                   minTickGap={30}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#64748b', fontSize: 11}} 
-                  tickFormatter={(value) => `${value}`} 
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{fill: '#64748b', fontSize: 11}}
+                  tickFormatter={(value) => formatPrice(value)}
+                  width={90}
                 />
                 <Tooltip 
                   contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)'}}
                   cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
-                  formatter={(value: number) => formatPrice(value)}
+                  formatter={(value: number) => [formatPrice(value), 'Ventes']}
                 />
                 <Area 
                   type="monotone" 
@@ -346,7 +382,7 @@ export const DashboardModule: React.FC = () => {
                    <p className="text-xs text-slate-400 italic text-center py-4">Aucun rendez-vous à venir.</p>
                  )}
               </div>
-              <button className="w-full mt-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors border border-slate-200 border-dashed">
+              <button onClick={() => navigate('/calendar')} className="w-full mt-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors border border-slate-200 border-dashed">
                 Voir le planning complet
               </button>
            </div>
