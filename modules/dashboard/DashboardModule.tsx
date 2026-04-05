@@ -39,7 +39,7 @@ const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon, isC
   const trendIsZero = trend !== null && Math.abs(trend) < 0.05;
   const trendColor = trendIsZero
     ? 'bg-slate-50 text-slate-500'
-    : isPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700';
+    : isPositive ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600';
   const TrendIcon = trendIsZero ? Minus : isPositive ? ArrowUpRight : ArrowDownRight;
 
   return (
@@ -306,10 +306,7 @@ export const DashboardModule: React.FC = () => {
     <div className="w-full space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Tableau de Bord</h1>
-          <p className="text-slate-500 mt-1">Aperçu de vos performances.</p>
-        </div>
+        <h1 className="text-2xl font-bold text-slate-900">Tableau de Bord</h1>
         <div className="flex items-center">
           <DateRangePicker dateRange={dateRange} onChange={setDateRange} />
         </div>
@@ -416,7 +413,7 @@ export const DashboardModule: React.FC = () => {
                              </div>
 
                              {/* Accent line */}
-                             <div className={`w-0.5 h-9 rounded-full shrink-0 ${isToday ? 'bg-pink-400' : 'bg-slate-200'}`} />
+                             <div className={`w-0.5 h-9 rounded-full shrink-0 ${isToday ? 'bg-blue-400' : 'bg-slate-200'}`} />
 
                              {/* Details */}
                              <div className="flex-1 min-w-0">
@@ -432,7 +429,7 @@ export const DashboardModule: React.FC = () => {
                              </div>
 
                              {/* Day badge */}
-                             <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${isToday ? 'bg-pink-50 text-pink-600' : 'bg-slate-50 text-slate-500'}`}>
+                             <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${isToday ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
                                {dayLabel}
                              </span>
 
@@ -481,15 +478,15 @@ export const DashboardModule: React.FC = () => {
                  <BarChart data={chartData} barCategoryGap="25%">
                    <defs>
                      <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                       <stop offset="0%" stopColor="#6366f1" stopOpacity={0.9}/>
-                       <stop offset="100%" stopColor="#6366f1" stopOpacity={0.4}/>
+                       <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9}/>
+                       <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.4}/>
                      </linearGradient>
                    </defs>
                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} dy={5} minTickGap={30}/>
                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} width={28} allowDecimals={false} />
                    <Tooltip
-                     cursor={{fill: 'rgba(99, 102, 241, 0.04)', radius: 4}}
+                     cursor={{fill: 'rgba(59, 130, 246, 0.04)', radius: 4}}
                      contentStyle={{borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgb(0 0 0 / 0.08)', fontSize: 12}}
                      formatter={(value: number) => [`${value} rdv`, '']}
                      labelStyle={{fontWeight: 600, color: '#1e293b', marginBottom: 2}}
@@ -517,8 +514,8 @@ export const DashboardModule: React.FC = () => {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorVentes" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0f172a" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#0f172a" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -545,7 +542,7 @@ export const DashboardModule: React.FC = () => {
                 <Area
                   type="monotone"
                   dataKey="ventes"
-                  stroke="#0f172a"
+                  stroke="#3b82f6"
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorVentes)"
@@ -560,7 +557,7 @@ export const DashboardModule: React.FC = () => {
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <Crown size={16} className="text-amber-500" />
+              <Crown size={16} className="text-blue-500" />
               Top Services
             </h3>
             <button onClick={() => navigate('/services')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
@@ -581,7 +578,7 @@ export const DashboardModule: React.FC = () => {
                         <span className="text-sm font-bold text-slate-900 ml-2 shrink-0">{formatPrice(svc.revenue)}</span>
                       </div>
                       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-slate-700 rounded-full transition-all duration-500" style={{ width: `${barWidth}%` }} />
+                        <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${barWidth}%` }} />
                       </div>
                       <span className="text-[10px] text-slate-400 mt-0.5 block">{svc.count} prestation{svc.count > 1 ? 's' : ''}</span>
                     </div>
@@ -598,7 +595,7 @@ export const DashboardModule: React.FC = () => {
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <TrendingUp size={16} className="text-emerald-500" />
+              <TrendingUp size={16} className="text-blue-500" />
               Performance Équipe
             </h3>
             <button onClick={() => navigate('/team')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
@@ -619,7 +616,7 @@ export const DashboardModule: React.FC = () => {
                         <span className="text-sm font-bold text-slate-900 ml-2 shrink-0">{formatPrice(staff.revenue)}</span>
                       </div>
                       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${barWidth}%` }} />
+                        <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{ width: `${barWidth}%` }} />
                       </div>
                       <span className="text-[10px] text-slate-400 mt-0.5 block">{staff.appointments} rdv complété{staff.appointments > 1 ? 's' : ''}</span>
                     </div>
