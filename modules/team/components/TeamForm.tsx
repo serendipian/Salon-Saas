@@ -14,6 +14,7 @@ interface TeamFormProps {
   existingMember?: StaffMember;
   onSave: (member: StaffMember) => void;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
 const COLORS = [
@@ -35,7 +36,7 @@ const DEFAULT_SCHEDULE: WorkSchedule = {
   sunday: { isOpen: false, start: '09:00', end: '18:00' },
 };
 
-export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCancel }) => {
+export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCancel, isSubmitting }) => {
   const { serviceCategories } = useServices();
   const { salonSettings } = useSettings();
   const { errors, validate, clearFieldError } = useFormValidation(staffMemberSchema);
@@ -202,12 +203,17 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
            
            {/* Save Actions */}
            <div className="flex flex-col gap-3 sticky top-6 z-10">
-             <button 
+             <button
               type="submit"
-              className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
+              disabled={isSubmitting}
+              className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-               <Save size={16} />
-               Enregistrer
+               {isSubmitting ? (
+                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+               ) : (
+                 <Save size={16} />
+               )}
+               {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
              </button>
              <button 
               type="button"

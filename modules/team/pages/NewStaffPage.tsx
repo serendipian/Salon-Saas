@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { TeamForm } from '../components/TeamForm';
@@ -9,8 +9,11 @@ import type { StaffMember } from '../../../types';
 export const NewStaffPage: React.FC = () => {
   const navigate = useNavigate();
   const { addStaffMember } = useTeam();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSave = async (member: StaffMember) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const result = await addStaffMember(member);
       if (result?.id) {
@@ -19,6 +22,8 @@ export const NewStaffPage: React.FC = () => {
     } catch {
       // Error toast is handled by the mutation's onError callback
       // Stay on the form so the user can retry
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -31,7 +36,7 @@ export const NewStaffPage: React.FC = () => {
         <ChevronLeft className="w-4 h-4" />
         Retour
       </button>
-      <TeamForm onSave={handleSave} onCancel={() => navigate('/team')} />
+      <TeamForm onSave={handleSave} onCancel={() => navigate('/team')} isSubmitting={isSubmitting} />
     </div>
   );
 };
