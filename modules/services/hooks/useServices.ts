@@ -142,6 +142,7 @@ export const useServices = () => {
             sort_order: row.sort_order,
           })
           .eq('id', id)
+          .eq('salon_id', salonId)
           .then(({ error }) => { if (error) throw error; })
       );
 

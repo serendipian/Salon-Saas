@@ -679,7 +679,7 @@ export type Database = {
         Row: {
           accepted_at: string | null
           created_at: string
-          email: string
+          email: string | null
           email_sent_at: string | null
           expires_at: string
           id: string
@@ -692,7 +692,7 @@ export type Database = {
         Insert: {
           accepted_at?: string | null
           created_at?: string
-          email: string
+          email?: string | null
           email_sent_at?: string | null
           expires_at?: string
           id?: string
@@ -705,7 +705,7 @@ export type Database = {
         Update: {
           accepted_at?: string | null
           created_at?: string
-          email?: string
+          email?: string | null
           email_sent_at?: string | null
           expires_at?: string
           id?: string
@@ -1604,6 +1604,7 @@ export type Database = {
           salon_id: string
           schedule: Json | null
           skills: string[] | null
+          slug: string | null
           social_security_number: string | null
           start_date: string | null
           updated_at: string
@@ -1639,6 +1640,7 @@ export type Database = {
           salon_id: string
           schedule?: Json | null
           skills?: string[] | null
+          slug?: string | null
           social_security_number?: string | null
           start_date?: string | null
           updated_at?: string
@@ -1674,6 +1676,7 @@ export type Database = {
           salon_id?: string
           schedule?: Json | null
           skills?: string[] | null
+          slug?: string | null
           social_security_number?: string | null
           start_date?: string | null
           updated_at?: string
@@ -2492,6 +2495,14 @@ export type Database = {
       decrypt_pii: { Args: { ciphertext: string }; Returns: string }
       encrypt_pii: { Args: { plaintext: string }; Returns: string }
       gdpr_delete_client: { Args: { p_client_id: string }; Returns: undefined }
+      generate_staff_slug: {
+        Args: {
+          p_exclude_id?: string
+          p_first_name: string
+          p_salon_id: string
+        }
+        Returns: string
+      }
       get_active_salon: { Args: never; Returns: string }
       get_admin_account_detail: { Args: { p_salon_id: string }; Returns: Json }
       get_admin_accounts: {
@@ -2575,6 +2586,17 @@ export type Database = {
       get_dashboard_stats: {
         Args: { p_date_from: string; p_date_to: string; p_salon_id: string }
         Returns: Json
+      }
+      get_invitation_info: {
+        Args: { p_token: string }
+        Returns: {
+          is_valid: boolean
+          role: string
+          salon_name: string
+          staff_email: string
+          staff_first_name: string
+          staff_last_name: string
+        }[]
       }
       get_staff_activity: {
         Args: { p_limit?: number; p_offset?: number; p_staff_id: string }
