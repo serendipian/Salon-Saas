@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -14,7 +14,7 @@ interface InvitationInfo {
 }
 
 export const AcceptInvitationPage: React.FC = () => {
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user, memberships } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const rawToken = searchParams.get('token');
@@ -22,16 +22,33 @@ export const AcceptInvitationPage: React.FC = () => {
     ? rawToken
     : null;
 
-  const [status, setStatus] = useState<'loading' | 'form' | 'processing' | 'success' | 'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'form' | 'processing' | 'awaiting-memberships' | 'success' | 'error'>('loading');
   const [invitationInfo, setInvitationInfo] = useState<InvitationInfo | null>(null);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [accepted, setAccepted] = useState(false);
+
+  // Prevent useEffect from re-triggering accept after signup flow signs in
+  const handledBySignup = useRef(false);
+  const acceptedRef = useRef(false);
+
+  // Wait for memberships to be loaded after sign-in before showing success
+  useEffect(() => {
+    if (status !== 'awaiting-memberships') return;
+
+    if (memberships.length > 0) {
+      setStatus('success');
+      return;
+    }
+
+    // Safety timeout: if memberships don't load within 5s, show success anyway
+    const timeout = setTimeout(() => setStatus('success'), 5000);
+    return () => clearTimeout(timeout);
+  }, [status, memberships]);
 
   // Fetch invitation info (works without auth)
   useEffect(() => {
-    if (!token) return;
+    if (!token || acceptedRef.current) return;
 
     const fetchInfo = async () => {
       const { data, error } = await supabase.rpc('get_invitation_info', { p_token: token });
@@ -42,10 +59,10 @@ export const AcceptInvitationPage: React.FC = () => {
       }
       setInvitationInfo(data[0]);
 
-      // If user is already authenticated, accept directly
-      if (isAuthenticated && user) {
+      // If user was already authenticated BEFORE this page loaded, accept directly
+      if (isAuthenticated && user && !handledBySignup.current) {
         await acceptDirectly();
-      } else {
+      } else if (!handledBySignup.current) {
         setStatus('form');
       }
     };
@@ -53,10 +70,11 @@ export const AcceptInvitationPage: React.FC = () => {
     if (!authLoading) {
       fetchInfo();
     }
-  }, [token, authLoading, isAuthenticated]);
+  }, [token, authLoading]);
 
-  // Accept invitation for already-authenticated users
+  // Accept invitation for already-authenticated users (existing accounts)
   const acceptDirectly = async () => {
+    if (acceptedRef.current) return;
     setStatus('processing');
     try {
       const { error } = await supabase.rpc('accept_invitation', { p_token: token! });
@@ -67,11 +85,11 @@ export const AcceptInvitationPage: React.FC = () => {
             ? "Cette invitation a expiré. Demandez une nouvelle invitation."
             : error.message.includes('already')
             ? "Vous êtes déjà membre de ce salon."
-            : "Une erreur est survenue. Veuillez réessayer."
+            : "Une erreur est survenue: " + error.message
         );
       } else {
+        acceptedRef.current = true;
         setStatus('success');
-        setAccepted(true);
       }
     } catch {
       setStatus('error');
@@ -89,11 +107,13 @@ export const AcceptInvitationPage: React.FC = () => {
       return;
     }
 
+    // Mark that signup flow is handling everything — prevent useEffect race
+    handledBySignup.current = true;
     setStatus('processing');
     setErrorMessage(null);
 
     try {
-      // Step 1: Create account via Edge Function
+      // Step 1: Edge Function creates user + accepts invitation server-side
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const response = await fetch(`${supabaseUrl}/functions/v1/accept-invitation-signup`, {
         method: 'POST',
@@ -105,7 +125,6 @@ export const AcceptInvitationPage: React.FC = () => {
 
       if (!response.ok) {
         if (result.existing) {
-          // User already exists — redirect to login
           setStatus('error');
           setErrorMessage('Un compte existe déjà avec cet email. Connectez-vous puis utilisez le lien d\'invitation.');
           return;
@@ -115,32 +134,22 @@ export const AcceptInvitationPage: React.FC = () => {
         return;
       }
 
-      // Step 2: Sign in with new credentials
+      // Step 2: Sign in with new credentials (invitation already accepted server-side)
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: result.email,
         password,
       });
 
       if (signInError) {
+        // Account + invitation are done, just can't auto-sign-in
         setStatus('error');
-        setErrorMessage('Compte créé mais erreur de connexion. Essayez de vous connecter manuellement.');
+        setErrorMessage('Compte créé avec succès ! Connectez-vous avec votre email et mot de passe.');
         return;
       }
 
-      // Step 3: Accept invitation (now authenticated)
-      const { error: acceptError } = await supabase.rpc('accept_invitation', { p_token: token });
-      if (acceptError) {
-        setStatus('error');
-        setErrorMessage(
-          acceptError.message.includes('already')
-            ? "Vous êtes déjà membre de ce salon."
-            : "Erreur lors de l'acceptation de l'invitation."
-        );
-        return;
-      }
-
-      setStatus('success');
-      setAccepted(true);
+      acceptedRef.current = true;
+      // Wait for onAuthStateChange to fetch memberships before showing success
+      setStatus('awaiting-memberships');
     } catch {
       setStatus('error');
       setErrorMessage("Une erreur est survenue. Veuillez réessayer.");
@@ -245,11 +254,11 @@ export const AcceptInvitationPage: React.FC = () => {
             </>
           )}
 
-          {status === 'processing' && (
+          {(status === 'processing' || status === 'awaiting-memberships') && (
             <div className="text-center">
               <Loader2 size={40} className="animate-spin text-slate-400 mx-auto mb-4" />
-              <h2 className="text-lg font-semibold text-slate-900">Acceptation en cours...</h2>
-              <p className="text-sm text-slate-500 mt-1">Création de votre compte</p>
+              <h2 className="text-lg font-semibold text-slate-900">Création en cours...</h2>
+              <p className="text-sm text-slate-500 mt-1">Configuration de votre compte</p>
             </div>
           )}
 
@@ -261,7 +270,7 @@ export const AcceptInvitationPage: React.FC = () => {
               <h2 className="text-lg font-semibold text-slate-900">Invitation acceptée !</h2>
               <p className="text-sm text-slate-500 mt-1">Vous avez rejoint le salon avec succès.</p>
               <button
-                onClick={() => navigate('/select-salon')}
+                onClick={() => navigate('/dashboard')}
                 className="mt-6 px-6 py-2.5 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-all"
               >
                 Continuer
@@ -277,10 +286,10 @@ export const AcceptInvitationPage: React.FC = () => {
               <h2 className="text-lg font-semibold text-slate-900">Erreur</h2>
               <p className="text-sm text-slate-500 mt-1">{errorMessage}</p>
               <button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/login')}
                 className="mt-6 px-6 py-2.5 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-all"
               >
-                Retour à l'accueil
+                Aller à la connexion
               </button>
             </div>
           )}

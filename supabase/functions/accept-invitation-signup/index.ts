@@ -93,6 +93,17 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Accept invitation server-side (uses admin RPC, no auth.uid() needed)
+    const { error: acceptError } = await supabase
+      .rpc('accept_invitation_admin', { p_token: token, p_user_id: newUser.user.id });
+
+    if (acceptError) {
+      return new Response(
+        JSON.stringify({ error: 'Compte créé mais erreur lors de l\'acceptation: ' + acceptError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ email: info.staff_email, userId: newUser.user.id }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
