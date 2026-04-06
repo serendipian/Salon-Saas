@@ -124,6 +124,7 @@ export const StaffProfileTab: React.FC<StaffProfileTabProps> = ({
       setDraft({
         firstName: staff.firstName,
         lastName: staff.lastName,
+        role: staff.role,
         email: staff.email,
         phone: staff.phone,
         birthDate: staff.birthDate,
@@ -225,6 +226,17 @@ export const StaffProfileTab: React.FC<StaffProfileTabProps> = ({
                 value={draft.lastName ?? ''}
                 onChange={e => setDraft({ ...draft, lastName: e.target.value })}
               />
+              <Select
+                label="Rôle"
+                value={draft.role ?? ''}
+                onChange={val => setDraft({ ...draft, role: val as StaffMember['role'] })}
+                options={[
+                  { value: 'Manager', label: 'Manager' },
+                  { value: 'Stylist', label: 'Styliste' },
+                  { value: 'Assistant', label: 'Assistant(e)' },
+                  { value: 'Receptionist', label: 'Réceptionniste' },
+                ]}
+              />
               <Input
                 label="Email"
                 type="email"
@@ -287,6 +299,7 @@ export const StaffProfileTab: React.FC<StaffProfileTabProps> = ({
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Prenom" value={staff.firstName} />
               <Field label="Nom" value={staff.lastName} />
+              <Field label="Rôle" value={staff.role} />
               <Field label="Email" value={staff.email} />
               <Field label="Telephone" value={staff.phone} />
               <Field label="Date de naissance" value={formatDate(staff.birthDate)} />
