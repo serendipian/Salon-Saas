@@ -37,14 +37,14 @@ export const useInvitation = (staffId: string) => {
   });
 
   const createMutation = useMutation({
-    mutationFn: async ({ email, role }: { email: string; role: string }) => {
-      // Expire existing pending invitations for this staff AND same email across salon
+    mutationFn: async (role: string) => {
+      // Expire existing pending invitations for this staff
       await supabase
         .from('invitations')
         .update({ expires_at: new Date().toISOString() })
         .eq('salon_id', salonId!)
-        .is('accepted_at', null)
-        .or(`staff_member_id.eq.${staffId},email.eq.${email}`);
+        .eq('staff_member_id', staffId)
+        .is('accepted_at', null);
 
       const token = crypto.randomUUID();
       const expiresAt = new Date();
@@ -54,7 +54,6 @@ export const useInvitation = (staffId: string) => {
         .from('invitations')
         .insert({
           salon_id: salonId!,
-          email,
           role: ROLE_MAP[role as StaffMember['role']] || 'stylist',
           token,
           invited_by: profile!.id,
@@ -91,9 +90,10 @@ export const useInvitation = (staffId: string) => {
 
   return {
     invitation,
-    createInvitation: async (email: string, role: string = 'Stylist') => {
-      return await createMutation.mutateAsync({ email, role });
+    createInvitation: async (role: string = 'Stylist') => {
+      return await createMutation.mutateAsync(role);
     },
     cancelInvitation: () => cancelMutation.mutateAsync(),
+    isCancelling: cancelMutation.isPending,
   };
 };

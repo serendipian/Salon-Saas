@@ -16,7 +16,9 @@ export const NewStaffPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       const result = await addStaffMember(member);
-      if (result?.id) {
+      if (result?.slug) {
+        navigate(`/team/${result.slug}`);
+      } else if (result?.id) {
         navigate(`/team/${result.id}`);
       }
     } catch {

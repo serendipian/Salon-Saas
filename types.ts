@@ -161,6 +161,7 @@ export interface BonusTier {
 
 export interface StaffMember {
   id: string;
+  slug: string;
   firstName: string;
   lastName: string;
   role: 'Manager' | 'Stylist' | 'Assistant' | 'Receptionist';

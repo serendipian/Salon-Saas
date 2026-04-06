@@ -34,11 +34,13 @@ interface StaffMemberRow {
   created_by: string | null;
   updated_by: string | null;
   deleted_at: string | null;
+  slug: string | null;
 }
 
 export function toStaffMember(row: StaffMemberRow): StaffMember {
   return {
     id: row.id,
+    slug: row.slug ?? row.id,
     firstName: row.first_name,
     lastName: row.last_name,
     role: (row.role as StaffMember['role']) ?? 'Stylist',

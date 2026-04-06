@@ -78,7 +78,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, serviceC
           <button
             key={member.id}
             type="button"
-            onClick={() => onSelect(member.id)}
+            onClick={() => onSelect(member.slug)}
             aria-label={`Voir le profil de ${member.firstName} ${member.lastName}`}
             className={`bg-white rounded-xl border border-slate-200 text-left transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 overflow-hidden group ${member.deletedAt ? 'opacity-50' : ''}`}
           >

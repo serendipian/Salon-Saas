@@ -98,7 +98,7 @@ const AppContent = () => {
         }>
           <Route index element={<TeamListPage />} />
           <Route path="new" element={<NewStaffPage />} />
-          <Route path=":id" element={<StaffDetailPage />} />
+          <Route path=":slug" element={<StaffDetailPage />} />
         </Route>
         <Route path="/calendar" element={
           <ProtectedRoute action="view" resource="appointments">

@@ -6,7 +6,7 @@ import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { StaffMember } from '../../../types';
 
-export const useStaffDetail = (staffId: string) => {
+export const useStaffDetail = (slug: string) => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
@@ -15,19 +15,22 @@ export const useStaffDetail = (staffId: string) => {
   useRealtimeSync('staff_members');
 
   const { data: staff, isLoading } = useQuery({
-    queryKey: ['staff_member', salonId, staffId],
+    queryKey: ['staff_member', salonId, slug],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('staff_members')
         .select('*')
-        .eq('id', staffId)
+        .eq('slug', slug)
         .eq('salon_id', salonId)
         .single();
       if (error) throw error;
       return toStaffMember(data as unknown as Parameters<typeof toStaffMember>[0]);
     },
-    enabled: !!salonId && !!staffId,
+    enabled: !!salonId && !!slug,
   });
+
+  // Resolved ID for mutations
+  const staffId = staff?.id ?? '';
 
   // Load PII fields for this staff member via decrypted RPC
   const loadPii = async (): Promise<Partial<StaffMember>> => {
@@ -81,7 +84,7 @@ export const useStaffDetail = (staffId: string) => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['staff_member', salonId, staffId] });
+      queryClient.invalidateQueries({ queryKey: ['staff_member', salonId, slug] });
       queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });
     },
     onError: toastOnError('Erreur lors de la mise à jour'),
@@ -128,7 +131,7 @@ export const useStaffDetail = (staffId: string) => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['staff_member', salonId, staffId] });
+      queryClient.invalidateQueries({ queryKey: ['staff_member', salonId, slug] });
       queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });
     },
     onError: toastOnError('Erreur lors de la restauration'),

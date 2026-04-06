@@ -93,16 +93,16 @@ export const useTeam = (includeArchived = false) => {
       const { data, error } = await supabase
         .from('staff_members')
         .insert(insertData)
-        .select('id')
+        .select('id, slug')
         .single();
       if (error) throw error;
       try {
         await savePiiFields(data.id, member);
       } catch (piiError) {
-        // Staff record was created but PII save failed — return the id
+        // Staff record was created but PII save failed — return the id/slug
         // so user can navigate and retry PII via section edit
         console.warn('Staff created but PII save failed:', piiError);
-        return { id: data.id, piiError: true };
+        return { id: data.id, slug: data.slug, piiError: true };
       }
       return data;
     },

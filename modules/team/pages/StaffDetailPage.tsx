@@ -25,7 +25,7 @@ const TABS = [
 type TabKey = (typeof TABS)[number]['key'];
 
 export const StaffDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const defaultTab = (searchParams.get('tab') as TabKey) || 'profil';
@@ -38,9 +38,9 @@ export const StaffDetailPage: React.FC = () => {
     if (tab && TABS.some(t => t.key === tab)) setActiveTab(tab);
   }, [searchParams]);
 
-  const staffId = id ?? '';
-  const { staff, isLoading, isArchived, updateSection, isUpdating, archive, restore, loadPii } = useStaffDetail(staffId);
-  const { invitation, createInvitation } = useInvitation(staffId);
+  const staffSlug = slug ?? '';
+  const { staff, isLoading, isArchived, updateSection, isUpdating, archive, restore, loadPii } = useStaffDetail(staffSlug);
+  const { invitation, createInvitation, cancelInvitation, isCancelling } = useInvitation(staff?.id ?? '');
   const { transactions } = useTransactions();
   const { allAppointments } = useAppointments();
   const { salonSettings } = useSettings();
@@ -105,6 +105,8 @@ export const StaffDetailPage: React.FC = () => {
         hasPendingInvitation={!!invitation}
         invitationExpiresAt={invitation?.expires_at}
         onInvite={() => setShowInviteModal(true)}
+        onCancelInvitation={cancelInvitation}
+        isCancellingInvitation={isCancelling}
         onArchive={handleArchive}
         onRestore={restore}
       />
@@ -137,7 +139,6 @@ export const StaffDetailPage: React.FC = () => {
 
       {showInviteModal && (
         <InvitationModal
-          staffEmail={staff.email}
           staffRole={staff.role}
           onCreateInvitation={createInvitation}
           onClose={() => setShowInviteModal(false)}

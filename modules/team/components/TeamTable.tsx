@@ -95,7 +95,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
             return (
               <tr
                 key={member.id}
-                onClick={() => onSelect(member.id)}
+                onClick={() => onSelect(member.slug)}
                 className={`hover:bg-slate-50 transition-colors group cursor-pointer ${member.deletedAt ? 'opacity-50' : ''}`}
               >
                 <td className="px-6 py-4">

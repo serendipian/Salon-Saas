@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, Clock, UserCheck, Send, RotateCcw } from 'lucide-react';
+import { Mail, Phone, Clock, UserCheck, Send, RotateCcw, XCircle } from 'lucide-react';
 import { StaffMember } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 
@@ -11,6 +11,8 @@ interface StaffHeaderProps {
   hasPendingInvitation: boolean;
   invitationExpiresAt?: string;
   onInvite: () => void;
+  onCancelInvitation: () => void;
+  isCancellingInvitation?: boolean;
   onArchive: () => void;
   onRestore: () => void;
 }
@@ -18,7 +20,8 @@ interface StaffHeaderProps {
 export const StaffHeader: React.FC<StaffHeaderProps> = ({
   staff, isArchived, monthlyRevenue, monthlyAppointments,
   hasPendingInvitation, invitationExpiresAt,
-  onInvite, onArchive, onRestore,
+  onInvite, onCancelInvitation, isCancellingInvitation,
+  onArchive, onRestore,
 }) => {
   const seniorityMonths = staff.startDate
     ? Math.floor((Date.now() - new Date(staff.startDate).getTime()) / (30.44 * 24 * 60 * 60 * 1000))
@@ -76,18 +79,35 @@ export const StaffHeader: React.FC<StaffHeaderProps> = ({
         </div>
 
         {!isArchived && (
-          <div className="flex items-start gap-2 shrink-0">
+          <div className="flex flex-col items-end gap-2 shrink-0">
             {staff.membershipId ? (
               <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-lg">
                 <UserCheck className="w-3.5 h-3.5" /> Compte lié
               </span>
             ) : hasPendingInvitation ? (
-              <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-amber-50 text-amber-700 rounded-lg">
-                <Clock className="w-3.5 h-3.5" /> Invitation en attente
-                {invitationExpiresAt && (
-                  <span className="text-amber-500 ml-1">(expire le {new Date(invitationExpiresAt).toLocaleDateString('fr-FR')})</span>
-                )}
-              </span>
+              <>
+                <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-amber-50 text-amber-700 rounded-lg">
+                  <Clock className="w-3.5 h-3.5" /> Invitation en attente
+                  {invitationExpiresAt && (
+                    <span className="text-amber-500 ml-1">(expire le {new Date(invitationExpiresAt).toLocaleDateString('fr-FR')})</span>
+                  )}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={onCancelInvitation}
+                    disabled={isCancellingInvitation}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <XCircle className="w-3.5 h-3.5" /> Annuler
+                  </button>
+                  <button
+                    onClick={onInvite}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 rounded-lg transition-colors"
+                  >
+                    <Send className="w-3.5 h-3.5" /> Réinviter
+                  </button>
+                </div>
+              </>
             ) : (
               <button onClick={onInvite} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 rounded-lg transition-colors">
                 <Send className="w-4 h-4" /> Inviter par lien

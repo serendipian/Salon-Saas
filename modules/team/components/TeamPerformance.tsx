@@ -212,7 +212,7 @@ export const TeamPerformance: React.FC<TeamPerformanceProps> = ({ staff }) => {
                   key={perf.staff.id}
                   perf={perf}
                   totalRevenue={totalRevenue}
-                  onClick={() => navigate(`/team/${perf.staff.id}?tab=performance`)}
+                  onClick={() => navigate(`/team/${perf.staff.slug}?tab=performance`)}
                 />
               ))
             )}
@@ -229,7 +229,7 @@ export const TeamPerformance: React.FC<TeamPerformanceProps> = ({ staff }) => {
             <PerformanceCard
               key={perf.staff.id}
               perf={perf}
-              onClick={() => navigate(`/team/${perf.staff.id}?tab=performance`)}
+              onClick={() => navigate(`/team/${perf.staff.slug}?tab=performance`)}
             />
           ))
         )}
