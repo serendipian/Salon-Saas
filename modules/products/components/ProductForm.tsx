@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, Save, Box, AlertTriangle } from 'lucide-react';
-import { Product, ProductCategory } from '../../../types';
+import { ArrowLeft, Save, AlertTriangle } from 'lucide-react';
+import { Product, ProductCategory, UsageType } from '../../../types';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
+import { useProducts } from '../hooks/useProducts';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import { productSchema } from '../schemas';
 
@@ -15,14 +16,23 @@ interface ProductFormProps {
   onCancel: () => void;
 }
 
+const USAGE_TYPE_OPTIONS: { value: UsageType; label: string; description: string }[] = [
+  { value: 'retail', label: 'Revente', description: 'Vendu aux clients' },
+  { value: 'internal', label: 'Interne', description: 'Usage salon uniquement' },
+  { value: 'both', label: 'Mixte', description: 'Usage interne + revente' },
+];
+
 export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categories, onSave, onCancel }) => {
   const { salonSettings } = useSettings();
   const { allSuppliers } = useSuppliers();
+  const { brands } = useProducts();
   const [formData, setFormData] = useState<Product>(existingProduct || {
     id: '',
     name: '',
     description: '',
     categoryId: categories[0]?.id || '',
+    brandId: '',
+    usageType: 'retail',
     price: 0,
     cost: 0,
     sku: '',
@@ -48,6 +58,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
 
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
 
+  // Filter brands by selected supplier (if any), or show all
+  const availableBrands = supplierId
+    ? brands.filter(b => !b.supplierId || b.supplierId === supplierId)
+    : brands;
+
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 pb-10">
       <div className="flex items-center gap-4 mb-6">
@@ -70,7 +85,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
              />
              <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
-                <TextArea 
+                <TextArea
                   value={formData.description}
                   onChange={e => setFormData({...formData, description: e.target.value})}
                   rows={5}
@@ -88,7 +103,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
                   onChange={e => { setFormData({...formData, price: parseFloat(e.target.value)}); clearFieldError('price'); }}
                   error={errors.price}
                 />
-                <Input 
+                <Input
                   label="Coût d'achat"
                   type="number"
                   prefix={currencySymbol}
@@ -100,12 +115,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
 
           <Section title="Inventaire">
              <div className="grid grid-cols-2 gap-4 mb-4">
-                <Input 
+                <Input
                   label="SKU (Référence)"
                   value={formData.sku}
                   onChange={e => setFormData({...formData, sku: e.target.value})}
                 />
-                <Input 
+                <Input
                   label="Code-barres"
                   value={formData.barcode || ''}
                   onChange={e => setFormData({...formData, barcode: e.target.value})}
@@ -132,20 +147,43 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
 
         <div className="lg:col-span-1 space-y-6">
            <div className="flex flex-col gap-3 sticky top-6 z-10">
-             <button 
+             <button
               onClick={handleSave}
               className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
             >
                <Save size={16} />
                Enregistrer
              </button>
-             <button 
+             <button
               onClick={onCancel}
               className="w-full py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium transition-all text-sm"
             >
                Annuler
              </button>
            </div>
+
+           <Section title="Type d'utilisation">
+             <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
+               {USAGE_TYPE_OPTIONS.map((opt) => (
+                 <button
+                   key={opt.value}
+                   type="button"
+                   onClick={() => setFormData({...formData, usageType: opt.value})}
+                   className={`flex-1 px-2 py-2 text-xs font-medium rounded-md transition-colors text-center ${
+                     formData.usageType === opt.value
+                       ? 'bg-white text-slate-900 shadow-sm'
+                       : 'text-slate-500 hover:text-slate-700'
+                   }`}
+                   title={opt.description}
+                 >
+                   {opt.label}
+                 </button>
+               ))}
+             </div>
+             <p className="text-xs text-slate-500 mt-1.5">
+               {USAGE_TYPE_OPTIONS.find(o => o.value === formData.usageType)?.description}
+             </p>
+           </Section>
 
            <Section title="Organisation">
              <Select
@@ -154,6 +192,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
                onChange={(val) => { setFormData({...formData, categoryId: val as string}); clearFieldError('categoryId'); }}
                options={categories.map(c => ({ value: c.id, label: c.name, initials: c.name.substring(0,2).toUpperCase() }))}
                error={errors.categoryId}
+             />
+             <Select
+               label="Marque"
+               value={formData.brandId ?? ''}
+               onChange={(val) => setFormData({...formData, brandId: (val as string) || undefined})}
+               options={[
+                 { value: '', label: 'Aucune marque', initials: '--' },
+                 ...availableBrands.map(b => ({ value: b.id, label: b.name, initials: b.name.substring(0, 2).toUpperCase() }))
+               ]}
              />
              <Select
                label="Fournisseur"
@@ -171,7 +218,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
            </Section>
 
            <Section title="Visibilité">
-              <Select 
+              <Select
                 value={formData.active ? 'active' : 'draft'}
                 onChange={(val) => setFormData({...formData, active: val === 'active'})}
                 options={[

@@ -288,6 +288,77 @@ export type Database = {
           },
         ]
       }
+      brands: {
+        Row: {
+          color: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          name: string
+          salon_id: string
+          sort_order: number | null
+          supplier_id: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          name: string
+          salon_id: string
+          sort_order?: number | null
+          supplier_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          name?: string
+          salon_id?: string
+          sort_order?: number | null
+          supplier_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brands_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brands_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brands_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brands_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           acquisition_detail: string | null
@@ -857,6 +928,7 @@ export type Database = {
         Row: {
           active: boolean
           barcode: string | null
+          brand_id: string | null
           category_id: string | null
           cost: number | null
           created_at: string
@@ -872,10 +944,12 @@ export type Database = {
           supplier_id: string | null
           updated_at: string
           updated_by: string | null
+          usage_type: string
         }
         Insert: {
           active?: boolean
           barcode?: string | null
+          brand_id?: string | null
           category_id?: string | null
           cost?: number | null
           created_at?: string
@@ -891,10 +965,12 @@ export type Database = {
           supplier_id?: string | null
           updated_at?: string
           updated_by?: string | null
+          usage_type?: string
         }
         Update: {
           active?: boolean
           barcode?: string | null
+          brand_id?: string | null
           category_id?: string | null
           cost?: number | null
           created_at?: string
@@ -910,8 +986,16 @@ export type Database = {
           supplier_id?: string | null
           updated_at?: string
           updated_by?: string | null
+          usage_type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "products_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_category_id_fkey"
             columns: ["category_id"]
@@ -2548,6 +2632,10 @@ export type Database = {
       leave_salon: { Args: { p_salon_id: string }; Returns: undefined }
       revoke_membership: {
         Args: { p_membership_id: string }
+        Returns: undefined
+      }
+      save_brands: {
+        Args: { p_brands: Json; p_salon_id: string }
         Returns: undefined
       }
       save_product_categories: {

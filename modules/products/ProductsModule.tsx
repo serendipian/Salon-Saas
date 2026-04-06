@@ -9,6 +9,7 @@ export const ProductsModule: React.FC = () => {
   const {
     products,
     productCategories,
+    brands,
     searchTerm,
     setSearchTerm,
     addProduct,
@@ -43,6 +44,7 @@ export const ProductsModule: React.FC = () => {
         <ProductList
           products={products}
           categories={productCategories}
+          brands={brands}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onAdd={handleAdd}

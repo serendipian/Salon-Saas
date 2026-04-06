@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Settings } from 'lucide-react';
-import { Product, ProductCategory } from '../../../types';
+import { Product, ProductCategory, Brand } from '../../../types';
 import { useViewMode } from '../../../hooks/useViewMode';
 import { ViewToggle } from '../../../components/ViewToggle';
 import { usePermissions } from '../../../hooks/usePermissions';
@@ -13,6 +13,7 @@ import { ProductCard } from './ProductCard';
 interface ProductListProps {
   products: Product[];
   categories: ProductCategory[];
+  brands: Brand[];
   searchTerm: string;
   onSearchChange: (val: string) => void;
   onAdd: () => void;
@@ -22,6 +23,7 @@ interface ProductListProps {
 export const ProductList: React.FC<ProductListProps> = ({
   products,
   categories,
+  brands,
   searchTerm,
   onSearchChange,
   onAdd,
@@ -74,9 +76,9 @@ export const ProductList: React.FC<ProductListProps> = ({
         </div>
 
         {viewMode === 'table' ? (
-          <ProductTable products={products} categories={categories} onEdit={onEdit} />
+          <ProductTable products={products} categories={categories} brands={brands} onEdit={onEdit} />
         ) : (
-          <ProductCard products={products} categories={categories} onEdit={onEdit} />
+          <ProductCard products={products} categories={categories} brands={brands} onEdit={onEdit} />
         )}
       </div>
     </div>

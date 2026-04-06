@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Layers, Settings } from 'lucide-react';
+import { ArrowLeft, Layers, Tag, Settings } from 'lucide-react';
 import { ProductCategoriesTab } from './components/ProductCategoriesTab';
+import { BrandsTab } from './components/BrandsTab';
 import { ProductGeneralTab } from './components/ProductGeneralTab';
 
-type Tab = 'categories' | 'general';
+type Tab = 'categories' | 'brands' | 'general';
 
 export function ProductSettingsPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('categories');
+
+  const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
+    { key: 'categories', label: 'Catégories', icon: <Layers size={16} /> },
+    { key: 'brands', label: 'Marques', icon: <Tag size={16} /> },
+    { key: 'general', label: 'Général', icon: <Settings size={16} /> },
+  ];
 
   return (
     <div className="space-y-6">
@@ -27,33 +34,27 @@ export function ProductSettingsPage() {
       {/* Tabs */}
       <div className="border-b border-slate-200">
         <nav className="flex gap-6">
-          <button
-            onClick={() => setActiveTab('categories')}
-            className={`inline-flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'categories'
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            <Layers size={16} />
-            Catégories
-          </button>
-          <button
-            onClick={() => setActiveTab('general')}
-            className={`inline-flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'general'
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            <Settings size={16} />
-            Général
-          </button>
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`inline-flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab.key
+                  ? 'border-slate-900 text-slate-900'
+                  : 'border-transparent text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
         </nav>
       </div>
 
       {/* Tab content */}
-      {activeTab === 'categories' ? <ProductCategoriesTab /> : <ProductGeneralTab />}
+      {activeTab === 'categories' && <ProductCategoriesTab />}
+      {activeTab === 'brands' && <BrandsTab />}
+      {activeTab === 'general' && <ProductGeneralTab />}
     </div>
   );
 }

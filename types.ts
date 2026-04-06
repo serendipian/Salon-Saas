@@ -86,9 +86,20 @@ export interface ProductSettings {
 }
 
 // Product Domain
+export type UsageType = 'internal' | 'retail' | 'both';
+
 export interface ProductCategory {
   id: string;
   name: string;
+  color: string;
+  sortOrder?: number;
+}
+
+export interface Brand {
+  id: string;
+  name: string;
+  supplierId?: string;
+  supplierName?: string;
   color: string;
   sortOrder?: number;
 }
@@ -98,6 +109,9 @@ export interface Product {
   name: string;
   description: string;
   categoryId: string;
+  brandId?: string;
+  brand?: string;
+  usageType: UsageType;
   price: number;
   cost: number; // Cost per item
   sku: string; // Stock Keeping Unit

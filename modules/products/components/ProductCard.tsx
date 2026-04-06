@@ -1,12 +1,14 @@
 import React from 'react';
 import { Package } from 'lucide-react';
-import { Product, ProductCategory } from '../../../types';
+import { Product, ProductCategory, Brand } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
+import { UsageTypeBadge } from './UsageTypeBadge';
 
 interface ProductCardProps {
   products: Product[];
   categories: ProductCategory[];
+  brands?: Brand[];
   onEdit: (id: string) => void;
 }
 
@@ -20,7 +22,7 @@ const StockBadge: React.FC<{ stock: number }> = ({ stock }) => {
   return <span className="text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded text-xs font-medium">En stock</span>;
 };
 
-export const ProductCard: React.FC<ProductCardProps> = ({ products, categories, onEdit }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ products, categories, brands = [], onEdit }) => {
   if (products.length === 0) {
     return (
       <EmptyState
@@ -35,6 +37,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ products, categories, 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3">
       {products.map((product) => {
         const category = categories.find(c => c.id === product.categoryId);
+        const brand = brands.find(b => b.id === product.brandId);
 
         return (
           <button
@@ -50,13 +53,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ products, categories, 
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-slate-900 text-sm truncate">{product.name}</div>
-                {category ? (
-                  <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium border mt-1 ${category.color}`}>
-                    {category.name}
-                  </span>
-                ) : (
-                  <span className="text-xs text-slate-400 italic mt-1 block">Sans catégorie</span>
-                )}
+                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                  {category && (
+                    <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium border ${category.color}`}>
+                      {category.name}
+                    </span>
+                  )}
+                  {brand && (
+                    <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium border ${brand.color}`}>
+                      {brand.name}
+                    </span>
+                  )}
+                  <UsageTypeBadge usageType={product.usageType} />
+                </div>
               </div>
             </div>
 

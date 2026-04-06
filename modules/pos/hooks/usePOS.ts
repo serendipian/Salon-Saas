@@ -95,6 +95,7 @@ export const usePOS = () => {
       });
     } else if (viewMode === 'PRODUCTS') {
       return products.filter(p => {
+        if (p.usageType === 'internal') return false;
         const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.sku.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === 'ALL' || p.categoryId === selectedCategory;
         return matchesSearch && matchesCategory;

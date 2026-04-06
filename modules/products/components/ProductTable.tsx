@@ -1,16 +1,18 @@
 import React from 'react';
 import { ChevronRight, Package } from 'lucide-react';
-import { Product, ProductCategory } from '../../../types';
+import { Product, ProductCategory, Brand } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
+import { UsageTypeBadge } from './UsageTypeBadge';
 
 interface ProductTableProps {
   products: Product[];
   categories: ProductCategory[];
+  brands?: Brand[];
   onEdit: (id: string) => void;
 }
 
-export const ProductTable: React.FC<ProductTableProps> = ({ products, categories, onEdit }) => {
+export const ProductTable: React.FC<ProductTableProps> = ({ products, categories, brands = [], onEdit }) => {
   if (products.length === 0) {
     return (
       <EmptyState
@@ -37,6 +39,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({ products, categories
         <tbody className="divide-y divide-slate-100">
           {products.map((product) => {
             const category = categories.find(c => c.id === product.categoryId);
+            const brand = brands.find(b => b.id === product.brandId);
             let stockStatus = <span className="text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded text-xs font-medium">En stock</span>;
             if (product.stock === 0) stockStatus = <span className="text-red-700 bg-red-50 border border-red-100 px-2 py-0.5 rounded text-xs font-medium">Épuisé</span>;
             else if (product.stock < 10) stockStatus = <span className="text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded text-xs font-medium">Faible</span>;
@@ -50,13 +53,19 @@ export const ProductTable: React.FC<ProductTableProps> = ({ products, categories
                     </div>
                     <div>
                        <div className="font-medium text-slate-900 text-sm">{product.name}</div>
-                       {category ? (
-                        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium border mt-1 ${category.color}`}>
-                          {category.name}
-                        </span>
-                       ) : (
-                        <span className="text-xs text-slate-400 italic mt-1 block">Sans catégorie</span>
-                       )}
+                       <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                         {category && (
+                          <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium border ${category.color}`}>
+                            {category.name}
+                          </span>
+                         )}
+                         {brand && (
+                          <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium border ${brand.color}`}>
+                            {brand.name}
+                          </span>
+                         )}
+                         <UsageTypeBadge usageType={product.usageType} />
+                       </div>
                     </div>
                   </div>
                 </td>
