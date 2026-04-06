@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useTransactions } from '../../../hooks/useTransactions';
 import { useProducts } from '../../products/hooks/useProducts';
 import { useServices } from '../../services/hooks/useServices';
@@ -28,6 +28,14 @@ export const usePOS = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [linkedAppointmentId, setLinkedAppointmentId] = useState<string | null>(null);
+
+  // Refs for stable access in async callbacks (avoids stale closures)
+  const cartRef = useRef(cart);
+  cartRef.current = cart;
+  const selectedClientRef = useRef(selectedClient);
+  selectedClientRef.current = selectedClient;
+  const linkedAppointmentIdRef = useRef(linkedAppointmentId);
+  linkedAppointmentIdRef.current = linkedAppointmentId;
 
   // --- Cart Actions ---
 
@@ -78,7 +86,8 @@ export const usePOS = () => {
   // --- Transaction Processing ---
 
   const processTransaction = async (payments: PaymentEntry[]) => {
-    await addTransaction(cart, payments, selectedClient?.id, linkedAppointmentId ?? undefined);
+    // Read from refs to avoid stale closures (realtime events can cause re-renders)
+    await addTransaction(cartRef.current, payments, selectedClientRef.current?.id, linkedAppointmentIdRef.current ?? undefined);
     clearCart();
     setViewMode('HISTORY');
   };

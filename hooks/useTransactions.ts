@@ -41,7 +41,13 @@ export const useTransactions = () => {
       appointmentId?: string;
     }) => {
       const payload = toTransactionRpcPayload(items, payments, clientId, salonId, appointmentId);
-      const { error } = await supabase.rpc('create_transaction', payload);
+
+      // Timeout after 30s to prevent indefinite hang (network issues, auth lock deadlock)
+      const rpcPromise = supabase.rpc('create_transaction', payload);
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('La transaction a expiré (30s). Vérifiez votre connexion et réessayez.')), 30_000)
+      );
+      const { error } = await Promise.race([rpcPromise, timeoutPromise]);
       if (error) throw error;
     },
     onSuccess: () => {
