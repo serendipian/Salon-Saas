@@ -7,6 +7,7 @@ import { isSameDay } from '../../appointments/components/calendarUtils';
 import { StatusBadge } from '../../appointments/components/StatusBadge';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { formatPrice } from '../../../lib/format';
+import { useToast } from '../../../context/ToastContext';
 
 // --- Constants ---
 const CALENDAR_HOURS = Array.from({ length: 15 }, (_, i) => i + 9); // 9h to 23h
@@ -222,6 +223,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   onUpdateAppointment,
 }) => {
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [nowOffset, setNowOffset] = useState<number | null>(getNowOffset);
   const [popover, setPopover] = useState<PopoverState | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -390,28 +392,32 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
       const staffIdx = findStaffIndexAtX(e.clientX);
       const targetStaff = staffColumns[staffIdx];
 
-      if (targetStaff && canStaffHandleAppt(targetStaff, drag.appointment)) {
-        const today = new Date();
-        const newHour = Math.floor(minutes / 60) + START_HOUR;
-        const newMin = minutes % 60;
-        const newDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), newHour, newMin, 0, 0);
+      if (targetStaff) {
+        if (!canStaffHandleAppt(targetStaff, drag.appointment)) {
+          addToast({ type: 'warning', message: `${targetStaff.firstName} ne prend pas en charge cette prestation` });
+        } else {
+          const today = new Date();
+          const newHour = Math.floor(minutes / 60) + START_HOUR;
+          const newMin = minutes % 60;
+          const newDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), newHour, newMin, 0, 0);
 
-        const oldDate = new Date(drag.appointment.date);
-        const hasChanged = newDate.getTime() !== oldDate.getTime() || targetStaff.id !== drag.appointment.staffId;
+          const oldDate = new Date(drag.appointment.date);
+          const hasChanged = newDate.getTime() !== oldDate.getTime() || targetStaff.id !== drag.appointment.staffId;
 
-        if (hasChanged) {
-          onUpdateAppointment({
-            ...drag.appointment,
-            date: newDate.toISOString(),
-            staffId: targetStaff.id,
-            staffName: `${targetStaff.firstName} ${targetStaff.lastName}`.trim(),
-          });
+          if (hasChanged) {
+            onUpdateAppointment({
+              ...drag.appointment,
+              date: newDate.toISOString(),
+              staffId: targetStaff.id,
+              staffName: `${targetStaff.firstName} ${targetStaff.lastName}`.trim(),
+            });
+          }
         }
       }
     }
 
     setDrag(null);
-  }, [drag, onUpdateAppointment, calcMinutesFromY, findStaffIndexAtX, staffColumns, canStaffHandleAppt]);
+  }, [drag, onUpdateAppointment, calcMinutesFromY, findStaffIndexAtX, staffColumns, canStaffHandleAppt, addToast]);
 
   const handlePointerCancel = useCallback(() => {
     setDrag(null);
