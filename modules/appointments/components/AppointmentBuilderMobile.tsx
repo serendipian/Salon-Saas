@@ -106,7 +106,7 @@ export default function AppointmentBuilderMobile({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto pb-32">
+        <div className="flex-1 overflow-y-auto pb-44">
           {/* Client section */}
           <div className="px-4 pt-4 pb-3">
             <label className="text-xs font-medium text-slate-500 mb-2 block">Client *</label>
@@ -318,8 +318,8 @@ export default function AppointmentBuilderMobile({
           </div>
         </div>
 
-        {/* Sticky footer */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-4 space-y-2 z-10">
+        {/* Sticky footer — above BottomTabBar */}
+        <div className="fixed left-0 right-0 bg-white border-t border-slate-200 px-4 py-4 space-y-2 z-10" style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
           {serviceCount > 0 && (
             <p className="text-xs text-slate-500 text-center">
               {serviceCount} service{serviceCount > 1 ? 's' : ''} &middot;{' '}
@@ -495,8 +495,8 @@ export default function AppointmentBuilderMobile({
         </div>
       </div>
 
-      {/* Sticky footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-4 space-y-2 z-10">
+      {/* Sticky footer — above BottomTabBar */}
+      <div className="fixed left-0 right-0 bg-white border-t border-slate-200 px-4 py-4 space-y-2 z-10" style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
         <p className="text-xs text-slate-500 text-center truncate">
           {clientName && <span>{clientName} &middot; </span>}
           {serviceNames}

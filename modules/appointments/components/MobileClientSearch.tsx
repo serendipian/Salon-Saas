@@ -179,6 +179,16 @@ export const MobileClientSearch: React.FC<MobileClientSearchProps> = ({
         />
       </div>
 
+      {/* New client button — above the list for quick access */}
+      <button
+        type="button"
+        onClick={() => setIsCreating(true)}
+        className="w-full flex items-center justify-center gap-2 min-h-[48px] rounded-xl border-2 border-dashed border-slate-300 text-sm font-medium text-slate-500 hover:border-slate-400 hover:text-slate-600 transition-colors"
+      >
+        <UserPlus size={18} />
+        Nouveau client
+      </button>
+
       {/* Client list */}
       <div className="flex flex-col max-h-[50vh] overflow-y-auto">
         {filtered.length > 0 ? (
@@ -209,16 +219,6 @@ export const MobileClientSearch: React.FC<MobileClientSearchProps> = ({
           </div>
         )}
       </div>
-
-      {/* New client button */}
-      <button
-        type="button"
-        onClick={() => setIsCreating(true)}
-        className="w-full flex items-center justify-center gap-2 min-h-[48px] rounded-xl border-2 border-dashed border-slate-300 text-sm font-medium text-slate-500 hover:border-slate-400 hover:text-slate-600 transition-colors mt-1"
-      >
-        <UserPlus size={18} />
-        Nouveau client
-      </button>
     </div>
   );
 };
