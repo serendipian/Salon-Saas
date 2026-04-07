@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown, Search, Grid3X3, Delete } from 'lucide-react';
 
 interface CountryCode {
   code: string;
@@ -54,6 +54,8 @@ function splitPhone(value: string): { country: CountryCode; local: string } {
   return { country: DEFAULT_COUNTRY, local: value };
 }
 
+const NUMPAD_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '0', 'del'] as const;
+
 interface PhoneInputProps {
   label?: string;
   value: string;
@@ -75,6 +77,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
 }) => {
   const { country, local } = splitPhone(value);
   const [isOpen, setIsOpen] = useState(false);
+  const [showNumpad, setShowNumpad] = useState(false);
   const [search, setSearch] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -83,6 +86,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
+        setShowNumpad(false);
         setSearch('');
       }
     };
@@ -118,6 +122,16 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
     onChange(local ? `${c.dial}${local}` : '');
   };
 
+  const handleNumpadPress = (key: string) => {
+    if (key === 'del') {
+      const newLocal = local.slice(0, -1);
+      onChange(newLocal ? `${country.dial}${newLocal}` : '');
+    } else {
+      const newLocal = local + key;
+      onChange(`${country.dial}${newLocal}`);
+    }
+  };
+
   return (
     <div className={className} ref={containerRef}>
       {label && (
@@ -129,7 +143,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         {/* Country code selector */}
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => { setIsOpen(!isOpen); setShowNumpad(false); }}
           className="flex items-center gap-1 bg-slate-100 border border-r-0 border-slate-300 rounded-l-lg px-2.5 text-sm font-medium text-slate-700 min-h-[44px] hover:bg-slate-200 transition-colors select-none shrink-0"
         >
           <span className="text-base leading-none">{country.flag}</span>
@@ -147,7 +161,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
           required={required}
           placeholder={placeholder}
           className={`
-            w-full bg-white border rounded-r-lg rounded-l-none text-sm shadow-sm transition-all min-h-[44px]
+            w-full bg-white border-y text-sm shadow-sm transition-all min-h-[44px]
             focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none
             pl-3 pr-3 py-2.5
             ${error ? 'border-red-300 focus:ring-red-500' : 'border-slate-300'}
@@ -155,7 +169,21 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
           `}
         />
 
-        {/* Dropdown */}
+        {/* Numpad toggle button */}
+        <button
+          type="button"
+          onClick={() => { setShowNumpad(!showNumpad); setIsOpen(false); }}
+          className={`flex items-center justify-center border border-l-0 border-slate-300 rounded-r-lg px-2.5 min-h-[44px] transition-colors select-none shrink-0 ${
+            showNumpad
+              ? 'bg-slate-900 text-white'
+              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+          }`}
+          title="Pavé numérique"
+        >
+          <Grid3X3 size={16} />
+        </button>
+
+        {/* Country dropdown */}
         {isOpen && (
           <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-2xl ring-1 ring-black/5 max-h-72 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200" style={{ zIndex: 'var(--z-drawer-panel, 50)' }}>
             <div className="p-2 border-b border-slate-100 sticky top-0 bg-white">
@@ -192,6 +220,32 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
               ) : (
                 <div className="py-6 text-center text-sm text-slate-400">Aucun pays trouvé</div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Numpad */}
+        {showNumpad && (
+          <div className="absolute top-[calc(100%+4px)] right-0 bg-white border border-slate-200 rounded-xl shadow-2xl ring-1 ring-black/5 p-2 animate-in fade-in slide-in-from-top-2 duration-200 w-52" style={{ zIndex: 'var(--z-drawer-panel, 50)' }}>
+            <div className="grid grid-cols-3 gap-1.5">
+              {NUMPAD_KEYS.map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onMouseDown={(e) => { e.preventDefault(); handleNumpadPress(key); }}
+                  className={`
+                    min-h-[44px] rounded-lg text-sm font-semibold transition-all select-none flex items-center justify-center
+                    ${key === 'del'
+                      ? 'bg-red-50 text-red-500 hover:bg-red-100 active:bg-red-200'
+                      : key === ' '
+                        ? 'invisible'
+                        : 'bg-slate-50 text-slate-800 hover:bg-slate-100 active:bg-slate-200 border border-slate-200'
+                    }
+                  `}
+                >
+                  {key === 'del' ? <Delete size={18} /> : key === ' ' ? '' : key}
+                </button>
+              ))}
             </div>
           </div>
         )}
