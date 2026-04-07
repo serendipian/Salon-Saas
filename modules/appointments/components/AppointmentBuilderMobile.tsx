@@ -425,7 +425,7 @@ export default function AppointmentBuilderMobile({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto pb-32">
+      <div className="flex-1 overflow-y-auto pb-44">
         {/* Block selector (if multiple blocks) */}
         {form.serviceBlocks.length > 1 && (
           <div className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-hide">
