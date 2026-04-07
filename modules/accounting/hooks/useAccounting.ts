@@ -7,6 +7,8 @@ import { useTransactions } from '../../../hooks/useTransactions';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useServices } from '../../services/hooks/useServices';
 import { useProducts } from '../../products/hooks/useProducts';
+import { useTeam } from '../../team/hooks/useTeam';
+import { calcBonus, calcCommission } from '../../team/utils';
 import { toExpense, toExpenseInsert, ExpenseRow } from '../mappers';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
@@ -28,6 +30,7 @@ export const useAccounting = () => {
   const { salonSettings } = useSettings();
   const { allServices, serviceCategories } = useServices();
   const { allProducts, productCategories } = useProducts();
+  const { allStaff } = useTeam();
 
   // --- Expenses Query ---
   const { data: expenses = [] } = useQuery({
@@ -235,28 +238,49 @@ export const useAccounting = () => {
 
   // --- Revenue by Staff (Services) ---
   const revenueByStaffServices = useMemo(() => {
-    const map = new Map<string, { staffId: string | null; staffName: string; count: number; revenue: number }>();
+    const map = new Map<string, { staffId: string | null; staffName: string; count: number; revenue: number; services: Map<string, { name: string; variantName?: string; count: number; revenue: number }> }>();
 
     data.current.transactions.forEach((t: Transaction) => {
       t.items.forEach((item: CartItem) => {
         if (item.type !== 'SERVICE') return;
         const key = item.staffId || UNASSIGNED_KEY;
         const name = item.staffName || 'Non attribué';
-        if (!map.has(key)) map.set(key, { staffId: item.staffId || null, staffName: name, count: 0, revenue: 0 });
+        if (!map.has(key)) map.set(key, { staffId: item.staffId || null, staffName: name, count: 0, revenue: 0, services: new Map() });
         const row = map.get(key)!;
-        row.count += item.quantity || 1;
-        row.revenue += item.price * (item.quantity || 1);
+        const qty = item.quantity || 1;
+        row.count += qty;
+        row.revenue += item.price * qty;
+
+        const svcKey = item.referenceId || item.name;
+        if (!row.services.has(svcKey)) row.services.set(svcKey, { name: item.name, variantName: item.variantName, count: 0, revenue: 0 });
+        const svc = row.services.get(svcKey)!;
+        svc.count += qty;
+        svc.revenue += item.price * qty;
       });
     });
 
+    // Build staff lookup for bonus/commission
+    const staffMap = new Map(allStaff.map(s => [s.id, s]));
+
     const rows = Array.from(map.values()).sort((a, b) => b.revenue - a.revenue);
     const totalRevenue = rows.reduce((s, r) => s + r.revenue, 0);
-    return rows.map(r => ({
-      ...r,
-      avgBasket: r.count > 0 ? r.revenue / r.count : 0,
-      percent: totalRevenue > 0 ? (r.revenue / totalRevenue) * 100 : 0,
-    }));
-  }, [data.current.transactions]);
+    return rows.map(r => {
+      const staff = r.staffId ? staffMap.get(r.staffId) : undefined;
+      const commission = staff ? calcCommission(r.revenue, staff.commissionRate) : 0;
+      const bonus = staff ? calcBonus(r.revenue, staff.bonusTiers) : 0;
+      return {
+        staffId: r.staffId,
+        staffName: r.staffName,
+        count: r.count,
+        revenue: r.revenue,
+        avgBasket: r.count > 0 ? r.revenue / r.count : 0,
+        percent: totalRevenue > 0 ? (r.revenue / totalRevenue) * 100 : 0,
+        commission,
+        bonus,
+        services: Array.from(r.services.values()).sort((a, b) => b.revenue - a.revenue),
+      };
+    });
+  }, [data.current.transactions, allStaff]);
 
   // --- Revenue by Staff (Products) ---
   const revenueByStaffProducts = useMemo(() => {
