@@ -74,13 +74,13 @@ export const DashboardModule: React.FC = () => {
   const { services, serviceCategories } = useServices();
   const { allStaff } = useTeam();
 
-  // State for Date Range (Default: This Month)
+  // State for Date Range (Default: Today)
   const [dateRange, setDateRange] = useState<DateRange>(() => {
     const today = new Date();
     return {
-        from: new Date(today.getFullYear(), today.getMonth(), 1),
+        from: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0),
         to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999),
-        label: 'Ce mois-ci'
+        label: "Aujourd'hui"
     };
   });
 

@@ -1,15 +1,16 @@
 
 import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarClock, Check, Clock, User, Scissors, Tag, X, StickyNote } from 'lucide-react';
+import { CalendarClock, Check, Clock, User, Scissors, Tag, X, StickyNote, Filter } from 'lucide-react';
 import { Appointment, AppointmentStatus, Service, ServiceCategory, StaffMember } from '../../../types';
-import { HOURS, isSameDay } from '../../appointments/components/calendarUtils';
+import { isSameDay } from '../../appointments/components/calendarUtils';
 import { StatusBadge } from '../../appointments/components/StatusBadge';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { formatPrice } from '../../../lib/format';
 
 // --- Constants ---
-const ROW_H = 72;
+const CALENDAR_HOURS = Array.from({ length: 15 }, (_, i) => i + 9); // 9h to 23h
+const ROW_H = 48;
 const HALF_HOUR_H = ROW_H / 2;
 
 interface TodayCalendarCardProps {
@@ -27,8 +28,8 @@ function getNowOffset(): number | null {
   const now = new Date();
   const h = now.getHours();
   const m = now.getMinutes();
-  if (h < 8 || h >= 21) return null;
-  return ((h - 8) * 60 + m) / 60 * ROW_H;
+  if (h < 9 || h >= 23) return null;
+  return ((h - 9) * 60 + m) / 60 * ROW_H;
 }
 
 // Blue-only palette for dashboard calendar (staff columns cycle through shades)
@@ -195,6 +196,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   const navigate = useNavigate();
   const [nowOffset, setNowOffset] = useState<number | null>(getNowOffset);
   const [popover, setPopover] = useState<PopoverState | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasScrolled = useRef(false);
 
@@ -208,7 +210,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   const scrollToCurrent = useCallback(() => {
     if (hasScrolled.current || !scrollRef.current || nowOffset === null) return;
     hasScrolled.current = true;
-    scrollRef.current.scrollTo({ top: Math.max(nowOffset - 120, 0), behavior: 'smooth' });
+    scrollRef.current.scrollTo({ top: Math.max(nowOffset - 80, 0), behavior: 'smooth' });
   }, [nowOffset]);
 
   useEffect(() => { scrollToCurrent(); }, [scrollToCurrent]);
@@ -219,18 +221,27 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     setPopover({ appointment: appt, rect });
   }, []);
 
+  // Build a set of service IDs that belong to the selected category
+  const categoryServiceIds = useMemo(() => {
+    if (!selectedCategory) return null;
+    return new Set(services.filter(s => s.categoryId === selectedCategory).map(s => s.id));
+  }, [selectedCategory, services]);
+
   const todayAppts = useMemo(() => {
     const today = new Date();
-    return appointments.filter(a =>
-      isSameDay(new Date(a.date), today) && a.status !== AppointmentStatus.CANCELLED
-    );
-  }, [appointments]);
+    return appointments.filter(a => {
+      if (!isSameDay(new Date(a.date), today)) return false;
+      if (a.status === AppointmentStatus.CANCELLED) return false;
+      if (categoryServiceIds && !categoryServiceIds.has(a.serviceId)) return false;
+      return true;
+    });
+  }, [appointments, categoryServiceIds]);
 
+  // Only show staff who have at least one appointment (after filtering)
   const staffColumns = useMemo(() => {
     const withAppts = new Set(todayAppts.map(a => a.staffId));
-    const active = staff.filter(s => s.active && !s.deletedAt);
-    const cols = active.filter(s => withAppts.has(s.id) || s.role === 'Stylist' || s.role === 'Manager');
-    return cols.length > 0 ? cols : active.filter(s => withAppts.has(s.id));
+    const active = staff.filter(s => s.active && !s.deletedAt && withAppts.has(s.id));
+    return active;
   }, [staff, todayAppts]);
 
   const apptsByStaff = useMemo(() => {
@@ -245,19 +256,49 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
 
   const completedCount = useMemo(() => todayAppts.filter(a => a.status === AppointmentStatus.COMPLETED).length, [todayAppts]);
 
-  const totalHeight = HOURS.length * ROW_H;
+  // Categories that have appointments today (for filter options)
+  const availableCategories = useMemo(() => {
+    const today = new Date();
+    const todayAllAppts = appointments.filter(a =>
+      isSameDay(new Date(a.date), today) && a.status !== AppointmentStatus.CANCELLED
+    );
+    const catIds = new Set<string>();
+    todayAllAppts.forEach(a => {
+      const svc = services.find(s => s.id === a.serviceId);
+      if (svc?.categoryId) catIds.add(svc.categoryId);
+    });
+    return serviceCategories.filter(c => catIds.has(c.id));
+  }, [appointments, services, serviceCategories]);
+
+  const totalHeight = CALENDAR_HOURS.length * ROW_H;
   const nowLabel = nowOffset !== null ? fmt(new Date()) : null;
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden relative">
       {/* ── Header ── */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white">
         <h3 className="font-bold text-slate-800 capitalize">
           {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
         </h3>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* Category filter */}
+          {availableCategories.length > 0 && (
+            <div className="relative">
+              <select
+                value={selectedCategory}
+                onChange={e => setSelectedCategory(e.target.value)}
+                className="appearance-none text-[11px] font-medium pl-6 pr-5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-300 cursor-pointer"
+              >
+                <option value="">Toutes catégories</option>
+                {availableCategories.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              <Filter size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            </div>
+          )}
           {todayAppts.length > 0 && (
-            <div className="flex items-center gap-2 text-[11px]">
+            <div className="flex items-center gap-1.5 text-[11px]">
               <span className="flex items-center gap-1 text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-lg">
                 <Check size={12} />
                 {completedCount}
@@ -289,15 +330,15 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
               return (
                 <div
                   key={s.id}
-                  className={`flex-1 min-w-[160px] px-3 py-3 border-l border-slate-100/80 ${colBg}`}
+                  className={`flex-1 min-w-[140px] px-2 py-2 border-l border-slate-100/80 ${colBg}`}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <StaffAvatar
                       firstName={s.firstName}
                       lastName={s.lastName}
                       photoUrl={s.photoUrl}
                       color={staffHexByIndex(sIdx)}
-                      size={28}
+                      size={24}
                     />
                     <div className="min-w-0">
                       <div className="text-xs font-semibold text-slate-800 truncate leading-tight">
@@ -317,7 +358,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
           <div className="flex relative" style={{ minHeight: totalHeight }}>
               {/* ── Hour gutter ── */}
               <div className="w-[52px] shrink-0 relative" style={{ height: totalHeight }}>
-                {HOURS.map((hour, i) => (
+                {CALENDAR_HOURS.map((hour, i) => (
                   <div key={hour} className="absolute left-0 right-0" style={{ top: i * ROW_H }}>
                     <span className="absolute right-2 -top-[6px] text-[10px] font-medium text-slate-300 tabular-nums select-none">
                       {String(hour).padStart(2, '0')}:00
@@ -332,10 +373,10 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                 return (
                   <div
                     key={s.id}
-                    className="flex-1 min-w-[160px] relative border-l border-slate-100/80"
+                    className="flex-1 min-w-[140px] relative border-l border-slate-100/80"
                     style={{ height: totalHeight }}
                   >
-                    {HOURS.map((hour, i) => (
+                    {CALENDAR_HOURS.map((hour, i) => (
                       <React.Fragment key={hour}>
                         <div
                           className="absolute left-0 right-0 border-t border-slate-100"
@@ -350,11 +391,11 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
 
                     {staffAppts.map(appt => {
                       const start = new Date(appt.date);
-                      const startMin = Math.max((start.getHours() - 8) * 60 + start.getMinutes(), 0);
+                      const startMin = Math.max((start.getHours() - 9) * 60 + start.getMinutes(), 0);
                       const top = (startMin / 60) * ROW_H;
-                      const maxMin = 13 * 60;
+                      const maxMin = CALENDAR_HOURS.length * 60;
                       const dur = Math.min(appt.durationMinutes, maxMin - startMin);
-                      const height = Math.max((dur / 60) * ROW_H, 28);
+                      const height = Math.max((dur / 60) * ROW_H, 22);
 
                       const done = appt.status === AppointmentStatus.COMPLETED;
                       const end = new Date(start.getTime() + appt.durationMinutes * 60000);
@@ -374,7 +415,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                               : `${BLUE_BLOCK.border} ${BLUE_BLOCK.bg} ${BLUE_BLOCK.text} hover:shadow-md hover:shadow-blue-100/50 hover:-translate-y-[1px]`
                             }
                           `}
-                          style={{ top: top + 1, height: Math.max(height - 2, 26) }}
+                          style={{ top: top + 1, height: Math.max(height - 2, 20) }}
                         >
                           <div className="px-2 py-1 h-full flex flex-col justify-center">
                             <div className="flex items-center gap-1">
@@ -383,13 +424,13 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                                 {appt.serviceName}
                               </span>
                             </div>
-                            {height >= 40 && (
-                              <div className="text-[10px] opacity-60 truncate leading-tight mt-0.5 tabular-nums">
+                            {height >= 32 && (
+                              <div className="text-[9px] opacity-60 truncate leading-tight tabular-nums">
                                 {fmt(start)} – {fmt(end)}
                               </div>
                             )}
-                            {height >= 56 && (
-                              <div className="text-[10px] font-medium opacity-50 truncate leading-tight mt-0.5">
+                            {height >= 44 && (
+                              <div className="text-[9px] font-medium opacity-50 truncate leading-tight">
                                 {appt.clientName}
                               </div>
                             )}
