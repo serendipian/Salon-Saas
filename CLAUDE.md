@@ -61,6 +61,7 @@ components/
   ViewToggle.tsx          # Card/table view switch
   StaffAvatar.tsx         # Staff member avatar display
   EmptyState.tsx          # Empty list placeholder
+  PhoneInput.tsx          # Country code selector + tel input (numpad hidden on mobile/tablet via lg: breakpoint)
 ```
 
 ### Auth Pages
@@ -180,6 +181,17 @@ modules/{module}/
 - WorkScheduleEditor: horizontal scroll with snap on mobile
 - BonusSystemEditor: card layout on mobile
 - z-index scale defined in CSS custom properties (--z-content through --z-toast)
+
+### Appointment Module — Mobile Architecture
+- `modules/appointments/hooks/useAppointmentForm.ts` — shared hook extracting all form state/logic, consumed by both desktop and mobile shells
+- `modules/appointments/components/AppointmentBuilder.tsx` — desktop rendering shell (thin wrapper over useAppointmentForm)
+- `modules/appointments/components/AppointmentBuilderMobile.tsx` — mobile two-screen form: Screen 1 (client + services + staff + options), Screen 2 (scheduling/date+time)
+- `modules/appointments/components/MobileBottomSheet.tsx` — portal-based bottom sheet with drag gestures, `dvh` units, body scroll lock
+- `modules/appointments/components/MobileClientSearch.tsx` — client search + inline new-client creation (phone-first, names on same row)
+- `modules/appointments/components/MobileServicePicker.tsx` — category pills + service/variant selection
+- `AppointmentNewPage.tsx` / `AppointmentEditPage.tsx` — conditionally render mobile or desktop shell via `useMediaQuery().isMobile`
+- Sticky footers use `bottom: calc(56px + env(safe-area-inset-bottom, 0px))` to sit above BottomTabBar
+- Content areas use `pb-44` to prevent footer overlap
 
 ### Dead Code
 All previously listed dead monolithic components (`components/AccountingModule.tsx`, etc.) and `services/store.ts` have been deleted. No known dead code remains in the active codebase.
