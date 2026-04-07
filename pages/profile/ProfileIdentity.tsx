@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useAvatarUpload } from '../../hooks/useAvatarUpload';
 import { useToast } from '../../context/ToastContext';
 import { Input, TextArea, Section } from '../../components/FormElements';
+import { PhoneInput } from '../../components/PhoneInput';
 
 export const ProfileIdentity: React.FC = () => {
   const { profile, updateProfile } = useAuth();
@@ -118,11 +119,10 @@ export const ProfileIdentity: React.FC = () => {
         disabled
         className="mt-4"
       />
-      <Input
+      <PhoneInput
         label="Téléphone"
-        type="tel"
         value={phone}
-        onChange={(e) => setPhone(e.target.value)}
+        onChange={setPhone}
         className="mt-4"
       />
       <TextArea

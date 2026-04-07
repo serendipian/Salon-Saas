@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Save, User, Camera, Check, CreditCard, FileText, HeartPulse } from 'lucide-react';
 import { StaffMember, WorkSchedule } from '../../../types';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
+import { PhoneInput } from '../../../components/PhoneInput';
 import { DatePicker } from '../../../components/DatePicker';
 import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
 import { BonusSystemEditor } from '../../../components/BonusSystemEditor';
@@ -137,12 +138,11 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
                       onChange={e => { clearFieldError('email'); setFormData({...formData, email: e.target.value}); }}
                       error={errors.email}
                     />
-                    <Input 
-                      label="Téléphone" 
-                      type="tel"
+                    <PhoneInput
+                      label="Téléphone"
                       required
-                      value={formData.phone} 
-                      onChange={e => setFormData({...formData, phone: e.target.value})} 
+                      value={formData.phone}
+                      onChange={phone => setFormData({...formData, phone})}
                     />
                  </div>
               </div>
@@ -370,10 +370,10 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
                        onChange={e => setFormData({...formData, emergencyContactRelation: e.target.value})}
                     />
                  </div>
-                 <Input 
+                 <PhoneInput
                     label="Téléphone d'urgence"
                     value={formData.emergencyContactPhone}
-                    onChange={e => setFormData({...formData, emergencyContactPhone: e.target.value})}
+                    onChange={emergencyContactPhone => setFormData({...formData, emergencyContactPhone})}
                  />
               </div>
            </Section>

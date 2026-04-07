@@ -33,7 +33,7 @@ export const AppointmentNewPage: React.FC = () => {
             .insert({
               salon_id: activeSalon.id,
               first_name: payload.newClient.firstName,
-              last_name: payload.newClient.lastName || null,
+              last_name: payload.newClient.lastName || '',
               phone: payload.newClient.phone,
             })
             .select('id')

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Supplier } from '../../../types';
 import { Section, Input, TextArea, Select } from '../../../components/FormElements';
+import { PhoneInput } from '../../../components/PhoneInput';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import { supplierSchema } from '../schemas';
 
@@ -91,12 +92,10 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
                   placeholder="contact@email.com"
                   error={errors.email}
                 />
-                <Input
+                <PhoneInput
                   label="Téléphone"
-                  type="tel"
                   value={formData.phone}
-                  onChange={e => setFormData({...formData, phone: e.target.value})}
-                  placeholder="01 23 45 67 89"
+                  onChange={phone => setFormData({...formData, phone})}
                 />
               </div>
            </Section>

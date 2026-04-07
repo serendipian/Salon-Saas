@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { 
+import {
   ArrowLeft,
   Save,
   User,
@@ -8,6 +8,7 @@ import {
   Instagram,
   Trash2
 } from 'lucide-react';
+import { PhoneInput } from '../../../components/PhoneInput';
 import { Client, ClientPermissions } from '../../../types';
 import { useTeam } from '../../team/hooks/useTeam';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
@@ -314,13 +315,11 @@ export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, 
           {/* SECTION 4: Contact */}
           <Section title="Contact">
              <div className="grid grid-cols-2 gap-3">
-               <Input 
+               <PhoneInput
                   label="Téléphone"
                   required
-                  type="tel"
                   value={formData.phone}
-                  onChange={e => setFormData({...formData, phone: e.target.value})}
-                  placeholder="06 12 34 56 78"
+                  onChange={phone => setFormData({...formData, phone})}
                />
 
                <Input
@@ -333,10 +332,10 @@ export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, 
                   error={errors.email}
                />
 
-               <Input 
+               <PhoneInput
                   label="WhatsApp"
                   value={formData.whatsapp}
-                  onChange={e => setFormData({...formData, whatsapp: e.target.value})}
+                  onChange={whatsapp => setFormData({...formData, whatsapp})}
                   placeholder="Optionnel"
                />
 

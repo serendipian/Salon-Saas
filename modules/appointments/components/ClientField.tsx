@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { Client } from '../../../types';
+import { PhoneInput } from '../../../components/PhoneInput';
 
 interface ClientFieldProps {
   clients: Client[];
@@ -74,17 +75,12 @@ export default function ClientField({
               />
             </div>
           </div>
-          <div>
-            <div className="text-[10px] text-slate-500 mb-1">Téléphone *</div>
-            <input
-              type="tel"
-              inputMode="tel"
-              value={newClientData.phone}
-              onChange={(e) => onNewClientChange({ ...newClientData, phone: e.target.value })}
-              className="w-full bg-white border border-slate-200 rounded-md px-2.5 py-2 text-sm text-slate-800 focus:border-pink-400 focus:outline-none min-h-[44px]"
-              placeholder="+212 6 XX XX XX XX"
-            />
-          </div>
+          <PhoneInput
+            label="Téléphone"
+            required
+            value={newClientData.phone}
+            onChange={(phone) => onNewClientChange({ ...newClientData, phone })}
+          />
           <p className="text-slate-400 text-[10px] mt-2 italic">Le client sera automatiquement ajouté au CRM</p>
         </div>
         {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
