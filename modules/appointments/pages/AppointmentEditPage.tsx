@@ -7,15 +7,18 @@ import { useServices } from '../../services/hooks/useServices';
 import { useTeam } from '../../team/hooks/useTeam';
 import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
+import { useMediaQuery } from '../../../context/MediaQueryContext';
 import { supabase } from '../../../lib/supabase';
 import { ServiceBlockState } from '../../../types';
 import AppointmentBuilder from '../components/AppointmentBuilder';
+import AppointmentBuilderMobile from '../components/AppointmentBuilderMobile';
 
 export const AppointmentEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { activeSalon } = useAuth();
   const { addToast } = useToast();
+  const { isMobile } = useMediaQuery();
   const { allAppointments, editAppointmentGroup, deleteAppointment } = useAppointments();
   const { allClients: clients } = useClients();
   const { allServices: services, serviceCategories } = useServices();
@@ -75,49 +78,56 @@ export const AppointmentEditPage: React.FC = () => {
     );
   }
 
-  return (
-    <AppointmentBuilder
-      services={services}
-      categories={serviceCategories}
-      team={team}
-      clients={clients}
-      appointments={allAppointments}
-      excludeAppointmentIds={excludeAppointmentIds}
-      initialData={editInitialData}
-      onSave={async (payload) => {
-        if (payload.newClient && activeSalon) {
-          const { data: newClientRow, error: clientError } = await supabase
-            .from('clients')
-            .insert({
-              salon_id: activeSalon.id,
-              first_name: payload.newClient.firstName,
-              last_name: payload.newClient.lastName || null,
-              phone: payload.newClient.phone,
-            })
-            .select('id')
-            .single();
+  const handleSave = async (payload: any) => {
+    if (payload.newClient && activeSalon) {
+      const { data: newClientRow, error: clientError } = await supabase
+        .from('clients')
+        .insert({
+          salon_id: activeSalon.id,
+          first_name: payload.newClient.firstName,
+          last_name: payload.newClient.lastName || null,
+          phone: payload.newClient.phone,
+        })
+        .select('id')
+        .single();
 
-          if (clientError) {
-            addToast({ type: 'error', message: 'Erreur lors de la création du client' });
-            throw clientError;
-          }
-          payload.clientId = newClientRow.id;
-        }
-        await editAppointmentGroup({
-          oldAppointmentId: id!,
-          ...payload,
-        });
-        navigate('/calendar');
-      }}
-      onCancel={() => navigate(`/calendar/${id}`)}
-      onDelete={async () => {
-        try {
-          await deleteAppointment(id!);
-          navigate('/calendar');
-        } catch {
-          // Error toast handled by mutation's onError
-        }
-      }}
-    />
-  );
+      if (clientError) {
+        addToast({ type: 'error', message: 'Erreur lors de la création du client' });
+        throw clientError;
+      }
+      payload.clientId = newClientRow.id;
+    }
+    await editAppointmentGroup({
+      oldAppointmentId: id!,
+      ...payload,
+    });
+    navigate('/calendar');
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteAppointment(id!);
+      navigate('/calendar');
+    } catch {
+      // Error toast handled by mutation's onError
+    }
+  };
+
+  const sharedProps = {
+    services,
+    categories: serviceCategories,
+    team,
+    clients,
+    appointments: allAppointments,
+    excludeAppointmentIds,
+    initialData: editInitialData,
+    onSave: handleSave,
+    onDelete: handleDelete,
+    onCancel: () => navigate(`/calendar/${id}`),
+  };
+
+  if (isMobile) {
+    return <AppointmentBuilderMobile {...sharedProps} />;
+  }
+  return <AppointmentBuilder {...sharedProps} />;
 };
