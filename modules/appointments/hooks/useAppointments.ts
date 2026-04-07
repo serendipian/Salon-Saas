@@ -151,6 +151,53 @@ export const useAppointments = () => {
     onError: toastOnError('Impossible de modifier le statut'),
   });
 
+  const editAppointmentGroupMutation = useMutation({
+    mutationFn: async (payload: {
+      oldAppointmentId: string;
+      clientId: string;
+      notes: string;
+      reminderMinutes: number | null;
+      status: string;
+      serviceBlocks: Array<{
+        serviceId: string;
+        variantId: string;
+        staffId: string | null;
+        date: string;
+        durationMinutes: number;
+        price: number;
+      }>;
+    }) => {
+      const { data, error } = await supabase.rpc('edit_appointment_group', {
+        p_old_appointment_id: payload.oldAppointmentId,
+        p_salon_id: salonId,
+        p_client_id: payload.clientId || null,
+        p_notes: payload.notes || null,
+        p_reminder_minutes: payload.reminderMinutes,
+        p_status: payload.status,
+        p_service_blocks: payload.serviceBlocks.map(b => ({
+          service_id: b.serviceId || null,
+          service_variant_id: b.variantId || null,
+          staff_id: b.staffId || null,
+          date: b.date,
+          duration_minutes: b.durationMinutes,
+          price: b.price,
+        })),
+      });
+      if (error) {
+        if (error.code === '23P01') {
+          throw new Error('Ce créneau est déjà occupé pour ce praticien. Veuillez choisir un autre horaire.');
+        }
+        throw error;
+      }
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
+      addToast({ type: 'success', message: 'Rendez-vous modifié' });
+    },
+    onError: toastOnError('Erreur lors de la modification du rendez-vous'),
+  });
+
   const deleteAppointmentMutation = useMutation({
     mutationFn: async (appointmentId: string) => {
       const { error } = await supabase.rpc('soft_delete_appointment', {
@@ -186,6 +233,8 @@ export const useAppointments = () => {
     updateAppointment: (appt: Appointment) => updateAppointmentMutation.mutate(appt),
     addAppointmentGroup: addAppointmentGroupMutation.mutateAsync,
     isAddingGroup: addAppointmentGroupMutation.isPending,
+    editAppointmentGroup: editAppointmentGroupMutation.mutateAsync,
+    isEditingGroup: editAppointmentGroupMutation.isPending,
     updateStatus: (appointmentId: string, status: string) => updateStatusMutation.mutateAsync({ appointmentId, status }),
     deleteAppointment: deleteAppointmentMutation.mutateAsync,
     isDeleting: deleteAppointmentMutation.isPending,

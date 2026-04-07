@@ -16,7 +16,7 @@ export const AppointmentEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { activeSalon } = useAuth();
   const { addToast } = useToast();
-  const { allAppointments, addAppointmentGroup, deleteAppointment } = useAppointments();
+  const { allAppointments, editAppointmentGroup, deleteAppointment } = useAppointments();
   const { allClients: clients } = useClients();
   const { allServices: services, serviceCategories } = useServices();
   const { allStaff: team } = useTeam();
@@ -93,8 +93,10 @@ export const AppointmentEditPage: React.FC = () => {
           }
           payload.clientId = newClientRow.id;
         }
-        await deleteAppointment(id!);
-        await addAppointmentGroup(payload);
+        await editAppointmentGroup({
+          oldAppointmentId: id!,
+          ...payload,
+        });
         navigate('/calendar');
       }}
       onCancel={() => navigate(`/calendar/${id}`)}

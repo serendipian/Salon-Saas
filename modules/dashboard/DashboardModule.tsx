@@ -69,7 +69,7 @@ const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon, isC
 export const DashboardModule: React.FC = () => {
   const navigate = useNavigate();
   const { transactions } = useTransactions();
-  const { allAppointments: appointments } = useAppointments();
+  const { allAppointments: appointments, updateAppointment } = useAppointments();
   const { allClients: clients } = useClients();
   const { services, serviceCategories } = useServices();
   const { allStaff } = useTeam();
@@ -381,6 +381,7 @@ export const DashboardModule: React.FC = () => {
             services={services}
             serviceCategories={serviceCategories}
             staff={allStaff}
+            onUpdateAppointment={updateAppointment}
           />
         </div>
 

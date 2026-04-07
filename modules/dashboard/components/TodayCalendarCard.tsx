@@ -12,16 +12,26 @@ import { formatPrice } from '../../../lib/format';
 const CALENDAR_HOURS = Array.from({ length: 15 }, (_, i) => i + 9); // 9h to 23h
 const ROW_H = 48;
 const HALF_HOUR_H = ROW_H / 2;
+const START_HOUR = 9;
+const SNAP_MINUTES = 15;
+const DRAG_THRESHOLD = 5; // px before drag starts
 
 interface TodayCalendarCardProps {
   appointments: Appointment[];
   services: Service[];
   serviceCategories: ServiceCategory[];
   staff: StaffMember[];
+  onUpdateAppointment?: (appt: Appointment) => void;
 }
 
 function fmt(date: Date): string {
   return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function fmtMinutes(totalMinutes: number): string {
+  const h = Math.floor(totalMinutes / 60) + START_HOUR;
+  const m = totalMinutes % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
 function getNowOffset(): number | null {
@@ -30,6 +40,10 @@ function getNowOffset(): number | null {
   const m = now.getMinutes();
   if (h < 9 || h >= 23) return null;
   return ((h - 9) * 60 + m) / 60 * ROW_H;
+}
+
+function snapToGrid(minutes: number): number {
+  return Math.round(minutes / SNAP_MINUTES) * SNAP_MINUTES;
 }
 
 // Blue-only palette for dashboard calendar (staff columns cycle through shades)
@@ -57,6 +71,18 @@ const BLUE_BLOCK = {
   border: 'border-blue-400',
   text: 'text-blue-800',
 };
+
+// ── Drag state ──────────────────────────────────────────
+
+interface DragState {
+  appointment: Appointment;
+  offsetY: number; // pointer offset within the block
+  startX: number;
+  startY: number;
+  isDragging: boolean; // becomes true after threshold
+  ghostTop: number;
+  ghostStaffIdx: number;
+}
 
 // ── Popover ──────────────────────────────────────────────
 
@@ -192,12 +218,16 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   services,
   serviceCategories,
   staff,
+  onUpdateAppointment,
 }) => {
   const navigate = useNavigate();
   const [nowOffset, setNowOffset] = useState<number | null>(getNowOffset);
   const [popover, setPopover] = useState<PopoverState | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [drag, setDrag] = useState<DragState | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const columnRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const hasScrolled = useRef(false);
 
   // Tick every minute
@@ -270,6 +300,121 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     return serviceCategories.filter(c => catIds.has(c.id));
   }, [appointments, services, serviceCategories]);
 
+  // ── Drag & Drop logic ──
+
+  const findStaffIndexAtX = useCallback((clientX: number): number => {
+    let closest = 0;
+    let closestDist = Infinity;
+    staffColumns.forEach((s, idx) => {
+      const el = columnRefs.current.get(s.id);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const center = rect.left + rect.width / 2;
+      const dist = Math.abs(clientX - center);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closest = idx;
+      }
+    });
+    return closest;
+  }, [staffColumns]);
+
+  const calcMinutesFromY = useCallback((clientY: number): number => {
+    if (!gridRef.current) return 0;
+    const gridRect = gridRef.current.getBoundingClientRect();
+    const relY = clientY - gridRect.top + (scrollRef.current?.scrollTop ?? 0);
+    const rawMinutes = (relY / ROW_H) * 60;
+    return snapToGrid(Math.max(0, Math.min(rawMinutes, CALENDAR_HOURS.length * 60 - SNAP_MINUTES)));
+  }, []);
+
+  const handlePointerDown = useCallback((appt: Appointment, e: React.PointerEvent<HTMLDivElement>) => {
+    if (!onUpdateAppointment) return;
+    if (appt.status === AppointmentStatus.COMPLETED) return;
+
+    const blockRect = e.currentTarget.getBoundingClientRect();
+    const offsetY = e.clientY - blockRect.top;
+
+    const staffIdx = staffColumns.findIndex(s => s.id === appt.staffId);
+    const startDate = new Date(appt.date);
+    const startMin = Math.max((startDate.getHours() - START_HOUR) * 60 + startDate.getMinutes(), 0);
+    const ghostTop = (startMin / 60) * ROW_H;
+
+    setDrag({
+      appointment: appt,
+      offsetY,
+      startX: e.clientX,
+      startY: e.clientY,
+      isDragging: false,
+      ghostTop,
+      ghostStaffIdx: staffIdx >= 0 ? staffIdx : 0,
+    });
+
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }, [onUpdateAppointment, staffColumns]);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!drag) return;
+
+    const dx = e.clientX - drag.startX;
+    const dy = e.clientY - drag.startY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (!drag.isDragging && dist < DRAG_THRESHOLD) return;
+
+    const minutes = calcMinutesFromY(e.clientY - drag.offsetY);
+    const staffIdx = findStaffIndexAtX(e.clientX);
+    const newTop = (minutes / 60) * ROW_H;
+
+    setDrag(prev => prev ? { ...prev, isDragging: true, ghostTop: newTop, ghostStaffIdx: staffIdx } : null);
+  }, [drag, calcMinutesFromY, findStaffIndexAtX]);
+
+  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!drag) return;
+
+    if (drag.isDragging && onUpdateAppointment) {
+      const minutes = calcMinutesFromY(e.clientY - drag.offsetY);
+      const staffIdx = findStaffIndexAtX(e.clientX);
+      const targetStaff = staffColumns[staffIdx];
+
+      if (targetStaff) {
+        const today = new Date();
+        const newHour = Math.floor(minutes / 60) + START_HOUR;
+        const newMin = minutes % 60;
+        const newDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), newHour, newMin, 0, 0);
+
+        const oldDate = new Date(drag.appointment.date);
+        const hasChanged = newDate.getTime() !== oldDate.getTime() || targetStaff.id !== drag.appointment.staffId;
+
+        if (hasChanged) {
+          onUpdateAppointment({
+            ...drag.appointment,
+            date: newDate.toISOString(),
+            staffId: targetStaff.id,
+            staffName: `${targetStaff.firstName} ${targetStaff.lastName}`.trim(),
+          });
+        }
+      }
+    }
+
+    setDrag(null);
+  }, [drag, onUpdateAppointment, calcMinutesFromY, findStaffIndexAtX, staffColumns]);
+
+  const handlePointerCancel = useCallback(() => {
+    setDrag(null);
+  }, []);
+
+  // Ghost preview info
+  const ghostInfo = useMemo(() => {
+    if (!drag?.isDragging) return null;
+    const topPx = drag.ghostTop;
+    const minutes = (topPx / ROW_H) * 60;
+    const snapped = snapToGrid(minutes);
+    const timeLabel = fmtMinutes(snapped);
+    const endLabel = fmtMinutes(snapped + drag.appointment.durationMinutes);
+    const targetStaff = staffColumns[drag.ghostStaffIdx];
+    return { topPx, timeLabel, endLabel, targetStaff, snappedMinutes: snapped };
+  }, [drag, staffColumns]);
+
   const totalHeight = CALENDAR_HOURS.length * ROW_H;
   const nowLabel = nowOffset !== null ? fmt(new Date()) : null;
 
@@ -320,17 +465,24 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
           <p className="text-xs text-slate-300 mt-1">Profitez de la pause !</p>
         </div>
       ) : (
-        <div ref={scrollRef} className="overflow-x-auto overflow-y-auto max-h-[560px] relative">
+        <div
+          ref={scrollRef}
+          className={`overflow-x-auto overflow-y-auto max-h-[560px] relative ${drag?.isDragging ? 'select-none' : ''}`}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerCancel}
+        >
           {/* ── Sticky staff headers ── */}
           <div className="flex border-b border-slate-100 bg-white sticky top-0 z-20">
             <div className="w-[52px] shrink-0" />
             {staffColumns.map((s, sIdx) => {
               const count = (apptsByStaff.get(s.id) || []).length;
               const colBg = staffColumnBgByIndex(sIdx);
+              const isDropTarget = drag?.isDragging && drag.ghostStaffIdx === sIdx;
               return (
                 <div
                   key={s.id}
-                  className={`flex-1 min-w-[140px] px-2 py-2 border-l border-slate-100/80 ${colBg}`}
+                  className={`flex-1 min-w-[140px] px-2 py-2 border-l border-slate-100/80 transition-colors duration-150 ${colBg} ${isDropTarget ? '!bg-blue-100/60' : ''}`}
                 >
                   <div className="flex items-center gap-1.5">
                     <StaffAvatar
@@ -355,7 +507,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
           </div>
 
           {/* ── Grid body ── */}
-          <div className="flex relative" style={{ minHeight: totalHeight }}>
+          <div ref={gridRef} className="flex relative" style={{ minHeight: totalHeight }}>
               {/* ── Hour gutter ── */}
               <div className="w-[52px] shrink-0 relative" style={{ height: totalHeight }}>
                 {CALENDAR_HOURS.map((hour, i) => (
@@ -368,12 +520,14 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
               </div>
 
               {/* ── Staff columns ── */}
-              {staffColumns.map(s => {
+              {staffColumns.map((s, sIdx) => {
                 const staffAppts = apptsByStaff.get(s.id) || [];
+                const isDropTarget = drag?.isDragging && drag.ghostStaffIdx === sIdx;
                 return (
                   <div
                     key={s.id}
-                    className="flex-1 min-w-[140px] relative border-l border-slate-100/80"
+                    ref={(el) => { if (el) columnRefs.current.set(s.id, el); }}
+                    className={`flex-1 min-w-[140px] relative border-l border-slate-100/80 transition-colors duration-150 ${isDropTarget ? 'bg-blue-50/30' : ''}`}
                     style={{ height: totalHeight }}
                   >
                     {CALENDAR_HOURS.map((hour, i) => (
@@ -389,9 +543,24 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                       </React.Fragment>
                     ))}
 
+                    {/* Ghost drop preview */}
+                    {isDropTarget && ghostInfo && (
+                      <div
+                        className="absolute left-1.5 right-1.5 rounded-lg border-2 border-dashed border-blue-400 bg-blue-100/40 z-30 pointer-events-none flex items-center justify-center"
+                        style={{
+                          top: ghostInfo.topPx + 1,
+                          height: Math.max((drag!.appointment.durationMinutes / 60) * ROW_H - 2, 20),
+                        }}
+                      >
+                        <span className="text-[10px] font-semibold text-blue-600 tabular-nums">
+                          {ghostInfo.timeLabel} – {ghostInfo.endLabel}
+                        </span>
+                      </div>
+                    )}
+
                     {staffAppts.map(appt => {
                       const start = new Date(appt.date);
-                      const startMin = Math.max((start.getHours() - 9) * 60 + start.getMinutes(), 0);
+                      const startMin = Math.max((start.getHours() - START_HOUR) * 60 + start.getMinutes(), 0);
                       const top = (startMin / 60) * ROW_H;
                       const maxMin = CALENDAR_HOURS.length * 60;
                       const dur = Math.min(appt.durationMinutes, maxMin - startMin);
@@ -400,22 +569,26 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                       const done = appt.status === AppointmentStatus.COMPLETED;
                       const end = new Date(start.getTime() + appt.durationMinutes * 60000);
                       const isSelected = popover?.appointment.id === appt.id;
+                      const isBeingDragged = drag?.isDragging && drag.appointment.id === appt.id;
 
                       return (
                         <div
                           key={appt.id}
-                          onClick={(e) => handleBlockClick(appt, e)}
+                          onClick={(e) => { if (!drag?.isDragging) handleBlockClick(appt, e); }}
+                          onPointerDown={(e) => handlePointerDown(appt, e)}
                           className={`
                             absolute left-1.5 right-1.5 rounded-lg overflow-hidden
-                            transition-all duration-200 cursor-pointer group/block
+                            transition-all duration-200 group/block
                             border-l-[3px]
+                            ${onUpdateAppointment && !done ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}
+                            ${isBeingDragged ? 'opacity-30 scale-95' : ''}
                             ${isSelected ? 'ring-2 ring-blue-300/40 shadow-lg z-20' : ''}
                             ${done
                               ? 'border-slate-300 bg-slate-50/80 text-slate-400 hover:bg-slate-100/80'
                               : `${BLUE_BLOCK.border} ${BLUE_BLOCK.bg} ${BLUE_BLOCK.text} hover:shadow-md hover:shadow-blue-100/50 hover:-translate-y-[1px]`
                             }
                           `}
-                          style={{ top: top + 1, height: Math.max(height - 2, 20) }}
+                          style={{ top: top + 1, height: Math.max(height - 2, 20), touchAction: 'none' }}
                         >
                           <div className="px-2 py-1 h-full flex flex-col justify-center">
                             <div className="flex items-center gap-1">
@@ -467,7 +640,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
       )}
 
       {/* ── Popover (fixed positioning, outside scroll container) ── */}
-      {popover && (
+      {popover && !drag?.isDragging && (
         <AppointmentPopover
           appointment={popover.appointment}
           anchorRect={popover.rect}
