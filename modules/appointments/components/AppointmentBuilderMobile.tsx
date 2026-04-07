@@ -38,6 +38,7 @@ export default function AppointmentBuilderMobile({
 }: AppointmentBuilderMobileProps) {
   const [screen, setScreen] = useState<'services' | 'scheduling'>('services');
   const [clientSheetOpen, setClientSheetOpen] = useState(false);
+  const [newClientOnOpen, setNewClientOnOpen] = useState(false);
   const [serviceSheetOpen, setServiceSheetOpen] = useState(false);
   const [serviceSheetBlockIndex, setServiceSheetBlockIndex] = useState(0);
 
@@ -160,14 +161,26 @@ export default function AppointmentBuilderMobile({
                 </button>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => setClientSheetOpen(true)}
-                className="w-full min-h-[52px] bg-white rounded-2xl border border-slate-200 px-4 py-3 flex items-center gap-3 text-left hover:border-slate-300 transition-colors"
-              >
-                <Search size={18} className="text-slate-400 shrink-0" />
-                <span className="text-sm text-slate-400">Rechercher un client...</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setClientSheetOpen(true)}
+                  className="flex-1 min-h-[52px] bg-white rounded-2xl border border-slate-200 px-4 py-3 flex items-center gap-3 text-left hover:border-slate-300 transition-colors"
+                >
+                  <Search size={18} className="text-slate-400 shrink-0" />
+                  <span className="text-sm text-slate-400">Rechercher un client...</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setClientSheetOpen(true);
+                    setNewClientOnOpen(true);
+                  }}
+                  className="w-[52px] h-[52px] bg-blue-500 rounded-2xl flex items-center justify-center shrink-0 hover:bg-blue-600 transition-colors"
+                >
+                  <Plus size={20} className="text-white" />
+                </button>
+              </div>
             )}
 
             {form.errors.clientId && (
@@ -345,6 +358,7 @@ export default function AppointmentBuilderMobile({
         >
           <MobileClientSearch
             clients={hookProps.clients}
+            startInCreateMode={newClientOnOpen}
             onSelectClient={(clientId) => {
               form.setClientId(clientId);
               form.setNewClient(null);
@@ -355,7 +369,10 @@ export default function AppointmentBuilderMobile({
               form.setClientId(null);
               form.clearFieldError('clientId');
             }}
-            onClose={() => setClientSheetOpen(false)}
+            onClose={() => {
+              setClientSheetOpen(false);
+              setNewClientOnOpen(false);
+            }}
           />
         </MobileBottomSheet>
 

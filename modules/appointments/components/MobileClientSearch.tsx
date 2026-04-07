@@ -5,6 +5,7 @@ import { PhoneInput } from '../../../components/PhoneInput';
 
 interface MobileClientSearchProps {
   clients: Client[];
+  startInCreateMode?: boolean;
   onSelectClient: (clientId: string) => void;
   onNewClient: (data: { firstName: string; lastName: string; phone: string }) => void;
   onClose: () => void;
@@ -12,24 +13,31 @@ interface MobileClientSearchProps {
 
 export const MobileClientSearch: React.FC<MobileClientSearchProps> = ({
   clients,
+  startInCreateMode = false,
   onSelectClient,
   onNewClient,
   onClose,
 }) => {
-  const [isCreating, setIsCreating] = useState(false);
+  const [isCreating, setIsCreating] = useState(startInCreateMode);
   const [search, setSearch] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
+  const phoneContainerRef = useRef<HTMLDivElement>(null);
 
-  // Auto-focus search input on mount
+  // Auto-focus search input on mount (search mode) or phone input (create mode)
   useEffect(() => {
     const timer = setTimeout(() => {
-      searchRef.current?.focus();
+      if (isCreating) {
+        const phoneInput = phoneContainerRef.current?.querySelector('input[type="tel"]') as HTMLInputElement | null;
+        phoneInput?.focus();
+      } else {
+        searchRef.current?.focus();
+      }
     }, 100);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isCreating]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return clients.slice(0, 30);
@@ -78,12 +86,14 @@ export const MobileClientSearch: React.FC<MobileClientSearchProps> = ({
 
         {/* Fields — phone first */}
         <div className="flex flex-col gap-3">
-          <PhoneInput
-            label="Téléphone"
-            value={phone}
-            onChange={setPhone}
-            required
-          />
+          <div ref={phoneContainerRef}>
+            <PhoneInput
+              label="Téléphone"
+              value={phone}
+              onChange={setPhone}
+              required
+            />
+          </div>
 
           {/* Phone match suggestion */}
           {phoneMatches.length > 0 && (
@@ -117,28 +127,30 @@ export const MobileClientSearch: React.FC<MobileClientSearchProps> = ({
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Prénom <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              autoFocus
-              placeholder="Prénom"
-              className="w-full min-h-[48px] rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Nom</label>
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="Nom"
-              className="w-full min-h-[48px] rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
-            />
+          {/* First name + Last name on same row */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Prénom <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Prénom"
+                className="w-full min-h-[48px] rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Nom</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Nom"
+                className="w-full min-h-[48px] rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
+              />
+            </div>
           </div>
         </div>
 
