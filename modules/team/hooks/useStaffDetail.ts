@@ -17,11 +17,14 @@ export const useStaffDetail = (slug: string) => {
   const { data: staff, isLoading } = useQuery({
     queryKey: ['staff_member', salonId, slug],
     queryFn: async () => {
+      // Prefer active record when slug collides with an archived duplicate
       const { data, error } = await supabase
         .from('staff_members')
         .select('*')
         .eq('slug', slug)
         .eq('salon_id', salonId)
+        .order('deleted_at', { ascending: true, nullsFirst: true })
+        .limit(1)
         .single();
       if (error) throw error;
       return toStaffMember(data as unknown as Parameters<typeof toStaffMember>[0]);
