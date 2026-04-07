@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Search, UserPlus, Check } from 'lucide-react';
+import { Search, UserPlus, UserCheck } from 'lucide-react';
 import { Client } from '../../../types';
 import { PhoneInput } from '../../../components/PhoneInput';
 
@@ -44,6 +44,16 @@ export const MobileClientSearch: React.FC<MobileClientSearchProps> = ({
       .slice(0, 30);
   }, [clients, search]);
 
+  // Find existing clients matching the phone number being typed
+  const phoneMatches = useMemo(() => {
+    if (!phone || phone.length < 6) return [];
+    const normalized = phone.replace(/\s/g, '');
+    return clients.filter((c) => {
+      const clientPhone = c.phone?.replace(/\s/g, '') ?? '';
+      return clientPhone && clientPhone === normalized;
+    });
+  }, [clients, phone]);
+
   const handleSelect = (id: string) => {
     onSelectClient(id);
     onClose();
@@ -66,8 +76,47 @@ export const MobileClientSearch: React.FC<MobileClientSearchProps> = ({
           <h3 className="text-base font-semibold text-slate-800">Nouveau client</h3>
         </div>
 
-        {/* Fields */}
+        {/* Fields — phone first */}
         <div className="flex flex-col gap-3">
+          <PhoneInput
+            label="Téléphone"
+            value={phone}
+            onChange={setPhone}
+            required
+          />
+
+          {/* Phone match suggestion */}
+          {phoneMatches.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+              <div className="text-xs font-medium text-amber-700 mb-2 flex items-center gap-1.5">
+                <UserCheck size={13} />
+                Client existant avec ce numéro
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {phoneMatches.map((client) => (
+                  <button
+                    key={client.id}
+                    type="button"
+                    onClick={() => handleSelect(client.id)}
+                    className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white border border-amber-200 hover:border-amber-400 hover:bg-amber-50 transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center text-xs font-semibold shrink-0">
+                      {client.firstName.charAt(0)}{client.lastName.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-slate-800 truncate">
+                        {client.firstName} {client.lastName}
+                      </div>
+                      <div className="text-xs text-slate-400">{client.phone}</div>
+                    </div>
+                    <span className="text-[10px] font-medium text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">Sélectionner</span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-amber-600 mt-2">Vous pouvez aussi continuer pour créer un nouveau client</p>
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Prénom <span className="text-red-500">*</span>
@@ -91,12 +140,6 @@ export const MobileClientSearch: React.FC<MobileClientSearchProps> = ({
               className="w-full min-h-[48px] rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
             />
           </div>
-          <PhoneInput
-            label="Téléphone"
-            value={phone}
-            onChange={setPhone}
-            required
-          />
         </div>
 
         {/* Buttons */}

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { Client } from '../../../types';
 import { PhoneInput } from '../../../components/PhoneInput';
-import { Search, UserPlus, X } from 'lucide-react';
+import { Search, UserPlus, X, UserCheck } from 'lucide-react';
 
 interface ClientFieldProps {
   clients: Client[];
@@ -43,6 +43,16 @@ export default function ClientField({
     return list.slice(0, 20);
   }, [clients, searchTerm]);
 
+  // Find existing clients matching the phone number being typed
+  const phoneMatches = useMemo(() => {
+    if (!newClientData?.phone || newClientData.phone.length < 6) return [];
+    const phone = newClientData.phone.replace(/\s/g, '');
+    return clients.filter((c) => {
+      const clientPhone = c.phone?.replace(/\s/g, '') ?? '';
+      return clientPhone && clientPhone === phone;
+    });
+  }, [clients, newClientData?.phone]);
+
   // Show "Nouveau" inline form
   if (newClientData) {
     return (
@@ -61,6 +71,12 @@ export default function ClientField({
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <PhoneInput
+              label="Téléphone *"
+              required
+              value={newClientData.phone}
+              onChange={(phone) => onNewClientChange({ ...newClientData, phone })}
+            />
             <div>
               <div className="text-[11px] text-slate-500 mb-1 font-medium">Prénom *</div>
               <input
@@ -69,7 +85,6 @@ export default function ClientField({
                 onChange={(e) => onNewClientChange({ ...newClientData, firstName: e.target.value })}
                 className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none min-h-[44px] transition-all"
                 placeholder="Prénom"
-                autoFocus
               />
             </div>
             <div>
@@ -82,13 +97,43 @@ export default function ClientField({
                 placeholder="Optionnel"
               />
             </div>
-            <PhoneInput
-              label="Téléphone"
-              required
-              value={newClientData.phone}
-              onChange={(phone) => onNewClientChange({ ...newClientData, phone })}
-            />
           </div>
+
+          {/* Phone match suggestion */}
+          {phoneMatches.length > 0 && (
+            <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
+              <div className="text-xs font-medium text-amber-700 mb-2 flex items-center gap-1.5">
+                <UserCheck size={13} />
+                Client existant avec ce numéro
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {phoneMatches.map((client) => (
+                  <button
+                    key={client.id}
+                    type="button"
+                    onClick={() => {
+                      onSelectClient(client.id);
+                      onNewClientChange(null);
+                    }}
+                    className="w-full text-left flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white border border-amber-200 hover:border-amber-400 hover:bg-amber-50 transition-colors"
+                  >
+                    <div className="w-7 h-7 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0">
+                      {client.firstName?.[0] ?? ''}{client.lastName?.[0] ?? ''}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-slate-800 truncate">
+                        {[client.firstName, client.lastName].filter(Boolean).join(' ')}
+                      </div>
+                      <div className="text-xs text-slate-400">{client.phone}</div>
+                    </div>
+                    <span className="text-[10px] font-medium text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">Sélectionner</span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-amber-600 mt-2">Vous pouvez aussi continuer pour créer un nouveau client</p>
+            </div>
+          )}
+
           <p className="text-slate-400 text-[10px] mt-3">Ajouté automatiquement au CRM</p>
         </div>
         {error && <p className="text-red-500 text-xs mt-1.5">{error}</p>}
