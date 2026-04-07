@@ -228,7 +228,10 @@ export default function AppointmentBuilder({
         const dateStr = b.date ?? '';
         const hour = b.hour ?? 0;
         const minute = b.minute;
-        const isoDate = `${dateStr}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`;
+        // Build a local Date and convert to ISO (UTC) so timezone is preserved
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const localDate = new Date(year, month - 1, day, hour, minute, 0, 0);
+        const isoDate = localDate.toISOString();
 
         return {
           serviceId: b.serviceId ?? '',

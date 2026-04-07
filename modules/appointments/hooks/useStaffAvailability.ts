@@ -26,7 +26,9 @@ export function useStaffAvailability(
     // If no staff or no date, all hours are available
     if (!staffMember || !date) return unavailable;
 
-    const dateObj = new Date(date + 'T00:00:00');
+    // Parse YYYY-MM-DD as local midnight (not UTC)
+    const [y, m, d] = date.split('-').map(Number);
+    const dateObj = new Date(y, m - 1, d);
     const dayOfWeek = dateObj.getDay(); // 0=Sunday
     const dayKey = DAY_KEYS[dayOfWeek];
     const schedule = staffMember.schedule?.[dayKey];
@@ -40,13 +42,14 @@ export function useStaffAvailability(
     const workStart = parseTime(schedule.start);
     const workEnd = parseTime(schedule.end);
 
-    // Get this staff's appointments on this date
+    // Get this staff's appointments on this date (compare in LOCAL time)
     const dayAppointments = existingAppointments
       .filter((a) => {
         if (a.staffId !== staffMember.id) return false;
         if (a.status === 'CANCELLED') return false;
-        const aDate = a.date.split('T')[0];
-        return aDate === date;
+        const d = new Date(a.date);
+        const aLocalDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        return aLocalDate === date;
       })
       .map((a) => {
         const d = new Date(a.date);
