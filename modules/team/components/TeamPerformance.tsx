@@ -104,7 +104,7 @@ function PerformanceRow({ perf, totalRevenue, onClick }: { perf: StaffPerformanc
         <div className="flex items-center gap-2.5">
           <StaffAvatar firstName={staff.firstName} lastName={staff.lastName} photoUrl={staff.photoUrl} size={32} />
           <div>
-            <p className="text-sm font-medium text-slate-900 group-hover:text-pink-600 transition-colors">
+            <p className="text-sm font-medium text-slate-900 group-hover:text-blue-600 transition-colors">
               {staff.firstName} {staff.lastName}
             </p>
             <p className="text-xs text-slate-500">{staff.role}</p>

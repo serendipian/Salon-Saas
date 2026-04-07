@@ -35,7 +35,7 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
         <span className="text-3xl font-bold text-slate-900">{currentDate.getDate()}</span>
         <span className="text-sm font-medium text-slate-500 uppercase">{DAYS_FR_SHORT[currentDate.getDay()]}</span>
         {todayFlag && (
-          <span className="px-2.5 py-0.5 bg-pink-500 text-white text-xs font-semibold rounded-full">
+          <span className="px-2.5 py-0.5 bg-blue-500 text-white text-xs font-semibold rounded-full">
             Aujourd'hui
           </span>
         )}

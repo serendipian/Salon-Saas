@@ -495,7 +495,7 @@ export const TransactionDetailModal: React.FC<{
       {serviceItems.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Scissors size={16} className="text-pink-500" />
+            <Scissors size={16} className="text-blue-500" />
             <h4 className="font-bold text-slate-900 text-sm">Services ({serviceItems.length})</h4>
           </div>
           <div className="space-y-2">

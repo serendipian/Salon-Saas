@@ -31,7 +31,7 @@ export const ProfileSchedule: React.FC<ProfileScheduleProps> = ({ linkedStaff })
       action={
         <button
           onClick={() => navigate('/calendar')}
-          className="text-xs font-medium text-pink-600 hover:text-pink-700 flex items-center gap-1"
+          className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
         >
           <Calendar size={14} />
           Voir mon agenda

@@ -113,7 +113,7 @@ export const StaffActivityTab: React.FC<StaffActivityTabProps> = ({ staffId }) =
         <button
           onClick={() => loadMore()}
           disabled={isLoadingMore}
-          className="mt-4 w-full py-2 text-sm text-pink-600 hover:text-pink-700 font-medium rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-50"
+          className="mt-4 w-full py-2 text-sm text-blue-600 hover:text-blue-700 font-medium rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-50"
         >
           {isLoadingMore ? (
             <span className="flex items-center justify-center gap-2">

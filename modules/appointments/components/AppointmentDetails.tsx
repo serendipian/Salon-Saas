@@ -131,7 +131,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointm
                       {appt.staffName} · {appt.durationMinutes} min
                     </span>
                   </div>
-                  <span className="text-pink-600 text-sm font-semibold">
+                  <span className="text-blue-600 text-sm font-semibold">
                     {formatPrice(appt.price)}
                   </span>
                 </div>

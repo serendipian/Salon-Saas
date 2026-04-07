@@ -63,7 +63,7 @@ export const ProfilePerformance: React.FC<ProfilePerformanceProps> = ({ linkedSt
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="p-4 bg-slate-50 rounded-xl">
           <div className="flex items-center gap-2 mb-2">
-            <CalendarCheck size={16} className="text-pink-500" />
+            <CalendarCheck size={16} className="text-blue-500" />
             <span className="text-xs font-medium text-slate-500">Rendez-vous</span>
           </div>
           <p className="text-2xl font-bold text-slate-900">{stats?.appointments ?? '—'}</p>

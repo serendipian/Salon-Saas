@@ -650,7 +650,7 @@ export const StaffProfileTab: React.FC<StaffProfileTabProps> = ({
               <button
                 type="button"
                 onClick={() => onSwitchTab('activite')}
-                className="text-sm text-pink-600 hover:text-pink-700 font-medium mt-2"
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium mt-2"
               >
                 Voir toute l'activité →
               </button>

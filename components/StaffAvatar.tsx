@@ -31,14 +31,19 @@ export const StaffAvatar: React.FC<StaffAvatarProps> = ({
     );
   }
 
+  // color can be a Tailwind class string (e.g. "bg-rose-100 text-rose-800") or a hex color
+  const isTailwindClass = color && color.startsWith('bg-');
+
   return (
     <span
-      className="rounded-full flex items-center justify-center shrink-0 font-semibold text-white"
+      className={`rounded-full flex items-center justify-center shrink-0 font-semibold ${
+        isTailwindClass ? color : 'text-white'
+      }`}
       style={{
         width: size,
         height: size,
         fontSize,
-        backgroundColor: color || '#94a3b8',
+        ...(!isTailwindClass ? { backgroundColor: color || '#94a3b8' } : {}),
       }}
       aria-label={`${firstName} ${lastName}`}
     >

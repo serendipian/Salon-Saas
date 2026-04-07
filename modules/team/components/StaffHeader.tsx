@@ -34,7 +34,7 @@ export const StaffHeader: React.FC<StaffHeaderProps> = ({
 
   const roleColors: Record<string, string> = {
     Manager: 'bg-purple-100 text-purple-700',
-    Stylist: 'bg-pink-100 text-pink-700',
+    Stylist: 'bg-violet-100 text-violet-700',
     Assistant: 'bg-blue-100 text-blue-700',
     Receptionist: 'bg-amber-100 text-amber-700',
   };
@@ -102,14 +102,14 @@ export const StaffHeader: React.FC<StaffHeaderProps> = ({
                   </button>
                   <button
                     onClick={onInvite}
-                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 rounded-lg transition-colors"
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
                   >
                     <Send className="w-3.5 h-3.5" /> Réinviter
                   </button>
                 </div>
               </>
             ) : (
-              <button onClick={onInvite} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 rounded-lg transition-colors">
+              <button onClick={onInvite} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
                 <Send className="w-4 h-4" /> Inviter par lien
               </button>
             )}

@@ -12,7 +12,7 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, ChevronDown, ChevronUp, Clock, Crown, TrendingUp, Scissors, MapPin } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, ChevronDown, ChevronUp, Clock, Crown, TrendingUp, Scissors, MapPin, Plus } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useClients } from '../clients/hooks/useClients';
 import { useAppointments } from '../appointments/hooks/useAppointments';
@@ -307,8 +307,15 @@ export const DashboardModule: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <h1 className="text-2xl font-bold text-slate-900">Tableau de Bord</h1>
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <DateRangePicker dateRange={dateRange} onChange={setDateRange} />
+          <button
+            onClick={() => navigate('/calendar/new')}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors shadow-sm"
+          >
+            <Plus size={16} />
+            <span className="hidden sm:inline">Rendez-vous</span>
+          </button>
         </div>
       </div>
 

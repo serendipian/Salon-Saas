@@ -54,11 +54,11 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
           return (
             <div
               key={i}
-              className={`flex-1 text-center py-2 border-l border-slate-100 ${isSat ? 'text-pink-500' : 'text-slate-500'}`}
+              className={`flex-1 text-center py-2 border-l border-slate-100 ${isSat ? 'text-blue-500' : 'text-slate-500'}`}
             >
               <div className="text-xs font-semibold uppercase">{DAYS_HEADER[i]}</div>
               <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold mt-0.5 ${
-                today ? 'bg-pink-500 text-white' : ''
+                today ? 'bg-blue-500 text-white' : ''
               }`}>
                 {day.getDate()}
               </div>

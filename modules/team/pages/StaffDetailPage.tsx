@@ -79,7 +79,7 @@ export const StaffDetailPage: React.FC = () => {
     return (
       <div className="text-center py-12">
         <p className="text-slate-500">Membre introuvable</p>
-        <button onClick={() => navigate('/team')} className="mt-4 text-pink-600 hover:text-pink-700 text-sm">
+        <button onClick={() => navigate('/team')} className="mt-4 text-blue-600 hover:text-blue-700 text-sm">
           Retour à l'équipe
         </button>
       </div>

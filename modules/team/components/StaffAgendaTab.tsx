@@ -88,7 +88,7 @@ export const StaffAgendaTab: React.FC<StaffAgendaTabProps> = ({ staff }) => {
       {/* Today's appointments */}
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <Clock className="w-4 h-4 text-pink-500" />
+          <Clock className="w-4 h-4 text-blue-500" />
           Aujourd'hui
         </h3>
         {today.length === 0 ? (

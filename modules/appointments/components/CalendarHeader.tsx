@@ -90,7 +90,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             onClick={() => onViewModeChange(key)}
             className={`px-3 py-1.5 text-sm font-medium transition-colors ${
               viewMode === key
-                ? 'bg-pink-500 text-white'
+                ? 'bg-blue-500 text-white'
                 : 'bg-white text-slate-600 hover:bg-slate-50'
             } ${key !== 'day' ? 'border-l border-slate-300' : ''}`}
           >

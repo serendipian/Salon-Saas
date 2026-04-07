@@ -78,7 +78,7 @@ export const CalendarEventPopover: React.FC<CalendarEventPopoverProps> = ({
         </div>
         <div className="flex items-center gap-2.5 text-sm text-slate-600">
           <Tag size={14} className="text-slate-400 flex-shrink-0" />
-          <span className="font-medium text-pink-600">{formatPrice(appointment.price)}</span>
+          <span className="font-medium text-blue-600">{formatPrice(appointment.price)}</span>
         </div>
       </div>
 
@@ -91,7 +91,7 @@ export const CalendarEventPopover: React.FC<CalendarEventPopoverProps> = ({
         </button>
         <button
           onClick={() => onEdit(appointment.id)}
-          className="flex-1 px-3 py-1.5 text-sm font-medium bg-pink-500 hover:bg-pink-600 text-white rounded-lg transition-colors"
+          className="flex-1 px-3 py-1.5 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
         >
           Modifier
         </button>

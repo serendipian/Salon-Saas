@@ -224,7 +224,7 @@ export const AcceptInvitationPage: React.FC = () => {
                         value={password}
                         onChange={e => { setPassword(e.target.value); setErrorMessage(null); }}
                         placeholder="Minimum 6 caractères"
-                        className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 pr-10"
+                        className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
                         required
                         minLength={6}
                         autoFocus

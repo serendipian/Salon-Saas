@@ -16,7 +16,7 @@ const ClientAvatar: React.FC<{ name: string }> = ({ name }) => {
 
   return (
     <span
-      className="w-6 h-6 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center shrink-0 font-semibold"
+      className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 font-semibold"
       style={{ fontSize: 10 }}
       aria-label={name}
     >
@@ -138,9 +138,9 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                     <React.Fragment key={clientAppts[0].clientId || groupIdx}>
                       {/* Client subgroup separator — only show when multiple appointments for this client */}
                       {isMulti && (
-                        <tr className="bg-pink-50/50 border-t border-slate-100">
+                        <tr className="bg-blue-50/50 border-t border-slate-100">
                           <td colSpan={COL_COUNT} className="px-4 py-1.5">
-                            <span className="text-xs font-semibold text-pink-700">{clientName} — {clientAppts.length} services</span>
+                            <span className="text-xs font-semibold text-blue-700">{clientName} — {clientAppts.length} services</span>
                           </td>
                         </tr>
                       )}

@@ -406,7 +406,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                         <span className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${
                           role === 'owner' ? 'bg-slate-100 text-slate-700' :
                           role === 'manager' ? 'bg-blue-50 text-blue-700' :
-                          role === 'stylist' ? 'bg-pink-50 text-pink-700' :
+                          role === 'stylist' ? 'bg-violet-50 text-violet-700' :
                           'bg-amber-50 text-amber-700'
                         }`}>
                           {roleLabel}

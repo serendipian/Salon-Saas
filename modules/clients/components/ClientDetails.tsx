@@ -164,7 +164,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
                 )}
                 {client.instagram && (
                   <li className="flex items-center gap-3">
-                     <div className="w-8 h-8 rounded bg-pink-50 flex items-center justify-center text-pink-600 shrink-0">
+                     <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
                        <Instagram size={14} />
                     </div>
                     <div className="overflow-hidden">

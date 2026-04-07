@@ -66,7 +66,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
           <div
             key={day}
             className={`py-2 text-center text-xs font-semibold uppercase ${
-              i === 5 ? 'text-pink-500' : 'text-slate-500'
+              i === 5 ? 'text-blue-500' : 'text-slate-500'
             } ${i > 0 ? 'border-l border-slate-100' : ''}`}
           >
             {day}
@@ -99,7 +99,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
                 <span
                   className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-sm ${
                     today
-                      ? 'bg-pink-500 text-white font-bold'
+                      ? 'bg-blue-500 text-white font-bold'
                       : cell.isCurrentMonth
                         ? 'text-slate-900 font-medium hover:bg-slate-100'
                         : 'text-slate-400'
@@ -131,7 +131,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
                 {overflow > 0 && (
                   <button
                     onClick={() => onDateClick(cell.date)}
-                    className="text-[11px] text-pink-500 font-medium pl-1.5 hover:underline"
+                    className="text-[11px] text-blue-500 font-medium pl-1.5 hover:underline"
                   >
                     +{overflow} de plus
                   </button>

@@ -44,7 +44,7 @@ export function IconPicker({ selectedIcon, onSelect }: IconPickerProps) {
               title={icon.label}
               className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
                 selectedIcon === icon.name
-                  ? 'bg-pink-100 text-pink-600'
+                  ? 'bg-blue-100 text-blue-600'
                   : 'hover:bg-slate-100 text-slate-600'
               }`}
             >

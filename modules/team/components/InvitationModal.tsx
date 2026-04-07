@@ -52,7 +52,7 @@ export const InvitationModal: React.FC<InvitationModalProps> = ({
 
         {isGenerating ? (
           <div className="flex flex-col items-center py-6 gap-3">
-            <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+            <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
             <p className="text-sm text-slate-500">Génération du lien...</p>
           </div>
         ) : error ? (
