@@ -23,6 +23,15 @@ export const AppointmentEditPage: React.FC = () => {
 
   const selectedAppt = allAppointments.find(a => a.id === id);
 
+  // IDs of appointments in this group — exclude from availability check
+  const excludeAppointmentIds = useMemo(() => {
+    if (!selectedAppt) return [];
+    if (selectedAppt.groupId) {
+      return allAppointments.filter(a => a.groupId === selectedAppt.groupId).map(a => a.id);
+    }
+    return [selectedAppt.id];
+  }, [selectedAppt, allAppointments]);
+
   const editInitialData = useMemo(() => {
     if (!selectedAppt) return undefined;
 
@@ -73,6 +82,7 @@ export const AppointmentEditPage: React.FC = () => {
       team={team}
       clients={clients}
       appointments={allAppointments}
+      excludeAppointmentIds={excludeAppointmentIds}
       initialData={editInitialData}
       onSave={async (payload) => {
         if (payload.newClient && activeSalon) {

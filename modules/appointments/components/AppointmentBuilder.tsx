@@ -41,6 +41,8 @@ interface AppointmentBuilderProps {
   }) => Promise<void> | void;
   onCancel: () => void;
   onDelete?: () => void;
+  // IDs of appointments being edited — excluded from availability check
+  excludeAppointmentIds?: string[];
   // For edit mode
   initialData?: {
     clientId: string;
@@ -73,6 +75,7 @@ export default function AppointmentBuilder({
   onSave,
   onCancel,
   onDelete,
+  excludeAppointmentIds,
   initialData,
 }: AppointmentBuilderProps) {
   const [isSaving, setIsSaving] = useState(false);
@@ -120,12 +123,19 @@ export default function AppointmentBuilder({
   );
   const effectiveDuration = activeVariant?.durationMinutes ?? activeService?.durationMinutes ?? 30;
 
+  // Filter out appointments being edited from availability check
+  const availabilityAppointments = useMemo(() => {
+    if (!excludeAppointmentIds || excludeAppointmentIds.length === 0) return appointments;
+    const excludeSet = new Set(excludeAppointmentIds);
+    return appointments.filter(a => !excludeSet.has(a.id));
+  }, [appointments, excludeAppointmentIds]);
+
   // Staff availability for active block
   const unavailableHours = useStaffAvailability(
     activeStaff,
     activeBlock?.date ?? null,
     effectiveDuration,
-    appointments,
+    availabilityAppointments,
   );
 
   // Handlers
