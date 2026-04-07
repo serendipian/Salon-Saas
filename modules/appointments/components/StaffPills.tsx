@@ -32,7 +32,7 @@ export default function StaffPills({ team, categoryId, selectedStaffId, onSelect
         </button>
         {eligibleStaff.map((member) => {
           const isSelected = member.id === selectedStaffId;
-          const label = `${member.firstName} ${member.lastName[0]}.`;
+          const label = member.lastName ? `${member.firstName} ${member.lastName[0]}.` : member.firstName;
           return (
             <button
               key={member.id}

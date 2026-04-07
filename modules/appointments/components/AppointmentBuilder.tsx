@@ -169,7 +169,7 @@ export default function AppointmentBuilder({
       variant ? `· ${variant.name}` : null,
       duration ? `· ${duration}m` : null,
       price != null ? `· ${formatPrice(price)}` : null,
-      staff ? `· ${staff.firstName} ${staff.lastName[0]}.` : null,
+      staff ? `· ${staff.firstName}${staff.lastName ? ` ${staff.lastName[0]}.` : ''}` : null,
     ].filter(Boolean);
     return parts.join(' ');
   };
