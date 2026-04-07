@@ -75,7 +75,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
   className,
   placeholder = '6 XX XX XX XX',
 }) => {
-  const { country, local } = splitPhone(value);
+  const { country, local } = splitPhone(value || '');
   const [isOpen, setIsOpen] = useState(false);
   const [showNumpad, setShowNumpad] = useState(false);
   const [search, setSearch] = useState('');

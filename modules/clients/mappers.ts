@@ -52,10 +52,10 @@ interface ClientRow {
 export function toClient(row: ClientRow, stats?: ClientStatsRow | null): Client {
   return {
     id: row.id,
-    firstName: row.first_name,
+    firstName: row.first_name ?? '',
     lastName: row.last_name ?? '',
-    email: row.email,
-    phone: row.phone,
+    email: row.email ?? '',
+    phone: row.phone ?? '',
     gender: (row.gender as Client['gender']) ?? undefined,
     ageGroup: row.age_group ?? undefined,
     city: row.city ?? undefined,
