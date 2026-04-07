@@ -84,7 +84,7 @@ export const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
 
   if (!isOpen) return null;
 
-  const sheetHeight = expanded ? '90vh' : '50vh';
+  const sheetHeight = expanded ? '90dvh' : '50dvh';
 
   return createPortal(
     <div
