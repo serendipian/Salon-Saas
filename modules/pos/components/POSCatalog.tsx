@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Search, Scissors, ShoppingBag, History, Plus, Receipt, Calendar } from 'lucide-react';
+import { Search, Scissors, ShoppingBag, History, Plus, Receipt, Calendar, Eye } from 'lucide-react';
 import { Service, Product, ServiceCategory, ProductCategory, Transaction, Appointment } from '../../../types';
 import { PendingAppointments } from './PendingAppointments';
 import { POSViewMode } from '../hooks/usePOS';
@@ -21,6 +21,7 @@ interface POSCatalogProps {
   onServiceClick: (s: Service) => void;
   onProductClick: (p: Product) => void;
   onReceiptClick: (t: Transaction) => void;
+  onDetailClick: (t: Transaction) => void;
   pendingAppointments: Appointment[];
   onImportAppointment: (appointment: Appointment) => void;
   linkedAppointmentId: string | null;
@@ -36,6 +37,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
   onServiceClick,
   onProductClick,
   onReceiptClick,
+  onDetailClick,
   pendingAppointments,
   onImportAppointment,
   linkedAppointmentId,
@@ -198,28 +200,42 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                /* Mobile: card layout */
                <div className="p-3 space-y-3">
                  {transactions.map((trx) => (
-                   <button
+                   <div
                      key={trx.id}
-                     type="button"
-                     onClick={() => onReceiptClick(trx)}
-                     className="w-full text-left bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:bg-slate-50 transition-colors focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus:outline-none"
-                     aria-label={`Transaction ${trx.clientName || 'Client de passage'}, ${formatPrice(trx.total)}`}
+                     className="w-full text-left bg-white rounded-lg border border-slate-200 p-4 shadow-sm"
                    >
-                     <div className="flex justify-between items-start mb-2">
-                       <div>
-                         <div className="font-semibold text-slate-900 text-sm">
-                           {trx.clientName || <span className="text-slate-400 italic">Client de passage</span>}
+                     <button
+                       type="button"
+                       onClick={() => onDetailClick(trx)}
+                       className="w-full text-left focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus:outline-none"
+                       aria-label={`Détails transaction ${trx.clientName || 'Client de passage'}, ${formatPrice(trx.total)}`}
+                     >
+                       <div className="flex justify-between items-start mb-2">
+                         <div>
+                           <div className="font-semibold text-slate-900 text-sm">
+                             {trx.clientName || <span className="text-slate-400 italic">Client de passage</span>}
+                           </div>
+                           <div className="text-xs text-slate-500 mt-0.5">
+                             {new Date(trx.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                           </div>
                          </div>
-                         <div className="text-xs text-slate-500 mt-0.5">
-                           {new Date(trx.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                         </div>
+                         <span className="font-bold text-slate-900">{formatPrice(trx.total)}</span>
                        </div>
-                       <span className="font-bold text-slate-900">{formatPrice(trx.total)}</span>
+                       <div className="text-xs text-slate-500 truncate">
+                         {trx.items.length} article{trx.items.length > 1 ? 's' : ''} · {trx.items.map(i => i.name).join(', ')}
+                       </div>
+                     </button>
+                     <div className="flex justify-end mt-2 pt-2 border-t border-slate-100 gap-2">
+                       <button
+                         type="button"
+                         onClick={() => onReceiptClick(trx)}
+                         className="p-2 text-slate-400 hover:text-slate-900 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                         aria-label="Ticket de caisse"
+                       >
+                         <Receipt size={16} />
+                       </button>
                      </div>
-                     <div className="text-xs text-slate-500 truncate">
-                       {trx.items.length} article{trx.items.length > 1 ? 's' : ''} · {trx.items.map(i => i.name).join(', ')}
-                     </div>
-                   </button>
+                   </div>
                  ))}
                </div>
              ) : (
@@ -256,13 +272,22 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                            {formatPrice(trx.total)}
                          </td>
                          <td className="px-6 py-4 text-right">
-                           <button
-                              onClick={() => onReceiptClick(trx)}
-                              className="p-2 text-slate-300 hover:text-slate-900 transition-colors"
-                              title="Imprimer ticket"
-                           >
-                             <Receipt size={16} />
-                           </button>
+                           <div className="flex items-center justify-end gap-1">
+                             <button
+                                onClick={() => onDetailClick(trx)}
+                                className="p-2 text-slate-300 hover:text-slate-900 transition-colors"
+                                title="Voir les détails"
+                             >
+                               <Eye size={16} />
+                             </button>
+                             <button
+                                onClick={() => onReceiptClick(trx)}
+                                className="p-2 text-slate-300 hover:text-slate-900 transition-colors"
+                                title="Imprimer ticket"
+                             >
+                               <Receipt size={16} />
+                             </button>
+                           </div>
                          </td>
                       </tr>
                     ))}

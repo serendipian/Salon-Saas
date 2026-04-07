@@ -4,7 +4,7 @@ import { usePOS } from './hooks/usePOS';
 import { POSCatalog } from './components/POSCatalog';
 import { POSCart } from './components/POSCart';
 import { PaymentModal } from './components/PaymentModal';
-import { ItemEditorModal, ServiceVariantModal, ReceiptModal } from './components/POSModals';
+import { ItemEditorModal, ServiceVariantModal, ReceiptModal, TransactionDetailModal } from './components/POSModals';
 import { Service, Product, ServiceVariant, Transaction, CartItem, PaymentEntry } from '../../types';
 import { useMediaQuery } from '../../context/MediaQueryContext';
 import { MiniCartBar } from './components/MiniCartBar';
@@ -39,6 +39,7 @@ export const POSModule: React.FC = () => {
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [variantModalData, setVariantModalData] = useState<{service: Service} | null>(null);
   const [receiptTransaction, setReceiptTransaction] = useState<Transaction | null>(null);
+  const [detailTransaction, setDetailTransaction] = useState<Transaction | null>(null);
   const { isMobile } = useMediaQuery();
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -110,6 +111,7 @@ export const POSModule: React.FC = () => {
         onServiceClick={handleServiceClick}
         onProductClick={handleProductClick}
         onReceiptClick={setReceiptTransaction}
+        onDetailClick={setDetailTransaction}
         pendingAppointments={pendingAppointments}
         onImportAppointment={importAppointment}
         linkedAppointmentId={linkedAppointmentId}
@@ -194,6 +196,13 @@ export const POSModule: React.FC = () => {
         <ReceiptModal
           transaction={receiptTransaction}
           onClose={() => setReceiptTransaction(null)}
+        />
+      )}
+
+      {detailTransaction && (
+        <TransactionDetailModal
+          transaction={detailTransaction}
+          onClose={() => setDetailTransaction(null)}
         />
       )}
     </div>

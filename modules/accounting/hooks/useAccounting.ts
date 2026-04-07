@@ -152,10 +152,13 @@ export const useAccounting = () => {
 
     const lookup = new Map<string, { categoryId: string; categoryName: string }>();
     (allServices || []).forEach(svc => {
-      lookup.set(svc.id, {
+      const entry = {
         categoryId: svc.categoryId || 'uncategorized',
         categoryName: catNameMap.get(svc.categoryId) || 'Non catégorisé',
-      });
+      };
+      lookup.set(svc.id, entry);
+      // POS stores variant ID as referenceId, so map each variant ID too
+      (svc.variants || []).forEach(v => lookup.set(v.id, entry));
     });
     return lookup;
   }, [allServices, serviceCategories]);

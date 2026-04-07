@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Clock, Receipt, Printer, Mail } from 'lucide-react';
+import { X, Clock, Receipt, Printer, Mail, User, Scissors, ShoppingBag, StickyNote, CreditCard, Banknote, Smartphone, Gift } from 'lucide-react';
 import { CartItem, Service, ServiceVariant, Transaction } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
@@ -436,6 +436,211 @@ export const ReceiptModal: React.FC<{
            <button className="flex-1 py-2.5 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm">
               <Printer size={16} /> Imprimer
            </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- Transaction Detail Viewer ---
+const paymentMethodIcon = (method: string) => {
+  if (method.toLowerCase().includes('espèces') || method.toLowerCase().includes('cash')) return <Banknote size={14} />;
+  if (method.toLowerCase().includes('carte') || method.toLowerCase().includes('card')) return <CreditCard size={14} />;
+  if (method.toLowerCase().includes('mobile') || method.toLowerCase().includes('wave') || method.toLowerCase().includes('orange')) return <Smartphone size={14} />;
+  if (method.toLowerCase().includes('offert') || method.toLowerCase().includes('gift')) return <Gift size={14} />;
+  return <CreditCard size={14} />;
+};
+
+export const TransactionDetailModal: React.FC<{
+  transaction: Transaction;
+  onClose: () => void;
+}> = ({ transaction, onClose }) => {
+  const { isMobile } = useMediaQuery();
+  useMobileModalA11y(isMobile, onClose);
+
+  const serviceItems = transaction.items.filter(i => i.type === 'SERVICE');
+  const productItems = transaction.items.filter(i => i.type === 'PRODUCT');
+  const totalPaid = transaction.payments.reduce((acc, p) => acc + p.amount, 0);
+  const change = Math.max(0, totalPaid - transaction.total);
+  const totalDiscount = transaction.items.reduce((acc, item) => {
+    if (item.originalPrice && item.originalPrice > item.price) {
+      return acc + (item.originalPrice - item.price) * item.quantity;
+    }
+    return acc;
+  }, 0);
+
+  const detailContent = (
+    <div className="space-y-6">
+      {/* Header info */}
+      <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+        <div className="flex justify-between text-sm">
+          <span className="text-slate-500">Date</span>
+          <span className="font-medium text-slate-900">{new Date(transaction.date).toLocaleString()}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-slate-500">Transaction</span>
+          <span className="font-mono text-xs text-slate-600">#{transaction.id.slice(0, 8).toUpperCase()}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-slate-500">Client</span>
+          {transaction.clientName ? (
+            <span className="font-medium text-slate-900">{transaction.clientName}</span>
+          ) : (
+            <span className="italic text-slate-400">Client de passage</span>
+          )}
+        </div>
+      </div>
+
+      {/* Services */}
+      {serviceItems.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Scissors size={16} className="text-pink-500" />
+            <h4 className="font-bold text-slate-900 text-sm">Services ({serviceItems.length})</h4>
+          </div>
+          <div className="space-y-2">
+            {serviceItems.map((item, idx) => (
+              <div key={idx} className="bg-white border border-slate-100 rounded-lg p-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="font-semibold text-slate-900 text-sm">{item.name}</div>
+                    {item.variantName && <div className="text-xs text-slate-500">{item.variantName}</div>}
+                    {item.staffName && (
+                      <div className="flex items-center gap-1 mt-1 text-xs text-blue-600">
+                        <User size={12} /> {item.staffName}
+                      </div>
+                    )}
+                    {item.note && (
+                      <div className="flex items-center gap-1 mt-1 text-xs text-amber-600">
+                        <StickyNote size={12} /> {item.note}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0 ml-3">
+                    <div className="font-bold text-slate-900 text-sm">{formatPrice(item.price * item.quantity)}</div>
+                    {item.quantity > 1 && <div className="text-xs text-slate-400">{item.quantity} x {formatPrice(item.price)}</div>}
+                    {item.originalPrice && item.originalPrice > item.price && (
+                      <div className="text-xs text-red-400 line-through">{formatPrice(item.originalPrice * item.quantity)}</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Products */}
+      {productItems.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <ShoppingBag size={16} className="text-violet-500" />
+            <h4 className="font-bold text-slate-900 text-sm">Produits ({productItems.length})</h4>
+          </div>
+          <div className="space-y-2">
+            {productItems.map((item, idx) => (
+              <div key={idx} className="bg-white border border-slate-100 rounded-lg p-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="font-semibold text-slate-900 text-sm">{item.name}</div>
+                    {item.staffName && (
+                      <div className="flex items-center gap-1 mt-1 text-xs text-blue-600">
+                        <User size={12} /> {item.staffName}
+                      </div>
+                    )}
+                    {item.note && (
+                      <div className="flex items-center gap-1 mt-1 text-xs text-amber-600">
+                        <StickyNote size={12} /> {item.note}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0 ml-3">
+                    <div className="font-bold text-slate-900 text-sm">{formatPrice(item.price * item.quantity)}</div>
+                    {item.quantity > 1 && <div className="text-xs text-slate-400">{item.quantity} x {formatPrice(item.price)}</div>}
+                    {item.originalPrice && item.originalPrice > item.price && (
+                      <div className="text-xs text-red-400 line-through">{formatPrice(item.originalPrice * item.quantity)}</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Payments */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <CreditCard size={16} className="text-emerald-500" />
+          <h4 className="font-bold text-slate-900 text-sm">Paiements</h4>
+        </div>
+        <div className="bg-white border border-slate-100 rounded-lg divide-y divide-slate-50">
+          {transaction.payments.map((payment, idx) => (
+            <div key={idx} className="flex justify-between items-center p-3">
+              <div className="flex items-center gap-2 text-sm text-slate-700">
+                {paymentMethodIcon(payment.method)}
+                <span>{payment.method}</span>
+              </div>
+              <span className="font-bold text-slate-900 text-sm">{formatPrice(payment.amount)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Summary */}
+      <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+        {totalDiscount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-red-500">Remise totale</span>
+            <span className="font-medium text-red-500">-{formatPrice(totalDiscount)}</span>
+          </div>
+        )}
+        <div className="flex justify-between text-lg font-bold text-slate-900">
+          <span>Total</span>
+          <span>{formatPrice(transaction.total)}</span>
+        </div>
+        {change > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-emerald-600">Monnaie rendue</span>
+            <span className="font-medium text-emerald-600">{formatPrice(change)}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  if (isMobile) {
+    return createPortal(
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Détails de la transaction"
+        className="fixed inset-0 bg-white flex flex-col animate-in slide-in-from-bottom duration-300"
+        style={{ zIndex: 'var(--z-modal)' }}
+      >
+        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 shrink-0">
+          <h3 className="font-bold text-slate-900">Détails de la transaction</h3>
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Fermer">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-5" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
+          {detailContent}
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
+          <h3 className="font-bold text-slate-800">Détails de la transaction</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X size={20} /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6">
+          {detailContent}
         </div>
       </div>
     </div>
