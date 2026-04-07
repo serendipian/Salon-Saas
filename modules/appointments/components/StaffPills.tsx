@@ -17,15 +17,15 @@ export default function StaffPills({ team, categoryId, selectedStaffId, onSelect
 
   return (
     <div>
-      <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">Praticien</div>
-      <div className="flex gap-1.5 flex-wrap">
+      <div className="text-xs font-medium text-slate-500 mb-2">Praticien</div>
+      <div className="flex gap-2 flex-wrap">
         <button
           type="button"
           onClick={() => onSelect(null)}
-          className={`px-3 py-1.5 rounded-full text-[11px] transition-colors ${
+          className={`px-3.5 py-2 rounded-xl text-xs transition-all ${
             selectedStaffId === null
-              ? 'bg-pink-400 text-white font-semibold'
-              : 'bg-slate-50 border border-slate-300 text-slate-700 hover:border-slate-400'
+              ? 'bg-blue-500 text-white font-medium shadow-sm'
+              : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'
           }`}
         >
           N'importe qui
@@ -38,10 +38,10 @@ export default function StaffPills({ team, categoryId, selectedStaffId, onSelect
               key={member.id}
               type="button"
               onClick={() => onSelect(isSelected ? null : member.id)}
-              className={`px-3 py-1.5 rounded-full text-[11px] transition-colors flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-xl text-xs transition-all flex items-center gap-2 ${
                 isSelected
-                  ? 'bg-pink-400 text-white font-medium'
-                  : 'bg-slate-50 border border-slate-200 text-slate-500 hover:border-slate-400'
+                  ? 'bg-blue-500 text-white font-medium shadow-sm'
+                  : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'
               }`}
             >
               <StaffAvatar
@@ -49,10 +49,9 @@ export default function StaffPills({ team, categoryId, selectedStaffId, onSelect
                 lastName={member.lastName}
                 photoUrl={member.photoUrl}
                 color={isSelected ? 'rgba(255,255,255,0.3)' : member.color}
-                size={18}
+                size={20}
               />
               {label}
-              {isSelected && <span className="opacity-70 ml-0.5">✕</span>}
             </button>
           );
         })}

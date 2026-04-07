@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface InlineCalendarProps {
   value: string | null;
@@ -46,18 +47,22 @@ export default function InlineCalendar({ value, onChange, disabledDates }: Inlin
   };
 
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-      <div className="flex justify-between items-center mb-2">
-        <button type="button" onClick={prevMonth} className="text-slate-500 hover:text-slate-800 p-1">◀</button>
-        <span className="text-slate-800 text-sm font-semibold">{MONTHS_FR[viewMonth]} {viewYear}</span>
-        <button type="button" onClick={nextMonth} className="text-slate-500 hover:text-slate-800 p-1">▶</button>
+    <div className="bg-white border border-slate-200 rounded-xl p-3">
+      <div className="flex justify-between items-center mb-3">
+        <button type="button" onClick={prevMonth} className="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors">
+          <ChevronLeft size={16} className="text-slate-500" />
+        </button>
+        <span className="text-slate-900 text-sm font-semibold">{MONTHS_FR[viewMonth]} {viewYear}</span>
+        <button type="button" onClick={nextMonth} className="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors">
+          <ChevronRight size={16} className="text-slate-500" />
+        </button>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center mb-1">
+      <div className="grid grid-cols-7 gap-0.5 text-center mb-1">
         {DAYS_FR.map((d) => (
-          <span key={d} className="text-slate-400 text-[10px] font-semibold py-1">{d}</span>
+          <span key={d} className="text-slate-400 text-[10px] font-medium py-1.5">{d}</span>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center">
+      <div className="grid grid-cols-7 gap-0.5 text-center">
         {grid.map((day, i) => {
           if (day === null) return <span key={`empty-${i}`} />;
           const dateStr = formatDateStr(viewYear, viewMonth, day);
@@ -72,11 +77,11 @@ export default function InlineCalendar({ value, onChange, disabledDates }: Inlin
               disabled={isDisabled}
               onClick={() => onChange(dateStr)}
               className={`
-                text-xs p-1.5 rounded-md transition-colors
-                ${isSelected ? 'bg-pink-400 text-white font-semibold'
-                  : isToday ? 'text-pink-400 ring-1 ring-pink-400/50'
+                text-xs p-2 rounded-lg transition-all font-medium
+                ${isSelected ? 'bg-blue-500 text-white shadow-sm'
+                  : isToday ? 'text-blue-600 ring-1 ring-blue-400 bg-blue-50'
                   : isPast ? 'text-slate-300'
-                  : 'text-slate-800 hover:bg-slate-100'}
+                  : 'text-slate-700 hover:bg-blue-50 hover:text-blue-600'}
                 ${isDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
               `}
             >

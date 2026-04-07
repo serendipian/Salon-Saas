@@ -77,24 +77,29 @@ export default function AppointmentSummary({
   if (serviceBlocks.length <= 1) return null;
 
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 mt-2">
-      <div className="text-[10px] text-pink-600 uppercase tracking-wider font-semibold mb-1.5">Total rendez-vous</div>
-      {blockDetails.map((b, i) => (
-        <div key={i} className="mb-1">
-          <div className="flex justify-between text-xs">
-            <span className="text-slate-500">{'\u2460\u2461\u2462\u2463\u2464'[i]} {b.name}{b.variantName ? ` · ${b.variantName}` : ''}</span>
-            <span className="text-slate-800">{formatPrice(b.price)}</span>
-          </div>
-          {b.date && b.hour !== null && (
-            <div className="text-[10px] text-slate-400 mt-0.5 ml-4">
-              {'\uD83D\uDCC5'} {formatBlockDate(b.date)} · {formatTime(b.hour, b.minute, b.duration)}
+    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+      <div className="text-xs text-blue-600 font-semibold mb-3">Total rendez-vous</div>
+      <div className="space-y-2">
+        {blockDetails.map((b, i) => (
+          <div key={i}>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-600">
+                <span className="w-5 h-5 bg-slate-200 text-slate-600 rounded-full inline-flex items-center justify-center text-[10px] font-bold mr-2">{i + 1}</span>
+                {b.name}{b.variantName ? ` · ${b.variantName}` : ''}
+              </span>
+              <span className="text-slate-800 font-medium">{formatPrice(b.price)}</span>
             </div>
-          )}
-        </div>
-      ))}
-      <div className="border-t border-slate-200 pt-1.5 mt-1.5 flex justify-between text-sm">
-        <span className="text-slate-500">Durée : <strong className="text-slate-800">{formatDuration(totalDuration)}</strong></span>
-        <strong className="text-pink-600">{formatPrice(totalPrice)}</strong>
+            {b.date && b.hour !== null && (
+              <div className="text-[11px] text-slate-400 mt-0.5 ml-7">
+                {formatBlockDate(b.date)} · {formatTime(b.hour, b.minute, b.duration)}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="border-t border-slate-200 pt-3 mt-3 flex justify-between items-center">
+        <span className="text-sm text-slate-500">Durée : <strong className="text-slate-800">{formatDuration(totalDuration)}</strong></span>
+        <strong className="text-blue-600 text-base">{formatPrice(totalPrice)}</strong>
       </div>
     </div>
   );

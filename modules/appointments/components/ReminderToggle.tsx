@@ -1,4 +1,5 @@
 import React from 'react';
+import { Bell } from 'lucide-react';
 
 interface ReminderToggleProps {
   value: number | null;
@@ -7,8 +8,8 @@ interface ReminderToggleProps {
 
 const REMINDER_OPTIONS = [
   { label: '30 min', value: 30 },
-  { label: '1h avant', value: 60 },
-  { label: '3h avant', value: 180 },
+  { label: '1h', value: 60 },
+  { label: '3h', value: 180 },
   { label: '1 jour', value: 1440 },
   { label: '2 jours', value: 2880 },
 ];
@@ -19,27 +20,30 @@ export default function ReminderToggle({ value, onChange }: ReminderToggleProps)
 
   return (
     <div>
-      <div className="flex justify-between items-center">
-        <span className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold">Rappel</span>
+      <div className="flex justify-between items-center mb-2">
+        <div className="flex items-center gap-2">
+          <Bell size={14} className="text-slate-400" />
+          <span className="text-xs font-medium text-slate-500">Rappel</span>
+        </div>
         <button
           type="button"
           onClick={toggle}
-          className={`w-9 h-5 rounded-full relative transition-colors ${isOn ? 'bg-pink-400' : 'bg-slate-300'}`}
+          className={`w-10 h-[22px] rounded-full relative transition-colors ${isOn ? 'bg-blue-500' : 'bg-slate-300'}`}
         >
-          <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-all ${isOn ? 'right-0.5' : 'left-0.5'}`} />
+          <div className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all shadow-sm ${isOn ? 'right-[2px]' : 'left-[2px]'}`} />
         </button>
       </div>
       {isOn ? (
-        <div className="flex gap-1.5 flex-wrap mt-2">
+        <div className="flex gap-2 flex-wrap">
           {REMINDER_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               type="button"
               onClick={() => onChange(opt.value)}
-              className={`px-3 py-1.5 rounded-full text-[11px] transition-colors ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
                 value === opt.value
-                  ? 'bg-pink-400 text-white font-medium'
-                  : 'bg-slate-50 border border-slate-300 text-slate-700 hover:border-slate-400'
+                  ? 'bg-blue-500 text-white shadow-sm'
+                  : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'
               }`}
             >
               {opt.label}
@@ -47,7 +51,7 @@ export default function ReminderToggle({ value, onChange }: ReminderToggleProps)
           ))}
         </div>
       ) : (
-        <p className="text-slate-400 text-[11px] mt-1 italic">Activer pour configurer un rappel</p>
+        <p className="text-slate-400 text-xs italic">Activer pour configurer un rappel</p>
       )}
     </div>
   );

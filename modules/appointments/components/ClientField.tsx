@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { Client } from '../../../types';
 import { PhoneInput } from '../../../components/PhoneInput';
+import { Search, UserPlus, X } from 'lucide-react';
 
 interface ClientFieldProps {
   clients: Client[];
@@ -46,44 +47,51 @@ export default function ClientField({
   if (newClientData) {
     return (
       <div className="mb-4">
-        <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">Client *</div>
-        <div className="bg-slate-50 border border-pink-400 rounded-lg p-3">
-          <div className="flex justify-between items-center mb-2.5">
-            <span className="text-[11px] text-pink-600 font-semibold uppercase tracking-wider">Nouveau client</span>
-            <button type="button" onClick={() => onNewClientChange(null)} className="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+        <div className="text-xs font-medium text-slate-500 mb-2">Client *</div>
+        <div className="bg-blue-50/50 border border-blue-200 rounded-2xl p-4">
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
+                <UserPlus size={12} className="text-blue-600" />
+              </div>
+              <span className="text-xs text-blue-700 font-semibold">Nouveau client</span>
+            </div>
+            <button type="button" onClick={() => onNewClientChange(null)} className="w-6 h-6 rounded-full hover:bg-slate-200 flex items-center justify-center transition-colors">
+              <X size={14} className="text-slate-400" />
+            </button>
           </div>
-          <div className="grid grid-cols-2 gap-2 mb-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <div className="text-[10px] text-slate-500 mb-1">Prénom *</div>
+              <div className="text-[11px] text-slate-500 mb-1 font-medium">Prénom *</div>
               <input
                 type="text"
                 value={newClientData.firstName}
                 onChange={(e) => onNewClientChange({ ...newClientData, firstName: e.target.value })}
-                className="w-full bg-white border border-slate-200 rounded-md px-2.5 py-2 text-sm text-slate-800 focus:border-pink-400 focus:outline-none min-h-[44px]"
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none min-h-[44px] transition-all"
                 placeholder="Prénom"
                 autoFocus
               />
             </div>
             <div>
-              <div className="text-[10px] text-slate-500 mb-1">Nom</div>
+              <div className="text-[11px] text-slate-500 mb-1 font-medium">Nom</div>
               <input
                 type="text"
                 value={newClientData.lastName}
                 onChange={(e) => onNewClientChange({ ...newClientData, lastName: e.target.value })}
-                className="w-full bg-white border border-slate-200 rounded-md px-2.5 py-2 text-sm text-slate-800 focus:border-pink-400 focus:outline-none min-h-[44px]"
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none min-h-[44px] transition-all"
                 placeholder="Optionnel"
               />
             </div>
+            <PhoneInput
+              label="Téléphone"
+              required
+              value={newClientData.phone}
+              onChange={(phone) => onNewClientChange({ ...newClientData, phone })}
+            />
           </div>
-          <PhoneInput
-            label="Téléphone"
-            required
-            value={newClientData.phone}
-            onChange={(phone) => onNewClientChange({ ...newClientData, phone })}
-          />
-          <p className="text-slate-400 text-[10px] mt-2 italic">Le client sera automatiquement ajouté au CRM</p>
+          <p className="text-slate-400 text-[10px] mt-3">Ajouté automatiquement au CRM</p>
         </div>
-        {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+        {error && <p className="text-red-500 text-xs mt-1.5">{error}</p>}
       </div>
     );
   }
@@ -93,16 +101,18 @@ export default function ClientField({
     const initials = `${selectedClient.firstName?.[0] ?? ''}${selectedClient.lastName?.[0] ?? ''}`.toUpperCase();
     return (
       <div className="mb-4">
-        <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">Client *</div>
-        <div className="bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-pink-400 rounded-full flex items-center justify-center text-white text-xs font-semibold">{initials}</div>
+        <div className="text-xs font-medium text-slate-500 mb-2">Client *</div>
+        <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 flex items-center justify-between hover:border-slate-300 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shadow-sm">{initials}</div>
             <div>
               <div className="text-slate-800 text-sm font-medium">{[selectedClient.firstName, selectedClient.lastName].filter(Boolean).join(' ')}</div>
-              <div className="text-slate-400 text-[11px]">{selectedClient.phone ?? ''}</div>
+              <div className="text-slate-400 text-xs">{selectedClient.phone ?? ''}</div>
             </div>
           </div>
-          <button type="button" onClick={onClearClient} className="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+          <button type="button" onClick={onClearClient} className="w-7 h-7 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors">
+            <X size={14} className="text-slate-400" />
+          </button>
         </div>
       </div>
     );
@@ -111,7 +121,7 @@ export default function ClientField({
   // Default: search + "Nouveau" button
   return (
     <div className="mb-4">
-      <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">Client *</div>
+      <div className="text-xs font-medium text-slate-500 mb-2">Client *</div>
       <div className="flex gap-2 items-center">
         <div className="relative flex-1">
           <input
@@ -121,24 +131,24 @@ export default function ClientField({
             onFocus={() => setIsSearchOpen(true)}
             onBlur={() => setTimeout(() => setIsSearchOpen(false), 200)}
             placeholder="Rechercher un client..."
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-800 focus:border-pink-400 focus:outline-none min-h-[44px] pl-9"
+            className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none min-h-[44px] pl-10 transition-all"
           />
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           {isSearchOpen && filteredClients.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl ring-1 ring-black/5 z-10 max-h-64 overflow-y-auto">
               {filteredClients.map((client) => (
                 <button
                   key={client.id}
                   type="button"
                   onMouseDown={() => { onSelectClient(client.id); setSearchTerm(''); setIsSearchOpen(false); }}
-                  className="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2.5 text-sm"
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-blue-50 flex items-center gap-3 text-sm transition-colors first:rounded-t-xl last:rounded-b-xl"
                 >
-                  <div className="w-7 h-7 bg-pink-500/20 text-pink-400 rounded-full flex items-center justify-center text-[10px] font-semibold">
+                  <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-[11px] font-semibold">
                     {client.firstName?.[0] ?? ''}{client.lastName?.[0] ?? ''}
                   </div>
                   <div>
-                    <div className="text-slate-800">{[client.firstName, client.lastName].filter(Boolean).join(' ')}</div>
-                    <div className="text-slate-400 text-[11px]">{client.phone ?? ''}</div>
+                    <div className="text-slate-800 font-medium">{[client.firstName, client.lastName].filter(Boolean).join(' ')}</div>
+                    <div className="text-slate-400 text-xs">{client.phone ?? ''}</div>
                   </div>
                 </button>
               ))}
@@ -148,12 +158,12 @@ export default function ClientField({
         <button
           type="button"
           onClick={() => onNewClientChange({ firstName: '', lastName: '', phone: '' })}
-          className="bg-slate-50 border border-slate-300 text-slate-700 px-3.5 py-2.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-1 hover:border-slate-400 min-h-[44px]"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap flex items-center gap-1.5 min-h-[44px] transition-colors shadow-sm"
         >
-          <span className="text-pink-600 font-bold">+</span> Nouveau
+          <UserPlus size={14} /> Nouveau
         </button>
       </div>
-      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+      {error && <p className="text-red-500 text-xs mt-1.5">{error}</p>}
     </div>
   );
 }

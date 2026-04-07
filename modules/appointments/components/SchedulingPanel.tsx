@@ -39,31 +39,39 @@ export default function SchedulingPanel({
   unavailableHours,
 }: SchedulingPanelProps) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-      <div className="p-4">
+    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="p-5 space-y-5">
         {/* Status */}
-        <div className="mb-4">
-          <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">Statut</div>
-          <select
-            value={status}
-            onChange={(e) => onStatusChange(e.target.value as AppointmentStatus)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-800 focus:border-pink-400 focus:outline-none min-h-[44px] appearance-none"
-          >
+        <div>
+          <div className="text-xs font-medium text-slate-500 mb-2">Statut</div>
+          <div className="flex gap-2 flex-wrap">
             {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => onStatusChange(opt.value)}
+                className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all flex items-center gap-2 ${
+                  status === opt.value
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${opt.color}`} />
+                {opt.label}
+              </button>
             ))}
-          </select>
+          </div>
         </div>
 
         {/* Calendar */}
-        <div className="mb-4">
-          <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">Date *</div>
+        <div>
+          <div className="text-xs font-medium text-slate-500 mb-2">Date *</div>
           <InlineCalendar value={activeDate} onChange={onDateChange} />
         </div>
 
         {/* Time Picker */}
-        <div className="mb-4">
-          <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5">Heure *</div>
+        <div>
+          <div className="text-xs font-medium text-slate-500 mb-2">Heure *</div>
           <TimePicker
             hour={activeHour}
             minute={activeMinute}
@@ -75,9 +83,7 @@ export default function SchedulingPanel({
         </div>
 
         {/* Reminder */}
-        <div>
-          <ReminderToggle value={reminderMinutes} onChange={onReminderChange} />
-        </div>
+        <ReminderToggle value={reminderMinutes} onChange={onReminderChange} />
       </div>
     </div>
   );
