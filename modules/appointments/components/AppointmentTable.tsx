@@ -1,7 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { Pencil, Trash2, User } from 'lucide-react';
-import { Appointment, StaffMember, Service, ServiceCategory } from '../../../types';
+import { Appointment, AppointmentStatus, StaffMember, Service, ServiceCategory } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import { EmptyState } from '../../../components/EmptyState';
@@ -33,6 +33,7 @@ interface AppointmentTableProps {
   onDetails: (id: string) => void;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onStatusChange?: (id: string, status: AppointmentStatus) => void;
 }
 
 /** Group appointments by day, then by client within each day */
@@ -83,7 +84,7 @@ function formatDuration(minutes: number): string {
   return `${h}h${String(m).padStart(2, '0')}`;
 }
 
-export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments, team, services, categories, onDetails, onEdit, onDelete }) => {
+export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments, team, services, categories, onDetails, onEdit, onDelete, onStatusChange }) => {
   const staffMap = useMemo(() => new Map(team.map(s => [s.id, s])), [team]);
   const serviceMap = useMemo(() => new Map(services.map(s => [s.id, s])), [services]);
   const categoryMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
@@ -207,7 +208,10 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                               })() : <span className="text-sm text-slate-500">—</span>}
                             </td>
                             <td className="px-4 py-3 align-top border-r border-slate-100">
-                              <StatusBadge status={appt.status} />
+                              <StatusBadge
+                                status={appt.status}
+                                onStatusChange={onStatusChange ? (s) => onStatusChange(appt.id, s) : undefined}
+                              />
                             </td>
                             <td className="px-4 py-3 align-top text-right">
                               <div className="flex items-center justify-end gap-1">

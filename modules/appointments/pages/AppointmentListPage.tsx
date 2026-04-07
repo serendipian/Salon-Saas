@@ -17,6 +17,7 @@ export const AppointmentListPage: React.FC = () => {
     statusFilter,
     setStatusFilter,
     deleteAppointment,
+    updateStatus,
   } = useAppointments();
   const { allServices: services, serviceCategories } = useServices();
   const { allStaff: team } = useTeam();
@@ -44,6 +45,7 @@ export const AppointmentListPage: React.FC = () => {
       onDetails={(id) => navigate(`/calendar/${id}`)}
       onEdit={(id) => navigate(`/calendar/${id}/edit`)}
       onDelete={handleDelete}
+      onStatusChange={(id, status) => updateStatus(id, status)}
     />
   );
 };

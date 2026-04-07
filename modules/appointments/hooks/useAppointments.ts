@@ -136,6 +136,21 @@ export const useAppointments = () => {
     onError: toastOnError('Erreur lors de la création du rendez-vous'),
   });
 
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ appointmentId, status }: { appointmentId: string; status: string }) => {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ status })
+        .eq('id', appointmentId)
+        .eq('salon_id', salonId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
+    },
+    onError: toastOnError('Impossible de modifier le statut'),
+  });
+
   const deleteAppointmentMutation = useMutation({
     mutationFn: async (appointmentId: string) => {
       const { error } = await supabase.rpc('soft_delete_appointment', {
@@ -171,6 +186,7 @@ export const useAppointments = () => {
     updateAppointment: (appt: Appointment) => updateAppointmentMutation.mutate(appt),
     addAppointmentGroup: addAppointmentGroupMutation.mutateAsync,
     isAddingGroup: addAppointmentGroupMutation.isPending,
+    updateStatus: (appointmentId: string, status: string) => updateStatusMutation.mutateAsync({ appointmentId, status }),
     deleteAppointment: deleteAppointmentMutation.mutateAsync,
     isDeleting: deleteAppointmentMutation.isPending,
   };

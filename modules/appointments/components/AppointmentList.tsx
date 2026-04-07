@@ -22,6 +22,7 @@ interface AppointmentListProps {
   onDetails: (id: string) => void;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onStatusChange?: (id: string, status: AppointmentStatus) => void;
 }
 
 export const AppointmentList: React.FC<AppointmentListProps> = ({
@@ -38,6 +39,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
   onDetails,
   onEdit,
   onDelete,
+  onStatusChange,
 }) => {
   const { viewMode, setViewMode } = useViewMode('appointments');
   const [mode, setMode] = useState<'list' | 'calendar'>('list');
@@ -110,6 +112,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
           >
             <option value="ALL">Tous les statuts</option>
             <option value={AppointmentStatus.SCHEDULED}>Planifié</option>
+            <option value={AppointmentStatus.IN_PROGRESS}>En cours</option>
             <option value={AppointmentStatus.COMPLETED}>Terminé</option>
             <option value={AppointmentStatus.CANCELLED}>Annulé</option>
           </select>
@@ -117,7 +120,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
         </div>
 
         {viewMode === 'table' ? (
-          <AppointmentTable appointments={appointments} team={allStaff} services={services} categories={serviceCategories} onDetails={onDetails} onEdit={onEdit} onDelete={onDelete} />
+          <AppointmentTable appointments={appointments} team={allStaff} services={services} categories={serviceCategories} onDetails={onDetails} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} />
         ) : (
           <AppointmentCardList appointments={appointments} onDetails={onDetails} onDelete={onDelete} />
         )}

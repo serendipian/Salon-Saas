@@ -20,6 +20,7 @@ interface SchedulingPanelProps {
 
 const STATUS_OPTIONS: { value: AppointmentStatus; label: string; color: string }[] = [
   { value: 'SCHEDULED' as AppointmentStatus, label: 'Planifié', color: 'bg-blue-500' },
+  { value: 'IN_PROGRESS' as AppointmentStatus, label: 'En cours', color: 'bg-violet-500' },
   { value: 'COMPLETED' as AppointmentStatus, label: 'Complété', color: 'bg-green-500' },
   { value: 'CANCELLED' as AppointmentStatus, label: 'Annulé', color: 'bg-red-500' },
   { value: 'NO_SHOW' as AppointmentStatus, label: 'Absent', color: 'bg-orange-500' },

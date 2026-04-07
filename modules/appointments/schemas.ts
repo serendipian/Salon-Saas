@@ -34,7 +34,7 @@ export const appointmentGroupSchema = z.object({
   serviceBlocks: z
     .array(serviceBlockSchema)
     .min(1, 'Au moins un service est requis'),
-  status: z.enum(['SCHEDULED', 'COMPLETED', 'CANCELLED', 'NO_SHOW']),
+  status: z.enum(['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW']),
   notes: z.string().optional().default(''),
   reminderMinutes: z.number().nullable(),
 });

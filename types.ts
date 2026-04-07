@@ -3,6 +3,7 @@ import type React from 'react';
 // Enums for status
 export enum AppointmentStatus {
   SCHEDULED = 'SCHEDULED',
+  IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
   NO_SHOW = 'NO_SHOW'
