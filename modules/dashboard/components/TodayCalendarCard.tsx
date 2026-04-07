@@ -82,6 +82,7 @@ interface DragState {
   isDragging: boolean; // becomes true after threshold
   ghostTop: number;
   ghostStaffIdx: number;
+  isValidDrop: boolean; // whether the target staff can handle this service
 }
 
 // ── Popover ──────────────────────────────────────────────
@@ -302,6 +303,16 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
 
   // ── Drag & Drop logic ──
 
+  // Check if a staff member can handle a given appointment (based on service category skills)
+  const canStaffHandleAppt = useCallback((staffMember: StaffMember, appt: Appointment): boolean => {
+    // If staff has no skills defined, allow all (backwards compat)
+    if (!staffMember.skills || staffMember.skills.length === 0) return true;
+    const svc = services.find(s => s.id === appt.serviceId);
+    if (!svc?.categoryId) return true;
+    // skills contains category IDs or service IDs
+    return staffMember.skills.includes(svc.categoryId) || staffMember.skills.includes(appt.serviceId);
+  }, [services]);
+
   const findStaffIndexAtX = useCallback((clientX: number): number => {
     let closest = 0;
     let closestDist = Infinity;
@@ -347,6 +358,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
       isDragging: false,
       ghostTop,
       ghostStaffIdx: staffIdx >= 0 ? staffIdx : 0,
+      isValidDrop: true,
     });
 
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -364,9 +376,11 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     const minutes = calcMinutesFromY(e.clientY - drag.offsetY);
     const staffIdx = findStaffIndexAtX(e.clientX);
     const newTop = (minutes / 60) * ROW_H;
+    const targetStaff = staffColumns[staffIdx];
+    const isValid = targetStaff ? canStaffHandleAppt(targetStaff, drag.appointment) : false;
 
-    setDrag(prev => prev ? { ...prev, isDragging: true, ghostTop: newTop, ghostStaffIdx: staffIdx } : null);
-  }, [drag, calcMinutesFromY, findStaffIndexAtX]);
+    setDrag(prev => prev ? { ...prev, isDragging: true, ghostTop: newTop, ghostStaffIdx: staffIdx, isValidDrop: isValid } : null);
+  }, [drag, calcMinutesFromY, findStaffIndexAtX, staffColumns, canStaffHandleAppt]);
 
   const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (!drag) return;
@@ -376,7 +390,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
       const staffIdx = findStaffIndexAtX(e.clientX);
       const targetStaff = staffColumns[staffIdx];
 
-      if (targetStaff) {
+      if (targetStaff && canStaffHandleAppt(targetStaff, drag.appointment)) {
         const today = new Date();
         const newHour = Math.floor(minutes / 60) + START_HOUR;
         const newMin = minutes % 60;
@@ -397,7 +411,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     }
 
     setDrag(null);
-  }, [drag, onUpdateAppointment, calcMinutesFromY, findStaffIndexAtX, staffColumns]);
+  }, [drag, onUpdateAppointment, calcMinutesFromY, findStaffIndexAtX, staffColumns, canStaffHandleAppt]);
 
   const handlePointerCancel = useCallback(() => {
     setDrag(null);
@@ -412,7 +426,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     const timeLabel = fmtMinutes(snapped);
     const endLabel = fmtMinutes(snapped + drag.appointment.durationMinutes);
     const targetStaff = staffColumns[drag.ghostStaffIdx];
-    return { topPx, timeLabel, endLabel, targetStaff, snappedMinutes: snapped };
+    return { topPx, timeLabel, endLabel, targetStaff, snappedMinutes: snapped, isValid: drag.isValidDrop };
   }, [drag, staffColumns]);
 
   const totalHeight = CALENDAR_HOURS.length * ROW_H;
@@ -482,7 +496,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
               return (
                 <div
                   key={s.id}
-                  className={`flex-1 min-w-[140px] px-2 py-2 border-l border-slate-100/80 transition-colors duration-150 ${colBg} ${isDropTarget ? '!bg-blue-100/60' : ''}`}
+                  className={`flex-1 min-w-[140px] px-2 py-2 border-l border-slate-100/80 transition-colors duration-150 ${colBg} ${isDropTarget ? (drag?.isValidDrop ? '!bg-blue-100/60' : '!bg-red-100/60') : ''}`}
                 >
                   <div className="flex items-center gap-1.5">
                     <StaffAvatar
@@ -527,7 +541,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                   <div
                     key={s.id}
                     ref={(el) => { if (el) columnRefs.current.set(s.id, el); }}
-                    className={`flex-1 min-w-[140px] relative border-l border-slate-100/80 transition-colors duration-150 ${isDropTarget ? 'bg-blue-50/30' : ''}`}
+                    className={`flex-1 min-w-[140px] relative border-l border-slate-100/80 transition-colors duration-150 ${isDropTarget ? (drag?.isValidDrop ? 'bg-blue-50/30' : 'bg-red-50/30') : ''}`}
                     style={{ height: totalHeight }}
                   >
                     {CALENDAR_HOURS.map((hour, i) => (
@@ -546,14 +560,21 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                     {/* Ghost drop preview */}
                     {isDropTarget && ghostInfo && (
                       <div
-                        className="absolute left-1.5 right-1.5 rounded-lg border-2 border-dashed border-blue-400 bg-blue-100/40 z-30 pointer-events-none flex items-center justify-center"
+                        className={`absolute left-1.5 right-1.5 rounded-lg border-2 border-dashed z-30 pointer-events-none flex items-center justify-center ${
+                          ghostInfo.isValid
+                            ? 'border-blue-400 bg-blue-100/40'
+                            : 'border-red-400 bg-red-100/40'
+                        }`}
                         style={{
                           top: ghostInfo.topPx + 1,
                           height: Math.max((drag!.appointment.durationMinutes / 60) * ROW_H - 2, 20),
                         }}
                       >
-                        <span className="text-[10px] font-semibold text-blue-600 tabular-nums">
-                          {ghostInfo.timeLabel} – {ghostInfo.endLabel}
+                        <span className={`text-[10px] font-semibold tabular-nums ${ghostInfo.isValid ? 'text-blue-600' : 'text-red-600'}`}>
+                          {ghostInfo.isValid
+                            ? `${ghostInfo.timeLabel} – ${ghostInfo.endLabel}`
+                            : 'Non qualifié(e)'
+                          }
                         </span>
                       </div>
                     )}
