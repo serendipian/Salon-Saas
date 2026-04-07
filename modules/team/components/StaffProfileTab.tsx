@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Pencil, Save, X, Check, ChevronDown, ChevronRight, AlertTriangle, Users, Loader2, Activity, Clock } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Pencil, Save, X, Check, ChevronDown, ChevronRight, AlertTriangle, Users, Loader2, Activity, Clock, Camera, User } from 'lucide-react';
 import { StaffMember, WorkSchedule } from '../../../types';
 import { Input, Select, TextArea } from '../../../components/FormElements';
 import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
@@ -8,6 +8,7 @@ import { useServices } from '../../services/hooks/useServices';
 import { useStaffClients } from '../hooks/useStaffClients';
 import { useStaffActivity } from '../hooks/useStaffActivity';
 import { formatPrice } from '../../../lib/format';
+import { useStaffPhotoUpload } from '../hooks/useStaffPhotoUpload';
 
 interface StaffProfileTabProps {
   staff: StaffMember;
@@ -115,6 +116,18 @@ export const StaffProfileTab: React.FC<StaffProfileTabProps> = ({
   const [piiLoading, setPiiLoading] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [dangerOpen, setDangerOpen] = useState(false);
+  const { uploadPhoto, isUploading: isUploadingPhoto } = useStaffPhotoUpload();
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [localPhotoUrl, setLocalPhotoUrl] = useState<string | undefined>(undefined);
+  const displayPhoto = localPhotoUrl ?? staff.photoUrl;
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = await uploadPhoto(staff.id, file);
+    if (url) setLocalPhotoUrl(url);
+    e.target.value = '';
+  };
 
   const canSeePii = role === 'owner' || role === 'manager';
 
@@ -212,6 +225,44 @@ export const StaffProfileTab: React.FC<StaffProfileTabProps> = ({
           onCancel={cancelEdit}
           isSaving={isSaving}
         />
+
+        {/* Photo upload (always visible) */}
+        <div className="flex items-center gap-4 mb-5">
+          <div
+            className="w-16 h-16 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center relative overflow-hidden group cursor-pointer shrink-0"
+            onClick={() => photoInputRef.current?.click()}
+          >
+            {displayPhoto ? (
+              <img src={displayPhoto} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <User size={24} className="text-slate-400" />
+            )}
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              {isUploadingPhoto ? (
+                <Loader2 className="text-white animate-spin" size={18} />
+              ) : (
+                <Camera className="text-white" size={18} />
+              )}
+            </div>
+          </div>
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handlePhotoChange}
+          />
+          <div>
+            <div className="text-sm font-medium text-slate-800">{staff.firstName} {staff.lastName}</div>
+            <button
+              type="button"
+              onClick={() => photoInputRef.current?.click()}
+              className="text-xs text-blue-600 hover:text-blue-700 font-medium mt-0.5"
+            >
+              {displayPhoto ? 'Changer la photo' : 'Ajouter une photo'}
+            </button>
+          </div>
+        </div>
 
         {editing === 'personal' ? (
           <div className="space-y-4">

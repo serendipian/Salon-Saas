@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Save, User, Camera, Check, CreditCard, FileText, HeartPulse } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ArrowLeft, Save, User, Camera, Check, CreditCard, FileText, HeartPulse, Loader2 } from 'lucide-react';
 import { StaffMember, WorkSchedule } from '../../../types';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { PhoneInput } from '../../../components/PhoneInput';
@@ -10,6 +10,7 @@ import { useServices } from '../../services/hooks/useServices';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import { staffMemberSchema } from '../schemas';
+import { useStaffPhotoUpload } from '../hooks/useStaffPhotoUpload';
 
 interface TeamFormProps {
   existingMember?: StaffMember;
@@ -41,6 +42,8 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
   const { serviceCategories } = useServices();
   const { salonSettings } = useSettings();
   const { errors, validate, clearFieldError } = useFormValidation(staffMemberSchema);
+  const { uploadPhoto, isUploading: isUploadingPhoto } = useStaffPhotoUpload();
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<StaffMember>(existingMember || {
     id: '',
@@ -79,11 +82,28 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
       const hasSkill = prev.skills.includes(categoryId);
       return {
         ...prev,
-        skills: hasSkill 
+        skills: hasSkill
           ? prev.skills.filter(id => id !== categoryId)
           : [...prev.skills, categoryId]
       };
     });
+  };
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // For existing members, upload immediately
+    if (existingMember?.id) {
+      const url = await uploadPhoto(existingMember.id, file);
+      if (url) setFormData(prev => ({ ...prev, photoUrl: url }));
+    } else {
+      // For new members, show preview — actual upload happens after save
+      const reader = new FileReader();
+      reader.onload = () => setFormData(prev => ({ ...prev, photoUrl: reader.result as string }));
+      reader.readAsDataURL(file);
+    }
+    // Reset input so same file can be selected again
+    e.target.value = '';
   };
 
   return (
@@ -106,16 +126,31 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
            <Section title="Informations Personnelles">
               <div className="flex flex-col sm:flex-row gap-6 mb-6">
                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-24 h-24 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center relative overflow-hidden group">
+                    <div
+                      className="w-24 h-24 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center relative overflow-hidden group cursor-pointer"
+                      onClick={() => photoInputRef.current?.click()}
+                    >
                        {formData.photoUrl ? (
                          <img src={formData.photoUrl} alt="" className="w-full h-full object-cover" />
                        ) : (
                          <User size={32} className="text-slate-400" />
                        )}
-                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                          <Camera className="text-white" size={24} />
+                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          {isUploadingPhoto ? (
+                            <Loader2 className="text-white animate-spin" size={24} />
+                          ) : (
+                            <Camera className="text-white" size={24} />
+                          )}
                        </div>
                     </div>
+                    <input
+                      ref={photoInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handlePhotoChange}
+                    />
+                    <span className="text-[10px] text-slate-400">Cliquer pour changer</span>
                  </div>
                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input
