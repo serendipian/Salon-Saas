@@ -164,16 +164,17 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
             w-full bg-white border-y text-sm shadow-sm transition-all min-h-[44px]
             focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none
             pl-3 pr-3 py-2.5
+            rounded-r-lg lg:rounded-r-none border-r lg:border-r-0
             ${error ? 'border-red-300 focus:ring-red-500' : 'border-slate-300'}
             disabled:bg-slate-50 disabled:text-slate-500
           `}
         />
 
-        {/* Numpad toggle button */}
+        {/* Numpad toggle button — desktop only (mobile/tablet use native keyboard) */}
         <button
           type="button"
           onClick={() => { setShowNumpad(!showNumpad); setIsOpen(false); }}
-          className={`flex items-center justify-center border border-l-0 border-slate-300 rounded-r-lg px-2.5 min-h-[44px] transition-colors select-none shrink-0 ${
+          className={`hidden lg:flex items-center justify-center border border-l-0 border-slate-300 rounded-r-lg px-2.5 min-h-[44px] transition-colors select-none shrink-0 ${
             showNumpad
               ? 'bg-slate-900 text-white'
               : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
