@@ -41,8 +41,16 @@ export const StaffDetailPage: React.FC = () => {
   const staffSlug = slug ?? '';
   const { staff, isLoading, isArchived, updateSection, isUpdating, archive, restore, loadPii } = useStaffDetail(staffSlug);
   const { invitation, createInvitation, cancelInvitation, isCancelling } = useInvitation(staff?.id ?? '');
-  const { transactions } = useTransactions();
   const { allAppointments } = useAppointments();
+
+  const monthRange = useMemo(() => {
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+    return { from: monthStart.toISOString(), to: new Date().toISOString() };
+  }, []);
+
+  const { transactions } = useTransactions(monthRange);
   const { salonSettings } = useSettings();
 
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
@@ -54,7 +62,6 @@ export const StaffDetailPage: React.FC = () => {
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
     const revenue = (transactions || [])
-      .filter((t: any) => new Date(t.date) >= monthStart)
       .reduce((sum: number, t: any) => {
         return sum + (t.items || [])
           .filter((i: any) => i.staffId === staff.id)
