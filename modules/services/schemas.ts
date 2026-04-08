@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const serviceVariantSchema = z.object({
+  id: z.string().optional(),
   name: z.string().min(1, 'Le nom de la variante est requis'),
   durationMinutes: z.number().gt(0, 'La durée doit être supérieure à 0'),
   price: z.number().min(0, 'Le prix doit être positif'),
