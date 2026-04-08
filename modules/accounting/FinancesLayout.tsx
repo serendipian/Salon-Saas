@@ -15,6 +15,7 @@ export const FinancesLayout: React.FC = () => {
   if (path.includes('/revenus')) { pageTitle = 'Revenus'; pageSubtitle = 'Analyse des revenus par service et produit'; }
   else if (path.includes('/depenses')) { pageTitle = 'Dépenses'; pageSubtitle = 'Suivi des dépenses courantes et récurrentes'; }
   else if (path.includes('/journal')) { pageTitle = 'Journal'; pageSubtitle = 'Historique complet des écritures'; }
+  else if (path.includes('/annulations')) { pageTitle = 'Annulations & Remboursements'; pageSubtitle = 'Suivi des annulations et remboursements'; }
 
   return (
     <div className="w-full relative">

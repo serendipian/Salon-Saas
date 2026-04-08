@@ -347,6 +347,7 @@ export interface CartItem {
   note?: string; // Reason for discount or modification
   staffId?: string;
   staffName?: string;
+  originalItemId?: string;
 }
 
 export interface PaymentEntry {
@@ -365,6 +366,10 @@ export interface Transaction {
   appointmentId?: string;
   items: CartItem[];
   payments: PaymentEntry[];
+  type: 'SALE' | 'VOID' | 'REFUND';
+  originalTransactionId?: string;
+  reasonCategory?: string;
+  reasonNote?: string;
 }
 
 // Accounting Domain

@@ -132,9 +132,10 @@ export const DashboardModule: React.FC = () => {
   const stats = useMemo(() => {
     // Current Metrics
     const revenue = data.current.transactions.reduce((sum, t) => sum + t.total, 0);
+    const saleCount = data.current.transactions.filter(t => t.type === 'SALE').length;
     const totalAppts = data.current.appointments.length;
     const newClientsCount = data.current.newClients.length;
-    const avgBasket = data.current.transactions.length > 0 ? revenue / data.current.transactions.length : 0;
+    const avgBasket = saleCount > 0 ? revenue / saleCount : 0;
 
     // Cancellation rate (cancelled + no-show vs total booked)
     const cancelledAppts = data.current.appointments.filter(
@@ -144,9 +145,10 @@ export const DashboardModule: React.FC = () => {
 
     // Previous Metrics
     const prevRevenue = data.previous.transactions.reduce((sum, t) => sum + t.total, 0);
+    const prevSaleCount = data.previous.transactions.filter(t => t.type === 'SALE').length;
     const prevAppts = data.previous.appointments.length;
     const prevClientsCount = data.previous.newClients.length;
-    const prevAvgBasket = data.previous.transactions.length > 0 ? prevRevenue / data.previous.transactions.length : 0;
+    const prevAvgBasket = prevSaleCount > 0 ? prevRevenue / prevSaleCount : 0;
 
     const prevCancelledAppts = data.previous.appointments.filter(
       a => a.status === AppointmentStatus.CANCELLED || a.status === AppointmentStatus.NO_SHOW

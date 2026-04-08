@@ -16,6 +16,7 @@ export interface TransactionItemRow {
   note: string | null;
   staff_id: string | null;
   staff_name: string | null;
+  original_item_id: string | null;
 }
 
 export interface TransactionPaymentRow {
@@ -34,6 +35,10 @@ export interface TransactionRow {
   notes: string | null;
   created_at: string;
   created_by: string | null;
+  type: string;
+  original_transaction_id: string | null;
+  reason_category: string | null;
+  reason_note: string | null;
   transaction_items: TransactionItemRow[];
   transaction_payments: TransactionPaymentRow[];
   clients: { first_name: string; last_name: string } | null;
@@ -59,6 +64,7 @@ export function toTransaction(row: TransactionRow): Transaction {
     note: item.note ?? undefined,
     staffId: item.staff_id ?? undefined,
     staffName: item.staff_name ?? undefined,
+    originalItemId: item.original_item_id ?? undefined,
   }));
 
   // Map DB constants back to French labels for display
@@ -86,6 +92,10 @@ export function toTransaction(row: TransactionRow): Transaction {
     appointmentId: row.appointment_id ?? undefined,
     items,
     payments,
+    type: (row.type as 'SALE' | 'VOID' | 'REFUND') ?? 'SALE',
+    originalTransactionId: row.original_transaction_id ?? undefined,
+    reasonCategory: row.reason_category ?? undefined,
+    reasonNote: row.reason_note ?? undefined,
   };
 }
 
@@ -137,4 +147,38 @@ export function toTransactionRpcPayload(
     p_items,
     p_payments,
   };
+}
+
+// --- Transaction status helpers ---
+
+export type TransactionStatus = 'active' | 'voided' | 'partially_refunded' | 'fully_refunded';
+
+export function getTransactionStatus(
+  transaction: Transaction,
+  allTransactions: Transaction[]
+): TransactionStatus {
+  if (transaction.type !== 'SALE') return 'active';
+
+  const relatedVoid = allTransactions.find(
+    t => t.type === 'VOID' && t.originalTransactionId === transaction.id
+  );
+  if (relatedVoid) return 'voided';
+
+  const refunds = allTransactions.filter(
+    t => t.type === 'REFUND' && t.originalTransactionId === transaction.id
+  );
+  if (refunds.length === 0) return 'active';
+
+  const totalRefunded = refunds.reduce((sum, r) => sum + Math.abs(r.total), 0);
+  if (totalRefunded >= transaction.total - 0.01) return 'fully_refunded';
+  return 'partially_refunded';
+}
+
+export function getRefundedAmount(
+  transactionId: string,
+  allTransactions: Transaction[]
+): number {
+  return allTransactions
+    .filter(t => t.type === 'REFUND' && t.originalTransactionId === transactionId)
+    .reduce((sum, r) => sum + Math.abs(r.total), 0);
 }

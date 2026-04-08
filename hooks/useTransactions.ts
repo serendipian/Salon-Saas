@@ -74,12 +74,87 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
     onError: toastOnError("Impossible de créer la transaction"),
   });
 
+  const voidMutation = useMutation({
+    mutationFn: async ({
+      transactionId,
+      reasonCategory,
+      reasonNote,
+    }: {
+      transactionId: string;
+      reasonCategory: string;
+      reasonNote: string;
+    }) => {
+      const { error } = await supabase.rpc('void_transaction', {
+        p_transaction_id: transactionId,
+        p_salon_id: salonId,
+        p_reason_category: reasonCategory,
+        p_reason_note: reasonNote,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions', salonId] });
+      queryClient.invalidateQueries({ queryKey: ['products', salonId] });
+    },
+    onError: toastOnError("Impossible d'annuler la transaction"),
+  });
+
+  const refundMutation = useMutation({
+    mutationFn: async ({
+      transactionId,
+      items,
+      payments,
+      reasonCategory,
+      reasonNote,
+      restock,
+    }: {
+      transactionId: string;
+      items: { original_item_id: string | null; quantity: number; price_override?: number; price?: number; name?: string }[];
+      payments: { method: string; amount: number }[];
+      reasonCategory: string;
+      reasonNote: string;
+      restock: boolean;
+    }) => {
+      const { error } = await supabase.rpc('refund_transaction', {
+        p_transaction_id: transactionId,
+        p_salon_id: salonId,
+        p_items: items,
+        p_payments: payments,
+        p_reason_category: reasonCategory,
+        p_reason_note: reasonNote,
+        p_restock: restock,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions', salonId] });
+      queryClient.invalidateQueries({ queryKey: ['products', salonId] });
+    },
+    onError: toastOnError('Impossible de rembourser la transaction'),
+  });
+
   const addTransaction = (items: CartItem[], payments: PaymentEntry[], clientId?: string, appointmentId?: string) =>
     addTransactionMutation.mutateAsync({ items, payments, clientId, appointmentId });
+
+  const voidTransaction = (transactionId: string, reasonCategory: string, reasonNote: string) =>
+    voidMutation.mutateAsync({ transactionId, reasonCategory, reasonNote });
+
+  const refundTransaction = (
+    transactionId: string,
+    items: { original_item_id: string | null; quantity: number; price_override?: number; price?: number; name?: string }[],
+    payments: { method: string; amount: number }[],
+    reasonCategory: string,
+    reasonNote: string,
+    restock: boolean
+  ) => refundMutation.mutateAsync({ transactionId, items, payments, reasonCategory, reasonNote, restock });
 
   return {
     transactions,
     isLoading,
     addTransaction,
+    voidTransaction,
+    refundTransaction,
+    isVoiding: voidMutation.isPending,
+    isRefunding: refundMutation.isPending,
   };
 };
