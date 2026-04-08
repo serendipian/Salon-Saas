@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Clock } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
@@ -17,7 +18,8 @@ const DEFAULT_SCHEDULE: WorkSchedule = {
   sunday: { isOpen: false, start: '09:00', end: '18:00' },
 };
 
-export const OpeningHoursSettings: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+export const OpeningHoursSettings: React.FC = () => {
+  const navigate = useNavigate();
   const { salonSettings, updateSalonSettings } = useSettings();
   const [schedule, setSchedule] = useState<WorkSchedule>(salonSettings.schedule || DEFAULT_SCHEDULE);
 
@@ -26,7 +28,7 @@ export const OpeningHoursSettings: React.FC<{ onBack: () => void }> = ({ onBack 
   const handleSave = async () => {
     try {
       await updateSalonSettings({ ...salonSettings, schedule });
-      onBack();
+      navigate('/settings');
     } catch {
       // Error toast handled by mutation's onError
     }
@@ -35,7 +37,7 @@ export const OpeningHoursSettings: React.FC<{ onBack: () => void }> = ({ onBack 
   return (
     <div className="flex flex-col h-full animate-in slide-in-from-right-8 duration-300 w-full">
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={onBack} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
+        <button onClick={() => navigate('/settings')} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-xl font-bold text-slate-900">Horaires d'ouverture</h1>

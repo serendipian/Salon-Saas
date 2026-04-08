@@ -96,8 +96,8 @@ Deno.serve(async (req) => {
       mode: 'subscription',
       customer: customerId,
       line_items: [{ price: plan.stripe_price_id_monthly, quantity: 1 }],
-      success_url: `${appUrl}/settings?section=billing&success=true&plan=${encodeURIComponent(plan.name)}`,
-      cancel_url: `${appUrl}/settings?section=billing`,
+      success_url: `${appUrl}/settings/billing?success=true&plan=${encodeURIComponent(plan.name)}`,
+      cancel_url: `${appUrl}/settings/billing`,
       metadata: { salon_id },
     });
 

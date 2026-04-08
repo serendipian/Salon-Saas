@@ -54,6 +54,13 @@ import { AppointmentEditPage } from './modules/appointments/pages/AppointmentEdi
 import { AppointmentNewPage } from './modules/appointments/pages/AppointmentNewPage';
 import { SuppliersModule } from './modules/suppliers/SuppliersModule';
 import { SettingsModule } from './modules/settings/SettingsModule';
+import { SettingsIndexPage } from './modules/settings/pages/SettingsIndexPage';
+import { SettingsPlaceholderPage } from './modules/settings/pages/SettingsPlaceholderPage';
+import { GeneralSettings } from './modules/settings/components/GeneralSettings';
+import { AccountingSettings } from './modules/settings/components/AccountingSettings';
+import { OpeningHoursSettings } from './modules/settings/components/OpeningHoursSettings';
+import { TeamPermissionsSettings } from './modules/settings/components/TeamPermissionsSettings';
+import { BillingModule } from './modules/billing/BillingModule';
 import { POSModule } from './modules/pos/POSModule';
 import { FinancesLayout } from './modules/accounting/FinancesLayout';
 import { FinancesOverview } from './modules/accounting/components/FinancesOverview';
@@ -129,7 +136,15 @@ const AppContent = () => {
           <ProtectedRoute action="view" resource="settings">
             <ErrorBoundary moduleName="Paramètres"><SettingsModule /></ErrorBoundary>
           </ProtectedRoute>
-        } />
+        }>
+          <Route index element={<SettingsIndexPage />} />
+          <Route path="general" element={<GeneralSettings />} />
+          <Route path="billing" element={<BillingModule />} />
+          <Route path="schedule" element={<OpeningHoursSettings />} />
+          <Route path="accounting" element={<AccountingSettings />} />
+          <Route path="team" element={<TeamPermissionsSettings />} />
+          <Route path=":section" element={<SettingsPlaceholderPage />} />
+        </Route>
         <Route path="/pos" element={
           <ProtectedRoute action="view" resource="pos">
             <ErrorBoundary moduleName="Caisse"><POSModule /></ErrorBoundary>

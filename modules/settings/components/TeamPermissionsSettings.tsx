@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Users, Mail } from 'lucide-react';
 import { useTeamSettings } from '../hooks/useTeamSettings';
 import { MembersTab } from './MembersTab';
@@ -12,7 +13,8 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]['id'];
 
-export const TeamPermissionsSettings: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+export const TeamPermissionsSettings: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>('members');
   const {
     members, invitations, membersLoading, invitationsLoading,
@@ -29,7 +31,7 @@ export const TeamPermissionsSettings: React.FC<{ onBack: () => void }> = ({ onBa
   return (
     <div className="flex flex-col h-full animate-in slide-in-from-right-8 duration-300 w-full">
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={onBack} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
+        <button onClick={() => navigate('/settings')} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-xl font-bold text-slate-900">Équipe & Permissions</h1>

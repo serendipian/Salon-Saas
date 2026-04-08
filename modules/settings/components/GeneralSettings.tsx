@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Store, Camera, Loader2 } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 import { Section, Input, Select } from '../../../components/FormElements';
@@ -10,7 +11,8 @@ import { useToast } from '../../../context/ToastContext';
 const MAX_LOGO_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-export const GeneralSettings: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+export const GeneralSettings: React.FC = () => {
+  const navigate = useNavigate();
   const { salonSettings, updateSalonSettings } = useSettings();
   const { activeSalon, refreshActiveSalon } = useAuth();
   const { addToast } = useToast();
@@ -29,7 +31,7 @@ export const GeneralSettings: React.FC<{ onBack: () => void }> = ({ onBack }) =>
     setIsSaving(true);
     try {
       await updateSalonSettings(formData);
-      onBack();
+      navigate('/settings');
     } catch {
       // Error toast handled by mutation's onError
     } finally {
@@ -87,7 +89,7 @@ export const GeneralSettings: React.FC<{ onBack: () => void }> = ({ onBack }) =>
   return (
     <div className="flex flex-col h-full animate-in slide-in-from-right-8 duration-300 w-full">
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={onBack} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
+        <button onClick={() => navigate('/settings')} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-xl font-bold text-slate-900">Paramètres Généraux</h1>

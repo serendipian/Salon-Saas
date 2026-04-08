@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useBilling } from './hooks/useBilling';
@@ -13,11 +13,8 @@ import { StripePortalSection } from './components/StripePortalSection';
 import { UpgradeModal } from './components/UpgradeModal';
 import { UpgradeSuccess } from './components/UpgradeSuccess';
 
-interface BillingModuleProps {
-  onBack: () => void;
-}
-
-export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
+export const BillingModule: React.FC = () => {
+  const navigate = useNavigate();
   const { activeSalon } = useAuth();
   const [searchParams] = useSearchParams();
   const isSuccess = searchParams.get('success') === 'true';
@@ -96,7 +93,7 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ onBack }) => {
 
       {/* Back + title */}
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
+        <button onClick={() => navigate('/settings')} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
           <ArrowLeft size={20} />
         </button>
         <div>

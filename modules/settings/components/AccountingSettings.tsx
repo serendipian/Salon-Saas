@@ -1,10 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calculator, Users, ArrowLeft, Trash2 } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 import { Input } from '../../../components/FormElements';
 
-export const AccountingSettings: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+export const AccountingSettings: React.FC = () => {
+  const navigate = useNavigate();
   const {
     expenseCategories,
     updateExpenseCategories,
@@ -47,7 +49,7 @@ export const AccountingSettings: React.FC<{ onBack: () => void }> = ({ onBack })
   return (
     <div className="flex flex-col h-full animate-in slide-in-from-right-8 duration-300 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="p-4 border-b border-slate-200 flex items-center gap-4 bg-white">
-        <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
+        <button onClick={() => navigate('/settings')} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
           <ArrowLeft size={20} />
         </button>
         <div>
