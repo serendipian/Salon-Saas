@@ -87,7 +87,7 @@ export const useProducts = () => {
   // Update product
   const updateProductMutation = useMutation({
     mutationFn: async ({ product, supplierId }: { product: Product; supplierId?: string | null }) => {
-      const { id, salon_id, ...updateData } = toProductInsert(product, salonId, supplierId);
+      const { salon_id, ...updateData } = toProductInsert(product, salonId, supplierId);
       const { error } = await supabase
         .from('products')
         .update(updateData)

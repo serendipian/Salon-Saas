@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useTransactions } from '../../../hooks/useTransactions';
+import { useAuth } from '../../../context/AuthContext';
 import type { StaffMember, DateRange, Transaction, CartItem } from '../../../types';
 import { countWorkingDays, calcBonus } from '../utils';
 
@@ -23,6 +24,8 @@ export const useTeamPerformance = (staff: StaffMember[]): {
   isLoadingPii: boolean;
 } => {
   const { transactions } = useTransactions();
+  const { activeSalon } = useAuth();
+  const salonId = activeSalon?.id ?? '';
 
   const [dateRange, setDateRange] = useState<DateRange>(() => {
     const today = new Date();
@@ -56,7 +59,7 @@ export const useTeamPerformance = (staff: StaffMember[]): {
   const staffIds = useMemo(() => staff.map(m => m.id), [staff]);
 
   const { data: piiMap = new Map<string, number | null>(), isLoading: isLoadingPii } = useQuery({
-    queryKey: ['staff_pii_batch', staffIds],
+    queryKey: ['staff_pii_batch', salonId, staffIds],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_staff_pii_batch', { p_staff_ids: staffIds });
       const map = new Map<string, number | null>();

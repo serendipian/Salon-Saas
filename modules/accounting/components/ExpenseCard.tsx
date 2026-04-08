@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Trash2, Tag } from 'lucide-react';
+import { Tag } from 'lucide-react';
 import { Expense } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
@@ -36,9 +36,6 @@ export const ExpenseCard: React.FC<{ expenses: Expense[] }> = ({ expenses }) => 
                 <p className="font-bold text-slate-800 text-sm truncate">{exp.description}</p>
                 <p className="text-xs text-slate-500 mt-0.5">{new Date(exp.date).toLocaleDateString()}</p>
               </div>
-              <button className="p-2 text-slate-300 hover:text-red-600 transition-colors sm:opacity-100 opacity-0 group-hover:opacity-100 shrink-0">
-                <Trash2 size={16} />
-              </button>
             </div>
 
             {exp.supplier && (

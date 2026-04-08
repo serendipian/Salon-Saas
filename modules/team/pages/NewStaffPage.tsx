@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { TeamForm } from '../components/TeamForm';
 import { useTeam } from '../hooks/useTeam';
+import { useToast } from '../../../context/ToastContext';
 import type { StaffMember } from '../../../types';
 
 export const NewStaffPage: React.FC = () => {
   const navigate = useNavigate();
   const { addStaffMember } = useTeam();
+  const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSave = async (member: StaffMember) => {
@@ -16,6 +18,9 @@ export const NewStaffPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       const result = await addStaffMember(member);
+      if (result?.piiError) {
+        addToast({ type: 'warning', message: 'Membre créé, mais les données sensibles (salaire, IBAN) n\'ont pas pu être enregistrées. Veuillez les saisir dans l\'onglet Profil.' });
+      }
       if (result?.slug) {
         navigate(`/team/${result.slug}`);
       } else if (result?.id) {

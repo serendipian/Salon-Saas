@@ -241,6 +241,7 @@ const StaffServiceTable: React.FC<{ data: StaffServiceRow[]; totalRevenue: numbe
             <th className="px-4 py-3 text-right">Prestations</th>
             <th className="px-4 py-3 text-right">CA</th>
             <th className="px-4 py-3 text-right">% du CA</th>
+            <th className="px-4 py-3 text-right">Commission</th>
             <th className="px-4 py-3 text-right">Bonus</th>
             <th className="px-4 py-3 text-right">Panier Moyen</th>
           </tr>
@@ -273,6 +274,9 @@ const StaffServiceTable: React.FC<{ data: StaffServiceRow[]; totalRevenue: numbe
                   <td className="px-4 py-3 text-right font-medium text-slate-900">{formatPrice(row.revenue)}</td>
                   <td className="px-4 py-3 text-right text-slate-500">{row.percent.toFixed(1)}%</td>
                   <td className="px-4 py-3 text-right text-slate-600">
+                    {row.commission > 0 ? formatPrice(row.commission) : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-right text-slate-600">
                     {row.bonus > 0 ? formatPrice(row.bonus) : '—'}
                   </td>
                   <td className="px-4 py-3 text-right text-slate-600">{formatPrice(row.avgBasket)}</td>
@@ -289,6 +293,7 @@ const StaffServiceTable: React.FC<{ data: StaffServiceRow[]; totalRevenue: numbe
                     <td className="px-4 py-2 text-right text-slate-400">
                       {totalRevenue > 0 ? ((svc.revenue / totalRevenue) * 100).toFixed(1) : '0.0'}%
                     </td>
+                    <td className="px-4 py-2"></td>
                     <td className="px-4 py-2"></td>
                     <td className="px-4 py-2"></td>
                   </tr>

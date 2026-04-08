@@ -70,7 +70,7 @@ export const AcceptInvitationPage: React.FC = () => {
     if (!authLoading) {
       fetchInfo();
     }
-  }, [token, authLoading]);
+  }, [token, authLoading, isAuthenticated, user]);
 
   // Accept invitation for already-authenticated users (existing accounts)
   const acceptDirectly = async () => {

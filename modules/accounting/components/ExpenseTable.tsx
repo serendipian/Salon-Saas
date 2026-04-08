@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Trash2, Tag } from 'lucide-react';
+import { Tag } from 'lucide-react';
 import { Expense } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
@@ -53,9 +53,6 @@ export const ExpenseTable: React.FC<{ expenses: Expense[] }> = ({ expenses }) =>
                            {formatPrice(exp.amount)}
                         </td>
                         <td className="px-6 py-4 text-right">
-                           <button className="p-2 text-slate-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100">
-                              <Trash2 size={16} />
-                           </button>
                         </td>
                      </tr>
                   );

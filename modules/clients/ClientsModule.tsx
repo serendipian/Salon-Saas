@@ -2,12 +2,17 @@
 import React, { useState } from 'react';
 import { Client, ViewState } from '../../types';
 import { useClients } from './hooks/useClients';
+import { useAuth } from '../../context/AuthContext';
+import { usePermissions } from '../../hooks/usePermissions';
 import { ClientList } from './components/ClientList';
 import { ClientDetails } from './components/ClientDetails';
 import { ClientForm } from './components/ClientForm';
 
 export const ClientsModule: React.FC = () => {
   const { clients, addClient, updateClient, deleteClient } = useClients();
+  const { role } = useAuth();
+  const permissions = usePermissions(role);
+  const canDelete = permissions.can('delete', 'clients');
   const [view, setView] = useState<ViewState>('LIST');
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
@@ -30,10 +35,14 @@ export const ClientsModule: React.FC = () => {
     // TODO: Navigate to /calendar?clientId=id to pre-select this client
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce client ? Cette action est irréversible.')) {
-      deleteClient(id);
-      setView('LIST');
+      try {
+        await deleteClient(id);
+        setView('LIST');
+      } catch {
+        // Error toast handled by mutation's onError
+      }
     }
   };
 
@@ -58,7 +67,7 @@ export const ClientsModule: React.FC = () => {
           onViewDetails={handleViewDetails}
           onEdit={handleEdit}
           onSchedule={handleSchedule}
-          onDelete={handleDelete}
+          onDelete={canDelete ? handleDelete : undefined}
         />
       )}
       
@@ -67,7 +76,7 @@ export const ClientsModule: React.FC = () => {
           client={selectedClient}
           onBack={() => setView('LIST')}
           onEdit={() => setView('EDIT')}
-          onDelete={() => handleDelete(selectedClient.id)}
+          onDelete={canDelete ? () => handleDelete(selectedClient.id) : undefined}
         />
       )}
 
@@ -76,7 +85,7 @@ export const ClientsModule: React.FC = () => {
           existingClient={view === 'EDIT' ? selectedClient : undefined}
           onSave={handleSave}
           onCancel={() => view === 'EDIT' ? setView('DETAILS') : setView('LIST')}
-          onDelete={view === 'EDIT' && selectedClient ? () => handleDelete(selectedClient.id) : undefined}
+          onDelete={view === 'EDIT' && selectedClient && canDelete ? () => handleDelete(selectedClient.id) : undefined}
         />
       )}
     </div>

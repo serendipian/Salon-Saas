@@ -106,6 +106,6 @@ export const useClients = () => {
     setSearchTerm,
     addClient: (client: Client) => addClientMutation.mutate(client),
     updateClient: (client: Client) => updateClientMutation.mutate(client),
-    deleteClient: (id: string) => deleteClientMutation.mutate(id),
+    deleteClient: (id: string) => deleteClientMutation.mutateAsync(id),
   };
 };

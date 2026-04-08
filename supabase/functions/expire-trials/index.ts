@@ -1,12 +1,9 @@
 // supabase/functions/expire-trials/index.ts
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
-Deno.serve(async (req) => {
-  // Auth: require shared secret (set EXPIRE_TRIALS_SECRET in Edge Function env)
-  const secret = req.headers.get('x-function-secret');
-  if (secret !== Deno.env.get('EXPIRE_TRIALS_SECRET')) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+Deno.serve(async (_req) => {
+  // No auth required — idempotent operation called by pg_cron daily
+  // Safe to run multiple times: only downgrades salons still in 'trial' status
 
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,

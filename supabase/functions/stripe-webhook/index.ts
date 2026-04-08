@@ -185,8 +185,9 @@ Deno.serve(async (req) => {
 
   } catch (err) {
     console.error('Webhook handler error:', err);
-    // Still return 200 so Stripe does not retry for app-level errors
-    return new Response(JSON.stringify({ received: true }), {
+    // Return 500 so Stripe retries on transient failures (network, DB errors)
+    return new Response(JSON.stringify({ error: 'Internal handler error' }), {
+      status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }
