@@ -38,7 +38,14 @@ export const AppointmentCardList: React.FC<AppointmentCardListProps> = ({ appoin
                   {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
-              <StatusBadge status={appt.status} />
+              <div className="flex flex-col items-end gap-1">
+                <StatusBadge status={appt.status} />
+                {appt.deletedAt && (
+                  <span className="text-[10px] text-red-500">
+                    Supprimé le {new Date(appt.deletedAt).toLocaleDateString('fr-FR')}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex flex-col gap-1 mt-3">
               <div className="text-xs text-slate-600 flex items-center gap-1.5">

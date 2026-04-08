@@ -1,14 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppointments } from '../hooks/useAppointments';
 import { useClients } from '../../clients/hooks/useClients';
 import { useServices } from '../../services/hooks/useServices';
 import { useTeam } from '../../team/hooks/useTeam';
+import { useAuth } from '../../../context/AuthContext';
 import { AppointmentList } from '../components/AppointmentList';
 
 export const AppointmentListPage: React.FC = () => {
   const navigate = useNavigate();
+  const { role } = useAuth();
+  const [showDeleted, setShowDeleted] = useState(false);
   const {
     appointments,
     allAppointments,
@@ -18,7 +21,7 @@ export const AppointmentListPage: React.FC = () => {
     setStatusFilter,
     deleteAppointment,
     updateStatus,
-  } = useAppointments();
+  } = useAppointments(showDeleted);
   const { allServices: services, serviceCategories } = useServices();
   const { allStaff: team } = useTeam();
 
@@ -46,6 +49,8 @@ export const AppointmentListPage: React.FC = () => {
       onEdit={(id) => navigate(`/calendar/${id}/edit`)}
       onDelete={handleDelete}
       onStatusChange={(id, status) => updateStatus(id, status)}
+      showDeleted={showDeleted}
+      onToggleDeleted={role === 'owner' ? () => setShowDeleted(!showDeleted) : undefined}
     />
   );
 };

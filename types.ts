@@ -309,6 +309,7 @@ export interface Appointment {
   price: number;
   notes?: string;
   groupId?: string | null;
+  deletedAt?: string | null;
 }
 
 export interface AppointmentGroup {

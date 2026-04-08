@@ -8,7 +8,7 @@ import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useToast } from '../../../context/ToastContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 
-export const useAppointments = () => {
+export const useAppointments = (showDeleted = false) => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
@@ -28,14 +28,18 @@ export const useAppointments = () => {
   useRealtimeSync('appointment_groups');
 
   const { data: appointments = [], isLoading } = useQuery({
-    queryKey: ['appointments', salonId],
+    queryKey: ['appointments', salonId, { showDeleted }],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('appointments')
         .select('*, clients(first_name, last_name), services(name), service_variants(name), staff_members(first_name, last_name)')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null)
-        .order('date', { ascending: false });
+        .eq('salon_id', salonId);
+      if (showDeleted) {
+        query = query.not('deleted_at', 'is', null);
+      } else {
+        query = query.is('deleted_at', null);
+      }
+      const { data, error } = await query.order('date', { ascending: false });
       if (error) throw error;
       return (data ?? []).map(toAppointment);
     },

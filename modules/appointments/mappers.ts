@@ -49,6 +49,7 @@ export function toAppointment(row: AppointmentRow): Appointment {
     price: row.price,
     notes: row.notes ?? undefined,
     groupId: row.group_id ?? null,
+    deletedAt: row.deleted_at ?? null,
   };
 }
 
