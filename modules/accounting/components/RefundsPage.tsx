@@ -18,7 +18,7 @@ const getCategoryLabel = (key: string): string => {
 };
 
 export const RefundsPage: React.FC = () => {
-  const { transactions } = useOutletContext<FinancesOutletContext>();
+  const { filteredTransactions: transactions } = useOutletContext<FinancesOutletContext>();
 
   const { voids, refunds, stats, categoryData } = useMemo(() => {
     const voids = transactions.filter((t: Transaction) => t.type === 'VOID');

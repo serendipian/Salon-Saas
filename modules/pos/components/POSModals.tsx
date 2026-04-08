@@ -393,7 +393,12 @@ export const ReceiptModal: React.FC<{
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
-          <div className="bg-white border border-slate-200 shadow-sm p-6 rounded-lg text-center">
+          <div className="bg-white border border-slate-200 shadow-sm p-6 rounded-lg text-center relative overflow-hidden">
+             {watermark && (
+               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                 <span className="text-5xl font-black text-red-200 -rotate-12 select-none opacity-60">{watermark}</span>
+               </div>
+             )}
              <div className="w-12 h-12 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-xl mx-auto mb-3">
                 {salonSettings.name.charAt(0)}
              </div>
