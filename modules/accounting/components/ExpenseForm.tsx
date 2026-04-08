@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Save, Trash2, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft, Info, Upload, X, Image, FileText, Loader2, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft, Info, Upload, X, Image, FileText, Loader2, CheckCircle2, Home, Users, ShoppingCart, Megaphone, Layers, Zap, Wifi, Shield, Landmark, SprayCan, Wrench, Truck, Calculator, Receipt, Monitor, Armchair, CreditCard as CardIcon, Tag } from 'lucide-react';
 import { Expense, ExpenseCategory, PaymentMethod } from '../../../types';
 import { Section, Input, Select } from '../../../components/FormElements';
 import { useSettings } from '../../settings/hooks/useSettings';
@@ -10,6 +10,29 @@ import { expenseSchema } from '../schemas';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
+
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  'loyer': <Home size={14} />,
+  'salaires': <Users size={14} />,
+  'stock': <ShoppingCart size={14} />,
+  'marketing': <Megaphone size={14} />,
+  'divers': <Layers size={14} />,
+  'charges & énergie': <Zap size={14} />,
+  'communication': <Wifi size={14} />,
+  'assurances': <Shield size={14} />,
+  'crédits': <Landmark size={14} />,
+  'nettoyage': <SprayCan size={14} />,
+  'réparations': <Wrench size={14} />,
+  'transport': <Truck size={14} />,
+  'comptabilité': <Calculator size={14} />,
+  'impôts & taxes': <Receipt size={14} />,
+  'équipements': <Monitor size={14} />,
+  'mobilier': <Armchair size={14} />,
+  'abonnements': <CardIcon size={14} />,
+};
+
+const getCategoryIcon = (name: string) =>
+  CATEGORY_ICONS[name.toLowerCase()] || <Tag size={14} />;
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
@@ -265,18 +288,30 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
         <div className="lg:col-span-1 space-y-6">
            {/* Category & Beneficiary */}
            <Section title="Catégorie & Bénéficiaire">
-              <Select
-                 label="Catégorie"
-                 value={formData.category}
-                 onChange={handleCategoryChange}
-                 error={errors.category}
-                 required
-                 options={expenseCategories.map((cat) => ({
-                    value: cat.id,
-                    label: cat.name,
-                    initials: cat.name.substring(0,2).toUpperCase()
-                 }))}
-              />
+              <div>
+                 <label className="block text-sm font-medium text-slate-700 mb-2">Catégorie <span className="text-red-500">*</span></label>
+                 <div className="flex flex-wrap gap-1.5">
+                    {expenseCategories.map((cat) => {
+                       const isSelected = formData.category === cat.id;
+                       return (
+                          <button
+                             key={cat.id}
+                             type="button"
+                             onClick={() => handleCategoryChange(cat.id)}
+                             className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                                isSelected
+                                   ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
+                                   : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                             }`}
+                          >
+                             {getCategoryIcon(cat.name)}
+                             {cat.name}
+                          </button>
+                       );
+                    })}
+                 </div>
+                 {errors.category && <p className="text-xs text-red-500 mt-1.5">{errors.category}</p>}
+              </div>
 
               <Select
                  label="Bénéficiaire"
