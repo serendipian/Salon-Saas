@@ -269,7 +269,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, on
                    <img src={preferredStaff.photoUrl} className="w-8 h-8 rounded-full object-cover" alt="" />
                  ) : (
                    <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
-                     {preferredStaff.firstName[0]}{preferredStaff.lastName[0]}
+                     {preferredStaff.firstName?.[0]}{preferredStaff.lastName?.[0]}
                    </div>
                  )}
                  <div>

@@ -1,7 +1,23 @@
 # Codebase Audit — Remaining Items
 
-> Generated 2026-04-08 after full audit session. All critical (12) and most high (27/31) issues were fixed.
-> These items are organized by priority for future focused sessions.
+> Generated 2026-04-08 after full audit session. All critical (12) and high (31/31) issues are fixed.
+> MEDIUM items are organized into themed batches for focused sessions.
+
+---
+
+## Batching Plan for MEDIUM Items
+
+Work through one batch per session. Start each session with:
+"Fix MEDIUM batch N from `docs/superpowers/audit-remaining-items.md`"
+
+| Batch | Theme | Items | Effort |
+|---|---|---|---|
+| **1** | Quick cross-cutting fixes | Loading states (4 modules), NaN on empty input (7 files), double-submit guard (ExpenseForm) | ~5 min each |
+| **2** | Non-functional buttons | Remove or implement 6 dead buttons across modules | ~3 min each |
+| **3** | Accounting fixes | Chart key collisions, weekly expense omission, VAT caveat, expense category mapping, ExpenseForm cleanup, calcTrend export | ~10 min each |
+| **4** | Team constants + photo | Extract CONTRACT_LABELS/COLORS 3x duplication, StaffHeader photo rendering, PayoutForm date validation, useStaffCompensation `any` types | ~5 min each |
+| **5** | DRY refactors | CategoriesTab duplication (Services vs Products), settings pages duplication | ~30 min |
+| **6** | Remaining misc | Billing (stripe-webhook trial_ends_at, UpgradeModal hardcode, PlanCards trial button, TrialBanner fallback), Auth (ResetPasswordPage access), Shared (MediaQueryContext, PhoneInput, DateRangePicker, ClientForm, ClientDetails guard, client schemas, window.confirm) | ~5 min each |
 
 ---
 
