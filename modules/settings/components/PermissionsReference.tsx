@@ -33,7 +33,7 @@ interface ModulePermissions {
   access: Record<string, { allowed: boolean; scope?: string }[]>;
 }
 
-// Build the full permission data from usePermissions.ts matrix
+// Actual permissions verified against UI implementation (2026-04-08 audit)
 const MODULES: ModulePermissions[] = [
   {
     key: 'dashboard', label: 'Tableau de bord',
@@ -97,32 +97,32 @@ const MODULES: ModulePermissions[] = [
   },
   {
     key: 'team', label: 'Équipe',
-    actions: ['view', 'create', 'edit', 'delete', 'manage'],
+    actions: ['view', 'create', 'edit', 'manage'],
     access: {
-      owner:        [{ allowed: true }, { allowed: true }, { allowed: true }, { allowed: true }, { allowed: true }],
-      manager:      [{ allowed: true }, { allowed: true }, { allowed: true }, { allowed: true }, { allowed: true }],
-      stylist:      [{ allowed: true, scope: 'Son profil' }, { allowed: false }, { allowed: true, scope: 'Son profil' }, { allowed: false }, { allowed: false }],
-      receptionist: [{ allowed: true, scope: 'Son profil' }, { allowed: false }, { allowed: false }, { allowed: false }, { allowed: false }],
+      owner:        [{ allowed: true }, { allowed: true }, { allowed: true }, { allowed: true, scope: 'Rôles & invitations' }],
+      manager:      [{ allowed: true }, { allowed: true }, { allowed: true }, { allowed: true, scope: 'Rôles & invitations' }],
+      stylist:      [{ allowed: true, scope: 'Son profil' }, { allowed: false }, { allowed: true, scope: 'Son profil' }, { allowed: false }],
+      receptionist: [{ allowed: true, scope: 'Son profil' }, { allowed: false }, { allowed: false }, { allowed: false }],
     },
   },
   {
     key: 'accounting', label: 'Comptabilité',
-    actions: ['view', 'create', 'edit', 'delete'],
+    actions: ['view', 'create'],
     access: {
-      owner:        [{ allowed: true }, { allowed: true }, { allowed: true }, { allowed: true }],
-      manager:      [{ allowed: true }, { allowed: true }, { allowed: true }, { allowed: true }],
-      stylist:      [{ allowed: false }, { allowed: false }, { allowed: false }, { allowed: false }],
-      receptionist: [{ allowed: false }, { allowed: false }, { allowed: false }, { allowed: false }],
+      owner:        [{ allowed: true }, { allowed: true }],
+      manager:      [{ allowed: true }, { allowed: true }],
+      stylist:      [{ allowed: false }, { allowed: false }],
+      receptionist: [{ allowed: false }, { allowed: false }],
     },
   },
   {
     key: 'suppliers', label: 'Fournisseurs',
-    actions: ['view', 'create', 'edit', 'delete'],
+    actions: ['view', 'create', 'edit'],
     access: {
-      owner:        [{ allowed: true }, { allowed: true }, { allowed: true }, { allowed: true }],
-      manager:      [{ allowed: true }, { allowed: true }, { allowed: true }, { allowed: true }],
-      stylist:      [{ allowed: false }, { allowed: false }, { allowed: false }, { allowed: false }],
-      receptionist: [{ allowed: false }, { allowed: false }, { allowed: false }, { allowed: false }],
+      owner:        [{ allowed: true }, { allowed: true }, { allowed: true }],
+      manager:      [{ allowed: true }, { allowed: true }, { allowed: true }],
+      stylist:      [{ allowed: false }, { allowed: false }, { allowed: false }],
+      receptionist: [{ allowed: false }, { allowed: false }, { allowed: false }],
     },
   },
   {
@@ -139,7 +139,7 @@ const MODULES: ModulePermissions[] = [
     key: 'billing', label: 'Facturation',
     actions: ['view', 'manage'],
     access: {
-      owner:        [{ allowed: true }, { allowed: true }],
+      owner:        [{ allowed: true }, { allowed: true, scope: 'Abonnement' }],
       manager:      [{ allowed: false }, { allowed: false }],
       stylist:      [{ allowed: false }, { allowed: false }],
       receptionist: [{ allowed: false }, { allowed: false }],
