@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Store,
@@ -63,14 +63,8 @@ const PlaceholderSettingsPage: React.FC<{ title: string, onBack: () => void }> =
 );
 
 export const SettingsModule: React.FC = () => {
-  const [activeSection, setActiveSection] = useState<string | null>(null);
-  const [searchParams] = useSearchParams();
-
-  // Auto-navigate to section from URL (e.g. after Stripe redirect)
-  React.useEffect(() => {
-    const section = searchParams.get('section');
-    if (section) setActiveSection(section);
-  }, [searchParams]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeSection = searchParams.get('section');
 
   const sections = [
     { id: 'billing', icon: CreditCard, title: 'Abonnement & Facturation', description: 'Plan actuel, usage, factures.' },
@@ -86,28 +80,28 @@ export const SettingsModule: React.FC = () => {
   ];
 
   if (activeSection === 'general') {
-    return <GeneralSettings onBack={() => setActiveSection(null)} />;
+    return <GeneralSettings onBack={() => setSearchParams({})} />;
   }
 
   if (activeSection === 'accounting') {
-    return <AccountingSettings onBack={() => setActiveSection(null)} />;
+    return <AccountingSettings onBack={() => setSearchParams({})} />;
   }
 
   if (activeSection === 'schedule') {
-    return <OpeningHoursSettings onBack={() => setActiveSection(null)} />;
+    return <OpeningHoursSettings onBack={() => setSearchParams({})} />;
   }
 
   if (activeSection === 'billing') {
-    return <BillingModule onBack={() => setActiveSection(null)} />;
+    return <BillingModule onBack={() => setSearchParams({})} />;
   }
 
   if (activeSection === 'team') {
-    return <TeamPermissionsSettings onBack={() => setActiveSection(null)} />;
+    return <TeamPermissionsSettings onBack={() => setSearchParams({})} />;
   }
 
   if (activeSection) {
     const section = sections.find(s => s.id === activeSection);
-    return <PlaceholderSettingsPage title={section?.title || 'Réglage'} onBack={() => setActiveSection(null)} />;
+    return <PlaceholderSettingsPage title={section?.title || 'Réglage'} onBack={() => setSearchParams({})} />;
   }
 
   return (
@@ -124,7 +118,7 @@ export const SettingsModule: React.FC = () => {
             icon={section.icon}
             title={section.title}
             description={section.description}
-            onClick={() => setActiveSection(section.id)}
+            onClick={() => setSearchParams({ section: section.id })}
           />
         ))}
       </div>
