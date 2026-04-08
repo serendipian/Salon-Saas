@@ -5,7 +5,7 @@
 
 ---
 
-## HIGH (4 remaining) — Performance & Refactoring
+## HIGH (2 remaining) — Performance & Refactoring
 
 ### H-1: ClientDetails loads ALL salon appointments
 **File:** `modules/clients/components/ClientDetails.tsx:40`
@@ -17,15 +17,11 @@
 **Issue:** Handles personal info editing, contract editing, PII editing, photo upload, client portfolio, activity preview, and danger zone — 6 concerns in one file. The shared `draft` state is fragile.
 **Fix:** Extract `PersonalSection`, `ContractSection`, `PiiSection` as separate components with their own local state. Each section's draft should be self-contained.
 
-### H-3: useTransactions fetches ALL historical transactions
-**File:** `hooks/useTransactions.ts:19`
-**Issue:** The shared hook queries the full `transactions` table with no date constraint. All consumers (POS, Dashboard, Accounting) filter client-side. Grows linearly with salon history.
-**Fix:** Add optional date range parameter to `useTransactions`, or create a separate `useTransactionsRange(from, to)` for accounting. At minimum expose `isLoading` so consumers can show skeletons.
+### ~~H-3: useTransactions fetches ALL historical transactions~~ RESOLVED
+**Resolved:** 2026-04-08. Added optional `{ from, to }` date range parameter to `useTransactions`. All 7 consumers now pass date ranges pushed to the DB query. POS uses 30-day window; Dashboard/Accounting use current+previous period; Team hooks use their own date range.
 
-### H-4: Accounting clientMetrics memo recomputes on every realtime event
-**File:** `modules/accounting/hooks/useAccounting.ts:371`
-**Issue:** `firstTransactionByClient` is rebuilt inside a `useMemo` whose deps include `transactions` (the full unfiltered list). Every realtime INSERT/UPDATE event triggers O(N) recomputation.
-**Fix:** Extract `firstTransactionByClient` into its own `useMemo` with only `[transactions]` as dependency, separate from the date-range-dependent memo.
+### ~~H-4: Accounting clientMetrics memo recomputes on every realtime event~~ RESOLVED
+**Resolved:** 2026-04-08. Side effect of H-3 fix — `clientMetrics` now uses a `count_new_clients` DB RPC instead of scanning all transactions client-side. The useMemo no longer depends on the full unfiltered transaction list.
 
 ---
 
