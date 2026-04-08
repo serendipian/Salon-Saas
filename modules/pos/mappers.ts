@@ -42,6 +42,7 @@ export interface TransactionRow {
   transaction_items: TransactionItemRow[];
   transaction_payments: TransactionPaymentRow[];
   clients: { first_name: string; last_name: string } | null;
+  profiles: { first_name: string | null; last_name: string | null } | null;
 }
 
 // --- Row → Frontend ---
@@ -96,6 +97,10 @@ export function toTransaction(row: TransactionRow): Transaction {
     originalTransactionId: row.original_transaction_id ?? undefined,
     reasonCategory: row.reason_category ?? undefined,
     reasonNote: row.reason_note ?? undefined,
+    createdBy: row.created_by ?? undefined,
+    createdByName: row.profiles
+      ? `${row.profiles.first_name ?? ''} ${row.profiles.last_name ?? ''}`.trim() || undefined
+      : undefined,
   };
 }
 
@@ -151,13 +156,13 @@ export function toTransactionRpcPayload(
 
 // --- Transaction status helpers ---
 
-export type TransactionStatus = 'active' | 'voided' | 'partially_refunded' | 'fully_refunded';
+export type TransactionStatus = 'active' | 'voided' | 'partially_refunded' | 'fully_refunded' | 'reversal';
 
 export function getTransactionStatus(
   transaction: Transaction,
   allTransactions: Transaction[]
 ): TransactionStatus {
-  if (transaction.type !== 'SALE') return 'active';
+  if (transaction.type !== 'SALE') return 'reversal';
 
   const relatedVoid = allTransactions.find(
     t => t.type === 'VOID' && t.originalTransactionId === transaction.id

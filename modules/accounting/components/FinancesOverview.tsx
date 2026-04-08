@@ -1,5 +1,5 @@
 import React from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, Link } from 'react-router-dom';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, Legend, PieChart, Pie, Cell,
@@ -113,9 +113,9 @@ export const FinancesOverview: React.FC = () => {
           <div className="text-sm font-medium text-red-600">
             -{formatPrice(totalLost)}
           </div>
-          <a href="/finances/annulations" className="text-xs text-blue-600 hover:text-blue-800 ml-auto">
+          <Link to="/finances/annulations" className="text-xs text-blue-600 hover:text-blue-800 ml-auto">
             Voir le détail →
-          </a>
+          </Link>
         </div>
       )}
 

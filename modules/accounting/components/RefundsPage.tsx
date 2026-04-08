@@ -136,9 +136,13 @@ export const RefundsPage: React.FC = () => {
                       </div>
                       <span className="font-bold text-sm text-red-600">{formatPrice(Math.abs(entry.total))}</span>
                     </div>
-                    <div className="mt-1 text-xs text-slate-500 space-x-3">
+                    <div className="mt-1 text-xs text-slate-500 flex flex-wrap gap-x-3">
                       <span>{new Date(entry.date).toLocaleString()}</span>
                       {entry.reasonCategory && <span>· {getCategoryLabel(entry.reasonCategory)}</span>}
+                      {entry.createdByName && <span>· Par {entry.createdByName}</span>}
+                      {entry.items.some(i => i.staffName) && (
+                        <span>· Staff : {[...new Set(entry.items.filter(i => i.staffName).map(i => i.staffName))].join(', ')}</span>
+                      )}
                     </div>
                     {entry.reasonNote && (
                       <div className="mt-1 text-xs text-slate-400 italic truncate">{entry.reasonNote}</div>

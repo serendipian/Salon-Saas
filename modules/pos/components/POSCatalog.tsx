@@ -65,9 +65,10 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
   // Group transactions: SALE transactions as parents, VOID/REFUND as children
   const groupedTransactions = React.useMemo(() => {
     const childMap = new Map<string, Transaction[]>();
+    const parentIds = new Set<string>();
     const parents: Transaction[] = [];
 
-    // First pass: collect children (VOID/REFUND with originalTransactionId)
+    // First pass: identify parents and collect children
     for (const trx of transactions) {
       if (trx.originalTransactionId) {
         const children = childMap.get(trx.originalTransactionId) || [];
@@ -75,13 +76,27 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
         childMap.set(trx.originalTransactionId, children);
       } else {
         parents.push(trx);
+        parentIds.add(trx.id);
       }
     }
 
-    return parents.map(parent => ({
+    // Collect orphaned children (parent SALE is outside the date window)
+    const orphans: Transaction[] = [];
+    childMap.forEach((children, parentId) => {
+      if (!parentIds.has(parentId)) {
+        orphans.push(...children);
+      }
+    });
+
+    const grouped = parents.map(parent => ({
       parent,
       children: childMap.get(parent.id) || [],
     }));
+
+    // Append orphans as standalone entries (no parent to nest under)
+    orphans.forEach(orphan => grouped.push({ parent: orphan, children: [] }));
+
+    return grouped;
   }, [transactions]);
 
   return (
@@ -242,8 +257,8 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                  {groupedTransactions.map(({ parent: trx, children }) => {
                    const status = getTransactionStatus(trx, allTransactions);
                    const isVoided = status === 'voided';
-                   const showVoid = onVoidClick && status === 'active' && isToday(trx.date);
-                   const showRefund = onRefundClick && status !== 'voided' && status !== 'fully_refunded';
+                   const showVoid = onVoidClick && trx.type === 'SALE' && status === 'active' && isToday(trx.date);
+                   const showRefund = onRefundClick && trx.type === 'SALE' && status !== 'voided' && status !== 'fully_refunded';
                    return (
                    <div key={trx.id}>
                    <div

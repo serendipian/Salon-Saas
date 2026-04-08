@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ArrowLeft, RotateCcw, Package } from 'lucide-react';
 import { Transaction, CartItem } from '../../../types';
@@ -72,6 +72,11 @@ export const RefundModal: React.FC<RefundModalProps> = ({
   }, [transaction, allTransactions]);
 
   const [items, setItems] = useState(refundItems);
+
+  // Re-sync items when allTransactions changes (e.g., another user refunds the same transaction)
+  useEffect(() => {
+    setItems(refundItems);
+  }, [refundItems]);
 
   const totalAlreadyRefunded = getRefundedAmount(transaction.id, allTransactions);
   const maxRefundable = transaction.total - totalAlreadyRefunded;

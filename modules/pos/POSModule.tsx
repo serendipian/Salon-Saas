@@ -111,9 +111,13 @@ export const POSModule: React.FC = () => {
 
   const handleVoidConfirm = async (reasonCategory: string, reasonNote: string) => {
     if (!voidTarget) return;
-    await doVoid(voidTarget.id, reasonCategory, reasonNote);
-    setVoidTarget(null);
-    setDetailTransaction(null);
+    try {
+      await doVoid(voidTarget.id, reasonCategory, reasonNote);
+      setVoidTarget(null);
+      setDetailTransaction(null);
+    } catch {
+      // Error toast handled by mutation onError
+    }
   };
 
   const handleRefundConfirm = async (
@@ -124,9 +128,13 @@ export const POSModule: React.FC = () => {
     restock: boolean
   ) => {
     if (!refundTarget) return;
-    await doRefund(refundTarget.id, items, payments, reasonCategory, reasonNote, restock);
-    setRefundTarget(null);
-    setDetailTransaction(null);
+    try {
+      await doRefund(refundTarget.id, items, payments, reasonCategory, reasonNote, restock);
+      setRefundTarget(null);
+      setDetailTransaction(null);
+    } catch {
+      // Error toast handled by mutation onError
+    }
   };
 
   return (

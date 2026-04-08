@@ -384,6 +384,8 @@ export interface Transaction {
   originalTransactionId?: string;
   reasonCategory?: string;
   reasonNote?: string;
+  createdBy?: string;
+  createdByName?: string;
 }
 
 // Accounting Domain
