@@ -55,8 +55,15 @@ const RankedList: React.FC<{ title: string; items: { name: string; count: number
 export const FinancesOverview: React.FC = () => {
   const {
     financials, chartData, revenueByServiceCategory, paymentMethodBreakdown,
-    clientMetrics, topProducts, productRevenue,
+    clientMetrics, topProducts, productRevenue, filteredTransactions,
   } = useOutletContext<FinancesOutletContext>();
+
+  // Void/refund summary
+  const voidCount = filteredTransactions.filter(t => t.type === 'VOID').length;
+  const refundCount = filteredTransactions.filter(t => t.type === 'REFUND').length;
+  const totalLost = filteredTransactions
+    .filter(t => t.type === 'VOID' || t.type === 'REFUND')
+    .reduce((sum, t) => sum + Math.abs(t.total), 0);
 
   // Donut data: service categories + products as one slice
   const donutData = [
@@ -87,6 +94,30 @@ export const FinancesOverview: React.FC = () => {
         { title: 'Dépenses Totales', value: financials.opex, trend: financials.opexTrend, invertTrend: true },
         { title: 'Panier Moyen', value: financials.avgBasket, trend: financials.avgBasketTrend, subtitle: `${financials.transactionCount} transactions` },
       ]} />
+
+      {/* Void/Refund summary (only shown when there are any) */}
+      {(voidCount > 0 || refundCount > 0) && (
+        <div className="flex items-center gap-4 px-1">
+          {voidCount > 0 && (
+            <div className="flex items-center gap-1.5 text-sm">
+              <span className="w-2 h-2 rounded-full bg-red-500" />
+              <span className="text-slate-500">{voidCount} annulation{voidCount > 1 ? 's' : ''}</span>
+            </div>
+          )}
+          {refundCount > 0 && (
+            <div className="flex items-center gap-1.5 text-sm">
+              <span className="w-2 h-2 rounded-full bg-orange-500" />
+              <span className="text-slate-500">{refundCount} remboursement{refundCount > 1 ? 's' : ''}</span>
+            </div>
+          )}
+          <div className="text-sm font-medium text-red-600">
+            -{formatPrice(totalLost)}
+          </div>
+          <a href="/finances/annulations" className="text-xs text-blue-600 hover:text-blue-800 ml-auto">
+            Voir le détail →
+          </a>
+        </div>
+      )}
 
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

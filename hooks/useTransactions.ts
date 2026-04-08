@@ -16,7 +16,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
-  const { toastOnError } = useMutationToast();
+  const { toastOnError, toastOnSuccess } = useMutationToast();
   useRealtimeSync('transactions');
 
   const from = options?.from;
@@ -95,6 +95,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions', salonId] });
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
+      toastOnSuccess('Transaction annulée')();
     },
     onError: toastOnError("Impossible d'annuler la transaction"),
   });
@@ -129,6 +130,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions', salonId] });
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
+      toastOnSuccess('Remboursement effectué')();
     },
     onError: toastOnError('Impossible de rembourser la transaction'),
   });

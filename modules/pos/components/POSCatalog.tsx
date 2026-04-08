@@ -62,6 +62,28 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
 
   const isToday = (date: string) => new Date(date).toDateString() === new Date().toDateString();
 
+  // Group transactions: SALE transactions as parents, VOID/REFUND as children
+  const groupedTransactions = React.useMemo(() => {
+    const childMap = new Map<string, Transaction[]>();
+    const parents: Transaction[] = [];
+
+    // First pass: collect children (VOID/REFUND with originalTransactionId)
+    for (const trx of transactions) {
+      if (trx.originalTransactionId) {
+        const children = childMap.get(trx.originalTransactionId) || [];
+        children.push(trx);
+        childMap.set(trx.originalTransactionId, children);
+      } else {
+        parents.push(trx);
+      }
+    }
+
+    return parents.map(parent => ({
+      parent,
+      children: childMap.get(parent.id) || [],
+    }));
+  }, [transactions]);
+
   return (
     <div className={`flex-1 flex flex-col h-full ${isMobile ? '' : 'border-r border-slate-200'}`}>
       {/* Top Bar */}
@@ -215,16 +237,16 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                   <p>Aucune transaction enregistrée.</p>
                </div>
              ) : isMobile ? (
-               /* Mobile: card layout */
+               /* Mobile: card layout with grouped sub-rows */
                <div className="p-3 space-y-3">
-                 {transactions.map((trx) => {
+                 {groupedTransactions.map(({ parent: trx, children }) => {
                    const status = getTransactionStatus(trx, allTransactions);
-                   const isVoided = status === 'voided' || trx.type === 'VOID';
-                   const showVoid = onVoidClick && trx.type === 'SALE' && status === 'active' && isToday(trx.date);
-                   const showRefund = onRefundClick && trx.type === 'SALE' && status !== 'voided' && status !== 'fully_refunded';
+                   const isVoided = status === 'voided';
+                   const showVoid = onVoidClick && status === 'active' && isToday(trx.date);
+                   const showRefund = onRefundClick && status !== 'voided' && status !== 'fully_refunded';
                    return (
+                   <div key={trx.id}>
                    <div
-                     key={trx.id}
                      className={`w-full text-left bg-white rounded-lg border border-slate-200 p-4 shadow-sm ${isVoided ? 'opacity-60' : ''}`}
                    >
                      <button
@@ -272,6 +294,23 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                        </button>
                      </div>
                    </div>
+                   {/* Child sub-rows (void/refund entries) */}
+                   {children.map(child => (
+                     <button
+                       key={child.id}
+                       type="button"
+                       onClick={() => onDetailClick(child)}
+                       className="w-full text-left ml-4 mt-1 bg-slate-50 rounded-lg border border-slate-100 px-3 py-2 flex justify-between items-center"
+                     >
+                       <div className="flex items-center gap-2">
+                         {child.type === 'VOID' ? <Ban size={12} className="text-red-500" /> : <RotateCcw size={12} className="text-orange-500" />}
+                         {statusBadge('active', child)}
+                         <span className="text-xs text-slate-500">{new Date(child.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                       </div>
+                       <span className="font-semibold text-sm text-red-600">{formatPrice(child.total)}</span>
+                     </button>
+                   ))}
+                   </div>
                    );
                  })}
                </div>
@@ -288,13 +327,14 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {transactions.map((trx) => {
+                    {groupedTransactions.map(({ parent: trx, children }) => {
                       const status = getTransactionStatus(trx, allTransactions);
-                      const isVoided = status === 'voided' || trx.type === 'VOID';
-                      const showVoid = onVoidClick && trx.type === 'SALE' && status === 'active' && isToday(trx.date);
-                      const showRefund = onRefundClick && trx.type === 'SALE' && status !== 'voided' && status !== 'fully_refunded';
+                      const isVoided = status === 'voided';
+                      const showVoid = onVoidClick && status === 'active' && isToday(trx.date);
+                      const showRefund = onRefundClick && status !== 'voided' && status !== 'fully_refunded';
                       return (
-                      <tr key={trx.id} className={`hover:bg-slate-50/80 transition-colors ${isVoided ? 'opacity-60' : ''}`}>
+                      <React.Fragment key={trx.id}>
+                      <tr className={`hover:bg-slate-50/80 transition-colors ${isVoided ? 'opacity-60' : ''}`}>
                          <td className="px-6 py-4 font-medium text-slate-700">
                            {new Date(trx.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                          </td>
@@ -345,6 +385,34 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                            </div>
                          </td>
                       </tr>
+                      {/* Child sub-rows (void/refund entries) */}
+                      {children.map(child => (
+                        <tr key={child.id} className="bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
+                          <td className="px-6 py-2 pl-10 text-xs text-slate-500">
+                            {new Date(child.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          </td>
+                          <td className="px-6 py-2">
+                            <div className="flex items-center gap-2">
+                              {child.type === 'VOID' ? <Ban size={12} className="text-red-500" /> : <RotateCcw size={12} className="text-orange-500" />}
+                              {statusBadge('active', child)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-2">
+                            <div className="text-xs text-slate-500 max-w-xs truncate">
+                              {child.items.map(i => i.name).join(', ')}
+                            </div>
+                          </td>
+                          <td className="px-6 py-2 text-right font-semibold text-sm text-red-600">
+                            {formatPrice(child.total)}
+                          </td>
+                          <td className="px-6 py-2 text-right">
+                            <button onClick={() => onDetailClick(child)} className="p-1.5 text-slate-300 hover:text-slate-900 transition-colors" title="Voir les détails">
+                              <Eye size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      </React.Fragment>
                       );
                     })}
                   </tbody>

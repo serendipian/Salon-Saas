@@ -13,7 +13,6 @@ import { MiniCartBar } from './components/MiniCartBar';
 import { CartBottomSheet } from './components/CartBottomSheet';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../context/ToastContext';
 
 export const POSModule: React.FC = () => {
   const {
@@ -47,8 +46,6 @@ export const POSModule: React.FC = () => {
   const { can } = usePermissions(role);
   const canVoid = can('void', 'pos');
   const canRefund = can('refund', 'pos');
-  const { addToast } = useToast();
-
   // Modal States
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -117,7 +114,6 @@ export const POSModule: React.FC = () => {
     await doVoid(voidTarget.id, reasonCategory, reasonNote);
     setVoidTarget(null);
     setDetailTransaction(null);
-    addToast({ type: 'success', message: 'Transaction annulée' });
   };
 
   const handleRefundConfirm = async (
@@ -131,7 +127,6 @@ export const POSModule: React.FC = () => {
     await doRefund(refundTarget.id, items, payments, reasonCategory, reasonNote, restock);
     setRefundTarget(null);
     setDetailTransaction(null);
-    addToast({ type: 'success', message: 'Remboursement effectué' });
   };
 
   return (
@@ -250,6 +245,7 @@ export const POSModule: React.FC = () => {
           onClose={() => setDetailTransaction(null)}
           onVoidClick={canVoid ? (t: Transaction) => { setDetailTransaction(null); setVoidTarget(t); } : undefined}
           onRefundClick={canRefund ? (t: Transaction) => { setDetailTransaction(null); setRefundTarget(t); } : undefined}
+          onViewTransaction={setDetailTransaction}
         />
       )}
 

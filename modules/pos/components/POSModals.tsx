@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Clock, Receipt, User, Scissors, ShoppingBag, StickyNote, CreditCard, Banknote, Smartphone, Gift, Ban, RotateCcw } from 'lucide-react';
+import { X, Clock, Receipt, User, Scissors, ShoppingBag, StickyNote, CreditCard, Banknote, Smartphone, Gift, Ban, RotateCcw, ExternalLink } from 'lucide-react';
 import { CartItem, Service, ServiceVariant, Transaction } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
@@ -467,7 +467,8 @@ export const TransactionDetailModal: React.FC<{
   onClose: () => void;
   onVoidClick?: (t: Transaction) => void;
   onRefundClick?: (t: Transaction) => void;
-}> = ({ transaction, allTransactions, onClose, onVoidClick, onRefundClick }) => {
+  onViewTransaction?: (t: Transaction) => void;
+}> = ({ transaction, allTransactions, onClose, onVoidClick, onRefundClick, onViewTransaction }) => {
   const { isMobile } = useMediaQuery();
   useMobileModalA11y(isMobile, onClose);
 
@@ -475,6 +476,9 @@ export const TransactionDetailModal: React.FC<{
   const isToday = new Date(transaction.date).toDateString() === new Date().toDateString();
   const showVoid = onVoidClick && transaction.type === 'SALE' && status === 'active' && isToday;
   const showRefund = onRefundClick && transaction.type === 'SALE' && status !== 'voided' && status !== 'fully_refunded';
+  const originalTransaction = transaction.originalTransactionId
+    ? allTransactions.find(t => t.id === transaction.originalTransactionId)
+    : undefined;
 
   const getCategoryLabel = (key: string) => {
     const v = VOID_CATEGORIES.find(c => c.key === key);
@@ -533,6 +537,14 @@ export const TransactionDetailModal: React.FC<{
           <div className="text-sm mt-2 p-2 bg-white rounded border border-slate-100 text-slate-600 italic">
             {transaction.reasonNote}
           </div>
+        )}
+        {originalTransaction && onViewTransaction && (
+          <button
+            onClick={() => onViewTransaction(originalTransaction)}
+            className="w-full mt-2 py-2 text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center gap-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+          >
+            <ExternalLink size={14} /> Voir la transaction originale
+          </button>
         )}
       </div>
 
