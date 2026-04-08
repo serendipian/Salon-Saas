@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Save, Trash2, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft, Info, Upload, X, Image } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft, Info, Upload, X, Image, FileText, Loader2, CheckCircle2 } from 'lucide-react';
 import { Expense, ExpenseCategory, PaymentMethod } from '../../../types';
 import { Section, Input, Select } from '../../../components/FormElements';
 import { useSettings } from '../../settings/hooks/useSettings';
@@ -9,6 +9,10 @@ import { useFormValidation } from '../../../hooks/useFormValidation';
 import { expenseSchema } from '../schemas';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
+import { useToast } from '../../../context/ToastContext';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
 
 const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: React.ReactNode }[] = [
   { value: 'especes', label: 'Espèces', icon: <Banknote size={16} /> },
@@ -32,6 +36,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
   const { expenseCategories, salonSettings } = useSettings();
   const { allSuppliers: suppliers } = useSuppliers();
   const { activeSalon } = useAuth();
+  const { addToast } = useToast();
   const { errors, validate, clearFieldError } = useFormValidation(expenseSchema);
   const isEdit = !!existingExpense;
 
@@ -48,22 +53,12 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
     isEdit && existingExpense.supplier && !existingExpense.supplierId
   );
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(
+    existingExpense?.proofUrl ? 'Justificatif' : null
+  );
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
 
-  // Filter suppliers by selected expense category name
-  const filteredSuppliers = useMemo(() => {
-    if (!formData.category) return suppliers;
-    const selectedCat = expenseCategories.find(c => c.id === formData.category);
-    if (!selectedCat) return suppliers;
-    const catName = selectedCat.name.toLowerCase();
-    const matched = suppliers.filter(s =>
-      s.category && (
-        s.category.toLowerCase().includes(catName) ||
-        catName.includes(s.category.toLowerCase())
-      )
-    );
-    return matched.length > 0 ? matched : suppliers;
-  }, [formData.category, suppliers, expenseCategories]);
+  const { supplierCategories } = useSuppliers();
 
   // Duplicate detection — warn on same amount + date + supplier
   const possibleDuplicate = useMemo(() => {
@@ -112,6 +107,18 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
     const file = e.target.files?.[0];
     if (!file || !activeSalon) return;
 
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      addToast({ type: 'error', message: 'Format non supporté. Utilisez PDF, JPG, PNG ou WebP.' });
+      e.target.value = '';
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      addToast({ type: 'error', message: 'Le fichier ne doit pas dépasser 5 Mo.' });
+      e.target.value = '';
+      return;
+    }
+
     setIsUploading(true);
     try {
       const ext = file.name.split('.').pop();
@@ -119,11 +126,14 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
       const { error } = await supabase.storage.from('receipts').upload(path, file);
       if (error) throw error;
       const { data: { publicUrl } } = supabase.storage.from('receipts').getPublicUrl(path);
-      setFormData({ ...formData, proofUrl: publicUrl });
+      setFormData(prev => ({ ...prev, proofUrl: publicUrl }));
+      setUploadedFileName(file.name);
+      addToast({ type: 'success', message: 'Justificatif ajouté avec succès' });
     } catch {
-      // Upload failed — user can retry
+      addToast({ type: 'error', message: 'Échec de l\'envoi du fichier. Veuillez réessayer.' });
     } finally {
       setIsUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -197,36 +207,51 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
            {/* Receipt Upload */}
            <Section title="Justificatif">
               {formData.proofUrl ? (
-                 <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                 <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
                     <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                       <Image size={18} />
+                       {uploadedFileName?.toLowerCase().endsWith('.pdf') ? <FileText size={18} /> : <Image size={18} />}
                     </div>
                     <div className="min-w-0 flex-1">
-                       <p className="text-sm font-medium text-slate-700 truncate">Justificatif ajouté</p>
-                       <a href={formData.proofUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">
+                       <div className="flex items-center gap-1.5">
+                          <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                          <p className="text-sm font-medium text-emerald-800 truncate">{uploadedFileName || 'Justificatif ajouté'}</p>
+                       </div>
+                       <a href={formData.proofUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 hover:underline">
                           Voir le fichier
                        </a>
                     </div>
                     <button
                        type="button"
-                       onClick={() => setFormData({ ...formData, proofUrl: undefined })}
-                       className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+                       onClick={() => { setFormData({ ...formData, proofUrl: undefined }); setUploadedFileName(null); }}
+                       className="p-1.5 rounded-lg hover:bg-emerald-100 text-emerald-400 hover:text-emerald-700 transition-colors"
                     >
                        <X size={16} />
                     </button>
                  </div>
               ) : (
-                 <label className={`flex flex-col items-center gap-2 p-6 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
-                    isUploading ? 'border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-400 hover:bg-slate-50'
+                 <label className={`flex flex-col items-center gap-2 p-6 border-2 border-dashed rounded-xl transition-all ${
+                    isUploading
+                      ? 'border-blue-300 bg-blue-50 cursor-wait'
+                      : 'border-slate-200 hover:border-slate-400 hover:bg-slate-50 cursor-pointer'
                  }`}>
-                    <Upload size={24} className="text-slate-400" />
-                    <span className="text-sm text-slate-500">
-                       {isUploading ? 'Envoi en cours...' : 'Glissez ou cliquez pour ajouter un justificatif'}
-                    </span>
-                    <span className="text-xs text-slate-400">PDF, JPG, PNG (max 5 Mo)</span>
+                    {isUploading ? (
+                       <>
+                          <Loader2 size={24} className="text-blue-500 animate-spin" />
+                          <span className="text-sm font-medium text-blue-600">Envoi en cours...</span>
+                          <div className="w-48 h-1.5 bg-blue-100 rounded-full overflow-hidden">
+                             <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: '70%' }} />
+                          </div>
+                       </>
+                    ) : (
+                       <>
+                          <Upload size={24} className="text-slate-400" />
+                          <span className="text-sm text-slate-500">Glissez ou cliquez pour ajouter un justificatif</span>
+                          <span className="text-xs text-slate-400">PDF, JPG, PNG, WebP (max 5 Mo)</span>
+                       </>
+                    )}
                     <input
                        type="file"
-                       accept="image/*,.pdf"
+                       accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
                        className="hidden"
                        onChange={handleReceiptUpload}
                        disabled={isUploading}
@@ -238,8 +263,8 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
 
         {/* Right Column — Classification & actions */}
         <div className="lg:col-span-1 space-y-6">
-           {/* Category → Supplier cascade */}
-           <Section title="Catégorie & Fournisseur">
+           {/* Category & Beneficiary */}
+           <Section title="Catégorie & Bénéficiaire">
               <Select
                  label="Catégorie"
                  value={formData.category}
@@ -253,43 +278,39 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
                  }))}
               />
 
-              <div className={!formData.category ? 'opacity-50 pointer-events-none' : ''}>
-                 <Select
-                    label="Fournisseur"
-                    value={isCustomSupplier ? '__OTHER__' : formData.supplier || ''}
-                    onChange={(val) => {
-                       if (val === '__OTHER__') {
-                          setIsCustomSupplier(true);
-                          setFormData({...formData, supplier: ''});
-                       } else {
-                          setIsCustomSupplier(false);
-                          setFormData({...formData, supplier: val as string});
-                       }
-                    }}
-                    searchable
-                    placeholder={!formData.category ? 'Sélectionnez une catégorie d\'abord...' : 'Rechercher un fournisseur...'}
-                    options={[
-                       { value: '', label: 'Non spécifié' },
-                       ...filteredSuppliers.map(s => ({
+              <Select
+                 label="Bénéficiaire"
+                 value={isCustomSupplier ? '__OTHER__' : formData.supplier || ''}
+                 onChange={(val) => {
+                    if (val === '__OTHER__') {
+                       setIsCustomSupplier(true);
+                       setFormData({...formData, supplier: ''});
+                    } else {
+                       setIsCustomSupplier(false);
+                       setFormData({...formData, supplier: val as string});
+                    }
+                 }}
+                 searchable
+                 placeholder="Rechercher un bénéficiaire..."
+                 options={[
+                    { value: '', label: 'Non spécifié' },
+                    ...suppliers.map(s => {
+                       const cat = supplierCategories.find(c => c.id === s.categoryId);
+                       return {
                           value: s.id,
                           label: s.name,
-                          subtitle: s.category,
+                          subtitle: cat?.name,
                           initials: s.name.substring(0, 2).toUpperCase()
-                       })),
-                       { value: '__OTHER__', label: 'Autre / Saisir manuellement...', initials: '+' }
-                    ]}
-                 />
-                 {!formData.category && (
-                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
-                       <Info size={12} /> Sélectionnez une catégorie pour filtrer les fournisseurs
-                    </p>
-                 )}
-              </div>
+                       };
+                    }),
+                    { value: '__OTHER__', label: 'Autre / Saisir manuellement...', initials: '+' }
+                 ]}
+              />
 
               {isCustomSupplier && (
                  <div className="animate-in slide-in-from-top-2">
                     <Input
-                       label="Nom du fournisseur manuel"
+                       label="Nom du bénéficiaire"
                        autoFocus
                        value={formData.supplier}
                        onChange={(e) => setFormData({...formData, supplier: e.target.value})}

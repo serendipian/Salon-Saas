@@ -53,21 +53,21 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, ca
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-xl font-bold text-slate-900">
-          {existingSupplier ? 'Modifier le Fournisseur' : 'Nouveau Fournisseur'}
+          {existingSupplier ? 'Modifier le Bénéficiaire' : 'Nouveau Bénéficiaire'}
         </h1>
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
 
-           <Section title="Informations Entreprise">
+           <Section title="Informations">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <Input
-                  label="Nom de l'entreprise"
+                  label="Nom"
                   required
                   value={formData.name}
                   onChange={e => { clearFieldError('name'); setFormData({...formData, name: e.target.value}); }}
-                  placeholder="Ex: L'Oréal Pro"
+                  placeholder="Ex: L'Oréal Pro, EDF, Propriétaire..."
                   error={errors.name}
                 />
                 <Input
@@ -131,7 +131,7 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, ca
                <button
                  type="button"
                  onClick={() => {
-                   if (window.confirm('Supprimer ce fournisseur ? Cette action est irréversible.')) {
+                   if (window.confirm('Supprimer ce bénéficiaire ? Cette action est irréversible.')) {
                      onDelete(existingSupplier.id);
                    }
                  }}
@@ -145,7 +145,7 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, ca
 
            <Section title="Paramètres">
               <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-slate-700 font-medium">Fournisseur Actif</span>
+                  <span className="text-sm text-slate-700 font-medium">Actif</span>
                   <button
                     type="button"
                     onClick={() => setFormData({...formData, active: !formData.active})}

@@ -14,7 +14,7 @@ export const SupplierCard: React.FC<SupplierCardProps> = ({ suppliers, categorie
     return (
       <EmptyState
         icon={<Truck size={24} />}
-        title="Aucun fournisseur trouvé"
+        title="Aucun bénéficiaire trouvé"
         description="Essayez de modifier vos critères de recherche."
       />
     );
@@ -27,7 +27,7 @@ export const SupplierCard: React.FC<SupplierCardProps> = ({ suppliers, categorie
           key={supplier.id}
           type="button"
           onClick={() => onEdit(supplier.id)}
-          aria-label={`Voir le fournisseur ${supplier.name}`}
+          aria-label={`Voir ${supplier.name}`}
           className="bg-white rounded-xl border border-slate-200 p-4 text-left transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
         >
           {/* Header: icon + name + status */}

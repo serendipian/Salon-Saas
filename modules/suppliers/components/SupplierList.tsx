@@ -42,7 +42,10 @@ export const SupplierList: React.FC<SupplierListProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in">
       <div className="flex justify-between items-end">
-        <h1 className="text-2xl font-bold text-slate-900">Fournisseurs</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Fournisseurs & Bénéficiaires</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Fournisseurs produits, prestataires, charges fixes...</p>
+        </div>
         <div className="flex gap-3">
           {canEditSuppliers && (
             <button
@@ -71,7 +74,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
               type="text"
               value={searchTerm}
               onChange={e => onSearchChange(e.target.value)}
-              placeholder="Rechercher un fournisseur..."
+              placeholder="Rechercher..."
               className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent text-sm transition-all shadow-sm"
             />
           </div>

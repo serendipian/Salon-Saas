@@ -14,7 +14,7 @@ export const SupplierTable: React.FC<SupplierTableProps> = ({ suppliers, categor
     return (
       <EmptyState
         icon={<Truck size={24} />}
-        title="Aucun fournisseur trouvé"
+        title="Aucun bénéficiaire trouvé"
         description="Essayez de modifier vos critères de recherche."
       />
     );

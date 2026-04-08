@@ -21,7 +21,7 @@ export function SupplierSettingsPage() {
           <ArrowLeft size={16} />
           Fournisseurs
         </button>
-        <h1 className="text-2xl font-bold text-slate-900">Paramètres des fournisseurs</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Paramètres</h1>
       </div>
 
       {/* Tabs */}
