@@ -107,22 +107,22 @@ const MODULES: ModulePermissions[] = [
   },
   {
     key: 'accounting', label: 'Comptabilité',
-    actions: ['view', 'create'],
+    actions: ['view', 'create', 'edit', 'delete'],
     access: {
-      owner:        [{ allowed: true }, { allowed: true }],
-      manager:      [{ allowed: true }, { allowed: true }],
-      stylist:      [{ allowed: false }, { allowed: false }],
-      receptionist: [{ allowed: false }, { allowed: false }],
+      owner:        [{ allowed: true }, { allowed: true }, { allowed: true }, { allowed: true }],
+      manager:      [{ allowed: true }, { allowed: true }, { allowed: true }, { allowed: true }],
+      stylist:      [{ allowed: false }, { allowed: false }, { allowed: false }, { allowed: false }],
+      receptionist: [{ allowed: false }, { allowed: false }, { allowed: false }, { allowed: false }],
     },
   },
   {
     key: 'suppliers', label: 'Fournisseurs',
-    actions: ['view', 'create', 'edit'],
+    actions: ['view', 'create', 'edit', 'delete'],
     access: {
-      owner:        [{ allowed: true }, { allowed: true }, { allowed: true }],
-      manager:      [{ allowed: true }, { allowed: true }, { allowed: true }],
-      stylist:      [{ allowed: false }, { allowed: false }, { allowed: false }],
-      receptionist: [{ allowed: false }, { allowed: false }, { allowed: false }],
+      owner:        [{ allowed: true }, { allowed: true }, { allowed: true }, { allowed: true }],
+      manager:      [{ allowed: true }, { allowed: true }, { allowed: true }, { allowed: true }],
+      stylist:      [{ allowed: false }, { allowed: false }, { allowed: false }, { allowed: false }],
+      receptionist: [{ allowed: false }, { allowed: false }, { allowed: false }, { allowed: false }],
     },
   },
   {
