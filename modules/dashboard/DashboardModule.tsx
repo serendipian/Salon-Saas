@@ -90,6 +90,34 @@ const PAYMENT_METHOD_COLORS: Record<string, string> = {
   'Autre': 'bg-slate-50 text-slate-600',
 };
 
+// All known payment methods for revenue (so idle ones show too)
+const ALL_REVENUE_METHODS = ['Espèces', 'Carte Bancaire', 'Virement', 'Chèque', 'Mobile', 'Autre'] as const;
+
+// Expense payment method labels
+const EXPENSE_METHOD_LABELS: Record<string, string> = {
+  'especes': 'Espèces',
+  'carte': 'Carte Bancaire',
+  'virement': 'Virement',
+  'cheque': 'Chèque',
+  'prelevement': 'Prélèvement',
+};
+
+const EXPENSE_METHOD_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  'especes': Banknote,
+  'carte': CreditCard,
+  'virement': ArrowRightLeft,
+  'cheque': FileText,
+  'prelevement': ArrowRightLeft,
+};
+
+const EXPENSE_METHOD_COLORS: Record<string, string> = {
+  'especes': 'bg-emerald-50 text-emerald-700',
+  'carte': 'bg-blue-50 text-blue-700',
+  'virement': 'bg-purple-50 text-purple-700',
+  'cheque': 'bg-amber-50 text-amber-700',
+  'prelevement': 'bg-orange-50 text-orange-700',
+};
+
 export const DashboardModule: React.FC = () => {
   const navigate = useNavigate();
   const { activeSalon } = useAuth();
@@ -221,9 +249,11 @@ export const DashboardModule: React.FC = () => {
     };
   }, [data]);
 
-  // --- 2b. Payment Method Breakdown ---
+  // --- 2b. Payment Method Breakdown (includes idle methods) ---
   const paymentBreakdown = useMemo(() => {
     const map = new Map<string, number>();
+    // Initialize all known methods to 0
+    ALL_REVENUE_METHODS.forEach(m => map.set(m, 0));
     data.current.transactions.forEach((t: Transaction) => {
       (t.payments || []).forEach((p: PaymentEntry) => {
         map.set(p.method, (map.get(p.method) || 0) + p.amount);
@@ -243,7 +273,20 @@ export const DashboardModule: React.FC = () => {
     const total = data.current.expenses.reduce((sum, e) => sum + e.amount, 0);
     const prevTotal = data.previous.expenses.reduce((sum, e) => sum + e.amount, 0);
     const trend = prevTotal === 0 ? (total > 0 ? 100 : 0) : ((total - prevTotal) / prevTotal) * 100;
-    return { total, trend, count: data.current.expenses.length };
+
+    // Payment method breakdown for expenses
+    const methodMap = new Map<string, number>();
+    data.current.expenses.forEach(e => {
+      const key = e.paymentMethod || 'unknown';
+      methodMap.set(key, (methodMap.get(key) || 0) + e.amount);
+    });
+    const methods = Array.from(methodMap.entries())
+      .filter(([key]) => key !== 'unknown')
+      .map(([method, amount]) => ({ method, amount, percent: total > 0 ? (amount / total) * 100 : 0 }))
+      .sort((a, b) => b.amount - a.amount);
+    const unknownAmount = methodMap.get('unknown') || 0;
+
+    return { total, trend, count: data.current.expenses.length, methods, unknownAmount };
   }, [data.current.expenses, data.previous.expenses]);
 
   // --- 2d. Bonus & Commissions ---
