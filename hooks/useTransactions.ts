@@ -27,7 +27,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
     queryFn: async () => {
       let query = supabase
         .from('transactions')
-        .select('*, transaction_items(*), transaction_payments(*), clients(first_name, last_name), profiles!transactions_created_by_fkey(first_name, last_name)')
+        .select('*, transaction_items(*), transaction_payments(*), clients(first_name, last_name), profiles(first_name, last_name)')
         .eq('salon_id', salonId)
         .order('date', { ascending: false });
 
