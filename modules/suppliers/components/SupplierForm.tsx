@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Supplier, SupplierCategory } from '../../../types';
 import { Section, Input, TextArea, Select } from '../../../components/FormElements';
 import { PhoneInput } from '../../../components/PhoneInput';
@@ -16,6 +17,7 @@ interface SupplierFormProps {
 }
 
 export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, categories, onSave, onCancel, onDelete }) => {
+  const navigate = useNavigate();
   const { errors, validate, clearFieldError } = useFormValidation(supplierSchema);
   const { supplierSettings } = useSupplierSettings();
   const [formData, setFormData] = useState<Supplier>(existingSupplier || {
@@ -153,12 +155,26 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, ca
                   </button>
               </div>
 
-              <Select
-                 label="Catégorie"
-                 value={formData.categoryId ?? ''}
-                 onChange={(val) => { clearFieldError('categoryId'); setFormData({...formData, categoryId: val ? val as string : null}); }}
-                 options={categoryOptions}
-              />
+              {categories.length > 0 ? (
+                <Select
+                  label="Catégorie"
+                  value={formData.categoryId ?? ''}
+                  onChange={(val) => { clearFieldError('categoryId'); setFormData({...formData, categoryId: val ? val as string : null}); }}
+                  options={categoryOptions}
+                />
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Catégorie</label>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/suppliers/settings')}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-slate-500 bg-slate-50 border border-dashed border-slate-300 rounded-lg hover:bg-slate-100 hover:text-slate-700 transition-colors"
+                  >
+                    <Settings size={14} />
+                    Créer des catégories dans les paramètres
+                  </button>
+                </div>
+              )}
 
               <Input
                  label="Conditions de Paiement"
