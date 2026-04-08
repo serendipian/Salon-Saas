@@ -231,6 +231,9 @@ export const DashboardModule: React.FC = () => {
       revenue,
       revenueTrend: calcTrend(revenue, prevRevenue),
 
+      saleCount,
+      saleCountTrend: calcTrend(saleCount, prevSaleCount),
+
       totalAppts,
       apptsTrend: calcTrend(totalAppts, prevAppts),
 
@@ -490,51 +493,6 @@ export const DashboardModule: React.FC = () => {
         </div>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <MetricCard
-          title="Panier Moyen"
-          value={stats.avgBasket}
-          trend={stats.basketTrend}
-          isPositive={stats.basketTrend >= 0}
-          subtitle="vs période préc."
-          icon={ShoppingBag}
-          isCurrency
-        />
-        <MetricCard
-          title="Rendez-vous"
-          value={stats.totalAppts}
-          trend={stats.apptsTrend}
-          isPositive={stats.apptsTrend >= 0}
-          subtitle="vs période préc."
-          icon={Calendar}
-        />
-        <MetricCard
-          title="Nouveaux Clients"
-          value={stats.newClients}
-          trend={stats.clientsTrend}
-          isPositive={stats.clientsTrend >= 0}
-          subtitle="vs période préc."
-          icon={Users}
-        />
-        <MetricCard
-          title="Taux d'Occupation"
-          value={`${occupancyRate.rate.toFixed(1)}%`}
-          trend={null}
-          isPositive={true}
-          subtitle={`${Math.round(occupancyRate.bookedMinutes / 60)}h / ${Math.round(occupancyRate.totalAvailableMinutes / 60)}h dispo.`}
-          icon={Clock}
-        />
-        <MetricCard
-          title="Annulations"
-          value={`${stats.cancellationRate.toFixed(1)}%`}
-          trend={stats.cancellationTrend}
-          isPositive={stats.cancellationTrend <= 0}
-          subtitle="vs période préc."
-          icon={XCircle}
-        />
-      </div>
-
       {/* Revenue / Expenses / Bonus / Résultat Net Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Chiffre d'Affaires + Payment Breakdown */}
@@ -778,6 +736,59 @@ export const DashboardModule: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* KPIs */}
+      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <MetricCard
+          title="Transactions"
+          value={stats.saleCount}
+          trend={stats.saleCountTrend}
+          isPositive={stats.saleCountTrend >= 0}
+          subtitle="vs période préc."
+          icon={Receipt}
+        />
+        <MetricCard
+          title="Panier Moyen"
+          value={stats.avgBasket}
+          trend={stats.basketTrend}
+          isPositive={stats.basketTrend >= 0}
+          subtitle="vs période préc."
+          icon={ShoppingBag}
+          isCurrency
+        />
+        <MetricCard
+          title="Rendez-vous"
+          value={stats.totalAppts}
+          trend={stats.apptsTrend}
+          isPositive={stats.apptsTrend >= 0}
+          subtitle="vs période préc."
+          icon={Calendar}
+        />
+        <MetricCard
+          title="Nouveaux Clients"
+          value={stats.newClients}
+          trend={stats.clientsTrend}
+          isPositive={stats.clientsTrend >= 0}
+          subtitle="vs période préc."
+          icon={Users}
+        />
+        <MetricCard
+          title="Taux d'Occupation"
+          value={`${occupancyRate.rate.toFixed(1)}%`}
+          trend={null}
+          isPositive={true}
+          subtitle={`${Math.round(occupancyRate.bookedMinutes / 60)}h / ${Math.round(occupancyRate.totalAvailableMinutes / 60)}h dispo.`}
+          icon={Clock}
+        />
+        <MetricCard
+          title="Annulations"
+          value={`${stats.cancellationRate.toFixed(1)}%`}
+          trend={stats.cancellationTrend}
+          isPositive={stats.cancellationTrend <= 0}
+          subtitle="vs période préc."
+          icon={XCircle}
+        />
       </div>
 
       {/* Today's Calendar + Side Cards */}
