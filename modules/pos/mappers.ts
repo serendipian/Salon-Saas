@@ -75,7 +75,7 @@ export function toTransaction(row: TransactionRow): Transaction {
     'TRANSFER': 'Virement',
     'CHECK': 'Chèque',
     'MOBILE': 'Mobile',
-    'OTHER': 'Autre',
+    'OTHER': 'Carte Cadeau',
   };
 
   const payments: PaymentEntry[] = (row.transaction_payments ?? []).map(p => ({

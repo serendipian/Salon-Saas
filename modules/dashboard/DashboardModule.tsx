@@ -12,7 +12,7 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, ChevronDown, ChevronUp, Clock, Crown, TrendingUp, Scissors, Plus, Banknote, CreditCard, Smartphone, ArrowRightLeft, FileText, Receipt, Gift, Wallet } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, ChevronDown, ChevronUp, Clock, Crown, TrendingUp, Scissors, Plus, Banknote, CreditCard, ArrowRightLeft, FileText, Receipt, Gift, Wallet } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useTransactions } from '../../hooks/useTransactions';
@@ -75,23 +75,19 @@ const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon, isC
 const PAYMENT_METHOD_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   'Espèces': Banknote,
   'Carte Bancaire': CreditCard,
-  'Virement': ArrowRightLeft,
-  'Chèque': FileText,
-  'Mobile': Smartphone,
+  'Carte Cadeau': Gift,
   'Autre': Wallet,
 };
 
 const PAYMENT_METHOD_COLORS: Record<string, string> = {
-  'Espèces': 'bg-emerald-50 text-emerald-700',
-  'Carte Bancaire': 'bg-blue-50 text-blue-700',
-  'Virement': 'bg-purple-50 text-purple-700',
-  'Chèque': 'bg-amber-50 text-amber-700',
-  'Mobile': 'bg-pink-50 text-pink-700',
-  'Autre': 'bg-slate-50 text-slate-600',
+  'Espèces': 'bg-blue-50 text-blue-700',
+  'Carte Bancaire': 'bg-blue-50 text-blue-600',
+  'Carte Cadeau': 'bg-blue-50 text-blue-500',
+  'Autre': 'bg-slate-50 text-slate-500',
 };
 
-// All known payment methods for revenue (so idle ones show too)
-const ALL_REVENUE_METHODS = ['Espèces', 'Carte Bancaire', 'Virement', 'Chèque', 'Mobile', 'Autre'] as const;
+// All known payment methods for revenue (matching POS options, idle ones show too)
+const ALL_REVENUE_METHODS = ['Espèces', 'Carte Bancaire', 'Carte Cadeau', 'Autre'] as const;
 
 // Expense payment method labels
 const EXPENSE_METHOD_LABELS: Record<string, string> = {
@@ -111,11 +107,11 @@ const EXPENSE_METHOD_ICONS: Record<string, React.ComponentType<{ size?: number; 
 };
 
 const EXPENSE_METHOD_COLORS: Record<string, string> = {
-  'especes': 'bg-emerald-50 text-emerald-700',
-  'carte': 'bg-blue-50 text-blue-700',
-  'virement': 'bg-purple-50 text-purple-700',
-  'cheque': 'bg-amber-50 text-amber-700',
-  'prelevement': 'bg-orange-50 text-orange-700',
+  'especes': 'bg-blue-50 text-blue-700',
+  'carte': 'bg-blue-50 text-blue-600',
+  'virement': 'bg-blue-50 text-blue-600',
+  'cheque': 'bg-blue-50 text-blue-500',
+  'prelevement': 'bg-blue-50 text-blue-500',
 };
 
 export const DashboardModule: React.FC = () => {
@@ -630,7 +626,7 @@ export const DashboardModule: React.FC = () => {
                       <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(amount)}</span>
                     </div>
                     <div className="h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
-                      <div className="h-full bg-red-300 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
+                      <div className="h-full bg-blue-300 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
                     </div>
                   </div>
                   <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">{percent.toFixed(0)}%</span>
@@ -677,7 +673,7 @@ export const DashboardModule: React.FC = () => {
           </div>
           <div className="pt-3 border-t border-slate-100 space-y-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-indigo-50 text-indigo-600">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-blue-50 text-blue-600">
                 <TrendingUp size={14} />
               </div>
               <div className="flex-1 min-w-0">
@@ -688,7 +684,7 @@ export const DashboardModule: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-amber-50 text-amber-600">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-blue-50 text-blue-500">
                 <Gift size={14} />
               </div>
               <div className="flex-1 min-w-0">
@@ -723,7 +719,7 @@ export const DashboardModule: React.FC = () => {
             <h3 className="text-sm font-semibold text-slate-500">Résultat Net</h3>
             <TrendingUp size={16} className="text-slate-400 shrink-0" />
           </div>
-          <div className={`text-2xl font-bold tracking-tight ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+          <div className={`text-2xl font-bold tracking-tight ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'text-blue-600' : 'text-slate-600'}`}>
             {formatPrice(stats.revenue - expenseStats.total - bonusStats.total)}
           </div>
           <div className="flex items-center gap-2 mt-1 mb-4">
@@ -735,33 +731,33 @@ export const DashboardModule: React.FC = () => {
             {/* Revenue line */}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
                 <span className="text-xs font-medium text-slate-600">Chiffre d'Affaires</span>
               </div>
-              <span className="text-xs font-bold text-emerald-600">{formatPrice(stats.revenue)}</span>
+              <span className="text-xs font-bold text-blue-600">{formatPrice(stats.revenue)}</span>
             </div>
             {/* Expenses line */}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
+                <div className="w-2 h-2 rounded-full bg-blue-300 shrink-0" />
                 <span className="text-xs font-medium text-slate-600">Dépenses</span>
               </div>
-              <span className="text-xs font-bold text-red-500">-{formatPrice(expenseStats.total)}</span>
+              <span className="text-xs font-bold text-slate-600">-{formatPrice(expenseStats.total)}</span>
             </div>
             {/* Bonus line */}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                <div className="w-2 h-2 rounded-full bg-blue-200 shrink-0" />
                 <span className="text-xs font-medium text-slate-600">Bonus & Commissions</span>
               </div>
-              <span className="text-xs font-bold text-amber-600">-{formatPrice(bonusStats.total)}</span>
+              <span className="text-xs font-bold text-slate-600">-{formatPrice(bonusStats.total)}</span>
             </div>
             {/* Divider */}
             <div className="border-t border-dashed border-slate-200 my-1" />
             {/* Net result */}
             <div className="flex justify-between items-center">
               <span className="text-xs font-bold text-slate-700">Net</span>
-              <span className={`text-sm font-bold ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              <span className={`text-sm font-bold ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'text-blue-600' : 'text-slate-600'}`}>
                 {formatPrice(stats.revenue - expenseStats.total - bonusStats.total)}
               </span>
             </div>
@@ -769,7 +765,7 @@ export const DashboardModule: React.FC = () => {
             <div className="h-2 bg-slate-100 rounded-full overflow-hidden mt-2">
               {stats.revenue > 0 && (
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`}
+                  className="h-full rounded-full transition-all duration-500 bg-blue-400"
                   style={{ width: `${Math.min(100, Math.max(0, ((stats.revenue - expenseStats.total - bonusStats.total) / stats.revenue) * 100))}%` }}
                 />
               )}
