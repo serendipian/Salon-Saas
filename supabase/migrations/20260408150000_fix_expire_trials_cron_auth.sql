@@ -14,14 +14,14 @@
 select cron.unschedule('expire-trials-daily');
 
 -- Re-create with auth header
--- NOTE: Replace 'CHANGE_ME_TO_A_REAL_SECRET' with the actual secret you set in Edge Function env
+-- NOTE: Replace 'd46a6448430eceff9a8f51f0f2c5b4642e653b4c9f7782bb77102bf93a291a90' with the actual secret you set in Edge Function env
 select cron.schedule(
   'expire-trials-daily',
   '0 2 * * *',
   $$
   select net.http_post(
     url := 'https://izsycdmrwscdnxebptsx.supabase.co/functions/v1/expire-trials',
-    headers := '{"Content-Type": "application/json", "x-function-secret": "CHANGE_ME_TO_A_REAL_SECRET"}'::jsonb,
+    headers := '{"Content-Type": "application/json", "x-function-secret": "d46a6448430eceff9a8f51f0f2c5b4642e653b4c9f7782bb77102bf93a291a90"}'::jsonb,
     body := '{}'::jsonb
   );
   $$
