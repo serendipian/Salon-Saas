@@ -11,7 +11,7 @@ Salon management SaaS application for beauty salons. Built with React 19, TypeSc
 - **Styling**: Tailwind CSS 4 (via @tailwindcss/vite plugin)
 - **Charts**: Recharts 3
 - **Icons**: Lucide React
-- **Routing**: React Router DOM 7 (HashRouter)
+- **Routing**: React Router DOM 7 (BrowserRouter, with Vercel catch-all rewrite)
 - **AI**: Google Gemini API (via @google/genai) for service description generation
 
 ## Architecture
@@ -27,10 +27,10 @@ modules/
     schemas.ts            # Zod validation schemas (where applicable)
 ```
 
-Active modules: `dashboard`, `clients`, `services`, `products`, `appointments`, `pos`, `team`, `suppliers`, `accounting`, `settings`, `billing`
+Active modules: `dashboard`, `clients`, `services`, `products`, `appointments`, `pos`, `team`, `suppliers`, `accounting`, `settings`, `billing`, `admin`
 
 ### Team Module (Enterprise)
-Nested routes under `#/team` with `<Outlet>` pattern:
+Nested routes under `/team` with `<Outlet>` pattern:
 - `/team` — TeamListPage (list + performance tabs, archive toggle)
 - `/team/new` — NewStaffPage (creation form)
 - `/team/:id` — StaffDetailPage (pinned header + 5 tabs: Profil, Performance, Rémunération, Agenda, Activité)
@@ -72,6 +72,9 @@ pages/
   CreateSalonPage.tsx      # Post-signup salon creation
   SalonPickerPage.tsx      # Multi-salon user selection
   AcceptInvitationPage.tsx # Token-based invitation acceptance
+  ForgotPasswordPage.tsx  # Password reset request (sends magic link)
+  ResetPasswordPage.tsx   # New password form (from recovery link)
+  SuspendedPage.tsx       # Shown when salon is suspended
 ```
 
 ### Profile Page (`/profile`)
@@ -127,7 +130,7 @@ modules/{module}/
 - Writes include `salon_id` explicitly
 
 **Standalone utilities:**
-- `lib/format.ts` — `formatPrice()` (extracted from AppContext)
+- `lib/format.ts` — `formatPrice()`, `formatDuration()` (shared formatting utilities)
 
 ### Real-Time Sync
 - `hooks/useRealtimeSync.ts` — shared hook with ref-counted subscription manager
@@ -159,8 +162,9 @@ modules/{module}/
 ### Mutation Error Handling
 - `hooks/useMutationToast.ts` — callback factory for mutation `onError`
 - `toastOnError(fallbackMessage)` — inspects Supabase error codes, falls back to provided French message
-- Known codes: RLS violation, unique constraint, network error
-- All 18+ mutations across 9 hooks use toastOnError (no more console.error)
+- `toastOnSuccess(message)` — returns callback for `onSuccess` with French message
+- Known codes: RLS violation, unique constraint, network error, plan limit exceeded
+- All mutations use toastOnError; service/product/category/settings mutations also use toastOnSuccess
 
 ### Error Boundaries
 - `components/ErrorBoundary.tsx` — React class component wrapping each module route
@@ -245,6 +249,9 @@ npm run preview      # Preview production build
 - **Supabase Client**: `lib/supabase.ts` — typed singleton, uses `Database` from `lib/database.types.ts`
 - **Auth Types**: `lib/auth.types.ts` — Role, Profile (with phone/bio/language/notifications), SalonMembership (with created_at), permission types
 
+### Password Policy
+- Minimum 8 characters enforced consistently across all auth pages (signup, reset, invitation, profile change)
+
 ### Auth Flow
 1. Unauthenticated → `/login` or `/signup`
 2. Authenticated, no salon → `/create-salon`
@@ -326,7 +333,7 @@ All 4 Edge Functions perform their own auth internally. Deploy via:
 ## Code Conventions
 
 - **Language**: UI text is in French. Code (variables, comments) in English.
-- **Styling**: Tailwind utility classes. Design system uses slate color palette with brand-500 (#ec4899) as accent.
+- **Styling**: Tailwind utility classes. Design system uses slate color palette with blue-500 as accent.
 - **Components**: Functional components with hooks. No class components.
 - **Types**: All domain types in `types.ts`. Use proper TypeScript types, avoid `any`.
 - **IDs**: Use `crypto.randomUUID()` for generating IDs (not `Date.now()`).
