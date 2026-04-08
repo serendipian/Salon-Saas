@@ -386,6 +386,8 @@ export interface ExpenseCategorySetting {
   color: string;
 }
 
+export type PaymentMethod = 'especes' | 'carte' | 'virement' | 'cheque' | 'prelevement';
+
 export interface Expense {
   id: string;
   date: string;
@@ -395,6 +397,7 @@ export interface Expense {
   supplier?: string;
   supplierId?: string;
   proofUrl?: string; // For scanned receipt
+  paymentMethod?: PaymentMethod;
 }
 
 export interface LedgerEntry {

@@ -1,12 +1,20 @@
 
 import React from 'react';
-import { Tag } from 'lucide-react';
-import { Expense } from '../../../types';
+import { Tag, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft } from 'lucide-react';
+import { Expense, PaymentMethod } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
 
-export const ExpenseCard: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
+const PAYMENT_METHOD_LABELS: Record<PaymentMethod, { label: string; icon: React.ReactNode }> = {
+  especes: { label: 'Espèces', icon: <Banknote size={12} /> },
+  carte: { label: 'Carte', icon: <CreditCard size={12} /> },
+  virement: { label: 'Virement', icon: <ArrowRightLeft size={12} /> },
+  cheque: { label: 'Chèque', icon: <FileCheck size={12} /> },
+  prelevement: { label: 'Prélèvement', icon: <Building2 size={12} /> },
+};
+
+export const ExpenseCard: React.FC<{ expenses: Expense[]; onEdit?: (id: string) => void }> = ({ expenses, onEdit }) => {
   const { expenseCategories } = useSettings();
 
   const getCategoryDetails = (id: string) => {
@@ -25,30 +33,37 @@ export const ExpenseCard: React.FC<{ expenses: Expense[] }> = ({ expenses }) => 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3">
       {expenses.map((exp) => {
         const { label, color } = getCategoryDetails(exp.category);
+        const pm = exp.paymentMethod ? PAYMENT_METHOD_LABELS[exp.paymentMethod] : null;
 
         return (
           <div
             key={exp.id}
-            className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 group animate-in fade-in"
+            onClick={() => onEdit?.(exp.id)}
+            className={`bg-white rounded-xl border border-slate-200 shadow-sm p-4 group animate-in fade-in ${onEdit ? 'cursor-pointer hover:border-slate-300 hover:shadow-md transition-all' : ''}`}
           >
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="min-w-0">
                 <p className="font-bold text-slate-800 text-sm truncate">{exp.description}</p>
                 <p className="text-xs text-slate-500 mt-0.5">{new Date(exp.date).toLocaleDateString()}</p>
               </div>
+              <span className="font-bold text-slate-900 text-sm shrink-0">
+                {formatPrice(exp.amount)}
+              </span>
             </div>
 
             {exp.supplier && (
               <p className="text-xs text-slate-600 mb-2">{exp.supplier}</p>
             )}
 
-            <div className="flex items-center justify-between gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border border-white/20 shadow-sm ${color}`}>
                 <Tag size={12} /> {label}
               </span>
-              <span className="font-bold text-slate-900 text-sm">
-                {formatPrice(exp.amount)}
-              </span>
+              {pm && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600">
+                  {pm.icon} {pm.label}
+                </span>
+              )}
             </div>
           </div>
         );

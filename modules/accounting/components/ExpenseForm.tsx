@@ -1,12 +1,20 @@
 
-import React, { useState } from 'react';
-import { ArrowLeft, Save, Trash2 } from 'lucide-react';
-import { Expense, ExpenseCategory } from '../../../types';
-import { Section, Input, Select, TextArea } from '../../../components/FormElements';
+import React, { useState, useMemo } from 'react';
+import { ArrowLeft, Save, Trash2, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft, Info } from 'lucide-react';
+import { Expense, ExpenseCategory, PaymentMethod } from '../../../types';
+import { Section, Input, Select } from '../../../components/FormElements';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import { expenseSchema } from '../schemas';
+
+const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: React.ReactNode }[] = [
+  { value: 'especes', label: 'Espèces', icon: <Banknote size={16} /> },
+  { value: 'carte', label: 'Carte bancaire', icon: <CreditCard size={16} /> },
+  { value: 'virement', label: 'Virement', icon: <ArrowRightLeft size={16} /> },
+  { value: 'cheque', label: 'Chèque', icon: <FileCheck size={16} /> },
+  { value: 'prelevement', label: 'Prélèvement', icon: <Building2 size={16} /> },
+];
 
 interface ExpenseFormProps {
   existingExpense?: Expense;
@@ -27,14 +35,30 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
     description: '',
     amount: 0,
     date: new Date().toISOString().slice(0,10),
-    category: expenseCategories[0]?.id || '',
-    supplier: ''
+    category: '',
+    supplier: '',
+    paymentMethod: undefined,
   });
 
   const [isCustomSupplier, setIsCustomSupplier] = useState(
     isEdit && existingExpense.supplier && !existingExpense.supplierId
   );
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
+
+  // Filter suppliers by selected expense category name
+  const filteredSuppliers = useMemo(() => {
+    if (!formData.category) return suppliers;
+    const selectedCat = expenseCategories.find(c => c.id === formData.category);
+    if (!selectedCat) return suppliers;
+    const catName = selectedCat.name.toLowerCase();
+    const matched = suppliers.filter(s =>
+      s.category && (
+        s.category.toLowerCase().includes(catName) ||
+        catName.includes(s.category.toLowerCase())
+      )
+    );
+    return matched.length > 0 ? matched : suppliers;
+  }, [formData.category, suppliers, expenseCategories]);
 
   const handleSubmit = () => {
     const validated = validate(formData);
@@ -50,6 +74,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
       category: (formData.category || expenseCategories[0]?.id) as ExpenseCategory,
       supplier: selectedSupplier?.name ?? formData.supplier,
       supplierId: selectedSupplier?.id,
+      paymentMethod: formData.paymentMethod,
     };
 
     if (isEdit && onUpdate) {
@@ -57,6 +82,13 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
     } else {
       onSave(expenseData);
     }
+  };
+
+  const handleCategoryChange = (val: string) => {
+    clearFieldError('category');
+    // Reset supplier when category changes (since supplier list will change)
+    setFormData({ ...formData, category: val, supplier: '', supplierId: undefined });
+    setIsCustomSupplier(false);
   };
 
   return (
@@ -91,7 +123,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
                  required
                  error={errors.description}
               />
-              
+
               <div className="grid grid-cols-2 gap-4">
                  <Input
                     label="Montant"
@@ -114,10 +146,24 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
               </div>
            </Section>
 
-           <Section title="Fournisseur">
-              <div>
+           {/* Category → Supplier cascade */}
+           <Section title="Catégorie & Fournisseur">
+              <Select
+                 label="Catégorie"
+                 value={formData.category}
+                 onChange={handleCategoryChange}
+                 error={errors.category}
+                 required
+                 options={expenseCategories.map((cat) => ({
+                    value: cat.id,
+                    label: cat.name,
+                    initials: cat.name.substring(0,2).toUpperCase()
+                 }))}
+              />
+
+              <div className={!formData.category ? 'opacity-50 pointer-events-none' : ''}>
                  <Select
-                    label="Sélectionner un fournisseur"
+                    label="Fournisseur"
                     value={isCustomSupplier ? '__OTHER__' : formData.supplier || ''}
                     onChange={(val) => {
                        if (val === '__OTHER__') {
@@ -129,10 +175,10 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
                        }
                     }}
                     searchable
-                    placeholder="Rechercher un fournisseur..."
+                    placeholder={!formData.category ? 'Sélectionnez une catégorie d\'abord...' : 'Rechercher un fournisseur...'}
                     options={[
                        { value: '', label: 'Non spécifié' },
-                       ...suppliers.map(s => ({
+                       ...filteredSuppliers.map(s => ({
                           value: s.id,
                           label: s.name,
                           subtitle: s.category,
@@ -141,43 +187,61 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
                        { value: '__OTHER__', label: 'Autre / Saisir manuellement...', initials: '+' }
                     ]}
                  />
-                 
-                 {isCustomSupplier && (
-                    <div className="mt-4 animate-in slide-in-from-top-2">
-                       <Input 
-                          label="Nom du fournisseur manuel"
-                          autoFocus
-                          value={formData.supplier}
-                          onChange={(e) => setFormData({...formData, supplier: e.target.value})}
-                          placeholder="Saisir le nom..." 
-                       />
-                    </div>
+                 {!formData.category && (
+                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                       <Info size={12} /> Sélectionnez une catégorie pour filtrer les fournisseurs
+                    </p>
                  )}
+              </div>
+
+              {isCustomSupplier && (
+                 <div className="animate-in slide-in-from-top-2">
+                    <Input
+                       label="Nom du fournisseur manuel"
+                       autoFocus
+                       value={formData.supplier}
+                       onChange={(e) => setFormData({...formData, supplier: e.target.value})}
+                       placeholder="Saisir le nom..."
+                    />
+                 </div>
+              )}
+           </Section>
+
+           {/* Payment Method */}
+           <Section title="Mode de paiement">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                 {PAYMENT_METHODS.map((method) => {
+                    const isSelected = formData.paymentMethod === method.value;
+                    return (
+                       <button
+                          key={method.value}
+                          type="button"
+                          onClick={() => setFormData({
+                             ...formData,
+                             paymentMethod: isSelected ? undefined : method.value,
+                          })}
+                          className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-sm font-medium ${
+                             isSelected
+                                ? 'border-slate-900 bg-slate-900 text-white shadow-md'
+                                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                          }`}
+                       >
+                          {method.icon}
+                          <span className="text-xs">{method.label}</span>
+                       </button>
+                    );
+                 })}
               </div>
            </Section>
         </div>
 
         {/* Right Column */}
         <div className="lg:col-span-1 space-y-6">
-           <Section title="Catégorisation">
-              <Select
-                 label="Catégorie"
-                 value={formData.category}
-                 onChange={(val) => { clearFieldError('category'); setFormData({...formData, category: val as string}); }}
-                 error={errors.category}
-                 options={expenseCategories.map((cat) => ({
-                    value: cat.id,
-                    label: cat.name,
-                    initials: cat.name.substring(0,2).toUpperCase()
-                 }))}
-              />
-           </Section>
-
            <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-sm text-slate-500">
               <p className="mb-2 font-medium text-slate-700">Note:</p>
               <p>Assurez-vous que le montant correspond bien au total TTC de la facture.</p>
            </div>
-           
+
            <div className="flex flex-col gap-3">
              <button
               onClick={onCancel}

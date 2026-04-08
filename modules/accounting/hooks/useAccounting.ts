@@ -70,7 +70,7 @@ export const useAccounting = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('expenses')
-        .select('*, expense_categories(name, color), suppliers(name)')
+        .select('*, expense_categories(name, color), suppliers(name, category)')
         .eq('salon_id', salonId)
         .is('deleted_at', null)
         .order('date', { ascending: false });
@@ -108,6 +108,7 @@ export const useAccounting = () => {
           amount: expense.amount,
           supplier_id: expense.supplierId ?? null,
           proof_url: expense.proofUrl ?? null,
+          payment_method: expense.paymentMethod ?? null,
         })
         .eq('id', expense.id)
         .eq('salon_id', salonId);

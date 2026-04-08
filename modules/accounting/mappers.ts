@@ -1,5 +1,5 @@
 // modules/accounting/mappers.ts
-import type { Expense } from '../../types';
+import type { Expense, PaymentMethod } from '../../types';
 
 // --- Row interfaces matching Supabase JOIN result ---
 
@@ -12,11 +12,12 @@ export interface ExpenseRow {
   amount: number;
   supplier_id: string | null;
   proof_url: string | null;
+  payment_method: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
   expense_categories: { name: string; color: string } | null;
-  suppliers: { name: string } | null;
+  suppliers: { name: string; category: string | null } | null;
 }
 
 // --- Row → Frontend ---
@@ -31,6 +32,7 @@ export function toExpense(row: ExpenseRow): Expense {
     supplier: row.suppliers?.name ?? undefined,
     supplierId: row.supplier_id ?? undefined,
     proofUrl: row.proof_url ?? undefined,
+    paymentMethod: (row.payment_method as PaymentMethod) ?? undefined,
   };
 }
 
@@ -45,5 +47,6 @@ export function toExpenseInsert(expense: Omit<Expense, 'id'>, salonId: string) {
     amount: expense.amount,
     supplier_id: expense.supplierId ?? null,
     proof_url: expense.proofUrl ?? null,
+    payment_method: expense.paymentMethod ?? null,
   };
 }

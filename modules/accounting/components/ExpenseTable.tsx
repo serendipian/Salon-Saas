@@ -1,15 +1,22 @@
 
 import React from 'react';
-import { Tag } from 'lucide-react';
-import { Expense } from '../../../types';
+import { Tag, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft } from 'lucide-react';
+import { Expense, PaymentMethod } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
 
+const PAYMENT_METHOD_LABELS: Record<PaymentMethod, { label: string; icon: React.ReactNode }> = {
+  especes: { label: 'Espèces', icon: <Banknote size={12} /> },
+  carte: { label: 'Carte', icon: <CreditCard size={12} /> },
+  virement: { label: 'Virement', icon: <ArrowRightLeft size={12} /> },
+  cheque: { label: 'Chèque', icon: <FileCheck size={12} /> },
+  prelevement: { label: 'Prélèvement', icon: <Building2 size={12} /> },
+};
+
 export const ExpenseTable: React.FC<{ expenses: Expense[]; onEdit?: (id: string) => void }> = ({ expenses, onEdit }) => {
   const { expenseCategories } = useSettings();
 
-  // Helper to get category details (Label + Color) from ID
   const getCategoryDetails = (id: string) => {
     const category = expenseCategories.find(c => c.id === id);
     if (category) {
@@ -31,12 +38,14 @@ export const ExpenseTable: React.FC<{ expenses: Expense[]; onEdit?: (id: string)
                   <th className="px-6 py-4">Description</th>
                   <th className="px-6 py-4 hidden md:table-cell">Fournisseur</th>
                   <th className="px-6 py-4 hidden lg:table-cell">Catégorie</th>
+                  <th className="px-6 py-4 hidden lg:table-cell">Paiement</th>
                   <th className="px-6 py-4 text-right">Montant</th>
                </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
                {expenses.map((exp) => {
                   const { label, color } = getCategoryDetails(exp.category);
+                  const pm = exp.paymentMethod ? PAYMENT_METHOD_LABELS[exp.paymentMethod] : null;
 
                   return (
                      <tr key={exp.id} onClick={() => onEdit?.(exp.id)} className={`hover:bg-slate-50/80 transition-colors text-sm group ${onEdit ? 'cursor-pointer' : ''}`}>
@@ -47,6 +56,15 @@ export const ExpenseTable: React.FC<{ expenses: Expense[]; onEdit?: (id: string)
                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border border-white/20 shadow-sm ${color}`}>
                               <Tag size={12} /> {label}
                            </span>
+                        </td>
+                        <td className="px-6 py-4 hidden lg:table-cell">
+                           {pm ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600">
+                                 {pm.icon} {pm.label}
+                              </span>
+                           ) : (
+                              <span className="text-slate-400">-</span>
+                           )}
                         </td>
                         <td className="px-6 py-4 text-right font-bold text-slate-900">
                            {formatPrice(exp.amount)}
