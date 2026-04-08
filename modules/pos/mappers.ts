@@ -148,3 +148,37 @@ export function toTransactionRpcPayload(
     p_payments,
   };
 }
+
+// --- Transaction status helpers ---
+
+export type TransactionStatus = 'active' | 'voided' | 'partially_refunded' | 'fully_refunded';
+
+export function getTransactionStatus(
+  transaction: Transaction,
+  allTransactions: Transaction[]
+): TransactionStatus {
+  if (transaction.type !== 'SALE') return 'active';
+
+  const relatedVoid = allTransactions.find(
+    t => t.type === 'VOID' && t.originalTransactionId === transaction.id
+  );
+  if (relatedVoid) return 'voided';
+
+  const refunds = allTransactions.filter(
+    t => t.type === 'REFUND' && t.originalTransactionId === transaction.id
+  );
+  if (refunds.length === 0) return 'active';
+
+  const totalRefunded = refunds.reduce((sum, r) => sum + Math.abs(r.total), 0);
+  if (totalRefunded >= transaction.total - 0.01) return 'fully_refunded';
+  return 'partially_refunded';
+}
+
+export function getRefundedAmount(
+  transactionId: string,
+  allTransactions: Transaction[]
+): number {
+  return allTransactions
+    .filter(t => t.type === 'REFUND' && t.originalTransactionId === transactionId)
+    .reduce((sum, r) => sum + Math.abs(r.total), 0);
+}
