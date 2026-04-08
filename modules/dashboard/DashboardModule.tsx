@@ -234,6 +234,9 @@ export const DashboardModule: React.FC = () => {
       saleCount,
       saleCountTrend: calcTrend(saleCount, prevSaleCount),
 
+      transactionCount: data.current.transactions.length,
+      transactionCountTrend: calcTrend(data.current.transactions.length, data.previous.transactions.length),
+
       totalAppts,
       apptsTrend: calcTrend(totalAppts, prevAppts),
 
@@ -742,9 +745,9 @@ export const DashboardModule: React.FC = () => {
       <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <MetricCard
           title="Transactions"
-          value={stats.saleCount}
-          trend={stats.saleCountTrend}
-          isPositive={stats.saleCountTrend >= 0}
+          value={stats.transactionCount}
+          trend={stats.transactionCountTrend}
+          isPositive={stats.transactionCountTrend >= 0}
           subtitle="vs période préc."
           icon={Receipt}
         />
