@@ -5,15 +5,13 @@
 
 ---
 
-## HIGH (1 remaining) — Performance & Refactoring
+## HIGH (0 remaining) — All Resolved
 
 ### ~~H-1: ClientDetails loads ALL salon appointments~~ RESOLVED
 **Resolved:** 2026-04-08. Created `useClientAppointments(clientId)` hook with `WHERE client_id = $clientId` pushed to DB. Query key `['appointments', salonId, 'client', clientId]` — prefix-matched by existing invalidation. Removed `useAppointments()` from ClientDetails.
 
-### H-2: StaffProfileTab is 719 LOC — largest component
-**File:** `modules/team/components/StaffProfileTab.tsx`
-**Issue:** Handles personal info editing, contract editing, PII editing, photo upload, client portfolio, activity preview, and danger zone — 6 concerns in one file. The shared `draft` state is fragile.
-**Fix:** Extract `PersonalSection`, `ContractSection`, `PiiSection` as separate components with their own local state. Each section's draft should be self-contained.
+### ~~H-2: StaffProfileTab is 719 LOC — largest component~~ RESOLVED
+**Resolved:** 2026-04-08. Split into 6 self-contained section components + shared helpers + thin orchestrator (51 LOC). Each editable section owns its own `editing`/`draft` state — eliminated fragile shared draft pattern.
 
 ### ~~H-3: useTransactions fetches ALL historical transactions~~ RESOLVED
 **Resolved:** 2026-04-08. Added optional `{ from, to }` date range parameter to `useTransactions`. All 7 consumers now pass date ranges pushed to the DB query. POS uses 30-day window; Dashboard/Accounting use current+previous period; Team hooks use their own date range.
