@@ -2,24 +2,20 @@
 
 ## Secrets in Source Control
 
-### PII Encryption Key (PRE-EXISTING — HIGH RISK)
+### PII Encryption Key (RESOLVED — 2026-04-08)
 
-**File:** `supabase/migrations/20260331000001_fix_encryption_key.sql`
-**Key:** `da3686450139467da7f145d3d038234bbf1242e27a1ea96d769ba8e443138b04`
+**Status:** Rotated and secured. The old hardcoded key has been redacted from source control and can no longer decrypt any data.
 
-This is the pgcrypto symmetric key used to encrypt/decrypt staff PII (salary, IBAN, SSN). It is hardcoded as a fallback in the `encrypt_pii` and `decrypt_pii` SQL functions.
+**What was done:**
+1. Migrated `encrypt_pii`/`decrypt_pii` to read from Supabase Vault (`vault.secrets`, name = `pii_encryption_key`) — see migration `20260405150001`
+2. Generated a new 256-bit key and re-encrypted all 30 staff PII records in a single transaction
+3. Updated Vault secret to the new key via `vault.update_secret()`
+4. Verified decryption works end-to-end; confirmed old key returns "Wrong key or corrupt data"
+5. Redacted the old key from `supabase/migrations/20260331000001_fix_encryption_key.sql`
 
-**Why it's there:** Supabase doesn't grant superuser access, so `ALTER DATABASE SET "app.encryption_key"` isn't available. The key was embedded directly as a fallback in SECURITY DEFINER functions.
+**Current state:** The encryption key exists only in Supabase Vault (server-side, not in source control). The `encrypt_pii`/`decrypt_pii` SECURITY DEFINER functions read from `vault.decrypted_secrets` at runtime. All 33 PII records (30 active + 3 archived staff) verified decrypting correctly.
 
-**Risk:** Anyone with read access to this repository can decrypt all staff PII stored in the database.
-
-**Recommended fix (future session):**
-1. Use Supabase Vault (`vault.secrets`) to store the key — accessible from SQL but not in source control
-2. Update `encrypt_pii`/`decrypt_pii` to read from Vault instead of hardcoded fallback
-3. Rotate the key and re-encrypt all existing PII data
-4. Redact the key from the migration file (it's already applied)
-
-This requires careful planning since re-encryption affects all existing PII data. Do NOT attempt without a backup.
+**Residual risk — git history:** The old key remains in git history (commits before `0654111`). Since the key was rotated, it cannot decrypt current data. However, any **Supabase database backup taken before 2026-04-08** could still be decrypted with the old key. If such backups are retained, treat them as sensitive. To fully purge the key from history, use `git filter-repo` or BFG Repo Cleaner followed by a force-push (optional — the key is now useless against live data).
 
 ### expire-trials Secret (RESOLVED)
 

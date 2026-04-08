@@ -34,13 +34,10 @@ LANGUAGE sql STABLE SECURITY DEFINER AS $$
 $$;
 
 -- Step 3: Migrate existing plaintext data (if any exists)
--- Uses a temporary key for migration; production should use a proper secret
-UPDATE staff_members
-SET
-  iban_encrypted = CASE WHEN iban IS NOT NULL THEN extensions.pgp_sym_encrypt(iban, 'CHANGE_ME_IN_PRODUCTION') END,
-  ssn_encrypted = CASE WHEN social_security_number IS NOT NULL THEN extensions.pgp_sym_encrypt(social_security_number, 'CHANGE_ME_IN_PRODUCTION') END,
-  salary_encrypted = CASE WHEN base_salary IS NOT NULL THEN extensions.pgp_sym_encrypt(base_salary::text, 'CHANGE_ME_IN_PRODUCTION') END
-WHERE iban IS NOT NULL OR social_security_number IS NOT NULL OR base_salary IS NOT NULL;
+-- REDACTED: Originally used a temporary migration key. This migration ran on an empty
+-- table (seed data comes later), so no rows were affected. The encryption key has since
+-- been rotated and lives in Supabase Vault. This migration is already applied.
+-- No action needed.
 
 -- Step 4: Drop plaintext columns
 ALTER TABLE staff_members
