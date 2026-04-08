@@ -194,6 +194,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const m = userMemberships[0];
             setActiveSalon(m.salon);
             setRole(m.role);
+          } else if (userMemberships.length > 1) {
+            // Try to restore last salon (same logic as initializeAuth)
+            const lastSalonId = localStorage.getItem('lastSalonId');
+            const lastMembership = lastSalonId
+              ? userMemberships.find(m => m.salon_id === lastSalonId)
+              : null;
+            if (lastMembership) {
+              setActiveSalon(lastMembership.salon);
+              setRole(lastMembership.role);
+            }
           }
         } else if (event === 'SIGNED_OUT') {
           setUser(null);

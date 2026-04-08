@@ -48,12 +48,9 @@ export const ProfileDangerZone: React.FC = () => {
 
     addToast({ type: 'success', message: 'Vous avez quitté le salon' });
 
-    const remainingMemberships = memberships.filter(m => m.id !== currentMembership.id);
-    if (remainingMemberships.length > 0) {
-      navigate('/select-salon');
-    } else {
-      navigate('/create-salon');
-    }
+    // Sign out to clear all stale state (activeSalon, memberships, etc.)
+    // The user will be redirected to login and can re-authenticate cleanly
+    await supabase.auth.signOut();
   };
 
   return (

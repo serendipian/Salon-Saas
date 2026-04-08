@@ -43,7 +43,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
   const handleSave = () => {
     const validated = validate(formData);
     if (!validated) return;
-    onSave(formData);
+    onSave({ ...formData, ...validated });
   };
 
   const addVariant = () => {

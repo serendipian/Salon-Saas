@@ -71,7 +71,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, 
     e.preventDefault();
     const validated = validate(formData);
     if (validated) {
-      onSave(formData as Client);
+      onSave({ ...formData, ...validated } as Client);
     }
   };
 

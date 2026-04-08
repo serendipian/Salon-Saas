@@ -1,5 +1,4 @@
 
-import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
@@ -12,7 +11,6 @@ export const useClients = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState('');
   const { toastOnError } = useMutationToast();
   useRealtimeSync('clients');
 
@@ -88,22 +86,10 @@ export const useClients = () => {
     onError: toastOnError("Impossible de supprimer le client"),
   });
 
-  const filteredClients = useMemo(() => {
-    if (!searchTerm) return clients;
-    const term = searchTerm.toLowerCase();
-    return clients.filter(c =>
-      c.lastName.toLowerCase().includes(term) ||
-      c.firstName.toLowerCase().includes(term) ||
-      c.phone.includes(searchTerm)
-    );
-  }, [clients, searchTerm]);
-
   return {
-    clients: filteredClients,
+    clients,
     allClients: clients,
     isLoading,
-    searchTerm,
-    setSearchTerm,
     addClient: (client: Client) => addClientMutation.mutate(client),
     updateClient: (client: Client) => updateClientMutation.mutate(client),
     deleteClient: (id: string) => deleteClientMutation.mutateAsync(id),

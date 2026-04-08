@@ -51,7 +51,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
   const handleSave = () => {
     const validated = validate(formData);
     if (!validated) return;
-    onSave(formData, supplierId || null);
+    onSave({ ...formData, ...validated }, supplierId || null);
   };
 
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';

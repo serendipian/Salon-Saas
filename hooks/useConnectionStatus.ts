@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
@@ -7,71 +7,98 @@ export type ConnectionState = 'connected' | 'reconnecting' | 'disconnected';
 
 const DISCONNECT_THRESHOLD_MS = 30_000;
 
+// Module-level singleton — one channel shared by all consumers
+let subscriberCount = 0;
+let channel: ReturnType<typeof supabase.channel> | null = null;
+let disconnectedAt: number | null = null;
+let wasDisconnected = false;
+let currentState: ConnectionState = 'connected';
+const listeners = new Set<() => void>();
+
+function notifyListeners() {
+  listeners.forEach(fn => fn());
+}
+
+function evaluateStateInternal() {
+  if (disconnectedAt === null) {
+    if (wasDisconnected) {
+      wasDisconnected = false;
+    }
+    currentState = 'connected';
+  } else {
+    const elapsed = Date.now() - disconnectedAt;
+    currentState = elapsed >= DISCONNECT_THRESHOLD_MS ? 'disconnected' : 'reconnecting';
+  }
+  notifyListeners();
+}
+
+function startMonitoring() {
+  if (channel) return;
+  channel = supabase
+    .channel('connection-monitor')
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        disconnectedAt = null;
+        evaluateStateInternal();
+      } else if (status === 'TIMED_OUT' || status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+        if (disconnectedAt === null) {
+          disconnectedAt = Date.now();
+          wasDisconnected = true;
+        }
+        evaluateStateInternal();
+      }
+    });
+}
+
+function stopMonitoring() {
+  if (channel) {
+    supabase.removeChannel(channel);
+    channel = null;
+  }
+}
+
 export function useConnectionStatus(): ConnectionState {
-  const [state, setState] = useState<ConnectionState>('connected');
   const queryClient = useQueryClient();
   const { addToast } = useToast();
-  const disconnectedAtRef = useRef<number | null>(null);
-  const wasDisconnectedRef = useRef(false);
+  const prevStateRef = useRef(currentState);
 
-  const evaluateState = useCallback(() => {
-    if (disconnectedAtRef.current === null) {
-      // Connected
-      if (wasDisconnectedRef.current) {
-        wasDisconnectedRef.current = false;
-        // Reconnected — invalidate active queries to catch up
-        queryClient.invalidateQueries({ refetchType: 'active' });
-        addToast({ type: 'success', message: 'Connexion rétablie' });
-      }
-      setState('connected');
-      return;
-    }
+  // Subscribe to singleton state changes
+  const state = useSyncExternalStore(
+    (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
+    () => currentState,
+  );
 
-    const elapsed = Date.now() - disconnectedAtRef.current;
-    if (elapsed >= DISCONNECT_THRESHOLD_MS) {
-      setState('disconnected');
-    } else {
-      setState('reconnecting');
-    }
-  }, [queryClient, addToast]);
-
+  // Manage channel lifecycle via ref counting
   useEffect(() => {
-    const channel = supabase
-      .channel('connection-monitor')
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          disconnectedAtRef.current = null;
-          evaluateState();
-        } else if (status === 'TIMED_OUT' || status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-          if (disconnectedAtRef.current === null) {
-            disconnectedAtRef.current = Date.now();
-            wasDisconnectedRef.current = true;
-          }
-          evaluateState();
-        }
-      });
+    subscriberCount++;
+    if (subscriberCount === 1) startMonitoring();
 
     // Timer to transition from reconnecting → disconnected after 30s
     const interval = setInterval(() => {
-      if (disconnectedAtRef.current !== null) {
-        evaluateState();
-      }
+      if (disconnectedAt !== null) evaluateStateInternal();
     }, 5000);
 
-    // Re-evaluate on tab visibility change (timers may have drifted)
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        evaluateState();
-      }
+      if (document.visibilityState === 'visible') evaluateStateInternal();
     };
     document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
-      supabase.removeChannel(channel);
+      subscriberCount--;
       clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibility);
+      if (subscriberCount === 0) stopMonitoring();
     };
-  }, [evaluateState]);
+  }, []);
+
+  // React to state transitions (reconnect → invalidate queries + toast)
+  useEffect(() => {
+    if (prevStateRef.current !== 'connected' && state === 'connected' && prevStateRef.current !== state) {
+      queryClient.invalidateQueries({ refetchType: 'active' });
+      addToast({ type: 'success', message: 'Connexion rétablie' });
+    }
+    prevStateRef.current = state;
+  }, [state, queryClient, addToast]);
 
   return state;
 }

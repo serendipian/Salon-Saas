@@ -121,7 +121,14 @@ export const useTeam = (includeArchived = false) => {
         .eq('id', member.id)
         .eq('salon_id', salonId);
       if (error) throw error;
-      await savePiiFields(member.id, member);
+      // PII save is best-effort — non-PII update already succeeded
+      try {
+        await savePiiFields(member.id, member);
+      } catch {
+        // Invalidate so UI reflects the non-PII changes that did save
+        queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });
+        throw new Error('Profil mis à jour, mais les données sensibles (salaire, IBAN) n\'ont pas pu être enregistrées.');
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });

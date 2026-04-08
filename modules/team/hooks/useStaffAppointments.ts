@@ -9,10 +9,15 @@ export const useStaffAppointments = (staffId: string, schedule?: WorkSchedule) =
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id;
 
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const weekEnd = new Date(today);
-  weekEnd.setDate(weekEnd.getDate() + 7);
+  // Stable date references — only recompute if the calendar day changes
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const { today, weekEnd } = useMemo(() => {
+    const [y, m, d] = todayKey.split('-').map(Number);
+    const t = new Date(y, m - 1, d);
+    const w = new Date(t);
+    w.setDate(w.getDate() + 7);
+    return { today: t, weekEnd: w };
+  }, [todayKey]);
 
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ['staff_appointments', salonId, staffId, today.toISOString()],
@@ -34,7 +39,7 @@ export const useStaffAppointments = (staffId: string, schedule?: WorkSchedule) =
   });
 
   const todayAppointments = useMemo(
-    () => appointments.filter((a: any) => new Date(a.date).toDateString() === today.toDateString()),
+    () => appointments.filter((a) => new Date(a.date).toDateString() === today.toDateString()),
     [appointments, today]
   );
 
