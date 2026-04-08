@@ -7,21 +7,34 @@ import type { CartItem, PaymentEntry } from '../types';
 import { useRealtimeSync } from './useRealtimeSync';
 import { useMutationToast } from './useMutationToast';
 
-export const useTransactions = () => {
+export interface TransactionQueryOptions {
+  from?: string; // ISO date string
+  to?: string;   // ISO date string
+}
+
+export const useTransactions = (options?: TransactionQueryOptions) => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const { toastOnError } = useMutationToast();
   useRealtimeSync('transactions');
 
+  const from = options?.from;
+  const to = options?.to;
+
   const { data: transactions = [], isLoading } = useQuery({
-    queryKey: ['transactions', salonId],
+    queryKey: ['transactions', salonId, from ?? 'all', to ?? 'all'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('transactions')
         .select('*, transaction_items(*), transaction_payments(*), clients(first_name, last_name)')
         .eq('salon_id', salonId)
         .order('date', { ascending: false });
+
+      if (from) query = query.gte('date', from);
+      if (to) query = query.lte('date', to);
+
+      const { data, error } = await query;
       if (error) throw error;
       return (data as unknown as TransactionRow[]).map(toTransaction);
     },
@@ -51,10 +64,12 @@ export const useTransactions = () => {
       if (error) throw error;
     },
     onSuccess: () => {
+      // Prefix match: invalidates ALL ['transactions', salonId, ...] regardless of date params
       queryClient.invalidateQueries({ queryKey: ['transactions', salonId] });
-      // RPC decrements product stock, so invalidate products too
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
       queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
+      // Also invalidate new client count since a new transaction could change the metric
+      queryClient.invalidateQueries({ queryKey: ['new_client_count', salonId] });
     },
     onError: toastOnError("Impossible de créer la transaction"),
   });
