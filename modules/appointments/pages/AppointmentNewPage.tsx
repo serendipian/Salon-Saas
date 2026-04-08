@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppointments } from '../hooks/useAppointments';
 import { useClients } from '../../clients/hooks/useClients';
 import { useServices } from '../../services/hooks/useServices';
@@ -14,6 +14,7 @@ import AppointmentBuilderMobile from '../components/AppointmentBuilderMobile';
 
 export const AppointmentNewPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { activeSalon } = useAuth();
   const { addToast } = useToast();
   const { isMobile } = useMediaQuery();
@@ -45,6 +46,8 @@ export const AppointmentNewPage: React.FC = () => {
     navigate('/calendar');
   };
 
+  const preselectedClientId = searchParams.get('clientId');
+
   const sharedProps = {
     services,
     categories: serviceCategories,
@@ -53,6 +56,7 @@ export const AppointmentNewPage: React.FC = () => {
     appointments: allAppointments,
     onSave: handleSave,
     onCancel: () => navigate('/calendar'),
+    ...(preselectedClientId ? { initialData: { clientId: preselectedClientId } } : {}),
   };
 
   if (isMobile) {

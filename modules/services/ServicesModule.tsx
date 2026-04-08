@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { ViewState, Service } from '../../types';
 import { useServices } from './hooks/useServices';
 import { ServiceList } from './components/ServiceList';
@@ -9,6 +10,7 @@ export const ServicesModule: React.FC = () => {
   const {
     services,
     serviceCategories,
+    isLoading,
     searchTerm,
     setSearchTerm,
     addService,
@@ -37,6 +39,14 @@ export const ServicesModule: React.FC = () => {
     }
     setView('LIST');
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={24} className="animate-spin text-slate-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">

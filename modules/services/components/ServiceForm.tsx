@@ -122,7 +122,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
                             suffix="min"
                             type="number"
                             value={variant.durationMinutes}
-                            onChange={e => updateVariant(variant.id, 'durationMinutes', parseInt(e.target.value))}
+                            onChange={e => updateVariant(variant.id, 'durationMinutes', parseInt(e.target.value) || 0)}
                           />
                       </div>
                       <div className="col-span-2">
@@ -131,7 +131,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
                             prefix={currencySymbol}
                             type="number"
                             value={variant.price}
-                            onChange={e => updateVariant(variant.id, 'price', parseFloat(e.target.value))}
+                            onChange={e => updateVariant(variant.id, 'price', parseFloat(e.target.value) || 0)}
                           />
                       </div>
                       <div className="col-span-2">
@@ -139,7 +139,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
                             label="Coût"
                             type="number"
                             value={variant.cost}
-                            onChange={e => updateVariant(variant.id, 'cost', parseFloat(e.target.value))}
+                            onChange={e => updateVariant(variant.id, 'cost', parseFloat(e.target.value) || 0)}
                           />
                       </div>
                       <div className="col-span-2">
@@ -149,7 +149,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
                             min={0}
                             step={0.01}
                             value={variant.additionalCost}
-                            onChange={e => updateVariant(variant.id, 'additionalCost', parseFloat(e.target.value))}
+                            onChange={e => updateVariant(variant.id, 'additionalCost', parseFloat(e.target.value) || 0)}
                           />
                       </div>
                     </div>

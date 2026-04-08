@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { ViewState, Product } from '../../types';
 import { useProducts } from './hooks/useProducts';
 import { useBilling } from '../billing/hooks/useBilling';
@@ -13,6 +14,7 @@ export const ProductsModule: React.FC = () => {
     allProducts,
     productCategories,
     brands,
+    isLoading,
     searchTerm,
     setSearchTerm,
     addProduct,
@@ -47,6 +49,14 @@ export const ProductsModule: React.FC = () => {
     }
     setView('LIST');
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={24} className="animate-spin text-slate-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full relative">

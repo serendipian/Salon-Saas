@@ -34,7 +34,7 @@ export default function AppointmentBuilder({
               <ArrowLeft size={18} className="text-slate-500" />
             </button>
             <h3 className="text-lg font-semibold text-slate-900">
-              {form.initialData ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous'}
+              {form.initialData?.serviceBlocks ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous'}
             </h3>
           </div>
           <div className="flex gap-2">

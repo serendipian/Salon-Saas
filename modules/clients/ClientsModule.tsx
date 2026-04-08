@@ -1,5 +1,7 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { Client, ViewState } from '../../types';
 import { useClients } from './hooks/useClients';
 import { useAuth } from '../../context/AuthContext';
@@ -9,7 +11,8 @@ import { ClientDetails } from './components/ClientDetails';
 import { ClientForm } from './components/ClientForm';
 
 export const ClientsModule: React.FC = () => {
-  const { clients, addClient, updateClient, deleteClient } = useClients();
+  const { clients, isLoading, addClient, updateClient, deleteClient } = useClients();
+  const navigate = useNavigate();
   const { role } = useAuth();
   const permissions = usePermissions(role);
   const canDelete = permissions.can('delete', 'clients');
@@ -31,8 +34,8 @@ export const ClientsModule: React.FC = () => {
     setView('DETAILS');
   };
 
-  const handleSchedule = (_id: string) => {
-    // TODO: Navigate to /calendar?clientId=id to pre-select this client
+  const handleSchedule = (id: string) => {
+    navigate(`/calendar/new?clientId=${id}`);
   };
 
   const handleDelete = async (id: string) => {
@@ -61,6 +64,14 @@ export const ClientsModule: React.FC = () => {
   };
 
   const selectedClient = clients.find(c => c.id === selectedClientId);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={24} className="animate-spin text-slate-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">

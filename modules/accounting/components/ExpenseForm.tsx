@@ -9,11 +9,12 @@ import { useFormValidation } from '../../../hooks/useFormValidation';
 import { expenseSchema } from '../schemas';
 
 interface ExpenseFormProps {
-  onSave: (e: Expense) => void;
+  onSave: (e: Omit<Expense, 'id'>) => void;
   onCancel: () => void;
+  isPending?: boolean;
 }
 
-export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) => {
+export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel, isPending }) => {
   const { expenseCategories, salonSettings } = useSettings();
   const { allSuppliers: suppliers } = useSuppliers();
   const { errors, validate, clearFieldError } = useFormValidation(expenseSchema);
@@ -37,7 +38,6 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) =>
       ? suppliers.find(s => s.id === formData.supplier)
       : undefined;
     onSave({
-      id: crypto.randomUUID(),
       description: formData.description!,
       amount: Number(formData.amount),
       date: formData.date || new Date().toISOString(),
@@ -56,12 +56,13 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel }) =>
         </button>
         <h1 className="text-xl font-bold text-slate-900">Nouvelle Dépense</h1>
         <div className="ml-auto">
-           <button 
+           <button
              onClick={handleSubmit}
-             className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
+             disabled={isPending}
+             className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
            >
              <Save size={16} />
-             Enregistrer
+             {isPending ? 'Enregistrement...' : 'Enregistrer'}
            </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { Lock, Loader2, CheckCircle } from 'lucide-react';
 
 export const ResetPasswordPage: React.FC = () => {
@@ -11,6 +12,27 @@ export const ResetPasswordPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [isRecovery, setIsRecovery] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecovery(true);
+        setChecking(false);
+      }
+    });
+
+    // If no event fires within 2s, user navigated here directly
+    const timeout = setTimeout(() => {
+      setChecking(false);
+    }, 2000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +58,35 @@ export const ResetPasswordPage: React.FC = () => {
     }
     setIsSubmitting(false);
   };
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+        <Loader2 size={24} className="animate-spin text-slate-400" />
+      </div>
+    );
+  }
+
+  if (!isRecovery) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4">
+        <div className="w-full max-w-md text-center">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-8">
+            <h2 className="text-lg font-semibold text-slate-900 mb-2">Lien invalide ou expiré</h2>
+            <p className="text-sm text-slate-500 mb-4">
+              Veuillez demander un nouveau lien de réinitialisation.
+            </p>
+            <button
+              onClick={() => navigate('/forgot-password', { replace: true })}
+              className="px-4 py-2.5 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-all"
+            >
+              Demander un nouveau lien
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4">

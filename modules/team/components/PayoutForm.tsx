@@ -37,13 +37,18 @@ export const PayoutForm: React.FC<PayoutFormProps> = ({
   const [end, setEnd] = useState(periodEnd);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [dateError, setDateError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
     setSubmitting(true);
     try {
-      if (end < start) return;
+      if (end < start) {
+        setDateError('La date de fin doit être après la date de début');
+        setSubmitting(false);
+        return;
+      }
       await onSubmit({
         type,
         amount,
@@ -123,7 +128,7 @@ export const PayoutForm: React.FC<PayoutFormProps> = ({
               <input
                 type="date"
                 value={start}
-                onChange={(e) => setStart(e.target.value)}
+                onChange={(e) => { setStart(e.target.value); setDateError(''); }}
                 className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm"
               />
             </div>
@@ -135,11 +140,12 @@ export const PayoutForm: React.FC<PayoutFormProps> = ({
                 type="date"
                 value={end}
                 min={start}
-                onChange={(e) => setEnd(e.target.value)}
+                onChange={(e) => { setEnd(e.target.value); setDateError(''); }}
                 className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm"
               />
             </div>
           </div>
+          {dateError && <p className="text-xs text-red-600 mt-1">{dateError}</p>}
 
           {/* Notes */}
           <div>

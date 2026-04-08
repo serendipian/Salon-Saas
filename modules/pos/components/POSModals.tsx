@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Clock, Receipt, Printer, Mail, User, Scissors, ShoppingBag, StickyNote, CreditCard, Banknote, Smartphone, Gift } from 'lucide-react';
+import { X, Clock, Receipt, User, Scissors, ShoppingBag, StickyNote, CreditCard, Banknote, Smartphone, Gift } from 'lucide-react';
 import { CartItem, Service, ServiceVariant, Transaction } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
@@ -363,12 +363,9 @@ export const ReceiptModal: React.FC<{
         </div>
 
         {/* Sticky footer */}
-        <div className="shrink-0 px-5 py-4 border-t border-slate-200 bg-white flex gap-3" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
-          <button className="flex-1 py-3 border border-slate-300 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-50 flex items-center justify-center gap-2 shadow-sm min-h-[44px]">
-            <Mail size={16} /> Email
-          </button>
-          <button className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm min-h-[44px]">
-            <Printer size={16} /> Imprimer
+        <div className="shrink-0 px-5 py-4 border-t border-slate-200 bg-white" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
+          <button onClick={onClose} className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm min-h-[44px]">
+            Fermer
           </button>
         </div>
       </div>,
@@ -429,12 +426,9 @@ export const ReceiptModal: React.FC<{
           </div>
         </div>
 
-        <div className="p-4 border-t border-slate-100 bg-white flex gap-3">
-           <button className="flex-1 py-2.5 border border-slate-300 text-slate-700 rounded-lg font-bold text-sm hover:bg-slate-50 flex items-center justify-center gap-2 shadow-sm">
-              <Mail size={16} /> Email
-           </button>
-           <button className="flex-1 py-2.5 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm">
-              <Printer size={16} /> Imprimer
+        <div className="p-4 border-t border-slate-100 bg-white">
+           <button onClick={onClose} className="w-full py-2.5 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm">
+              Fermer
            </button>
         </div>
       </div>

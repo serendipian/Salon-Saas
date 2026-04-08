@@ -41,8 +41,10 @@ export function BrandsTab() {
   };
 
   const hasChanges = JSON.stringify(localBrands) !== JSON.stringify(brands);
+  const hasEmptyNames = localBrands.some(b => !b.name.trim());
 
   const handleSave = () => {
+    if (hasEmptyNames) return;
     updateBrands(localBrands);
   };
 
@@ -80,7 +82,7 @@ export function BrandsTab() {
               value={brand.name}
               onChange={(e) => handleUpdateBrand(brand.id, { name: e.target.value })}
               placeholder="Nom de la marque"
-              className="flex-1 px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none"
+              className={`flex-1 px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none ${!brand.name.trim() ? 'border-red-300 bg-red-50' : 'border-slate-200'}`}
             />
 
             <select
@@ -125,9 +127,9 @@ export function BrandsTab() {
 
         <button
           onClick={handleSave}
-          disabled={!hasChanges}
+          disabled={!hasChanges || hasEmptyNames}
           className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-            hasChanges
+            hasChanges && !hasEmptyNames
               ? 'bg-slate-900 text-white hover:bg-slate-800'
               : 'bg-slate-100 text-slate-400 cursor-not-allowed'
           }`}

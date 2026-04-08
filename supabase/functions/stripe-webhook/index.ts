@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
         }, { onConflict: 'salon_id' });
 
         await supabase.from('salons')
-          .update({ subscription_tier: tier })
+          .update({ subscription_tier: tier, trial_ends_at: null })
           .eq('id', salonId);
         break;
       }
@@ -88,7 +88,10 @@ Deno.serve(async (req) => {
         }).eq('stripe_subscription_id', sub.id);
 
         await supabase.from('salons')
-          .update({ subscription_tier: sub.status === 'past_due' ? 'past_due' : tier })
+          .update({
+            subscription_tier: sub.status === 'past_due' ? 'past_due' : tier,
+            trial_ends_at: null,
+          })
           .eq('id', subscription.salon_id);
         break;
       }

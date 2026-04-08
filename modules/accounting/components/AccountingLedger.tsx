@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowUpRight, ArrowDownRight, Filter, Search } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { LedgerEntry } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
@@ -15,12 +15,8 @@ export const AccountingLedger: React.FC<{ data: LedgerEntry[] }> = ({ data }) =>
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in">
-      <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+      <div className="p-4 border-b border-slate-200 bg-slate-50">
          <h3 className="font-bold text-slate-900 text-sm">Grand Livre Journalier</h3>
-         <div className="flex gap-2">
-            <button className="p-2 bg-white border border-slate-300 rounded-lg text-slate-600 hover:text-slate-900 transition-colors"><Filter size={16} /></button>
-            <button className="p-2 bg-white border border-slate-300 rounded-lg text-slate-600 hover:text-slate-900 transition-colors"><Search size={16} /></button>
-         </div>
       </div>
       <div className="overflow-x-auto">
          <table className="w-full text-left border-collapse">

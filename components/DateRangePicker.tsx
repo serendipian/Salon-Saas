@@ -43,7 +43,9 @@ const PRESETS = [
   }},
   { label: "Ce mois-ci", getValue: () => {
       const now = new Date();
-      return { from: new Date(now.getFullYear(), now.getMonth(), 1), to: new Date(now.setHours(23,59,59,999)) };
+      const to = new Date(now);
+      to.setHours(23,59,59,999);
+      return { from: new Date(now.getFullYear(), now.getMonth(), 1), to };
   }},
   { label: "Le mois dernier", getValue: () => {
       const now = new Date();
@@ -54,7 +56,9 @@ const PRESETS = [
   }},
   { label: "Cette année", getValue: () => {
       const now = new Date();
-      return { from: new Date(now.getFullYear(), 0, 1), to: new Date(now.setHours(23,59,59,999)) };
+      const to = new Date(now);
+      to.setHours(23,59,59,999);
+      return { from: new Date(now.getFullYear(), 0, 1), to };
   }},
 ];
 

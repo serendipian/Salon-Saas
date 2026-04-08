@@ -37,7 +37,7 @@ export default function AppointmentBuilderMobile({
 
   const form = useAppointmentForm(hookProps);
 
-  const isEditing = !!hookProps.initialData;
+  const isEditing = !!hookProps.initialData?.serviceBlocks;
 
   // Find selected client from props
   const selectedClient = useMemo(() => {

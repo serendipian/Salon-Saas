@@ -447,35 +447,36 @@ export const useAccounting = () => {
     const isMonthly = daysDiff > 60;
     const map = new Map<string, { name: string; sortKey: number; sales: number; expenses: number }>();
 
+    const toChartKey = (d: Date) => isMonthly
+      ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    const toDisplayName = (d: Date) => isMonthly
+      ? d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })
+      : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+
     const current = new Date(from);
     while (current <= to) {
-      let key, sortKey;
+      const key = toChartKey(current);
+      const sortKey = isMonthly
+        ? current.getFullYear() * 100 + current.getMonth()
+        : current.getTime();
+      if (!map.has(key)) map.set(key, { name: toDisplayName(current), sortKey, sales: 0, expenses: 0 });
       if (isMonthly) {
-        key = current.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
-        sortKey = current.getFullYear() * 100 + current.getMonth();
         current.setMonth(current.getMonth() + 1);
         current.setDate(1);
       } else {
-        key = current.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-        sortKey = current.getTime();
         current.setDate(current.getDate() + 1);
       }
-      if (!map.has(key)) map.set(key, { name: key, sortKey, sales: 0, expenses: 0 });
     }
 
     data.current.transactions.forEach((t: Transaction) => {
-      const d = new Date(t.date);
-      const key = isMonthly
-        ? d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })
-        : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      const key = toChartKey(new Date(t.date));
       if (map.has(key)) map.get(key)!.sales += t.total;
     });
 
     data.current.expenses.forEach((e: Expense) => {
-      const d = new Date(e.date);
-      const key = isMonthly
-        ? d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })
-        : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      const key = toChartKey(new Date(e.date));
       if (map.has(key)) map.get(key)!.expenses += e.amount;
     });
 
@@ -491,6 +492,7 @@ export const useAccounting = () => {
     ledgerData,
     chartData,
     addExpense,
+    isAddingExpense: addExpenseMutation.isPending,
     // Revenue breakdowns & metrics
     revenueByServiceCategory,
     revenueByProductCategory,

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, Calendar, User, Scissors, Printer, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Scissors, Trash2 } from 'lucide-react';
 import { Appointment, AppointmentStatus } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { StatusBadge } from './StatusBadge';
@@ -29,10 +29,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointm
         </button>
         <h1 className="text-xl font-bold text-slate-900">Détails du Rendez-vous</h1>
         <div className="ml-auto flex gap-3">
-           <button className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium text-sm hover:bg-slate-50 shadow-sm transition-all flex items-center gap-2">
-             <Printer size={16} />
-             Imprimer Ticket
-           </button>
            {onDelete && (
              <button
                onClick={() => setShowConfirm(true)}
@@ -88,7 +84,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointm
                <div>
                  <div className="text-sm font-medium text-slate-500">Client</div>
                  <div className="font-semibold text-slate-900">{appointment.clientName}</div>
-                 <button className="text-sm text-slate-900 underline hover:text-slate-600 font-medium cursor-pointer">Voir le profil</button>
                </div>
              </div>
 

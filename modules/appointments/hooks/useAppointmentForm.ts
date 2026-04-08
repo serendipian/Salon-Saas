@@ -36,11 +36,11 @@ export interface UseAppointmentFormProps {
   }) => Promise<void> | void;
   excludeAppointmentIds?: string[];
   initialData?: {
-    clientId: string;
-    status: AppointmentStatus;
-    notes: string;
-    reminderMinutes: number | null;
-    serviceBlocks: ServiceBlockState[];
+    clientId?: string;
+    status?: AppointmentStatus;
+    notes?: string;
+    reminderMinutes?: number | null;
+    serviceBlocks?: ServiceBlockState[];
   };
 }
 

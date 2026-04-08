@@ -12,12 +12,12 @@ Work through one batch per session. Start each session with:
 
 | Batch | Theme | Items | Effort |
 |---|---|---|---|
-| **1** | Quick cross-cutting fixes | Loading states (4 modules), NaN on empty input (7 files), double-submit guard (ExpenseForm) | ~5 min each |
-| **2** | Non-functional buttons | Remove or implement 6 dead buttons across modules | ~3 min each |
-| **3** | Accounting fixes | Chart key collisions, weekly expense omission, VAT caveat, expense category mapping, ExpenseForm cleanup, calcTrend export | ~10 min each |
-| **4** | Team constants + photo | Extract CONTRACT_LABELS/COLORS 3x duplication, StaffHeader photo rendering, PayoutForm date validation, useStaffCompensation `any` types | ~5 min each |
-| **5** | DRY refactors | CategoriesTab duplication (Services vs Products), settings pages duplication | ~30 min |
-| **6** | Remaining misc | Billing (stripe-webhook trial_ends_at, UpgradeModal hardcode, PlanCards trial button, TrialBanner fallback), Auth (ResetPasswordPage access), Shared (MediaQueryContext, PhoneInput, DateRangePicker, ClientForm, ClientDetails guard, client schemas, window.confirm) | ~5 min each |
+| ~~**1**~~ | ~~Quick cross-cutting fixes~~ | ~~NaN on empty input, double-submit guard, BrandsTab validation, CategoriesTab double call, DateRangePicker mutation, ClientDetails guard, PayoutForm date error, ExpenseForm UUID~~ | **DONE** |
+| ~~**2**~~ | ~~Loading states + non-functional buttons~~ | ~~Loading states (3 modules), dead buttons removed/implemented~~ | **DONE** |
+| **3** | Accounting fixes | ~~Chart key collisions~~, weekly expense omission, VAT caveat, expense category mapping, ExpenseForm category default, calcTrend export, unconditional hooks | ~10 min each |
+| **4** | Team constants + photo | Extract CONTRACT_LABELS/COLORS 3x duplication, StaffHeader photo rendering, useStaffCompensation `any` types | ~5 min each |
+| **5** | DRY refactors | CategoriesTab duplication (Services vs Products), settings pages duplication, hardcoded calendar hours | ~30 min |
+| **6** | Remaining misc | Billing (~~stripe-webhook trial_ends_at~~, UpgradeModal hardcode, PlanCards trial button, TrialBanner fallback), Auth (~~ResetPasswordPage access~~), Shared (MediaQueryContext, PhoneInput, ~~AccountingSettings keystroke~~), Clients (ClientForm read-only fields, schemas, window.confirm) | ~5 min each |
 
 ---
 
@@ -37,23 +37,7 @@ Work through one batch per session. Start each session with:
 
 ---
 
-## MEDIUM (42 remaining)
-
-### Cross-Cutting: Missing Loading States (4+ modules)
-**Files:** `ClientsModule.tsx`, `ServicesModule.tsx`, `ProductsModule.tsx`, `AccountingExpenses`
-**Issue:** `isLoading` from hooks is not consumed — modules show "Aucun X trouvé" (empty state) during initial fetch instead of a spinner/skeleton.
-**Fix:** Render a loading skeleton when `isLoading` is true before rendering the list component.
-
-### Cross-Cutting: Non-Functional UI Buttons (6 modules)
-| Button | File | Issue |
-|--------|------|-------|
-| "Imprimer Ticket" | `AppointmentDetails.tsx:33` | No onClick |
-| "Voir le profil" | `AppointmentDetails.tsx:91` | No onClick/routing |
-| "Prendre RDV" | `ClientsModule.tsx:29` | handleSchedule is a no-op stub |
-| "Email" receipt | `POSModals.tsx:368` | No onClick |
-| "Imprimer" receipt | `POSModals.tsx:370` | No onClick |
-| Filter/Search | `AccountingLedger.tsx:21-22` | No onClick (redundant with JournalPage controls) |
-**Fix:** Either implement the feature or remove the button to avoid user confusion. For AccountingLedger, just remove the redundant buttons.
+## MEDIUM (18 remaining)
 
 ### Cross-Cutting: Hardcoded Calendar Hours
 **Files:** `useStaffAvailability.ts:39,62` (9-20), `TodayCalendarCard.tsx:13` (9-23)
@@ -78,19 +62,10 @@ Work through one batch per session. Start each session with:
 **File:** `modules/team/hooks/useStaffCompensation.ts:29-38`
 **Fix:** Type the filter/reduce callbacks with `Transaction` and `CartItem`.
 
-### Team: PayoutForm silently swallows date validation failure
-**File:** `modules/team/components/PayoutForm.tsx:45-47`
-**Issue:** When `end < start`, form returns early with no error message shown.
-**Fix:** Show inline error or use `min={start}` on end date input.
-
 ### Clients: ClientForm initializes read-only fields in form state
 **File:** `modules/clients/components/ClientForm.tsx:64-66`
 **Issue:** `totalVisits: 0, totalSpent: 0, createdAt: new Date().toISOString()` are server-computed but included in form state.
 **Fix:** Remove from initial state; merge from `existingClient` in onSave for edit case.
-
-### Clients: ClientDetails accesses preferredStaff.firstName[0] without guard
-**File:** `modules/clients/components/ClientDetails.tsx:276`
-**Fix:** Use `preferredStaff.firstName?.[0] ?? ''`.
 
 ### Clients: window.confirm for delete instead of design-system modal
 **File:** `modules/clients/ClientsModule.tsx:34`
@@ -100,39 +75,10 @@ Work through one batch per session. Start each session with:
 **File:** `modules/clients/schemas.ts`
 **Fix:** Extend schema to cover conditional fields (acquisitionSource/Detail, etc.).
 
-### Services/Products: parseInt/parseFloat on empty input produces NaN
-**Files:** `ServiceForm.tsx:125,134,142,152`, `ProductForm.tsx:103,111,134`
-**Fix:** Add `|| 0` fallback on all numeric `parseInt`/`parseFloat` calls.
-
-### Services/Products: CategoriesTab calls servicesForCategory twice per render row
-**Files:** `CategoriesTab.tsx:148`, `ProductCategoriesTab.tsx:141`
-**Fix:** Store result in a `const count` within the `.map()` callback.
-
-### Services/Products: BrandsTab has no empty-name validation
-**File:** `modules/products/components/BrandsTab.tsx:45-47`
-**Fix:** Validate that all brand names are non-empty before saving.
-
-### Services/Products: isLoading not consumed by module containers
-**Files:** `ServicesModule.tsx`, `ProductsModule.tsx`
-**Fix:** Show loading spinner when `isLoading` is true.
-
-### Accounting: addExpense has no isPending guard (double-submit)
-**File:** `modules/accounting/hooks/useAccounting.ts:52`, `ExpenseForm.tsx:59`
-**Fix:** Export `isAddingExpense: addExpenseMutation.isPending`, disable submit button while pending.
-
-### Accounting: ExpenseForm generates then discards crypto.randomUUID()
-**Files:** `ExpenseForm.tsx:40`, `DepensesPage.tsx:25`
-**Fix:** Change `onSave` prop type to `Omit<Expense, 'id'>`, remove id generation.
-
 ### Accounting: useAccounting mounts 5 extra hooks unconditionally
 **File:** `modules/accounting/hooks/useAccounting.ts:30-33`
 **Issue:** `useSettings()`, `useServices()`, `useProducts()`, `useTeam()` all fire on every accounting page, even when only the Journal tab is active.
 **Fix:** Move service/product/team data into a `useRevenueBreakdown()` hook used only by RevenuesPage.
-
-### Accounting: chartData daily bucket key omits year
-**File:** `modules/accounting/hooks/useAccounting.ts:449-466`
-**Issue:** Date ranges spanning a year boundary produce key collisions (e.g., "25 dec." from two years).
-**Fix:** Include year in the daily key, or use `YYYY-MM-DD` as internal key.
 
 ### Accounting: DepensesRecurrentes monthly total omits weekly expenses
 **File:** `modules/accounting/components/DepensesRecurrentes.tsx:31`
@@ -155,14 +101,6 @@ Work through one batch per session. Start each session with:
 **File:** `modules/accounting/components/ExpenseForm.tsx:26`
 **Fix:** Add useEffect to set default category when `expenseCategories` first loads.
 
-### Settings: AccountingSettings saves VAT on every keystroke
-**File:** `modules/settings/components/AccountingSettings.tsx:76-79`
-**Fix:** Use local state for VAT field, save only on blur or explicit save button.
-
-### Billing: stripe-webhook doesn't clear trial_ends_at on checkout
-**File:** `supabase/functions/stripe-webhook/index.ts:48-61`
-**Fix:** Include `trial_ends_at: null` in the checkout.session.completed upsert.
-
 ### Billing: TrialBanner depends on subscription query — silent failure if query errors
 **File:** `modules/billing/BillingModule.tsx:88`
 **Fix:** Add fallback or independent loading state for trial banner.
@@ -175,11 +113,6 @@ Work through one batch per session. Start each session with:
 **File:** `modules/billing/components/PlanCards.tsx:47-48`
 **Fix:** Hide or explain the Free plan button for trial users.
 
-### Shared: Password reset accessible to logged-in users without RECOVERY session
-**File:** `pages/ResetPasswordPage.tsx`
-**Issue:** Any logged-in user can navigate to `/reset-password` and change password without current-password verification.
-**Fix:** Check auth event is `PASSWORD_RECOVERY` before showing the form, or redirect non-recovery users.
-
 ### Shared: MediaQueryContext module-level mutable cachedState
 **File:** `context/MediaQueryContext.tsx:32-41`
 **Issue:** Shared global state could cause issues with HMR or multiple providers.
@@ -189,11 +122,6 @@ Work through one batch per session. Start each session with:
 **File:** `components/PhoneInput.tsx:114-117`
 **Issue:** Keyboard entry allows spaces, numpad doesn't — inconsistent DB values.
 **Fix:** Strip spaces from both entry paths, or format consistently.
-
-### Shared: DateRangePicker presets mutate `now`
-**File:** `components/DateRangePicker.tsx:44-47`
-**Issue:** `now.setHours()` mutates in place — fragile if property order changes.
-**Fix:** Use `new Date(now)` copy before mutating.
 
 ---
 

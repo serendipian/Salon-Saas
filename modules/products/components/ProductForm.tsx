@@ -99,7 +99,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
                   type="number"
                   prefix={currencySymbol}
                   value={formData.price}
-                  onChange={e => { setFormData({...formData, price: parseFloat(e.target.value)}); clearFieldError('price'); }}
+                  onChange={e => { setFormData({...formData, price: parseFloat(e.target.value) || 0}); clearFieldError('price'); }}
                   error={errors.price}
                 />
                 <Input
@@ -107,7 +107,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
                   type="number"
                   prefix={currencySymbol}
                   value={formData.cost}
-                  onChange={e => setFormData({...formData, cost: parseFloat(e.target.value)})}
+                  onChange={e => setFormData({...formData, cost: parseFloat(e.target.value) || 0})}
                 />
              </div>
           </Section>
@@ -130,7 +130,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
                    label="Quantité en stock"
                    type="number"
                    value={formData.stock}
-                   onChange={e => { setFormData({...formData, stock: parseInt(e.target.value)}); clearFieldError('stock'); }}
+                   onChange={e => { setFormData({...formData, stock: parseInt(e.target.value) || 0}); clearFieldError('stock'); }}
                    className="w-32"
                    error={errors.stock}
                 />

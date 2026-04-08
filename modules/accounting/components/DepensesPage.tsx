@@ -6,12 +6,11 @@ import { AccountingExpenses } from './AccountingExpenses';
 import { ExpenseForm } from './ExpenseForm';
 import { DepensesRecurrentes } from './DepensesRecurrentes';
 import type { FinancesOutletContext } from '../FinancesLayout';
-import type { Expense } from '../../../types';
 
 type Tab = 'COURANTES' | 'RECURRENTES';
 
 export const DepensesPage: React.FC = () => {
-  const { filteredExpenses, addExpense, financials } = useOutletContext<FinancesOutletContext>();
+  const { filteredExpenses, addExpense, isAddingExpense, financials } = useOutletContext<FinancesOutletContext>();
 
   const [activeTab, setActiveTab] = useState<Tab>('COURANTES');
   const [showForm, setShowForm] = useState(false);
@@ -20,15 +19,13 @@ export const DepensesPage: React.FC = () => {
   const expenseTotal = financials.opex;
   const avgExpense = expenseCount > 0 ? expenseTotal / expenseCount : 0;
 
-  const handleAddExpense = (expense: Expense) => {
-    // ExpenseForm provides a full Expense (with id), but addExpense expects Omit<Expense, 'id'>
-    const { id: _id, ...rest } = expense;
-    addExpense(rest);
+  const handleAddExpense = (expense: Parameters<typeof addExpense>[0]) => {
+    addExpense(expense);
     setShowForm(false);
   };
 
   if (showForm) {
-    return <ExpenseForm onSave={handleAddExpense} onCancel={() => setShowForm(false)} />;
+    return <ExpenseForm onSave={handleAddExpense} onCancel={() => setShowForm(false)} isPending={isAddingExpense} />;
   }
 
   return (

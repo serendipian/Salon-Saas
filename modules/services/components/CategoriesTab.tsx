@@ -144,9 +144,12 @@ export function CategoriesTab() {
               className="flex-1 px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none"
             />
 
-            <span className="text-xs text-slate-500 whitespace-nowrap">
-              {servicesForCategory(cat.id).length} service{servicesForCategory(cat.id).length !== 1 ? 's' : ''}
-            </span>
+            {(() => {
+              const count = servicesForCategory(cat.id).length;
+              return <span className="text-xs text-slate-500 whitespace-nowrap">
+                {count} service{count !== 1 ? 's' : ''}
+              </span>;
+            })()}
 
             <button
               type="button"

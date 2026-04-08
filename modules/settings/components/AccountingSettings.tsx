@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calculator, Users, ArrowLeft, Trash2 } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 import { Input } from '../../../components/FormElements';
@@ -14,6 +14,18 @@ export const AccountingSettings: React.FC<{ onBack: () => void }> = ({ onBack })
 
   const [activeTab, setActiveTab] = useState<'TAXES' | 'CATEGORIES'>('TAXES');
   const [newCatName, setNewCatName] = useState('');
+  const [localVatRate, setLocalVatRate] = useState(String(salonSettings.vatRate));
+
+  useEffect(() => {
+    setLocalVatRate(String(salonSettings.vatRate));
+  }, [salonSettings.vatRate]);
+
+  const saveVatRate = () => {
+    const val = parseFloat(localVatRate);
+    if (!isNaN(val) && val !== salonSettings.vatRate) {
+      updateSalonSettings({ ...salonSettings, vatRate: val });
+    }
+  };
 
   const handleAddCategory = () => {
     if (!newCatName.trim()) return;
@@ -72,11 +84,10 @@ export const AccountingSettings: React.FC<{ onBack: () => void }> = ({ onBack })
                       label="Taux de TVA (%)"
                       type="number"
                       suffix="%"
-                      value={salonSettings.vatRate}
-                      onChange={e => {
-                        const val = parseFloat(e.target.value);
-                        if (!isNaN(val)) updateSalonSettings({ ...salonSettings, vatRate: val });
-                      }}
+                      value={localVatRate}
+                      onChange={e => setLocalVatRate(e.target.value)}
+                      onBlur={saveVatRate}
+                      onKeyDown={e => { if (e.key === 'Enter') saveVatRate(); }}
                     />
                  </div>
                </div>
