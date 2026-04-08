@@ -134,12 +134,15 @@ export const DashboardModule: React.FC = () => {
   });
 
   // Widen query to include previous period for trend comparisons
+  // Add 1-day buffer on each side to prevent timezone boundary issues
   const queryRange = useMemo(() => {
     const from = new Date(dateRange.from).getTime();
     const to = new Date(dateRange.to).getTime();
     const duration = to - from;
-    const prevFrom = new Date(from - duration - 1);
-    return { from: prevFrom.toISOString(), to: new Date(to).toISOString() };
+    const DAY_MS = 86_400_000;
+    const prevFrom = new Date(from - duration - DAY_MS);
+    const bufferedTo = new Date(to + DAY_MS);
+    return { from: prevFrom.toISOString(), to: bufferedTo.toISOString() };
   }, [dateRange]);
 
   const { transactions } = useTransactions(queryRange);
@@ -162,34 +165,42 @@ export const DashboardModule: React.FC = () => {
 
   // --- 1. Filter Data based on Selection (Current & Previous) ---
   const data = useMemo(() => {
+    // Local date string (YYYY-MM-DD) for timezone-safe day-level comparison
+    const toLocalDate = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
     // Current Period
-    const from = new Date(dateRange.from).getTime();
-    const to = new Date(dateRange.to).getTime();
-    const duration = to - from;
+    const fromDate = new Date(dateRange.from);
+    const toDate = new Date(dateRange.to);
+    const fromStr = toLocalDate(fromDate);
+    const toStr = toLocalDate(toDate);
 
-    // Previous Period (Same duration right before)
-    const prevTo = from - 1; 
-    const prevFrom = prevTo - duration;
+    // Previous Period (same number of days, right before current)
+    const durationMs = toDate.getTime() - fromDate.getTime();
+    const prevToDate = new Date(fromDate.getTime() - 1);
+    const prevFromDate = new Date(fromDate.getTime() - 1 - durationMs);
+    const prevFromStr = toLocalDate(prevFromDate);
+    const prevToStr = toLocalDate(prevToDate);
 
-    // Helper to filter
-    const filterByRange = <T extends object>(dataArr: T[], dateField: keyof T, start: number, end: number): T[] => {
+    // Filter items by comparing local date strings (avoids UTC/local timezone shift)
+    const filterByRange = <T extends object>(dataArr: T[], dateField: keyof T, startStr: string, endStr: string): T[] => {
       return dataArr.filter(item => {
-        const d = new Date(item[dateField] as string).getTime();
-        return d >= start && d <= end;
+        const itemDate = toLocalDate(new Date(item[dateField] as string));
+        return itemDate >= startStr && itemDate <= endStr;
       });
     };
 
-    const currentTrx = filterByRange(transactions, 'date', from, to);
-    const prevTrx = filterByRange(transactions, 'date', prevFrom, prevTo);
+    const currentTrx = filterByRange(transactions, 'date', fromStr, toStr);
+    const prevTrx = filterByRange(transactions, 'date', prevFromStr, prevToStr);
 
-    const currentAppts = filterByRange(appointments, 'date', from, to);
-    const prevAppts = filterByRange(appointments, 'date', prevFrom, prevTo);
+    const currentAppts = filterByRange(appointments, 'date', fromStr, toStr);
+    const prevAppts = filterByRange(appointments, 'date', prevFromStr, prevToStr);
 
-    const currentClients = filterByRange(clients, 'createdAt', from, to);
-    const prevClients = filterByRange(clients, 'createdAt', prevFrom, prevTo);
+    const currentClients = filterByRange(clients, 'createdAt', fromStr, toStr);
+    const prevClients = filterByRange(clients, 'createdAt', prevFromStr, prevToStr);
 
-    const currentExpenses = filterByRange(allExpenses, 'date', from, to);
-    const prevExpenses = filterByRange(allExpenses, 'date', prevFrom, prevTo);
+    const currentExpenses = filterByRange(allExpenses, 'date', fromStr, toStr);
+    const prevExpenses = filterByRange(allExpenses, 'date', prevFromStr, prevToStr);
 
     return {
       current: { transactions: currentTrx, appointments: currentAppts, newClients: currentClients, expenses: currentExpenses },

@@ -89,6 +89,7 @@ export const useAccounting = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses', salonId] });
+      toastOnSuccess('Dépense ajoutée')();
     },
     onError: toastOnError("Impossible d'ajouter la dépense"),
   });
@@ -146,9 +147,14 @@ export const useAccounting = () => {
     const prevTo = from - 1;
     const prevFrom = prevTo - duration;
 
+    const parseLocalDate = (dateStr: string): number => {
+      const parts = (dateStr as string).split('T')[0].split('-');
+      return new Date(+parts[0], +parts[1] - 1, +parts[2]).getTime();
+    };
+
     const filterRange = <T extends object>(items: T[], dateKey: keyof T, start: number, end: number): T[] =>
       items.filter(i => {
-        const t = new Date(i[dateKey] as string).getTime();
+        const t = parseLocalDate(i[dateKey] as string);
         return t >= start && t <= end;
       });
 
