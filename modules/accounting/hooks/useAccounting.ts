@@ -173,7 +173,8 @@ export const useAccounting = () => {
     );
     const opex = data.current.expenses.reduce((sum, e) => sum + e.amount, 0);
     const netProfit = revenue - cogs - opex;
-    const avgBasket = data.current.transactions.length > 0 ? revenue / data.current.transactions.length : 0;
+    const saleCount = data.current.transactions.filter(t => t.type === 'SALE').length;
+    const avgBasket = saleCount > 0 ? revenue / saleCount : 0;
 
     const prevRevenue = data.previous.transactions.reduce((sum, t) => sum + t.total, 0);
     const prevCogs = data.previous.transactions.reduce(
@@ -182,7 +183,8 @@ export const useAccounting = () => {
     );
     const prevOpex = data.previous.expenses.reduce((sum, e) => sum + e.amount, 0);
     const prevNetProfit = prevRevenue - prevCogs - prevOpex;
-    const prevAvgBasket = data.previous.transactions.length > 0 ? prevRevenue / data.previous.transactions.length : 0;
+    const prevSaleCount = data.previous.transactions.filter(t => t.type === 'SALE').length;
+    const prevAvgBasket = prevSaleCount > 0 ? prevRevenue / prevSaleCount : 0;
 
     const taxRate = (salonSettings.vatRate || 20) / 100;
     const vatDue = revenue - revenue / (1 + taxRate);
@@ -207,7 +209,7 @@ export const useAccounting = () => {
       vatDue,
       avgBasket,
       avgBasketTrend: calcTrend(avgBasket, prevAvgBasket),
-      transactionCount: data.current.transactions.length,
+      transactionCount: saleCount,
       topServices,
     };
   }, [data, salonSettings.vatRate]);
