@@ -2410,6 +2410,10 @@ export type Database = {
     Functions: {
       _assert_admin: { Args: never; Returns: undefined }
       accept_invitation: { Args: { p_token: string }; Returns: string }
+      accept_invitation_admin: {
+        Args: { p_token: string; p_user_id: string }
+        Returns: string
+      }
       add_bien_etre_services: {
         Args: { p_salon_id: string }
         Returns: undefined
@@ -2460,6 +2464,12 @@ export type Database = {
         Args: { p_date: string; p_duration_minutes: number; p_staff_id: string }
         Returns: boolean
       }
+      count_new_clients: {
+        Args: { p_from: string; p_salon_id: string; p_to: string }
+        Returns: {
+          new_clients: number
+        }[]
+      }
       create_salon: {
         Args: {
           p_currency?: string
@@ -2493,6 +2503,18 @@ export type Database = {
           }
       debug_auth: { Args: never; Returns: Json }
       decrypt_pii: { Args: { ciphertext: string }; Returns: string }
+      edit_appointment_group: {
+        Args: {
+          p_client_id: string
+          p_notes: string
+          p_old_appointment_id: string
+          p_reminder_minutes: number
+          p_salon_id: string
+          p_service_blocks: Json
+          p_status: string
+        }
+        Returns: string
+      }
       encrypt_pii: { Args: { plaintext: string }; Returns: string }
       gdpr_delete_client: { Args: { p_client_id: string }; Returns: undefined }
       generate_staff_slug: {
