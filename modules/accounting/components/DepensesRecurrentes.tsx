@@ -1,13 +1,29 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, RefreshCw, Zap, Info } from 'lucide-react';
+import { Plus, Trash2, RefreshCw, Zap, Info, CheckCircle } from 'lucide-react';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { Input, Select } from '../../../components/FormElements';
 import { MiniKpiRow } from './MiniKpiRow';
 import { formatPrice } from '../../../lib/format';
-import type { RecurringExpense } from '../../../types';
+import { useToast } from '../../../context/ToastContext';
+import type { RecurringExpense, Expense } from '../../../types';
 
-export const DepensesRecurrentes: React.FC = () => {
+function advanceDate(date: string, frequency: RecurringExpense['frequency']): string {
+  const d = new Date(date);
+  switch (frequency) {
+    case 'Hebdomadaire': d.setDate(d.getDate() + 7); break;
+    case 'Mensuel': d.setMonth(d.getMonth() + 1); break;
+    case 'Annuel': d.setFullYear(d.getFullYear() + 1); break;
+  }
+  return d.toISOString().slice(0, 10);
+}
+
+interface Props {
+  onCreateExpense?: (expense: Omit<Expense, 'id'>) => void;
+}
+
+export const DepensesRecurrentes: React.FC<Props> = ({ onCreateExpense }) => {
   const { recurringExpenses, updateRecurringExpenses } = useSettings();
+  const { addToast } = useToast();
   const [isAdding, setIsAdding] = useState(false);
   const [newExpense, setNewExpense] = useState({ name: '', amount: 0, frequency: 'Mensuel', nextDate: new Date().toISOString().slice(0, 10) });
 
@@ -28,6 +44,22 @@ export const DepensesRecurrentes: React.FC = () => {
     updateRecurringExpenses(recurringExpenses.filter(r => r.id !== id));
   };
 
+  const handleGenerate = (rec: RecurringExpense) => {
+    if (!onCreateExpense) return;
+    // Create the expense
+    onCreateExpense({
+      description: rec.name,
+      amount: rec.amount,
+      date: rec.nextDate,
+      category: '',
+    });
+    // Advance the next date
+    updateRecurringExpenses(recurringExpenses.map(r =>
+      r.id === rec.id ? { ...r, nextDate: advanceDate(r.nextDate, r.frequency) } : r
+    ));
+    addToast({ type: 'success', message: `Dépense « ${rec.name} » enregistrée. Prochaine échéance avancée.` });
+  };
+
   const monthlyTotal = recurringExpenses.filter(r => r.frequency === 'Mensuel').reduce((sum, r) => sum + r.amount, 0);
   const annualTotal = recurringExpenses.filter(r => r.frequency === 'Annuel').reduce((sum, r) => sum + r.amount, 0);
 
@@ -36,8 +68,36 @@ export const DepensesRecurrentes: React.FC = () => {
   const nextExpense = sortedByDate[0];
   const daysUntilNext = nextExpense ? Math.ceil((new Date(nextExpense.nextDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
 
+  // Find overdue recurring expenses (nextDate in the past)
+  const overdueExpenses = recurringExpenses.filter(r => new Date(r.nextDate) < now);
+
   return (
     <div className="space-y-6">
+      {/* Overdue alert */}
+      {overdueExpenses.length > 0 && (
+        <div className="flex items-start gap-3 px-4 py-3 rounded-xl border bg-red-50 border-red-200 text-red-800">
+          <Zap size={16} className="text-red-500 mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">{overdueExpenses.length} charge{overdueExpenses.length > 1 ? 's' : ''} en retard</p>
+            <div className="mt-1 space-y-1">
+              {overdueExpenses.map(rec => (
+                <div key={rec.id} className="flex items-center justify-between text-xs">
+                  <span>{rec.name} — {formatPrice(rec.amount)} (échue le {new Date(rec.nextDate).toLocaleDateString('fr-FR')})</span>
+                  {onCreateExpense && (
+                    <button
+                      onClick={() => handleGenerate(rec)}
+                      className="text-red-700 hover:text-red-900 font-medium underline ml-2"
+                    >
+                      Enregistrer
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Next payment alert */}
       {nextExpense && (
         <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${daysUntilNext! <= 3 ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
@@ -53,12 +113,6 @@ export const DepensesRecurrentes: React.FC = () => {
         { title: 'Charges Annuelles', value: annualTotal, subtitle: '/an' },
         { title: 'Nb Charges Actives', value: recurringExpenses.length, format: 'number' },
       ]} />
-
-      {/* Info banner */}
-      <div className="flex items-start gap-2 px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-700">
-        <Info size={16} className="mt-0.5 shrink-0" />
-        <span>Les charges r{'\u00e9'}currentes sont un aide-m{'\u00e9'}moire. Saisissez-les dans {'\u00ab'} Courantes {'\u00bb'} {'\u00e0'} chaque {'\u00e9'}ch{'\u00e9'}ance.</span>
-      </div>
 
       {/* Add button */}
       <div className="flex justify-end">
@@ -103,23 +157,40 @@ export const DepensesRecurrentes: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {recurringExpenses.map(rec => (
-              <tr key={rec.id} className="text-sm hover:bg-slate-50 transition-colors group">
-                <td className="px-4 py-3 font-medium text-slate-900">{rec.name}</td>
-                <td className="px-4 py-3 text-slate-600 font-medium">{formatPrice(rec.amount)}</td>
-                <td className="px-4 py-3">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-xs font-medium">
-                    <RefreshCw size={10} /> {rec.frequency}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-slate-500">{new Date(rec.nextDate).toLocaleDateString('fr-FR')}</td>
-                <td className="px-4 py-3 text-right">
-                  <button onClick={() => handleDelete(rec.id)} className="text-slate-300 hover:text-red-600 transition-colors">
-                    <Trash2 size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {recurringExpenses.map(rec => {
+              const isOverdue = new Date(rec.nextDate) < now;
+              return (
+                <tr key={rec.id} className={`text-sm hover:bg-slate-50 transition-colors group ${isOverdue ? 'bg-red-50/50' : ''}`}>
+                  <td className="px-4 py-3 font-medium text-slate-900">{rec.name}</td>
+                  <td className="px-4 py-3 text-slate-600 font-medium">{formatPrice(rec.amount)}</td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-xs font-medium">
+                      <RefreshCw size={10} /> {rec.frequency}
+                    </span>
+                  </td>
+                  <td className={`px-4 py-3 ${isOverdue ? 'text-red-600 font-medium' : 'text-slate-500'}`}>
+                    {new Date(rec.nextDate).toLocaleDateString('fr-FR')}
+                    {isOverdue && <span className="text-xs ml-1">(en retard)</span>}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      {onCreateExpense && (
+                        <button
+                          onClick={() => handleGenerate(rec)}
+                          title="Enregistrer comme dépense"
+                          className="text-slate-300 hover:text-emerald-600 transition-colors p-1"
+                        >
+                          <CheckCircle size={16} />
+                        </button>
+                      )}
+                      <button onClick={() => handleDelete(rec.id)} className="text-slate-300 hover:text-red-600 transition-colors p-1">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
             {recurringExpenses.length === 0 && (
               <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-slate-400">Aucune charge r{'\u00e9'}currente</td></tr>
             )}

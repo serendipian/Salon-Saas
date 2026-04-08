@@ -1,12 +1,14 @@
 
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Save, Trash2, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft, Info } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft, Info, Upload, X, Image } from 'lucide-react';
 import { Expense, ExpenseCategory, PaymentMethod } from '../../../types';
 import { Section, Input, Select } from '../../../components/FormElements';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import { expenseSchema } from '../schemas';
+import { supabase } from '../../../lib/supabase';
+import { useAuth } from '../../../context/AuthContext';
 
 const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: React.ReactNode }[] = [
   { value: 'especes', label: 'Espèces', icon: <Banknote size={16} /> },
@@ -18,6 +20,7 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: React.ReactN
 
 interface ExpenseFormProps {
   existingExpense?: Expense;
+  allExpenses?: Expense[];
   onSave: (e: Omit<Expense, 'id'>) => void;
   onUpdate?: (e: Expense) => void;
   onDelete?: (id: string) => void;
@@ -25,9 +28,10 @@ interface ExpenseFormProps {
   isPending?: boolean;
 }
 
-export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSave, onUpdate, onDelete, onCancel, isPending }) => {
+export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allExpenses = [], onSave, onUpdate, onDelete, onCancel, isPending }) => {
   const { expenseCategories, salonSettings } = useSettings();
   const { allSuppliers: suppliers } = useSuppliers();
+  const { activeSalon } = useAuth();
   const { errors, validate, clearFieldError } = useFormValidation(expenseSchema);
   const isEdit = !!existingExpense;
 
@@ -43,6 +47,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
   const [isCustomSupplier, setIsCustomSupplier] = useState(
     isEdit && existingExpense.supplier && !existingExpense.supplierId
   );
+  const [isUploading, setIsUploading] = useState(false);
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
 
   // Filter suppliers by selected expense category name
@@ -60,6 +65,18 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
     return matched.length > 0 ? matched : suppliers;
   }, [formData.category, suppliers, expenseCategories]);
 
+  // Duplicate detection — warn on same amount + date + supplier
+  const possibleDuplicate = useMemo(() => {
+    if (!formData.amount || !formData.date) return null;
+    const amt = Number(formData.amount);
+    return allExpenses.find(e =>
+      e.id !== existingExpense?.id &&
+      e.amount === amt &&
+      e.date === formData.date &&
+      (e.supplier === formData.supplier || (!e.supplier && !formData.supplier))
+    ) ?? null;
+  }, [formData.amount, formData.date, formData.supplier, allExpenses, existingExpense?.id]);
+
   const handleSubmit = () => {
     const validated = validate(formData);
     if (!validated) return;
@@ -75,6 +92,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
       supplier: selectedSupplier?.name ?? formData.supplier,
       supplierId: selectedSupplier?.id,
       paymentMethod: formData.paymentMethod,
+      proofUrl: formData.proofUrl,
     };
 
     if (isEdit && onUpdate) {
@@ -86,9 +104,27 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
 
   const handleCategoryChange = (val: string) => {
     clearFieldError('category');
-    // Reset supplier when category changes (since supplier list will change)
     setFormData({ ...formData, category: val, supplier: '', supplierId: undefined });
     setIsCustomSupplier(false);
+  };
+
+  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeSalon) return;
+
+    setIsUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `${activeSalon.id}/receipts/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from('receipts').upload(path, file);
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from('receipts').getPublicUrl(path);
+      setFormData({ ...formData, proofUrl: publicUrl });
+    } catch {
+      // Upload failed — user can retry
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -112,7 +148,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column */}
+        {/* Left Column — Core details */}
         <div className="lg:col-span-2 space-y-6">
            <Section title="Détails de la dépense">
               <Input
@@ -144,8 +180,64 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
                     error={errors.date}
                  />
               </div>
+
+              {possibleDuplicate && (
+                 <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 animate-in fade-in">
+                    <Info size={16} className="shrink-0 mt-0.5 text-amber-500" />
+                    <div>
+                       <p className="font-medium">Doublon possible</p>
+                       <p className="text-xs text-amber-600 mt-0.5">
+                          Une dépense similaire existe déjà : « {possibleDuplicate.description} » — {possibleDuplicate.amount.toFixed(2)} {currencySymbol} le {new Date(possibleDuplicate.date).toLocaleDateString()}
+                       </p>
+                    </div>
+                 </div>
+              )}
            </Section>
 
+           {/* Receipt Upload */}
+           <Section title="Justificatif">
+              {formData.proofUrl ? (
+                 <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                       <Image size={18} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                       <p className="text-sm font-medium text-slate-700 truncate">Justificatif ajouté</p>
+                       <a href={formData.proofUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">
+                          Voir le fichier
+                       </a>
+                    </div>
+                    <button
+                       type="button"
+                       onClick={() => setFormData({ ...formData, proofUrl: undefined })}
+                       className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                       <X size={16} />
+                    </button>
+                 </div>
+              ) : (
+                 <label className={`flex flex-col items-center gap-2 p-6 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
+                    isUploading ? 'border-slate-300 bg-slate-50' : 'border-slate-200 hover:border-slate-400 hover:bg-slate-50'
+                 }`}>
+                    <Upload size={24} className="text-slate-400" />
+                    <span className="text-sm text-slate-500">
+                       {isUploading ? 'Envoi en cours...' : 'Glissez ou cliquez pour ajouter un justificatif'}
+                    </span>
+                    <span className="text-xs text-slate-400">PDF, JPG, PNG (max 5 Mo)</span>
+                    <input
+                       type="file"
+                       accept="image/*,.pdf"
+                       className="hidden"
+                       onChange={handleReceiptUpload}
+                       disabled={isUploading}
+                    />
+                 </label>
+              )}
+           </Section>
+        </div>
+
+        {/* Right Column — Classification & actions */}
+        <div className="lg:col-span-1 space-y-6">
            {/* Category → Supplier cascade */}
            <Section title="Catégorie & Fournisseur">
               <Select
@@ -209,7 +301,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
 
            {/* Payment Method */}
            <Section title="Mode de paiement">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                  {PAYMENT_METHODS.map((method) => {
                     const isSelected = formData.paymentMethod === method.value;
                     return (
@@ -220,7 +312,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
                              ...formData,
                              paymentMethod: isSelected ? undefined : method.value,
                           })}
-                          className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-sm font-medium ${
+                          className={`flex items-center gap-2 p-2.5 rounded-xl border-2 transition-all text-sm font-medium ${
                              isSelected
                                 ? 'border-slate-900 bg-slate-900 text-white shadow-md'
                                 : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
@@ -233,12 +325,9 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSav
                  })}
               </div>
            </Section>
-        </div>
 
-        {/* Right Column */}
-        <div className="lg:col-span-1 space-y-6">
-           <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-sm text-slate-500">
-              <p className="mb-2 font-medium text-slate-700">Note:</p>
+           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-500">
+              <p className="mb-1 font-medium text-slate-700">Note:</p>
               <p>Assurez-vous que le montant correspond bien au total TTC de la facture.</p>
            </div>
 

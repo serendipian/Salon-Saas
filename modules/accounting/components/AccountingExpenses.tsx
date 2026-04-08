@@ -1,6 +1,6 @@
 
-import React, { useState, useMemo } from 'react';
-import { Filter, X } from 'lucide-react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Filter, X, Download } from 'lucide-react';
 import { Expense, PaymentMethod } from '../../../types';
 import { useViewMode } from '../../../hooks/useViewMode';
 import { useSettings } from '../../settings/hooks/useSettings';
@@ -16,6 +16,11 @@ const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: 'prelevement', label: 'Prélèvement' },
 ];
 
+const PAYMENT_LABELS: Record<string, string> = {
+  especes: 'Espèces', carte: 'Carte bancaire', virement: 'Virement',
+  cheque: 'Chèque', prelevement: 'Prélèvement',
+};
+
 export const AccountingExpenses: React.FC<{ expenses: Expense[]; onEdit?: (id: string) => void }> = ({ expenses, onEdit }) => {
   const { viewMode, setViewMode } = useViewMode('expenses');
   const { expenseCategories } = useSettings();
@@ -30,6 +35,31 @@ export const AccountingExpenses: React.FC<{ expenses: Expense[]; onEdit?: (id: s
   }, [expenses, categoryFilter, paymentFilter]);
 
   const hasFilters = categoryFilter || paymentFilter;
+
+  const exportCsv = useCallback(() => {
+    if (filtered.length === 0) return;
+    const catMap = new Map(expenseCategories.map(c => [c.id, c.name]));
+    const header = 'Date,Description,Catégorie,Fournisseur,Mode de paiement,Montant';
+    const rows = filtered.map(e => {
+      const escape = (s?: string) => `"${(s || '').replace(/"/g, '""')}"`;
+      return [
+        e.date,
+        escape(e.description),
+        escape(catMap.get(e.category) || ''),
+        escape(e.supplier),
+        escape(e.paymentMethod ? PAYMENT_LABELS[e.paymentMethod] : ''),
+        e.amount.toFixed(2),
+      ].join(',');
+    });
+    const csv = '\uFEFF' + [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `depenses_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [filtered, expenseCategories]);
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in">
@@ -63,7 +93,15 @@ export const AccountingExpenses: React.FC<{ expenses: Expense[]; onEdit?: (id: s
             <X size={12} /> Réinitialiser
           </button>
         )}
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={exportCsv}
+            disabled={filtered.length === 0}
+            className="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-colors flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Exporter en CSV"
+          >
+            <Download size={12} /> CSV
+          </button>
           <ViewToggle viewMode={viewMode} onChange={setViewMode} />
         </div>
       </div>

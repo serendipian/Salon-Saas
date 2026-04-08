@@ -41,6 +41,7 @@ export const DepensesPage: React.FC = () => {
     return (
       <ExpenseForm
         existingExpense={editingExpense}
+        allExpenses={filteredExpenses}
         onSave={handleAddExpense}
         onUpdate={(expense) => { updateExpense(expense); handleClose(); }}
         onDelete={(id) => { deleteExpense(id); handleClose(); }}
@@ -85,7 +86,7 @@ export const DepensesPage: React.FC = () => {
         </>
       )}
 
-      {activeTab === 'RECURRENTES' && <DepensesRecurrentes />}
+      {activeTab === 'RECURRENTES' && <DepensesRecurrentes onCreateExpense={addExpense} />}
     </div>
   );
 };
