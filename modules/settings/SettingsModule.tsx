@@ -19,6 +19,7 @@ import { AccountingSettings } from './components/AccountingSettings';
 import { GeneralSettings } from './components/GeneralSettings';
 import { OpeningHoursSettings } from './components/OpeningHoursSettings';
 import { BillingModule } from '../billing/BillingModule';
+import { TeamPermissionsSettings } from './components/TeamPermissionsSettings';
 
 const SettingCard = ({ icon: Icon, title, description, onClick }: {
   icon: React.ComponentType<{ size?: number }>;
@@ -98,6 +99,10 @@ export const SettingsModule: React.FC = () => {
 
   if (activeSection === 'billing') {
     return <BillingModule onBack={() => setActiveSection(null)} />;
+  }
+
+  if (activeSection === 'team') {
+    return <TeamPermissionsSettings onBack={() => setActiveSection(null)} />;
   }
 
   if (activeSection) {
