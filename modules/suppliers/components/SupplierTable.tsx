@@ -1,14 +1,15 @@
 import React from 'react';
 import { Truck, Globe, Mail, Phone, ChevronRight } from 'lucide-react';
-import { Supplier } from '../../../types';
+import { Supplier, SupplierCategory } from '../../../types';
 import { EmptyState } from '../../../components/EmptyState';
 
 interface SupplierTableProps {
   suppliers: Supplier[];
+  categories?: SupplierCategory[];
   onEdit: (id: string) => void;
 }
 
-export const SupplierTable: React.FC<SupplierTableProps> = ({ suppliers, onEdit }) => {
+export const SupplierTable: React.FC<SupplierTableProps> = ({ suppliers, categories = [], onEdit }) => {
   if (suppliers.length === 0) {
     return (
       <EmptyState
@@ -62,9 +63,16 @@ export const SupplierTable: React.FC<SupplierTableProps> = ({ suppliers, onEdit 
                 </div>
               </td>
               <td className="px-6 py-4 align-top hidden lg:table-cell">
-                <span className="inline-flex px-2.5 py-0.5 rounded border bg-slate-50 border-slate-200 text-slate-600 text-xs font-medium">
-                  {supplier.category}
-                </span>
+                {(() => {
+                  const cat = categories.find(c => c.id === supplier.categoryId);
+                  return cat ? (
+                    <span className={`inline-flex px-2.5 py-0.5 rounded border text-xs font-medium ${cat.color}`}>
+                      {cat.name}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-400">—</span>
+                  );
+                })()}
               </td>
               <td className="px-6 py-4 align-top">
                 {supplier.active ? (

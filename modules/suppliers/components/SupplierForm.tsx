@@ -1,21 +1,23 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
-import { Supplier } from '../../../types';
+import { Supplier, SupplierCategory } from '../../../types';
 import { Section, Input, TextArea, Select } from '../../../components/FormElements';
 import { PhoneInput } from '../../../components/PhoneInput';
 import { useFormValidation } from '../../../hooks/useFormValidation';
+import { useSupplierSettings } from '../hooks/useSupplierSettings';
 import { supplierSchema } from '../schemas';
 
 interface SupplierFormProps {
   existingSupplier?: Supplier;
+  categories: SupplierCategory[];
   onSave: (s: Supplier) => void;
   onCancel: () => void;
   onDelete?: (id: string) => void;
 }
 
-export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, onSave, onCancel, onDelete }) => {
+export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, categories, onSave, onCancel, onDelete }) => {
   const { errors, validate, clearFieldError } = useFormValidation(supplierSchema);
+  const { supplierSettings } = useSupplierSettings();
   const [formData, setFormData] = useState<Supplier>(existingSupplier || {
     id: '',
     name: '',
@@ -24,8 +26,8 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
     phone: '',
     website: '',
     address: '',
-    category: 'Produits Coiffure',
-    paymentTerms: '30 jours',
+    categoryId: null,
+    paymentTerms: supplierSettings.defaultPaymentTerms,
     active: true,
     notes: ''
   });
@@ -36,6 +38,11 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
     if (!validated) return;
     onSave(formData);
   };
+
+  const categoryOptions = [
+    { value: '', label: '— Aucune catégorie —' },
+    ...categories.map(c => ({ value: c.id, label: c.name })),
+  ];
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 pb-10">
@@ -50,7 +57,7 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-           
+
            <Section title="Informations Entreprise">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <Input
@@ -61,14 +68,14 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
                   placeholder="Ex: L'Oréal Pro"
                   error={errors.name}
                 />
-                <Input 
+                <Input
                   label="Site Web"
                   value={formData.website}
                   onChange={e => setFormData({...formData, website: e.target.value})}
                   placeholder="www.exemple.com"
                 />
               </div>
-              <TextArea 
+              <TextArea
                 label="Adresse"
                 value={formData.address}
                 onChange={e => setFormData({...formData, address: e.target.value})}
@@ -104,7 +111,7 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
 
         <div className="lg:col-span-1 space-y-6">
            <div className="flex flex-col gap-3 sticky top-6 z-10">
-             <button 
+             <button
               type="submit"
               className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
             >
@@ -137,7 +144,7 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
            <Section title="Paramètres">
               <div className="flex items-center justify-between mb-4">
                   <span className="text-sm text-slate-700 font-medium">Fournisseur Actif</span>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setFormData({...formData, active: !formData.active})}
                     className={`w-10 h-5 rounded-full transition-colors relative ${formData.active ? 'bg-emerald-500' : 'bg-slate-300'}`}
@@ -148,20 +155,12 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
 
               <Select
                  label="Catégorie"
-                 value={formData.category}
-                 onChange={(val) => { clearFieldError('category'); setFormData({...formData, category: val as string}); }}
-                 error={errors.category}
-                 options={[
-                   { value: "Produits Coiffure", label: "Produits Coiffure" },
-                   { value: "Produits Esthétique", label: "Produits Esthétique" },
-                   { value: "Matériel", label: "Matériel" },
-                   { value: "Mobilier", label: "Mobilier" },
-                   { value: "Charges & Services", label: "Charges & Services" },
-                   { value: "Autre", label: "Autre" }
-                 ]}
+                 value={formData.categoryId ?? ''}
+                 onChange={(val) => { clearFieldError('categoryId'); setFormData({...formData, categoryId: val ? val as string : null}); }}
+                 options={categoryOptions}
               />
 
-              <Input 
+              <Input
                  label="Conditions de Paiement"
                  value={formData.paymentTerms}
                  onChange={e => setFormData({...formData, paymentTerms: e.target.value})}
@@ -170,7 +169,7 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
            </Section>
 
            <Section title="Notes Internes">
-              <TextArea 
+              <TextArea
                 value={formData.notes}
                 onChange={e => setFormData({...formData, notes: e.target.value})}
                 rows={4}

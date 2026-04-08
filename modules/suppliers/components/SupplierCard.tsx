@@ -1,14 +1,15 @@
 import React from 'react';
 import { Truck, Globe, Mail, Phone } from 'lucide-react';
-import { Supplier } from '../../../types';
+import { Supplier, SupplierCategory } from '../../../types';
 import { EmptyState } from '../../../components/EmptyState';
 
 interface SupplierCardProps {
   suppliers: Supplier[];
+  categories?: SupplierCategory[];
   onEdit: (id: string) => void;
 }
 
-export const SupplierCard: React.FC<SupplierCardProps> = ({ suppliers, onEdit }) => {
+export const SupplierCard: React.FC<SupplierCardProps> = ({ suppliers, categories = [], onEdit }) => {
   if (suppliers.length === 0) {
     return (
       <EmptyState
@@ -75,9 +76,16 @@ export const SupplierCard: React.FC<SupplierCardProps> = ({ suppliers, onEdit })
 
           {/* Category badge */}
           <div className="pt-3 border-t border-slate-100">
-            <span className="inline-flex px-2.5 py-0.5 rounded border bg-slate-50 border-slate-200 text-slate-600 text-xs font-medium">
-              {supplier.category}
-            </span>
+            {(() => {
+              const cat = categories.find(c => c.id === supplier.categoryId);
+              return cat ? (
+                <span className={`inline-flex px-2.5 py-0.5 rounded border text-xs font-medium ${cat.color}`}>
+                  {cat.name}
+                </span>
+              ) : (
+                <span className="text-xs text-slate-400">Non classé</span>
+              );
+            })()}
           </div>
         </button>
       ))}

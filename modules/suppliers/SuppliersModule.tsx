@@ -1,12 +1,21 @@
-
 import React, { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { Supplier, ViewState } from '../../types';
 import { useSuppliers } from './hooks/useSuppliers';
 import { SupplierList } from './components/SupplierList';
 import { SupplierForm } from './components/SupplierForm';
 
 export const SuppliersModule: React.FC = () => {
-  const { suppliers, searchTerm, setSearchTerm, addSupplier, updateSupplier, deleteSupplier } = useSuppliers();
+  const {
+    suppliers,
+    supplierCategories,
+    isLoading,
+    searchTerm,
+    setSearchTerm,
+    addSupplier,
+    updateSupplier,
+    deleteSupplier,
+  } = useSuppliers();
   const [view, setView] = useState<ViewState>('LIST');
   const [selectedSupplierId, setSelectedSupplierId] = useState<string | null>(null);
 
@@ -29,20 +38,30 @@ export const SuppliersModule: React.FC = () => {
     setView('LIST');
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={24} className="animate-spin text-slate-400" />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
       {view === 'LIST' && (
-        <SupplierList 
-          suppliers={suppliers} 
+        <SupplierList
+          suppliers={suppliers}
+          categories={supplierCategories}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
-          onAdd={handleAdd} 
-          onEdit={handleEdit} 
+          onAdd={handleAdd}
+          onEdit={handleEdit}
         />
       )}
       {(view === 'ADD' || view === 'EDIT') && (
         <SupplierForm
           existingSupplier={suppliers.find(s => s.id === selectedSupplierId)}
+          categories={supplierCategories}
           onSave={handleSave}
           onCancel={() => setView('LIST')}
           onDelete={selectedSupplierId ? (id) => { deleteSupplier(id); setView('LIST'); } : undefined}

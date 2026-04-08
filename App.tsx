@@ -53,6 +53,7 @@ import { AppointmentDetailPage } from './modules/appointments/pages/AppointmentD
 import { AppointmentEditPage } from './modules/appointments/pages/AppointmentEditPage';
 import { AppointmentNewPage } from './modules/appointments/pages/AppointmentNewPage';
 import { SuppliersModule } from './modules/suppliers/SuppliersModule';
+import { SupplierSettingsPage } from './modules/suppliers/SupplierSettingsPage';
 import { SettingsModule } from './modules/settings/SettingsModule';
 import { SettingsIndexPage } from './modules/settings/pages/SettingsIndexPage';
 import { SettingsPlaceholderPage } from './modules/settings/pages/SettingsPlaceholderPage';
@@ -131,6 +132,11 @@ const AppContent = () => {
         <Route path="/suppliers" element={
           <ProtectedRoute action="view" resource="suppliers">
             <ErrorBoundary moduleName="Fournisseurs"><SuppliersModule /></ErrorBoundary>
+          </ProtectedRoute>
+        } />
+        <Route path="/suppliers/settings" element={
+          <ProtectedRoute action="edit" resource="suppliers">
+            <ErrorBoundary moduleName="Paramètres des fournisseurs"><SupplierSettingsPage /></ErrorBoundary>
           </ProtectedRoute>
         } />
         <Route path="/settings" element={
