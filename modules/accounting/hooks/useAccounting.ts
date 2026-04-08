@@ -24,7 +24,7 @@ export const useAccounting = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
-  const { toastOnError } = useMutationToast();
+  const { toastOnError, toastOnSuccess } = useMutationToast();
   useRealtimeSync('expenses');
   useRealtimeSync('transactions', {
     onEvent: () => {
@@ -95,6 +95,47 @@ export const useAccounting = () => {
 
   const addExpense = (expense: Omit<Expense, 'id'>) =>
     addExpenseMutation.mutate(expense);
+
+  // --- Update Expense Mutation ---
+  const updateExpenseMutation = useMutation({
+    mutationFn: async (expense: Expense) => {
+      const { error } = await supabase
+        .from('expenses')
+        .update({
+          date: expense.date,
+          description: expense.description,
+          category_id: expense.category,
+          amount: expense.amount,
+          supplier_id: expense.supplierId ?? null,
+          proof_url: expense.proofUrl ?? null,
+        })
+        .eq('id', expense.id)
+        .eq('salon_id', salonId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses', salonId] });
+      toastOnSuccess('Dépense mise à jour')();
+    },
+    onError: toastOnError('Impossible de modifier la dépense'),
+  });
+
+  // --- Delete Expense Mutation ---
+  const deleteExpenseMutation = useMutation({
+    mutationFn: async (expenseId: string) => {
+      const { error } = await supabase
+        .from('expenses')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', expenseId)
+        .eq('salon_id', salonId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses', salonId] });
+      toastOnSuccess('Dépense supprimée')();
+    },
+    onError: toastOnError('Impossible de supprimer la dépense'),
+  });
 
   // --- Filtering ---
   const data = useMemo(() => {
@@ -493,6 +534,10 @@ export const useAccounting = () => {
     chartData,
     addExpense,
     isAddingExpense: addExpenseMutation.isPending,
+    updateExpense: (expense: Expense) => updateExpenseMutation.mutate(expense),
+    isUpdatingExpense: updateExpenseMutation.isPending,
+    deleteExpense: (expenseId: string) => deleteExpenseMutation.mutate(expenseId),
+    isDeletingExpense: deleteExpenseMutation.isPending,
     // Revenue breakdowns & metrics
     revenueByServiceCategory,
     revenueByProductCategory,

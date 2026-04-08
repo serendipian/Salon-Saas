@@ -6,7 +6,7 @@ import { ViewToggle } from '../../../components/ViewToggle';
 import { ExpenseTable } from './ExpenseTable';
 import { ExpenseCard } from './ExpenseCard';
 
-export const AccountingExpenses: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
+export const AccountingExpenses: React.FC<{ expenses: Expense[]; onEdit?: (id: string) => void }> = ({ expenses, onEdit }) => {
   const { viewMode, setViewMode } = useViewMode('expenses');
 
   return (
@@ -15,7 +15,7 @@ export const AccountingExpenses: React.FC<{ expenses: Expense[] }> = ({ expenses
         <ViewToggle viewMode={viewMode} onChange={setViewMode} />
       </div>
       {viewMode === 'table' ? (
-        <ExpenseTable expenses={expenses} />
+        <ExpenseTable expenses={expenses} onEdit={onEdit} />
       ) : (
         <ExpenseCard expenses={expenses} />
       )}

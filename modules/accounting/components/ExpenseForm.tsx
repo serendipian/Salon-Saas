@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 import { Expense, ExpenseCategory } from '../../../types';
 import { Section, Input, Select, TextArea } from '../../../components/FormElements';
 import { useSettings } from '../../settings/hooks/useSettings';
@@ -9,25 +9,31 @@ import { useFormValidation } from '../../../hooks/useFormValidation';
 import { expenseSchema } from '../schemas';
 
 interface ExpenseFormProps {
+  existingExpense?: Expense;
   onSave: (e: Omit<Expense, 'id'>) => void;
+  onUpdate?: (e: Expense) => void;
+  onDelete?: (id: string) => void;
   onCancel: () => void;
   isPending?: boolean;
 }
 
-export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel, isPending }) => {
+export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, onSave, onUpdate, onDelete, onCancel, isPending }) => {
   const { expenseCategories, salonSettings } = useSettings();
   const { allSuppliers: suppliers } = useSuppliers();
   const { errors, validate, clearFieldError } = useFormValidation(expenseSchema);
+  const isEdit = !!existingExpense;
 
-  const [formData, setFormData] = useState<Partial<Expense>>({
+  const [formData, setFormData] = useState<Partial<Expense>>(existingExpense || {
     description: '',
     amount: 0,
     date: new Date().toISOString().slice(0,10),
-    category: expenseCategories[0]?.id || '', 
+    category: expenseCategories[0]?.id || '',
     supplier: ''
   });
-  
-  const [isCustomSupplier, setIsCustomSupplier] = useState(false);
+
+  const [isCustomSupplier, setIsCustomSupplier] = useState(
+    isEdit && existingExpense.supplier && !existingExpense.supplierId
+  );
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
 
   const handleSubmit = () => {
@@ -37,14 +43,20 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel, isPe
     const selectedSupplier = !isCustomSupplier
       ? suppliers.find(s => s.id === formData.supplier)
       : undefined;
-    onSave({
+    const expenseData = {
       description: formData.description!,
       amount: Number(formData.amount),
       date: formData.date || new Date().toISOString(),
       category: (formData.category || expenseCategories[0]?.id) as ExpenseCategory,
       supplier: selectedSupplier?.name ?? formData.supplier,
       supplierId: selectedSupplier?.id,
-    });
+    };
+
+    if (isEdit && onUpdate) {
+      onUpdate({ ...expenseData, id: existingExpense!.id });
+    } else {
+      onSave(expenseData);
+    }
   };
 
   return (
@@ -54,7 +66,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel, isPe
         <button onClick={onCancel} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
           <ArrowLeft size={20} />
         </button>
-        <h1 className="text-xl font-bold text-slate-900">Nouvelle Dépense</h1>
+        <h1 className="text-xl font-bold text-slate-900">{isEdit ? 'Modifier la Dépense' : 'Nouvelle Dépense'}</h1>
         <div className="ml-auto">
            <button
              onClick={handleSubmit}
@@ -167,12 +179,25 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel, isPe
            </div>
            
            <div className="flex flex-col gap-3">
-             <button 
+             <button
               onClick={onCancel}
               className="w-full py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium transition-all text-sm"
             >
                Annuler
              </button>
+             {isEdit && onDelete && (
+               <button
+                 onClick={() => {
+                   if (window.confirm('Supprimer cette dépense ? Cette action est irréversible.')) {
+                     onDelete(existingExpense!.id);
+                   }
+                 }}
+                 className="w-full py-2.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg font-medium transition-all text-sm flex justify-center items-center gap-2"
+               >
+                 <Trash2 size={16} />
+                 Supprimer
+               </button>
+             )}
            </div>
         </div>
       </div>

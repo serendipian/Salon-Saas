@@ -6,7 +6,7 @@ import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
 
-export const ExpenseTable: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
+export const ExpenseTable: React.FC<{ expenses: Expense[]; onEdit?: (id: string) => void }> = ({ expenses, onEdit }) => {
   const { expenseCategories } = useSettings();
 
   // Helper to get category details (Label + Color) from ID
@@ -39,7 +39,7 @@ export const ExpenseTable: React.FC<{ expenses: Expense[] }> = ({ expenses }) =>
                   const { label, color } = getCategoryDetails(exp.category);
 
                   return (
-                     <tr key={exp.id} className="hover:bg-slate-50/80 transition-colors text-sm group">
+                     <tr key={exp.id} onClick={() => onEdit?.(exp.id)} className={`hover:bg-slate-50/80 transition-colors text-sm group ${onEdit ? 'cursor-pointer' : ''}`}>
                         <td className="px-6 py-4 text-slate-500 font-medium">{new Date(exp.date).toLocaleDateString()}</td>
                         <td className="px-6 py-4 font-bold text-slate-800">{exp.description}</td>
                         <td className="px-6 py-4 text-slate-600 hidden md:table-cell">{exp.supplier || '-'}</td>

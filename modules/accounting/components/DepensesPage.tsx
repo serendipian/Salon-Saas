@@ -10,10 +10,11 @@ import type { FinancesOutletContext } from '../FinancesLayout';
 type Tab = 'COURANTES' | 'RECURRENTES';
 
 export const DepensesPage: React.FC = () => {
-  const { filteredExpenses, addExpense, isAddingExpense, financials } = useOutletContext<FinancesOutletContext>();
+  const { filteredExpenses, addExpense, isAddingExpense, updateExpense, isUpdatingExpense, deleteExpense, isDeletingExpense, financials } = useOutletContext<FinancesOutletContext>();
 
   const [activeTab, setActiveTab] = useState<Tab>('COURANTES');
   const [showForm, setShowForm] = useState(false);
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
 
   const expenseCount = filteredExpenses.length;
   const expenseTotal = financials.opex;
@@ -24,8 +25,29 @@ export const DepensesPage: React.FC = () => {
     setShowForm(false);
   };
 
+  const handleEdit = (id: string) => {
+    setEditingExpenseId(id);
+    setShowForm(true);
+  };
+
+  const handleClose = () => {
+    setShowForm(false);
+    setEditingExpenseId(null);
+  };
+
+  const editingExpense = editingExpenseId ? filteredExpenses.find(e => e.id === editingExpenseId) : undefined;
+
   if (showForm) {
-    return <ExpenseForm onSave={handleAddExpense} onCancel={() => setShowForm(false)} isPending={isAddingExpense} />;
+    return (
+      <ExpenseForm
+        existingExpense={editingExpense}
+        onSave={handleAddExpense}
+        onUpdate={(expense) => { updateExpense(expense); handleClose(); }}
+        onDelete={(id) => { deleteExpense(id); handleClose(); }}
+        onCancel={handleClose}
+        isPending={isAddingExpense || isUpdatingExpense || isDeletingExpense}
+      />
+    );
   }
 
   return (
@@ -59,7 +81,7 @@ export const DepensesPage: React.FC = () => {
             { title: 'Nb D\u00e9penses', value: expenseCount, format: 'number' },
             { title: 'Moyenne par D\u00e9pense', value: avgExpense },
           ]} />
-          <AccountingExpenses expenses={filteredExpenses} />
+          <AccountingExpenses expenses={filteredExpenses} onEdit={handleEdit} />
         </>
       )}
 
