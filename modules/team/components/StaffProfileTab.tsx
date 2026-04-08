@@ -1,9 +1,11 @@
 import React from 'react';
 import type { StaffMember } from '../../../types';
 import { useAuth } from '../../../context/AuthContext';
-import { ProfilePersonalSection } from './ProfilePersonalSection';
-import { ProfileContractSection } from './ProfileContractSection';
+import { ProfileIdentityCard } from './ProfileIdentityCard';
+import { ProfileContactCard } from './ProfileContactCard';
+import { ProfileEmergencyCard } from './ProfileEmergencyCard';
 import { ProfilePiiSection } from './ProfilePiiSection';
+import { ProfileContractSection } from './ProfileContractSection';
 import { ProfileClientPortfolio } from './ProfileClientPortfolio';
 import { ProfileActivityPreview } from './ProfileActivityPreview';
 import { ProfileDangerZone } from './ProfileDangerZone';
@@ -31,21 +33,30 @@ export const StaffProfileTab: React.FC<StaffProfileTabProps> = ({
   const canSeePii = role === 'owner' || role === 'manager';
 
   return (
-    <div className="space-y-6">
-      <ProfilePersonalSection staff={staff} onSave={onSave} isSaving={isSaving} />
-      <ProfileContractSection staff={staff} onSave={onSave} isSaving={isSaving} />
-      {canSeePii && (
-        <ProfilePiiSection
-          staff={staff}
-          loadPii={loadPii}
-          onSave={onSave}
-          isSaving={isSaving}
-          currencySymbol={currencySymbol}
-        />
-      )}
-      <ProfileClientPortfolio staffId={staff.id} />
-      <ProfileActivityPreview staffId={staff.id} onSwitchTab={onSwitchTab} />
-      <ProfileDangerZone staff={staff} onArchive={onArchive} />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in">
+      {/* --- LEFT SIDEBAR --- */}
+      <div className="space-y-6">
+        <ProfileIdentityCard staff={staff} onSave={onSave} isSaving={isSaving} />
+        <ProfileContactCard staff={staff} onSave={onSave} isSaving={isSaving} />
+        <ProfileEmergencyCard staff={staff} onSave={onSave} isSaving={isSaving} />
+        {canSeePii && (
+          <ProfilePiiSection
+            staff={staff}
+            loadPii={loadPii}
+            onSave={onSave}
+            isSaving={isSaving}
+            currencySymbol={currencySymbol}
+          />
+        )}
+        <ProfileDangerZone staff={staff} onArchive={onArchive} />
+      </div>
+
+      {/* --- MAIN CONTENT --- */}
+      <div className="lg:col-span-2 space-y-6">
+        <ProfileContractSection staff={staff} onSave={onSave} isSaving={isSaving} />
+        <ProfileClientPortfolio staffId={staff.id} />
+        <ProfileActivityPreview staffId={staff.id} onSwitchTab={onSwitchTab} />
+      </div>
     </div>
   );
 };

@@ -12,21 +12,26 @@ interface StaffPerformanceTabProps {
   staffId: string;
 }
 
-function KpiCard({ icon: Icon, label, value, sub, color = 'text-slate-900' }: {
+function KpiCard({ icon: Icon, label, value, sub, iconBg, iconColor }: {
   icon: React.ElementType;
   label: string;
   value: string;
   sub?: string;
-  color?: string;
+  iconBg: string;
+  iconColor: string;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4">
-      <div className="flex items-center gap-1.5 mb-2">
-        <Icon size={14} className="text-slate-400" />
-        <span className="text-xs text-slate-500">{label}</span>
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center shrink-0`}>
+          <Icon size={18} className={iconColor} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs text-slate-500">{label}</p>
+          <p className="text-lg font-bold text-slate-900">{value}</p>
+          {sub && <p className="text-xs text-slate-400">{sub}</p>}
+        </div>
       </div>
-      <p className={`text-lg font-bold ${color}`}>{value}</p>
-      {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
     </div>
   );
 }
@@ -50,7 +55,6 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
 
   const { transactions } = useTransactions(perfRange);
 
-  // Revenue stats from transaction items attributed to this staff member
   const revenueStats = useMemo(() => {
     let serviceRevenue = 0;
     let productRevenue = 0;
@@ -84,7 +88,6 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
     const avgBasket = txIds.size > 0 ? totalRevenue / txIds.size : 0;
     const topServices = [...serviceMap.values()].sort((a, b) => b.revenue - a.revenue).slice(0, 5);
 
-    // Build daily chart data - iterate every day in range
     const chartData: { name: string; ca: number }[] = [];
     const cur = new Date(dateRange.from);
     const end = new Date(dateRange.to);
@@ -97,7 +100,6 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
     return { totalRevenue, serviceRevenue, productRevenue, avgBasket, txCount: txIds.size, topServices, chartData };
   }, [transactions, staffId, dateRange]);
 
-  // Appointment stats
   const appointmentStats = useMemo(() => {
     const from = new Date(dateRange.from).getTime();
     const to = new Date(dateRange.to).getTime();
@@ -121,52 +123,57 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
     ? ((appointmentStats.noShow / appointmentStats.resolved) * 100).toFixed(1)
     : '0';
 
-  // Show chart only if range <= 31 days
   const daysDiff = Math.ceil(
     (new Date(dateRange.to).getTime() - new Date(dateRange.from).getTime()) / (1000 * 60 * 60 * 24)
   );
   const showChart = daysDiff <= 31;
 
   return (
-    <div className="space-y-6">
-      {/* Date range picker */}
-      <div className="flex justify-end">
+    <div className="space-y-6 animate-in fade-in">
+      {/* Header */}
+      <div className="flex flex-wrap justify-between items-end gap-3">
+        <h2 className="text-lg font-bold text-slate-900">Performance</h2>
         <DateRangePicker dateRange={dateRange} onChange={setDateRange} />
       </div>
 
-      {/* KPI cards */}
+      {/* Revenue KPI cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <KpiCard icon={TrendingUp} label="CA total" value={formatPrice(revenueStats.totalRevenue)} />
-        <KpiCard icon={Scissors} label="CA prestations" value={formatPrice(revenueStats.serviceRevenue)} />
-        <KpiCard icon={ShoppingBag} label="CA produits" value={formatPrice(revenueStats.productRevenue)} />
-        <KpiCard icon={BarChart2} label="Panier moyen" value={revenueStats.txCount > 0 ? formatPrice(revenueStats.avgBasket) : '\u2014'} />
+        <KpiCard icon={TrendingUp} label="CA total" value={formatPrice(revenueStats.totalRevenue)} iconBg="bg-emerald-100" iconColor="text-emerald-600" />
+        <KpiCard icon={Scissors} label="CA prestations" value={formatPrice(revenueStats.serviceRevenue)} iconBg="bg-violet-100" iconColor="text-violet-600" />
+        <KpiCard icon={ShoppingBag} label="CA produits" value={formatPrice(revenueStats.productRevenue)} iconBg="bg-blue-100" iconColor="text-blue-600" />
+        <KpiCard icon={BarChart2} label="Panier moyen" value={revenueStats.txCount > 0 ? formatPrice(revenueStats.avgBasket) : '\u2014'} iconBg="bg-amber-100" iconColor="text-amber-600" />
       </div>
 
+      {/* Appointment KPI cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <KpiCard
           icon={CalendarCheck}
           label="RDV effectués"
           value={String(appointmentStats.completed)}
           sub={`sur ${appointmentStats.total} total`}
+          iconBg="bg-emerald-100"
+          iconColor="text-emerald-600"
         />
         <KpiCard
           icon={CalendarX}
           label="Taux annulation"
           value={`${cancellationRate}%`}
-          color={Number(cancellationRate) > 20 ? 'text-rose-600' : 'text-slate-900'}
+          iconBg={Number(cancellationRate) > 20 ? 'bg-rose-100' : 'bg-slate-100'}
+          iconColor={Number(cancellationRate) > 20 ? 'text-rose-600' : 'text-slate-500'}
         />
         <KpiCard
           icon={UserX}
           label="Taux no-show"
           value={`${noShowRate}%`}
-          color={Number(noShowRate) > 10 ? 'text-rose-600' : 'text-slate-900'}
+          iconBg={Number(noShowRate) > 10 ? 'bg-rose-100' : 'bg-slate-100'}
+          iconColor={Number(noShowRate) > 10 ? 'text-rose-600' : 'text-slate-500'}
         />
       </div>
 
       {/* Revenue chart */}
       {showChart && revenueStats.chartData.some(d => d.ca > 0) && (
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <p className="text-xs font-medium text-slate-500 mb-4 uppercase tracking-wide">CA par jour</p>
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">CA par jour</p>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={revenueStats.chartData} barSize={10}>
@@ -184,7 +191,7 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
                 />
                 <Bar dataKey="ca" radius={[3, 3, 0, 0]} animationDuration={600}>
                   {revenueStats.chartData.map((entry, i) => (
-                    <Cell key={i} fill={entry.ca > 0 ? '#ec4899' : '#f1f5f9'} />
+                    <Cell key={i} fill={entry.ca > 0 ? '#8b5cf6' : '#f1f5f9'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -195,24 +202,26 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
 
       {/* Top 5 services */}
       {revenueStats.topServices.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <p className="text-xs font-medium text-slate-500 mb-4 uppercase tracking-wide">Top prestations</p>
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-slate-100">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Top prestations</p>
+          </div>
           <table className="w-full">
-            <thead>
-              <tr className="text-left text-xs text-slate-400 border-b border-slate-100">
-                <th className="pb-2 font-medium w-8">#</th>
-                <th className="pb-2 font-medium">Prestation</th>
-                <th className="pb-2 font-medium text-right">Nombre</th>
-                <th className="pb-2 font-medium text-right">CA</th>
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-5 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wide w-8">#</th>
+                <th className="px-5 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Prestation</th>
+                <th className="px-5 py-2.5 text-right text-xs font-medium text-slate-500 uppercase tracking-wide">Nombre</th>
+                <th className="px-5 py-2.5 text-right text-xs font-medium text-slate-500 uppercase tracking-wide">CA</th>
               </tr>
             </thead>
             <tbody>
               {revenueStats.topServices.map((svc, i) => (
-                <tr key={i} className="border-b border-slate-50 last:border-0">
-                  <td className="py-2.5 text-sm text-slate-400">{i + 1}</td>
-                  <td className="py-2.5 text-sm text-slate-700">{svc.name}</td>
-                  <td className="py-2.5 text-sm text-slate-500 text-right">{svc.count}</td>
-                  <td className="py-2.5 text-sm font-medium text-slate-900 text-right">{formatPrice(svc.revenue)}</td>
+                <tr key={i} className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
+                  <td className="px-5 py-3 text-sm text-slate-400">{i + 1}</td>
+                  <td className="px-5 py-3 text-sm text-slate-700 font-medium">{svc.name}</td>
+                  <td className="px-5 py-3 text-sm text-slate-500 text-right">{svc.count}</td>
+                  <td className="px-5 py-3 text-sm font-semibold text-slate-900 text-right">{formatPrice(svc.revenue)}</td>
                 </tr>
               ))}
             </tbody>
@@ -222,9 +231,12 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
 
       {/* Empty state */}
       {revenueStats.totalRevenue === 0 && appointmentStats.total === 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
-          <TrendingUp size={32} className="mx-auto text-slate-300 mb-3" />
-          <p className="text-sm text-slate-500">Aucune donnée pour cette période</p>
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
+          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+            <TrendingUp size={24} className="text-slate-300" />
+          </div>
+          <p className="text-sm font-medium text-slate-700">Aucune donnée pour cette période</p>
+          <p className="text-xs text-slate-400 mt-1">Sélectionnez une autre période pour voir les statistiques</p>
         </div>
       )}
     </div>

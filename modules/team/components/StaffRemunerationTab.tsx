@@ -77,36 +77,40 @@ export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({ staf
   const monthLabel = new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in">
       {/* Monthly Summary Card */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">
           Résumé — {monthLabel}
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <SummaryItem
-            icon={<DollarSign size={16} />}
+            icon={<DollarSign size={18} />}
             label="Salaire de base"
             value={formatPrice(compensation.baseSalary)}
-            color="slate"
+            iconBg="bg-slate-100"
+            iconColor="text-slate-600"
           />
           <SummaryItem
-            icon={<TrendingUp size={16} />}
+            icon={<TrendingUp size={18} />}
             label="Commission"
             value={formatPrice(compensation.commissionEarned)}
-            color="blue"
+            iconBg="bg-blue-100"
+            iconColor="text-blue-600"
           />
           <SummaryItem
-            icon={<Award size={16} />}
+            icon={<Award size={18} />}
             label="Prime"
             value={formatPrice(compensation.bonusEarned)}
-            color="amber"
+            iconBg="bg-amber-100"
+            iconColor="text-amber-600"
           />
           <SummaryItem
-            icon={<Wallet size={16} />}
+            icon={<Wallet size={18} />}
             label="Total attendu"
             value={formatPrice(compensation.totalExpected)}
-            color="emerald"
+            iconBg="bg-emerald-100"
+            iconColor="text-emerald-700"
             bold
           />
         </div>
@@ -116,9 +120,9 @@ export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({ staf
       </div>
 
       {/* Commission Rate */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide">
             Taux de commission
           </h3>
           {!editingCommission && (
@@ -161,9 +165,9 @@ export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({ staf
       </div>
 
       {/* Bonus Tiers */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide">
             Paliers de prime
           </h3>
           {!editingBonus ? (
@@ -196,7 +200,7 @@ export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({ staf
           (staff.bonusTiers && staff.bonusTiers.length > 0) ? (
             <div className="space-y-2">
               {staff.bonusTiers.map((tier, idx) => (
-                <div key={idx} className="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg text-sm">
+                <div key={idx} className="flex items-center justify-between py-2.5 px-4 bg-slate-50 rounded-lg text-sm">
                   <span className="text-slate-600">
                     Objectif : <span className="font-medium text-slate-900">{formatPrice(tier.target)}</span>
                   </span>
@@ -213,9 +217,9 @@ export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({ staf
       </div>
 
       {/* Payout History */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide">
             Historique des paiements
           </h3>
           <button
@@ -249,33 +253,30 @@ export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({ staf
   );
 };
 
-// Small summary item sub-component
 function SummaryItem({
   icon,
   label,
   value,
-  color,
+  iconBg,
+  iconColor,
   bold,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  color: string;
+  iconBg: string;
+  iconColor: string;
   bold?: boolean;
 }) {
-  const colorMap: Record<string, string> = {
-    slate: 'bg-slate-100 text-slate-600',
-    blue: 'bg-blue-100 text-blue-600',
-    amber: 'bg-amber-100 text-amber-600',
-    emerald: 'bg-emerald-100 text-emerald-700',
-  };
   return (
-    <div className="space-y-1">
-      <div className="flex items-center gap-1.5 text-xs text-slate-500">
-        <span className={`p-1 rounded ${colorMap[color] || colorMap.slate}`}>{icon}</span>
-        {label}
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-lg ${iconBg} ${iconColor} flex items-center justify-center shrink-0`}>
+        {icon}
       </div>
-      <p className={`text-lg ${bold ? 'font-bold' : 'font-semibold'} text-slate-900`}>{value}</p>
+      <div>
+        <p className="text-xs text-slate-500">{label}</p>
+        <p className={`text-lg ${bold ? 'font-bold' : 'font-semibold'} text-slate-900`}>{value}</p>
+      </div>
     </div>
   );
 }

@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock, CreditCard, Shield, Pencil, Save, X } from 'lucide-react';
 import type { StaffMember } from '../../../types';
 import { Input } from '../../../components/FormElements';
 import { useToast } from '../../../context/ToastContext';
-import { Field, SectionHeader } from './profile-shared';
 
 interface ProfilePiiSectionProps {
   staff: StaffMember;
@@ -52,25 +51,27 @@ export const ProfilePiiSection: React.FC<ProfilePiiSectionProps> = ({ staff, loa
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
-      <SectionHeader
-        title="Donnees sensibles"
-        editing={editing}
-        onEdit={startEdit}
-        onSave={saveSection}
-        onCancel={cancelEdit}
-        isSaving={isSaving}
-      />
-
-      {piiLoading && (
-        <div className="flex items-center gap-2 text-sm text-slate-500">
-          <Loader2 size={16} className="animate-spin" />
-          Chargement des donnees...
-        </div>
-      )}
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide">Données sensibles</h3>
+        {editing ? (
+          <div className="flex items-center gap-1.5">
+            <button onClick={cancelEdit} disabled={isSaving} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+              <X size={14} />
+            </button>
+            <button onClick={saveSection} disabled={isSaving} className="p-1.5 text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50">
+              {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            </button>
+          </div>
+        ) : (
+          <button onClick={startEdit} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+            {piiLoading ? <Loader2 size={14} className="animate-spin" /> : <Pencil size={14} />}
+          </button>
+        )}
+      </div>
 
       {editing ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-3">
           <Input
             label={`Salaire de base (${currencySymbol})`}
             type="number"
@@ -84,18 +85,41 @@ export const ProfilePiiSection: React.FC<ProfilePiiSectionProps> = ({ staff, loa
             placeholder="FR76 ..."
           />
           <Input
-            label="Numero Securite Sociale"
+            label="Numéro Sécurité Sociale"
             value={draft.socialSecurityNumber ?? ''}
             onChange={e => setDraft({ ...draft, socialSecurityNumber: e.target.value })}
-            className="sm:col-span-2"
           />
         </div>
       ) : !piiLoading ? (
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label={`Salaire de base (${currencySymbol})`} value={staff.baseSalary != null ? `${staff.baseSalary} ${currencySymbol}` : undefined} />
-          <Field label="IBAN" value={staff.iban ? '****' + staff.iban.slice(-4) : undefined} />
-          <Field label="Numero Securite Sociale" value={staff.socialSecurityNumber ? '****' + staff.socialSecurityNumber.slice(-4) : undefined} />
-        </dl>
+        <ul className="space-y-3">
+          <li className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+              <Lock size={14} />
+            </div>
+            <div className="overflow-hidden">
+              <div className="text-sm font-medium text-slate-900">{staff.baseSalary != null ? `${staff.baseSalary} ${currencySymbol}` : '—'}</div>
+              <div className="text-xs text-slate-500">Salaire de base</div>
+            </div>
+          </li>
+          <li className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+              <CreditCard size={14} />
+            </div>
+            <div className="overflow-hidden">
+              <div className="text-sm font-medium text-slate-900">{staff.iban ? '••••' + staff.iban.slice(-4) : '—'}</div>
+              <div className="text-xs text-slate-500">IBAN</div>
+            </div>
+          </li>
+          <li className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+              <Shield size={14} />
+            </div>
+            <div className="overflow-hidden">
+              <div className="text-sm font-medium text-slate-900">{staff.socialSecurityNumber ? '••••' + staff.socialSecurityNumber.slice(-4) : '—'}</div>
+              <div className="text-xs text-slate-500">N° Sécurité Sociale</div>
+            </div>
+          </li>
+        </ul>
       ) : null}
     </div>
   );
