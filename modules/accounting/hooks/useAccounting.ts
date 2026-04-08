@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { useTransactions } from '../../../hooks/useTransactions';
+import { useNewClientCount } from './useNewClientCount';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useServices } from '../../services/hooks/useServices';
 import { useProducts } from '../../products/hooks/useProducts';
@@ -26,11 +27,37 @@ export const useAccounting = () => {
   const { toastOnError } = useMutationToast();
   useRealtimeSync('expenses');
 
-  const { transactions } = useTransactions();
   const { salonSettings } = useSettings();
   const { allServices, serviceCategories } = useServices();
   const { allProducts, productCategories } = useProducts();
   const { allStaff } = useTeam();
+
+  // --- Date Range State ---
+  const [dateRange, setDateRange] = useState<DateRange>(() => {
+    const today = new Date();
+    return {
+      from: new Date(today.getFullYear(), today.getMonth(), 1),
+      to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999),
+      label: 'Ce mois-ci',
+    };
+  });
+
+  // Widen query to include previous period for trend comparisons
+  const queryRange = useMemo(() => {
+    const from = new Date(dateRange.from).getTime();
+    const to = new Date(dateRange.to).getTime();
+    const duration = to - from;
+    const prevFrom = new Date(from - duration - 1);
+    return { from: prevFrom.toISOString(), to: new Date(to).toISOString() };
+  }, [dateRange]);
+
+  const { transactions } = useTransactions(queryRange);
+
+  const { data: newClientCount = 0 } = useNewClientCount(
+    salonId,
+    new Date(dateRange.from).toISOString(),
+    new Date(dateRange.to).toISOString()
+  );
 
   // --- Expenses Query ---
   const { data: expenses = [] } = useQuery({
@@ -63,16 +90,6 @@ export const useAccounting = () => {
 
   const addExpense = (expense: Omit<Expense, 'id'>) =>
     addExpenseMutation.mutate(expense);
-
-  // --- Date Range State ---
-  const [dateRange, setDateRange] = useState<DateRange>(() => {
-    const today = new Date();
-    return {
-      from: new Date(today.getFullYear(), today.getMonth(), 1),
-      to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999),
-      label: 'Ce mois-ci',
-    };
-  });
 
   // --- Filtering ---
   const data = useMemo(() => {
@@ -366,25 +383,8 @@ export const useAccounting = () => {
   const clientMetrics = useMemo(() => {
     const currentClientIds = new Set<string>();
     data.current.transactions.forEach((t: Transaction) => { if (t.clientId) currentClientIds.add(t.clientId); });
-
-    const firstTransactionByClient = new Map<string, number>();
-    transactions.forEach((t: Transaction) => {
-      if (!t.clientId) return;
-      const time = new Date(t.date).getTime();
-      const existing = firstTransactionByClient.get(t.clientId);
-      if (!existing || time < existing) firstTransactionByClient.set(t.clientId, time);
-    });
-
-    const from = new Date(dateRange.from).getTime();
-    const to = new Date(dateRange.to).getTime();
-    let newClients = 0;
-    currentClientIds.forEach(clientId => {
-      const firstDate = firstTransactionByClient.get(clientId);
-      if (firstDate && firstDate >= from && firstDate <= to) newClients++;
-    });
-
-    return { uniqueClients: currentClientIds.size, newClients };
-  }, [data.current.transactions, transactions, dateRange]);
+    return { uniqueClients: currentClientIds.size, newClients: newClientCount };
+  }, [data.current.transactions, newClientCount]);
 
   // --- Top Products ---
   const topProducts = useMemo(() => {
