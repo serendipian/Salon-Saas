@@ -9,7 +9,7 @@ interface ClientTableProps {
   onViewDetails: (id: string) => void;
   onEdit: (id: string) => void;
   onSchedule: (id: string) => void;
-  onDelete: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 export const ClientTable: React.FC<ClientTableProps> = ({
@@ -122,14 +122,14 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                     >
                       <Calendar size={16} />
                     </button>
-                    <button
+                    {onDelete && <button
                       onClick={() => onDelete(client.id)}
                       className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                       title="Supprimer"
                       aria-label={`Supprimer ${client.firstName} ${client.lastName}`}
                     >
                       <Trash2 size={16} />
-                    </button>
+                    </button>}
                   </div>
                 </td>
               </tr>

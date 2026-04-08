@@ -10,6 +10,7 @@ import { ProductForm } from './components/ProductForm';
 export const ProductsModule: React.FC = () => {
   const {
     products,
+    allProducts,
     productCategories,
     brands,
     searchTerm,
@@ -25,7 +26,7 @@ export const ProductsModule: React.FC = () => {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   const handleAdd = () => {
-    if (!canAddProduct(products.length)) {
+    if (!canAddProduct(allProducts.length)) {
       addToast({ type: 'warning', message: 'Limite de produits atteinte pour votre forfait. Passez au forfait supérieur pour en ajouter davantage.' });
       return;
     }

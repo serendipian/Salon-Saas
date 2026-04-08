@@ -32,7 +32,6 @@ export const ExpenseTable: React.FC<{ expenses: Expense[] }> = ({ expenses }) =>
                   <th className="px-6 py-4 hidden md:table-cell">Fournisseur</th>
                   <th className="px-6 py-4 hidden lg:table-cell">Catégorie</th>
                   <th className="px-6 py-4 text-right">Montant</th>
-                  <th className="px-6 py-4 text-right"></th>
                </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -51,8 +50,6 @@ export const ExpenseTable: React.FC<{ expenses: Expense[] }> = ({ expenses }) =>
                         </td>
                         <td className="px-6 py-4 text-right font-bold text-slate-900">
                            {formatPrice(exp.amount)}
-                        </td>
-                        <td className="px-6 py-4 text-right">
                         </td>
                      </tr>
                   );

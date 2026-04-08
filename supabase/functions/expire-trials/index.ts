@@ -4,6 +4,7 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 Deno.serve(async (_req) => {
   // No auth required — idempotent operation called by pg_cron daily
   // Safe to run multiple times: only downgrades salons still in 'trial' status
+  // TODO: Re-add auth via service-role check or update pg_cron migration to send x-function-secret header
 
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,

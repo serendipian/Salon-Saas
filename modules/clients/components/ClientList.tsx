@@ -13,7 +13,7 @@ interface ClientListProps {
   onViewDetails: (id: string) => void;
   onEdit: (id: string) => void;
   onSchedule: (id: string) => void;
-  onDelete: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 export const ClientList: React.FC<ClientListProps> = ({
