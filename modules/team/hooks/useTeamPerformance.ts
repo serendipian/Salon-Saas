@@ -55,14 +55,14 @@ export const useTeamPerformance = (staff: StaffMember[]): {
 
   const staffIds = useMemo(() => staff.map(m => m.id), [staff]);
 
-  const { data: piiMap = new Map<string, number | null>(), isLoading: isLoadingPii } = useQuery({
+  const { data: piiMap = {} as Record<string, number | null>, isLoading: isLoadingPii } = useQuery({
     queryKey: ['staff_pii_batch', salonId, staffIds],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_staff_pii_batch', { p_staff_ids: staffIds });
-      const map = new Map<string, number | null>();
+      const map: Record<string, number | null> = {};
       if (error || !data) return map;
       for (const row of data as { staff_id: string; base_salary: string | null }[]) {
-        map.set(row.staff_id, row.base_salary ? parseFloat(row.base_salary) : null);
+        map[row.staff_id] = row.base_salary ? parseFloat(row.base_salary) : null;
       }
       return map;
     },
@@ -79,7 +79,7 @@ export const useTeamPerformance = (staff: StaffMember[]): {
       const workingDays = countWorkingDays(from, to, member.schedule);
       const revenuePerDay = workingDays > 0 ? revenue / workingDays : 0;
       const bonusAttribue = calcBonus(revenue, member.bonusTiers);
-      const baseSalary = piiMap.get(member.id) ?? null;
+      const baseSalary = piiMap[member.id] ?? null;
       const ratio = baseSalary && baseSalary > 0 ? revenue / baseSalary : null;
 
       return { staff: member, revenue, revenuePerDay, workingDays, bonusAttribue, baseSalary, ratio };
