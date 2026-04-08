@@ -12,7 +12,7 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, ChevronDown, ChevronUp, Clock, Crown, TrendingUp, Scissors, MapPin, Plus } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, ChevronDown, ChevronUp, Clock, Crown, TrendingUp, Scissors, Plus } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useClients } from '../clients/hooks/useClients';
 import { useAppointments } from '../appointments/hooks/useAppointments';
