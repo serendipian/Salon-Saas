@@ -22,7 +22,7 @@ export const AppointmentNewPage: React.FC = () => {
   const { allServices: services, serviceCategories } = useServices();
   const { allStaff: team } = useTeam();
 
-  const handleSave = async (payload: any) => {
+  const handleSave = async (payload: Parameters<typeof addAppointmentGroup>[0] & { newClient: { firstName: string; lastName: string; phone: string } | null }) => {
     if (payload.newClient && activeSalon) {
       const { data: newClientRow, error: clientError } = await supabase
         .from('clients')

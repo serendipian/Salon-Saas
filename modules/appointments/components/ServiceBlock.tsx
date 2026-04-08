@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import type { Service, ServiceCategory, StaffMember } from '../../../types';
 import type { ServiceBlockState } from '../../../types';
-import { formatPrice } from '../../../lib/format';
+import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import ServiceGrid from './ServiceGrid';
 import StaffPills from './StaffPills';
@@ -71,13 +71,6 @@ export default function ServiceBlock({
   );
   const duration = variant?.durationMinutes ?? selectedService?.durationMinutes ?? null;
   const price = variant?.price ?? selectedService?.price ?? null;
-
-  const formatDuration = (mins: number) => {
-    if (mins < 60) return `${mins} min`;
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    return m > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${h}h`;
-  };
 
   const dateFmt = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   const formatBlockDate = (dateStr: string) => dateFmt.format(new Date(dateStr + 'T00:00:00'));

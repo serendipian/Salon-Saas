@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatPrice } from '../../../lib/format';
+import { formatPrice, formatDuration } from '../../../lib/format';
 import type { Service, ServiceVariant } from '../../../types';
 
 interface ServiceBlockSummary {
@@ -34,13 +34,6 @@ function formatTime(hour: number | null, minute: number, durationMinutes: number
   const endM = endTotal % 60;
   const end = `${endH}h${String(endM).padStart(2, '0')}`;
   return `${start} – ${end}`;
-}
-
-function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${h}h`;
 }
 
 const dateFmt = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });

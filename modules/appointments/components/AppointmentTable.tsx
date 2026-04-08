@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { Pencil, Trash2, User } from 'lucide-react';
 import { Appointment, AppointmentStatus, StaffMember, Service, ServiceCategory } from '../../../types';
-import { formatPrice } from '../../../lib/format';
+import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import { EmptyState } from '../../../components/EmptyState';
 import { StaffAvatar } from '../../../components/StaffAvatar';
@@ -75,14 +75,6 @@ function groupByDayAndClient(appointments: Appointment[]) {
 }
 
 const COL_COUNT = 10; // Date, Heure, Client, Service, Variante, Durée, Prix, Staff, Statut, Actions
-
-function formatDuration(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h === 0) return `${m}min`;
-  if (m === 0) return `${h}h`;
-  return `${h}h${String(m).padStart(2, '0')}`;
-}
 
 export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments, team, services, categories, onDetails, onEdit, onDelete, onStatusChange }) => {
   const staffMap = useMemo(() => new Map(team.map(s => [s.id, s])), [team]);

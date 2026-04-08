@@ -70,7 +70,6 @@ export const useAppointments = () => {
         .eq('id', appt.id)
         .eq('salon_id', salonId);
       if (error) {
-        console.error('[updateAppointment] error:', error.code, error.message, error.details, error.hint);
         if (error.code === '23P01') {
           throw new Error('Ce créneau est déjà occupé pour ce praticien. Veuillez choisir un autre horaire.');
         }
@@ -185,7 +184,6 @@ export const useAppointments = () => {
         })),
       });
       if (error) {
-        console.error('[editAppointmentGroup] RPC error:', error.code, error.message, error.details, error.hint);
         if (error.code === '23P01') {
           throw new Error('Ce créneau est déjà occupé pour ce praticien. Veuillez choisir un autre horaire.');
         }

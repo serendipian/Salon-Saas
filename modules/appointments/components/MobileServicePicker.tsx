@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Check } from 'lucide-react';
 import type { Service, ServiceCategory } from '../../../types';
-import { formatPrice } from '../../../lib/format';
+import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 
 interface MobileServicePickerProps {
@@ -10,13 +10,6 @@ interface MobileServicePickerProps {
   initialCategoryId: string | null;
   onSelect: (selection: { serviceId: string; variantId: string; categoryId: string }) => void;
   onClose: () => void;
-}
-
-function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes}min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${h}h`;
 }
 
 export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({

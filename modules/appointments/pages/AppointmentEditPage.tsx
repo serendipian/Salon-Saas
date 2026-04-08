@@ -19,7 +19,7 @@ export const AppointmentEditPage: React.FC = () => {
   const { activeSalon } = useAuth();
   const { addToast } = useToast();
   const { isMobile } = useMediaQuery();
-  const { allAppointments, editAppointmentGroup, deleteAppointment } = useAppointments();
+  const { allAppointments, isLoading, editAppointmentGroup, deleteAppointment } = useAppointments();
   const { allClients: clients } = useClients();
   const { allServices: services, serviceCategories } = useServices();
   const { allStaff: team } = useTeam();
@@ -47,7 +47,9 @@ export const AppointmentEditPage: React.FC = () => {
       const dateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
 
       const svc = services.find(s => s.id === appt.serviceId);
-      const variant = svc?.variants.find(v => v.price === appt.price && v.durationMinutes === appt.durationMinutes);
+      const variant = appt.variantId
+        ? svc?.variants.find(v => v.id === appt.variantId)
+        : svc?.variants.find(v => v.price === appt.price && v.durationMinutes === appt.durationMinutes);
 
       return {
         id: crypto.randomUUID(),
@@ -70,6 +72,14 @@ export const AppointmentEditPage: React.FC = () => {
     };
   }, [selectedAppt, allAppointments, services]);
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64 text-slate-400">
+        Chargement...
+      </div>
+    );
+  }
+
   if (!selectedAppt) {
     return (
       <div className="flex items-center justify-center h-64 text-slate-500">
@@ -78,7 +88,7 @@ export const AppointmentEditPage: React.FC = () => {
     );
   }
 
-  const handleSave = async (payload: any) => {
+  const handleSave = async (payload: Omit<Parameters<typeof editAppointmentGroup>[0], 'oldAppointmentId'> & { newClient: { firstName: string; lastName: string; phone: string } | null }) => {
     if (payload.newClient && activeSalon) {
       const { data: newClientRow, error: clientError } = await supabase
         .from('clients')

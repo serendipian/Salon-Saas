@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { ArrowLeft, Trash2, Search, X, Plus, ChevronRight } from 'lucide-react';
 import type { AppointmentStatus } from '../../../types';
 import { UseAppointmentFormProps, useAppointmentForm } from '../hooks/useAppointmentForm';
-import { formatPrice } from '../../../lib/format';
+import { formatPrice, formatDuration } from '../../../lib/format';
 import { MobileBottomSheet } from './MobileBottomSheet';
 import { MobileClientSearch } from './MobileClientSearch';
 import { MobileServicePicker } from './MobileServicePicker';
@@ -23,13 +23,6 @@ const STATUS_OPTIONS: { value: AppointmentStatus; label: string; color: string }
   { value: 'CANCELLED' as AppointmentStatus, label: 'Annul\u00e9', color: 'bg-red-500' },
   { value: 'NO_SHOW' as AppointmentStatus, label: 'Absent', color: 'bg-orange-500' },
 ];
-
-const formatDuration = (mins: number) => {
-  if (mins < 60) return `${mins} min`;
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return m > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${h}h`;
-};
 
 export default function AppointmentBuilderMobile({
   onCancel,
