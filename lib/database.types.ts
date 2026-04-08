@@ -1274,6 +1274,7 @@ export type Database = {
           slug: string | null
           street: string | null
           subscription_tier: string
+          supplier_settings: Json | null
           tiktok: string | null
           timezone: string
           trial_ends_at: string | null
@@ -1308,6 +1309,7 @@ export type Database = {
           slug?: string | null
           street?: string | null
           subscription_tier?: string
+          supplier_settings?: Json | null
           tiktok?: string | null
           timezone?: string
           trial_ends_at?: string | null
@@ -1342,6 +1344,7 @@ export type Database = {
           slug?: string | null
           street?: string | null
           subscription_tier?: string
+          supplier_settings?: Json | null
           tiktok?: string | null
           timezone?: string
           trial_ends_at?: string | null
@@ -1914,11 +1917,66 @@ export type Database = {
           },
         ]
       }
+      supplier_categories: {
+        Row: {
+          color: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          name: string
+          salon_id: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          name: string
+          salon_id: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          name?: string
+          salon_id?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_categories_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_categories_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_categories_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           active: boolean
           address: string | null
-          category: string | null
+          category_id: string | null
           contact_name: string | null
           created_at: string
           created_by: string | null
@@ -1937,7 +1995,7 @@ export type Database = {
         Insert: {
           active?: boolean
           address?: string | null
-          category?: string | null
+          category_id?: string | null
           contact_name?: string | null
           created_at?: string
           created_by?: string | null
@@ -1956,7 +2014,7 @@ export type Database = {
         Update: {
           active?: boolean
           address?: string | null
-          category?: string | null
+          category_id?: string | null
           contact_name?: string | null
           created_at?: string
           created_by?: string | null
@@ -1973,6 +2031,13 @@ export type Database = {
           website?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "suppliers_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "suppliers_created_by_fkey"
             columns: ["created_by"]
@@ -2731,6 +2796,10 @@ export type Database = {
         Returns: undefined
       }
       save_service_categories: {
+        Args: { p_assignments?: Json; p_categories: Json; p_salon_id: string }
+        Returns: undefined
+      }
+      save_supplier_categories: {
         Args: { p_assignments?: Json; p_categories: Json; p_salon_id: string }
         Returns: undefined
       }
