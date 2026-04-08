@@ -1,12 +1,16 @@
-
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { toSupplier, toSupplierInsert } from '../mappers';
+import { toSupplier, toSupplierInsert, toSupplierCategory } from '../mappers';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
-import type { Supplier } from '../../../types';
+import type { Supplier, SupplierCategory } from '../../../types';
+
+export interface SupplierCategoryUpdatePayload {
+  categories: SupplierCategory[];
+  assignments?: Record<string, string | null>;
+}
 
 export const useSuppliers = () => {
   const { activeSalon } = useAuth();
@@ -15,8 +19,9 @@ export const useSuppliers = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const { toastOnError, toastOnSuccess } = useMutationToast();
   useRealtimeSync('suppliers');
+  useRealtimeSync('supplier_categories');
 
-  const { data: suppliers = [], isLoading } = useQuery({
+  const { data: suppliers = [], isLoading: isLoadingSuppliers } = useQuery({
     queryKey: ['suppliers', salonId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -27,6 +32,21 @@ export const useSuppliers = () => {
         .order('name');
       if (error) throw error;
       return (data ?? []).map(toSupplier);
+    },
+    enabled: !!salonId,
+  });
+
+  const { data: supplierCategories = [], isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['supplier_categories', salonId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('supplier_categories')
+        .select('*')
+        .eq('salon_id', salonId)
+        .is('deleted_at', null)
+        .order('sort_order', { ascending: true, nullsFirst: false });
+      if (error) throw error;
+      return (data ?? []).map(toSupplierCategory);
     },
     enabled: !!salonId,
   });
@@ -76,6 +96,30 @@ export const useSuppliers = () => {
     onError: toastOnError('Impossible de supprimer le fournisseur'),
   });
 
+  const updateSupplierCategoriesMutation = useMutation({
+    mutationFn: async ({ categories, assignments }: SupplierCategoryUpdatePayload) => {
+      const p_categories = categories.map((cat, i) => ({
+        id: cat.id,
+        name: cat.name,
+        color: cat.color,
+        sort_order: i,
+      }));
+
+      const { error } = await supabase.rpc('save_supplier_categories', {
+        p_salon_id: salonId,
+        p_categories: p_categories,
+        p_assignments: assignments ?? null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['supplier_categories', salonId] });
+      queryClient.invalidateQueries({ queryKey: ['suppliers', salonId] });
+      toastOnSuccess('Catégories enregistrées')();
+    },
+    onError: toastOnError("Impossible de modifier les catégories de fournisseurs"),
+  });
+
   const filteredSuppliers = useMemo(() => {
     if (!searchTerm) return suppliers;
     const term = searchTerm.toLowerCase();
@@ -88,11 +132,14 @@ export const useSuppliers = () => {
   return {
     suppliers: filteredSuppliers,
     allSuppliers: suppliers,
-    isLoading,
+    supplierCategories,
+    isLoading: isLoadingSuppliers || isLoadingCategories,
     searchTerm,
     setSearchTerm,
     addSupplier: (supplier: Supplier) => addSupplierMutation.mutate(supplier),
     updateSupplier: (supplier: Supplier) => updateSupplierMutation.mutate(supplier),
     deleteSupplier: (supplierId: string) => deleteSupplierMutation.mutate(supplierId),
+    updateSupplierCategories: (payload: SupplierCategoryUpdatePayload) =>
+      updateSupplierCategoriesMutation.mutate(payload),
   };
 };

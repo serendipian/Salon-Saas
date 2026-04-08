@@ -1,4 +1,4 @@
-import type { Supplier } from '../../types';
+import type { Supplier, SupplierCategory } from '../../types';
 
 interface SupplierRow {
   id: string;
@@ -9,7 +9,7 @@ interface SupplierRow {
   phone: string;
   website: string | null;
   address: string | null;
-  category: string;
+  category_id: string | null;
   payment_terms: string | null;
   active: boolean;
   notes: string | null;
@@ -17,6 +17,17 @@ interface SupplierRow {
   updated_at: string;
   created_by: string | null;
   updated_by: string | null;
+  deleted_at: string | null;
+}
+
+interface SupplierCategoryRow {
+  id: string;
+  salon_id: string;
+  name: string;
+  color: string;
+  sort_order: number | null;
+  created_at: string;
+  updated_at: string;
   deleted_at: string | null;
 }
 
@@ -29,7 +40,7 @@ export function toSupplier(row: SupplierRow): Supplier {
     phone: row.phone,
     website: row.website ?? undefined,
     address: row.address ?? undefined,
-    category: row.category,
+    categoryId: row.category_id,
     paymentTerms: row.payment_terms ?? undefined,
     active: row.active,
     notes: row.notes ?? undefined,
@@ -46,9 +57,18 @@ export function toSupplierInsert(data: Supplier, salonId: string) {
     phone: data.phone,
     website: data.website ?? null,
     address: data.address ?? null,
-    category: data.category,
+    category_id: data.categoryId ?? null,
     payment_terms: data.paymentTerms ?? null,
     active: data.active ?? true,
     notes: data.notes ?? null,
+  };
+}
+
+export function toSupplierCategory(row: SupplierCategoryRow): SupplierCategory {
+  return {
+    id: row.id,
+    name: row.name,
+    color: row.color,
+    sortOrder: row.sort_order ?? undefined,
   };
 }

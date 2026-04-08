@@ -132,10 +132,24 @@ export interface Supplier {
   phone: string;
   website?: string;
   address?: string;
-  category: string; // e.g. 'Produits', 'Matériel', 'Charges'
+  categoryId: string | null;
   paymentTerms?: string; // e.g. '30 jours fin de mois'
   active: boolean;
   notes?: string;
+}
+
+export interface SupplierCategory {
+  id: string;
+  name: string;
+  color: string;
+  sortOrder?: number;
+}
+
+export interface SupplierSettings {
+  defaultPaymentTerms: string;
+  poPrefix: string;
+  poNextNumber: number;
+  defaultView: 'card' | 'table';
 }
 
 // Staff/Team Domain

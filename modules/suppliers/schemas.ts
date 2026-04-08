@@ -8,5 +8,5 @@ export const supplierSchema = z.object({
   ]).optional().default(''),
   phone: z.string().optional().default(''),
   contactName: z.string().optional().default(''),
-  category: z.string().min(1, 'La catégorie est requise'),
+  categoryId: z.string().nullable().optional(),
 });
