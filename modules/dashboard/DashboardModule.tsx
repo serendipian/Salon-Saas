@@ -12,14 +12,19 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, ChevronDown, ChevronUp, Clock, Crown, TrendingUp, Scissors, Plus } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, ChevronDown, ChevronUp, Clock, Crown, TrendingUp, Scissors, Plus, Banknote, CreditCard, Smartphone, ArrowRightLeft, FileText, Receipt, Gift, Wallet } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../../lib/supabase';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useClients } from '../clients/hooks/useClients';
 import { useAppointments } from '../appointments/hooks/useAppointments';
 import { useServices } from '../services/hooks/useServices';
 import { useTeam } from '../team/hooks/useTeam';
+import { useAuth } from '../../context/AuthContext';
 import { formatPrice } from '../../lib/format';
-import { DateRange, AppointmentStatus } from '../../types';
+import { DateRange, AppointmentStatus, PaymentEntry, Transaction } from '../../types';
+import { toExpense, ExpenseRow } from '../accounting/mappers';
+import { calcBonus, calcCommission } from '../team/utils';
 import { DateRangePicker } from '../../components/DateRangePicker';
 import { TodayCalendarCard } from './components/TodayCalendarCard';
 
@@ -66,8 +71,29 @@ const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon, isC
   );
 };
 
+// Payment method icon mapping
+const PAYMENT_METHOD_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  'Espèces': Banknote,
+  'Carte Bancaire': CreditCard,
+  'Virement': ArrowRightLeft,
+  'Chèque': FileText,
+  'Mobile': Smartphone,
+  'Autre': Wallet,
+};
+
+const PAYMENT_METHOD_COLORS: Record<string, string> = {
+  'Espèces': 'bg-emerald-50 text-emerald-700',
+  'Carte Bancaire': 'bg-blue-50 text-blue-700',
+  'Virement': 'bg-purple-50 text-purple-700',
+  'Chèque': 'bg-amber-50 text-amber-700',
+  'Mobile': 'bg-pink-50 text-pink-700',
+  'Autre': 'bg-slate-50 text-slate-600',
+};
+
 export const DashboardModule: React.FC = () => {
   const navigate = useNavigate();
+  const { activeSalon } = useAuth();
+  const salonId = activeSalon?.id ?? '';
   const { allAppointments: appointments, updateAppointment } = useAppointments();
   const { allClients: clients } = useClients();
   const { services, serviceCategories } = useServices();
@@ -93,6 +119,22 @@ export const DashboardModule: React.FC = () => {
   }, [dateRange]);
 
   const { transactions } = useTransactions(queryRange);
+
+  // --- Expenses Query ---
+  const { data: allExpenses = [] } = useQuery({
+    queryKey: ['expenses', salonId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('*, expense_categories(name, color), suppliers(name, category)')
+        .eq('salon_id', salonId)
+        .is('deleted_at', null)
+        .order('date', { ascending: false });
+      if (error) throw error;
+      return (data as unknown as ExpenseRow[]).map(toExpense);
+    },
+    enabled: !!salonId,
+  });
 
   // --- 1. Filter Data based on Selection (Current & Previous) ---
   const data = useMemo(() => {
@@ -122,11 +164,14 @@ export const DashboardModule: React.FC = () => {
     const currentClients = filterByRange(clients, 'createdAt', from, to);
     const prevClients = filterByRange(clients, 'createdAt', prevFrom, prevTo);
 
+    const currentExpenses = filterByRange(allExpenses, 'date', from, to);
+    const prevExpenses = filterByRange(allExpenses, 'date', prevFrom, prevTo);
+
     return {
-      current: { transactions: currentTrx, appointments: currentAppts, newClients: currentClients },
-      previous: { transactions: prevTrx, appointments: prevAppts, newClients: prevClients }
+      current: { transactions: currentTrx, appointments: currentAppts, newClients: currentClients, expenses: currentExpenses },
+      previous: { transactions: prevTrx, appointments: prevAppts, newClients: prevClients, expenses: prevExpenses }
     };
-  }, [transactions, appointments, clients, dateRange]);
+  }, [transactions, appointments, clients, allExpenses, dateRange]);
 
   // --- 2. Compute KPIs & Trends ---
   const stats = useMemo(() => {
@@ -175,6 +220,81 @@ export const DashboardModule: React.FC = () => {
       cancellationTrend: calcTrend(cancellationRate, prevCancellationRate),
     };
   }, [data]);
+
+  // --- 2b. Payment Method Breakdown ---
+  const paymentBreakdown = useMemo(() => {
+    const map = new Map<string, number>();
+    data.current.transactions.forEach((t: Transaction) => {
+      (t.payments || []).forEach((p: PaymentEntry) => {
+        map.set(p.method, (map.get(p.method) || 0) + p.amount);
+      });
+    });
+    const total = Array.from(map.values()).reduce((s, v) => s + v, 0);
+    return {
+      methods: Array.from(map.entries())
+        .map(([method, amount]) => ({ method, amount, percent: total > 0 ? (amount / total) * 100 : 0 }))
+        .sort((a, b) => b.amount - a.amount),
+      total,
+    };
+  }, [data.current.transactions]);
+
+  // --- 2c. Expenses ---
+  const expenseStats = useMemo(() => {
+    const total = data.current.expenses.reduce((sum, e) => sum + e.amount, 0);
+    const prevTotal = data.previous.expenses.reduce((sum, e) => sum + e.amount, 0);
+    const trend = prevTotal === 0 ? (total > 0 ? 100 : 0) : ((total - prevTotal) / prevTotal) * 100;
+    return { total, trend, count: data.current.expenses.length };
+  }, [data.current.expenses, data.previous.expenses]);
+
+  // --- 2d. Bonus & Commissions ---
+  const bonusStats = useMemo(() => {
+    // Compute from staff revenue + their commission/bonus config
+    const staffMap = new Map(allStaff.map(s => [s.id, s]));
+    let totalCommission = 0;
+    let totalBonus = 0;
+
+    // Aggregate revenue per staff from transactions
+    const staffRevMap = new Map<string, number>();
+    data.current.transactions.forEach((t: Transaction) => {
+      t.items.forEach(item => {
+        if (item.staffId && item.type === 'SERVICE') {
+          staffRevMap.set(item.staffId, (staffRevMap.get(item.staffId) || 0) + item.price * (item.quantity || 1));
+        }
+      });
+    });
+
+    staffRevMap.forEach((revenue, staffId) => {
+      const staff = staffMap.get(staffId);
+      if (staff) {
+        totalCommission += calcCommission(revenue, staff.commissionRate);
+        totalBonus += calcBonus(revenue, staff.bonusTiers);
+      }
+    });
+
+    // Previous period
+    const prevStaffRevMap = new Map<string, number>();
+    data.previous.transactions.forEach((t: Transaction) => {
+      t.items.forEach(item => {
+        if (item.staffId && item.type === 'SERVICE') {
+          prevStaffRevMap.set(item.staffId, (prevStaffRevMap.get(item.staffId) || 0) + item.price * (item.quantity || 1));
+        }
+      });
+    });
+
+    let prevTotal = 0;
+    prevStaffRevMap.forEach((revenue, staffId) => {
+      const staff = staffMap.get(staffId);
+      if (staff) {
+        prevTotal += calcCommission(revenue, staff.commissionRate);
+        prevTotal += calcBonus(revenue, staff.bonusTiers);
+      }
+    });
+
+    const total = totalCommission + totalBonus;
+    const trend = prevTotal === 0 ? (total > 0 ? 100 : 0) : ((total - prevTotal) / prevTotal) * 100;
+
+    return { total, commission: totalCommission, bonus: totalBonus, trend };
+  }, [data.current.transactions, data.previous.transactions, allStaff]);
 
   // --- 3. Generate Dynamic Chart Data (Smart Granularity) ---
   const chartData = useMemo(() => {
@@ -334,15 +454,6 @@ export const DashboardModule: React.FC = () => {
       {/* KPIs */}
       <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <MetricCard
-          title="Chiffre d'Affaires"
-          value={stats.revenue}
-          trend={stats.revenueTrend}
-          isPositive={stats.revenueTrend >= 0}
-          subtitle="vs période préc."
-          icon={DollarSign}
-          isCurrency
-        />
-        <MetricCard
           title="Panier Moyen"
           value={stats.avgBasket}
           trend={stats.basketTrend}
@@ -383,6 +494,170 @@ export const DashboardModule: React.FC = () => {
           subtitle="vs période préc."
           icon={XCircle}
         />
+      </div>
+
+      {/* Revenue / Expenses / Bonus Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Chiffre d'Affaires + Payment Breakdown */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <div className="flex justify-between items-start mb-1">
+            <h3 className="text-sm font-semibold text-slate-500">Chiffre d'Affaires</h3>
+            <DollarSign size={16} className="text-slate-400 shrink-0" />
+          </div>
+          <div className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(stats.revenue)}</div>
+          <div className="flex items-center gap-2 mt-1 mb-4">
+            {stats.revenueTrend !== null && (
+              <span className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
+                Math.abs(stats.revenueTrend) < 0.05 ? 'bg-slate-50 text-slate-500'
+                : stats.revenueTrend >= 0 ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'
+              }`}>
+                {Math.abs(stats.revenueTrend) < 0.05 ? <Minus size={12} /> : stats.revenueTrend >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                {Math.abs(stats.revenueTrend).toFixed(1)}%
+              </span>
+            )}
+            <span className="text-xs text-slate-400">vs période préc.</span>
+          </div>
+          {paymentBreakdown.methods.length > 0 ? (
+            <div className="space-y-2 pt-3 border-t border-slate-100">
+              {paymentBreakdown.methods.map(({ method, amount, percent }) => {
+                const Icon = PAYMENT_METHOD_ICONS[method] || Wallet;
+                const colorClass = PAYMENT_METHOD_COLORS[method] || 'bg-slate-50 text-slate-600';
+                return (
+                  <div key={method} className="flex items-center gap-2.5">
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
+                      <Icon size={14} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs font-medium text-slate-600 truncate">{method}</span>
+                        <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(amount)}</span>
+                      </div>
+                      <div className="h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
+                        <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">{percent.toFixed(0)}%</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400 italic pt-3 border-t border-slate-100">Aucune vente sur la période</p>
+          )}
+        </div>
+
+        {/* Expenses */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <div className="flex justify-between items-start mb-1">
+            <h3 className="text-sm font-semibold text-slate-500">Dépenses</h3>
+            <Receipt size={16} className="text-slate-400 shrink-0" />
+          </div>
+          <div className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(expenseStats.total)}</div>
+          <div className="flex items-center gap-2 mt-1 mb-4">
+            {expenseStats.trend !== null && (
+              <span className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
+                Math.abs(expenseStats.trend) < 0.05 ? 'bg-slate-50 text-slate-500'
+                : expenseStats.trend <= 0 ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'
+              }`}>
+                {Math.abs(expenseStats.trend) < 0.05 ? <Minus size={12} /> : expenseStats.trend <= 0 ? <ArrowDownRight size={12} /> : <ArrowUpRight size={12} />}
+                {Math.abs(expenseStats.trend).toFixed(1)}%
+              </span>
+            )}
+            <span className="text-xs text-slate-400">vs période préc.</span>
+          </div>
+          <div className="pt-3 border-t border-slate-100 space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-slate-500">{expenseStats.count} dépense{expenseStats.count !== 1 ? 's' : ''}</span>
+              <button
+                onClick={() => navigate('/finances')}
+                className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"
+              >
+                Détails <ChevronRight size={12} />
+              </button>
+            </div>
+            {/* Net Profit indicator */}
+            <div className="bg-slate-50 rounded-lg p-3 mt-2">
+              <div className="flex justify-between items-baseline">
+                <span className="text-xs font-medium text-slate-500">Résultat net</span>
+                <span className={`text-sm font-bold ${stats.revenue - expenseStats.total >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {formatPrice(stats.revenue - expenseStats.total)}
+                </span>
+              </div>
+              <div className="h-1.5 bg-slate-200 rounded-full mt-2 overflow-hidden">
+                {stats.revenue > 0 && (
+                  <div
+                    className="h-full bg-emerald-400 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(100, Math.max(0, ((stats.revenue - expenseStats.total) / stats.revenue) * 100))}%` }}
+                  />
+                )}
+              </div>
+              <div className="flex justify-between mt-1">
+                <span className="text-[10px] text-slate-400">Marge: {stats.revenue > 0 ? (((stats.revenue - expenseStats.total) / stats.revenue) * 100).toFixed(1) : '0.0'}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bonus & Commissions */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <div className="flex justify-between items-start mb-1">
+            <h3 className="text-sm font-semibold text-slate-500">Bonus & Commissions</h3>
+            <Gift size={16} className="text-slate-400 shrink-0" />
+          </div>
+          <div className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(bonusStats.total)}</div>
+          <div className="flex items-center gap-2 mt-1 mb-4">
+            {bonusStats.trend !== null && (
+              <span className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
+                Math.abs(bonusStats.trend) < 0.05 ? 'bg-slate-50 text-slate-500'
+                : bonusStats.trend >= 0 ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'
+              }`}>
+                {Math.abs(bonusStats.trend) < 0.05 ? <Minus size={12} /> : bonusStats.trend >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                {Math.abs(bonusStats.trend).toFixed(1)}%
+              </span>
+            )}
+            <span className="text-xs text-slate-400">vs période préc.</span>
+          </div>
+          <div className="pt-3 border-t border-slate-100 space-y-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-indigo-50 text-indigo-600">
+                <TrendingUp size={14} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs font-medium text-slate-600">Commissions</span>
+                  <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(bonusStats.commission)}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-amber-50 text-amber-600">
+                <Gift size={14} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs font-medium text-slate-600">Bonus</span>
+                  <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(bonusStats.bonus)}</span>
+                </div>
+              </div>
+            </div>
+            {stats.revenue > 0 && (
+              <div className="bg-slate-50 rounded-lg p-3 mt-1">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs font-medium text-slate-500">% du CA</span>
+                  <span className="text-sm font-bold text-slate-700">
+                    {((bonusStats.total / stats.revenue) * 100).toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            )}
+            <button
+              onClick={() => navigate('/team')}
+              className="w-full text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center justify-center gap-1 pt-1"
+            >
+              Voir l'équipe <ChevronRight size={12} />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Today's Calendar + Side Cards */}
