@@ -12,7 +12,14 @@ import { CartItem, Client, Service, Product, PaymentEntry, Appointment } from '.
 export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'HISTORY' | 'APPOINTMENTS';
 
 export const usePOS = () => {
-  const { transactions, addTransaction } = useTransactions();
+  const posRange = useMemo(() => {
+    const from = new Date();
+    from.setDate(from.getDate() - 30);
+    from.setHours(0, 0, 0, 0);
+    return { from: from.toISOString(), to: new Date().toISOString() };
+  }, []);
+
+  const { transactions, addTransaction } = useTransactions(posRange);
   const { salonSettings } = useSettings();
 
   const { allClients: clients } = useClients();
