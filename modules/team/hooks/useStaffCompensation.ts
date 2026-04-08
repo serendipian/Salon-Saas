@@ -17,20 +17,17 @@ export const useStaffCompensation = (
   periodEnd: Date,
   baseSalary: number | null
 ): CompensationSummary => {
-  const { transactions } = useTransactions();
+  const compRange = useMemo(() => ({
+    from: periodStart.toISOString(),
+    to: periodEnd.toISOString(),
+  }), [periodStart.getTime(), periodEnd.getTime()]);
+
+  const { transactions } = useTransactions(compRange);
 
   return useMemo(() => {
     const base = baseSalary ?? 0;
 
-    // Compare using date strings (YYYY-MM-DD) to avoid timezone edge issues
-    const startStr = periodStart.toISOString().slice(0, 10);
-    const endStr = periodEnd.toISOString().slice(0, 10);
-
     const periodRevenue = (transactions || [])
-      .filter((t: any) => {
-        const dateStr = new Date(t.date).toISOString().slice(0, 10);
-        return dateStr >= startStr && dateStr <= endStr;
-      })
       .reduce((sum: number, t: any) => {
         return sum + (t.items || [])
           .filter((i: any) => i.staffId === staff.id)

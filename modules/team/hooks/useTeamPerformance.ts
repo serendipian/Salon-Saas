@@ -23,7 +23,6 @@ export const useTeamPerformance = (staff: StaffMember[]): {
   totalRevenue: number;
   isLoadingPii: boolean;
 } => {
-  const { transactions } = useTransactions();
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
 
@@ -36,25 +35,23 @@ export const useTeamPerformance = (staff: StaffMember[]): {
     };
   });
 
-  const filtered = useMemo(() => {
-    const from = new Date(dateRange.from).getTime();
-    const to = new Date(dateRange.to).getTime();
-    return transactions.filter(t => {
-      const time = new Date(t.date).getTime();
-      return time >= from && time <= to;
-    });
-  }, [transactions, dateRange]);
+  const teamRange = useMemo(() => ({
+    from: new Date(dateRange.from).toISOString(),
+    to: new Date(dateRange.to).toISOString(),
+  }), [dateRange]);
+
+  const { transactions } = useTransactions(teamRange);
 
   const revenueByStaff = useMemo(() => {
     const map = new Map<string, number>();
-    filtered.forEach((t: Transaction) => {
+    transactions.forEach((t: Transaction) => {
       t.items.forEach((item: CartItem) => {
         if (!item.staffId) return;
         map.set(item.staffId, (map.get(item.staffId) || 0) + item.price * (item.quantity || 1));
       });
     });
     return map;
-  }, [filtered]);
+  }, [transactions]);
 
   const staffIds = useMemo(() => staff.map(m => m.id), [staff]);
 

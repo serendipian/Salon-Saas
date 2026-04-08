@@ -32,7 +32,6 @@ function KpiCard({ icon: Icon, label, value, sub, color = 'text-slate-900' }: {
 }
 
 export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffId }) => {
-  const { transactions } = useTransactions();
   const { allAppointments: appointments } = useAppointments();
 
   const [dateRange, setDateRange] = useState<DateRange>(() => {
@@ -44,15 +43,12 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
     };
   });
 
-  // Filter transactions by date range
-  const filteredTransactions = useMemo(() => {
-    const from = new Date(dateRange.from).getTime();
-    const to = new Date(dateRange.to).getTime();
-    return transactions.filter(t => {
-      const time = new Date(t.date).getTime();
-      return time >= from && time <= to;
-    });
-  }, [transactions, dateRange]);
+  const perfRange = useMemo(() => ({
+    from: new Date(dateRange.from).toISOString(),
+    to: new Date(dateRange.to).toISOString(),
+  }), [dateRange]);
+
+  const { transactions } = useTransactions(perfRange);
 
   // Revenue stats from transaction items attributed to this staff member
   const revenueStats = useMemo(() => {
@@ -62,7 +58,7 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
     const serviceMap = new Map<string, { name: string; count: number; revenue: number }>();
     const dailyMap = new Map<string, number>();
 
-    filteredTransactions.forEach((t: Transaction) => {
+    transactions.forEach((t: Transaction) => {
       const staffItems = (t.items || []).filter((i: CartItem) => i.staffId === staffId);
       if (staffItems.length === 0) return;
       txIds.add(t.id);
@@ -99,7 +95,7 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
     }
 
     return { totalRevenue, serviceRevenue, productRevenue, avgBasket, txCount: txIds.size, topServices, chartData };
-  }, [filteredTransactions, staffId, dateRange]);
+  }, [transactions, staffId, dateRange]);
 
   // Appointment stats
   const appointmentStats = useMemo(() => {
