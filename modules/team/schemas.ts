@@ -9,7 +9,7 @@ export const staffMemberSchema = z.object({
   ]).optional().default(''),
   phone: z.string().min(1, 'Le téléphone est requis'),
   role: z.enum(['Manager', 'Stylist', 'Assistant', 'Receptionist'], {
-    errorMap: () => ({ message: 'Le rôle est requis' }),
+    error: 'Le rôle est requis',
   }),
   commissionRate: z.number().min(0, 'Minimum 0%').max(100, 'Maximum 100%').optional(),
 });

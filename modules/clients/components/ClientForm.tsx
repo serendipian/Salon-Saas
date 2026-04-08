@@ -174,7 +174,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, 
                 <Select 
                    label="Genre"
                    value={formData.gender}
-                   onChange={(val) => setFormData({...formData, gender: val as string})}
+                   onChange={(val) => setFormData({...formData, gender: val as 'Homme' | 'Femme'})}
                    options={[{value: 'Femme', label: 'Femme'}, {value: 'Homme', label: 'Homme'}]}
                 />
                 <Select 
@@ -272,7 +272,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, 
                 <Select 
                    label="Statut"
                    value={formData.status}
-                   onChange={(val) => setFormData({...formData, status: val as string})}
+                   onChange={(val) => setFormData({...formData, status: val as 'ACTIF' | 'VIP' | 'INACTIF'})}
                    options={[
                      {value: 'ACTIF', label: 'Actif', initials: 'AC'},
                      {value: 'VIP', label: 'VIP', initials: 'VP'},

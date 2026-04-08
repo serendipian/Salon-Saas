@@ -40,7 +40,7 @@ export function useProductSettings() {
     mutationFn: async (settings: ProductSettings) => {
       const { error } = await supabase
         .from('salons')
-        .update({ product_settings: settings as unknown as Record<string, unknown> })
+        .update({ product_settings: settings as any })
         .eq('id', salonId);
       if (error) throw error;
     },

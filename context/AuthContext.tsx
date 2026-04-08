@@ -104,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       salon_id: m.salon_id,
       profile_id: m.profile_id,
       role: m.role as Role,
-      status: m.status,
+      status: m.status as SalonMembership['status'],
       created_at: m.created_at,
       salon: m.salon as unknown as SalonMembership['salon'],
     }));

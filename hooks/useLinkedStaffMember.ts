@@ -24,7 +24,7 @@ export function useLinkedStaffMember() {
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
-      return toStaffMember(data);
+      return toStaffMember(data as any);
     },
     enabled: !!salonId && !!membershipId,
   });

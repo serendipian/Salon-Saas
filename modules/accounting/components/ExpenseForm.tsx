@@ -113,7 +113,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSave, onCancel, isPe
                           setFormData({...formData, supplier: ''});
                        } else {
                           setIsCustomSupplier(false);
-                          setFormData({...formData, supplier: val});
+                          setFormData({...formData, supplier: val as string});
                        }
                     }}
                     searchable

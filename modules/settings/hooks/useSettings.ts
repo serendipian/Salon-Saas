@@ -39,7 +39,7 @@ export const useSettings = () => {
         .eq('id', salonId)
         .single();
       if (error) throw error;
-      return toSalonSettings(data);
+      return toSalonSettings(data as any);
     },
     enabled: !!salonId,
   });
@@ -48,7 +48,7 @@ export const useSettings = () => {
     mutationFn: async (settings: SalonSettings) => {
       const { error } = await supabase
         .from('salons')
-        .update(toSalonUpdate(settings))
+        .update(toSalonUpdate(settings) as any)
         .eq('id', salonId);
       if (error) throw error;
       return settings;

@@ -93,7 +93,7 @@ export function useConnectionStatus(): ConnectionState {
 
   // React to state transitions (reconnect → invalidate queries + toast)
   useEffect(() => {
-    if (prevStateRef.current !== 'connected' && state === 'connected' && prevStateRef.current !== state) {
+    if (prevStateRef.current !== 'connected' && state === 'connected') {
       queryClient.invalidateQueries({ refetchType: 'active' });
       addToast({ type: 'success', message: 'Connexion rétablie' });
     }

@@ -42,7 +42,7 @@ export function useServiceSettings() {
     mutationFn: async (settings: ServiceSettings) => {
       const { error } = await supabase
         .from('salons')
-        .update({ service_settings: settings as unknown as Record<string, unknown> })
+        .update({ service_settings: settings as any })
         .eq('id', salonId);
       if (error) throw error;
     },

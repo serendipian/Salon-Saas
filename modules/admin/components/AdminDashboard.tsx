@@ -14,7 +14,7 @@ import {
 import { ADMIN_FONT } from '../constants';
 import { AdminErrorState } from './AdminShared';
 
-const SparkTooltip: React.FC<TooltipProps<number, string> & { isCurrency?: boolean }> = ({ active, payload, isCurrency }) => {
+const SparkTooltip: React.FC<any> = ({ active, payload, isCurrency }) => {
   if (!active || !payload?.length) return null;
   const point = payload[0].payload as AdminHistoryPoint;
   const date = new Date(point.month);

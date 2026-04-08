@@ -18,7 +18,7 @@ export const NewStaffPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       const result = await addStaffMember(member);
-      if (result?.piiError) {
+      if (result && 'piiError' in result && result.piiError) {
         addToast({ type: 'warning', message: 'Membre créé, mais les données sensibles (salaire, IBAN) n\'ont pas pu être enregistrées. Veuillez les saisir dans l\'onglet Profil.' });
       }
       if (result?.slug) {

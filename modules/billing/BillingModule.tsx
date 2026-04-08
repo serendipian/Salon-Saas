@@ -74,7 +74,7 @@ export const BillingModule: React.FC = () => {
   if (isSuccess) {
     return (
       <div className="w-full py-8 px-4 animate-in fade-in duration-500">
-        <UpgradeSuccess plan={successPlan} planName={successPlanName} />
+        <UpgradeSuccess plan={successPlan as any} planName={successPlanName} />
       </div>
     );
   }
@@ -115,7 +115,7 @@ export const BillingModule: React.FC = () => {
         />
 
         <PlanCards
-          plans={plans}
+          plans={plans as any}
           currentTier={tier}
           onSelectPlan={createCheckoutSession}
           onDowngrade={createPortalSession}
