@@ -25,8 +25,9 @@ export const useStaffDetail = (slug: string) => {
         .eq('salon_id', salonId)
         .order('deleted_at', { ascending: true, nullsFirst: true })
         .limit(1)
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      if (!data) return null;
       return toStaffMember(data as unknown as Parameters<typeof toStaffMember>[0]);
     },
     enabled: !!salonId && !!slug,

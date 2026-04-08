@@ -102,8 +102,8 @@ export const AcceptInvitationPage: React.FC = () => {
     e.preventDefault();
     if (!token || !invitationInfo) return;
 
-    if (password.length < 6) {
-      setErrorMessage('Le mot de passe doit contenir au moins 6 caractères');
+    if (password.length < 8) {
+      setErrorMessage('Le mot de passe doit contenir au moins 8 caractères');
       return;
     }
 
@@ -223,10 +223,10 @@ export const AcceptInvitationPage: React.FC = () => {
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={e => { setPassword(e.target.value); setErrorMessage(null); }}
-                        placeholder="Minimum 6 caractères"
+                        placeholder="Minimum 8 caractères"
                         className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
                         required
-                        minLength={6}
+                        minLength={8}
                         autoFocus
                       />
                       <button

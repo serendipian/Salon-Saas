@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { ViewState, Product } from '../../types';
 import { useProducts } from './hooks/useProducts';
+import { useBilling } from '../billing/hooks/useBilling';
+import { useToast } from '../../context/ToastContext';
 import { ProductList } from './components/ProductList';
 import { ProductForm } from './components/ProductForm';
 
@@ -15,11 +17,17 @@ export const ProductsModule: React.FC = () => {
     addProduct,
     updateProduct,
   } = useProducts();
+  const { canAddProduct } = useBilling();
+  const { addToast } = useToast();
 
   const [view, setView] = useState<ViewState>('LIST');
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   const handleAdd = () => {
+    if (!canAddProduct(products.length)) {
+      addToast({ type: 'warning', message: 'Limite de produits atteinte pour votre forfait. Passez au forfait supérieur pour en ajouter davantage.' });
+      return;
+    }
     setSelectedProductId(null);
     setView('ADD');
   };

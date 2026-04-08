@@ -4,7 +4,6 @@ import {
   Save,
   User,
   AlertCircle,
-  Upload,
   Instagram,
   Trash2
 } from 'lucide-react';
@@ -134,26 +133,13 @@ export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, 
              {/* Row 1: Identity Grid (Photo | First Name | Last Name) */}
              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-5">
                 
-                {/* Col 1: Square Photo Uploader */}
+                {/* Col 1: Avatar placeholder */}
                 <div className="sm:col-span-1">
-                   <div className="aspect-square w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group hover:border-slate-400 hover:bg-slate-100 transition-all cursor-pointer">
-                      {formData.photoUrl ? (
-                         <img src={formData.photoUrl} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                         <div className="flex flex-col items-center justify-center text-slate-400">
-                           <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-2 shadow-sm">
-                              <User size={24} />
-                           </div>
-                           <span className="text-xs font-medium">Ajouter photo</span>
-                         </div>
-                      )}
-                      
-                      {/* Hover Overlay / Button */}
-                      <div className="absolute inset-0 bg-black/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                         <button type="button" className="bg-white text-slate-900 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 shadow-lg ring-1 ring-slate-100">
-                            <Upload size={14} />
-                            {formData.photoUrl ? 'Changer' : 'Upload'}
-                         </button>
+                   <div className="aspect-square w-full bg-slate-50 border border-slate-200 rounded-xl flex flex-col items-center justify-center">
+                      <div className="flex flex-col items-center justify-center text-slate-400">
+                        <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-2 shadow-sm">
+                           <User size={24} />
+                        </div>
                       </div>
                    </div>
                 </div>
