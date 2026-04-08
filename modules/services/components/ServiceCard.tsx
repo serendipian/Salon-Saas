@@ -31,8 +31,8 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   const renderCard = (service: Service, showCategory: boolean) => {
     const category = categories.find(c => c.id === service.categoryId);
     const prices = service.variants.map(v => v.price);
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
+    const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+    const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
 
     return (
       <button

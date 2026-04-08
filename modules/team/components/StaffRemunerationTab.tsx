@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Pencil, DollarSign, TrendingUp, Award, Wallet } from 'lucide-react';
 import type { StaffMember, BonusTier } from '../../../types';
 import { supabase } from '../../../lib/supabase';
+import { useAuth } from '../../../context/AuthContext';
 import { formatPrice } from '../../../lib/format';
 import { BonusSystemEditor } from '../../../components/BonusSystemEditor';
 import { useStaffCompensation } from '../hooks/useStaffCompensation';
@@ -27,11 +28,14 @@ function getMonthBounds(): { start: Date; end: Date; startStr: string; endStr: s
 }
 
 export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({ staff, currencySymbol, onSave }) => {
+  const { activeSalon } = useAuth();
+  const salonId = activeSalon?.id ?? '';
   const { start, end, startStr, endStr } = useMemo(getMonthBounds, []);
 
   // Load PII (baseSalary) via RPC
   const { data: piiData } = useQuery({
-    queryKey: ['staff_pii', staff.id],
+    queryKey: ['staff_pii', salonId, staff.id],
+    enabled: !!staff.id,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_staff_pii', { p_staff_id: staff.id });
       if (error) throw error;

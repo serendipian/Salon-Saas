@@ -106,7 +106,7 @@ export function toClientInsert(data: Client, salonId: string) {
     company: data.company || null,
     notes: data.notes || null,
     allergies: data.allergies || null,
-    status: data.status || 'ACTIF',
+    status: data.status ?? 'ACTIF',
     preferred_staff_id: data.preferredStaffId || null,
     photo_url: data.photoUrl || null,
     social_network: data.socialNetwork || null,

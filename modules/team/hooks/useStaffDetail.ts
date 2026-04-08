@@ -116,6 +116,7 @@ export const useStaffDetail = (slug: string) => {
         .from('invitations')
         .update({ expires_at: new Date().toISOString() })
         .eq('staff_member_id', staffId)
+        .eq('salon_id', salonId)
         .is('accepted_at', null);
     },
     onSuccess: () => {

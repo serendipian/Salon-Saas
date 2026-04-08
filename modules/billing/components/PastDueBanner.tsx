@@ -12,7 +12,7 @@ export const PastDueBanner: React.FC<PastDueBannerProps> = ({ onFixClick, isLoad
     <div className="flex items-center gap-3">
       <AlertTriangle size={16} className="shrink-0" />
       <span className="text-sm font-medium">
-        Votre paiement a échoué. Mettez à jour votre carte bancaire pour conserver votre accès Pro.
+        Votre paiement a échoué. Mettez à jour votre carte bancaire pour conserver votre accès Premium.
       </span>
     </div>
     <button

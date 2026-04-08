@@ -219,7 +219,7 @@ export const useSettings = () => {
     expenseCategories,
     recurringExpenses,
     isLoading: isLoadingSettings || isLoadingCategories || isLoadingRecurring,
-    updateSalonSettings: (settings: SalonSettings) => updateSettingsMutation.mutate(settings),
+    updateSalonSettings: (settings: SalonSettings) => updateSettingsMutation.mutateAsync(settings),
     updateExpenseCategories: (categories: ExpenseCategorySetting[]) =>
       updateExpenseCategoriesMutation.mutate(categories),
     updateRecurringExpenses: (expenses: RecurringExpense[]) =>

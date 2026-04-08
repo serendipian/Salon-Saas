@@ -61,7 +61,7 @@ export const TeamForm: React.FC<TeamFormProps> = ({ existingMember, onSave, onCa
     startDate: new Date().toISOString().slice(0, 10),
     contractType: 'CDI',
     weeklyHours: 35,
-    baseSalary: 0,
+    baseSalary: undefined as number | undefined,
     commissionRate: 0,
     bonusTiers: [],
     

@@ -80,6 +80,7 @@ export const useProducts = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
+      toastOnSuccess('Produit créé')();
     },
     onError: toastOnError("Impossible d'ajouter le produit"),
   });
@@ -97,6 +98,7 @@ export const useProducts = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
+      toastOnSuccess('Produit enregistré')();
     },
     onError: toastOnError("Impossible de modifier le produit"),
   });

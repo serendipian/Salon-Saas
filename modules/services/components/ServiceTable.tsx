@@ -36,8 +36,8 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
   const renderServiceRow = (service: Service) => {
     const category = categories.find(c => c.id === service.categoryId);
     const prices = service.variants.map(v => v.price);
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
+    const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+    const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
 
     return (
       <tr key={service.id} className="hover:bg-slate-50 transition-colors group cursor-pointer" onClick={() => onEdit(service.id)}>

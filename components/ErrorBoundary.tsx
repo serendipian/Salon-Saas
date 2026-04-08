@@ -60,7 +60,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                 Réessayer
               </button>
               <a
-                href="#/dashboard"
+                href="/"
                 className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium text-sm transition-all flex items-center gap-2"
               >
                 <Home size={14} />

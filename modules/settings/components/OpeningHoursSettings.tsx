@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Clock } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
@@ -21,9 +21,15 @@ export const OpeningHoursSettings: React.FC<{ onBack: () => void }> = ({ onBack 
   const { salonSettings, updateSalonSettings } = useSettings();
   const [schedule, setSchedule] = useState<WorkSchedule>(salonSettings.schedule || DEFAULT_SCHEDULE);
 
-  const handleSave = () => {
-    updateSalonSettings({ ...salonSettings, schedule });
-    onBack();
+  useEffect(() => { setSchedule(salonSettings.schedule || DEFAULT_SCHEDULE); }, [salonSettings.schedule]);
+
+  const handleSave = async () => {
+    try {
+      await updateSalonSettings({ ...salonSettings, schedule });
+      onBack();
+    } catch {
+      // Error toast handled by mutation's onError
+    }
   };
 
   return (

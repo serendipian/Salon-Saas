@@ -80,6 +80,7 @@ export const useServices = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
+      toastOnSuccess('Service créé')();
     },
     onError: toastOnError("Impossible d'ajouter le service"),
   });
@@ -154,6 +155,7 @@ export const useServices = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
+      toastOnSuccess('Service enregistré')();
     },
     onError: toastOnError("Impossible de modifier le service"),
   });

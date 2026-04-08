@@ -43,9 +43,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
   });
 
   const [supplierId, setSupplierId] = useState<string>(
-    existingProduct?.supplier
-      ? allSuppliers.find(s => s.name === existingProduct.supplier)?.id ?? ''
-      : ''
+    existingProduct?.supplierId ?? ''
   );
 
   const { errors, validate, clearFieldError } = useFormValidation(productSchema);

@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Save, Store, Camera, Loader2 } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 import { Section, Input, Select } from '../../../components/FormElements';
@@ -16,14 +16,25 @@ export const GeneralSettings: React.FC<{ onBack: () => void }> = ({ onBack }) =>
   const { addToast } = useToast();
   const [formData, setFormData] = useState(salonSettings);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync form state when real data arrives (initial load returns defaults)
+  useEffect(() => { setFormData(salonSettings); }, [salonSettings]);
 
   const set = (field: string, value: string) =>
     setFormData(prev => ({ ...prev, [field]: value }));
 
-  const handleSave = () => {
-    updateSalonSettings(formData);
-    onBack();
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await updateSalonSettings(formData);
+      onBack();
+    } catch {
+      // Error toast handled by mutation's onError
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleLogoUpload = async (file: File) => {
