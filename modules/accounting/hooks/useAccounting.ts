@@ -26,6 +26,11 @@ export const useAccounting = () => {
   const queryClient = useQueryClient();
   const { toastOnError } = useMutationToast();
   useRealtimeSync('expenses');
+  useRealtimeSync('transactions', {
+    onEvent: () => {
+      queryClient.invalidateQueries({ queryKey: ['new_client_count', salonId] });
+    },
+  });
 
   const { salonSettings } = useSettings();
   const { allServices, serviceCategories } = useServices();

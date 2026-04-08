@@ -58,15 +58,17 @@ export const StaffDetailPage: React.FC = () => {
   // Monthly stats for header
   const monthlyStats = useMemo(() => {
     if (!staff || !transactions) return { revenue: 0, appointments: 0 };
-    const monthStart = new Date();
-    monthStart.setDate(1);
-    monthStart.setHours(0, 0, 0, 0);
     const revenue = (transactions || [])
       .reduce((sum: number, t: any) => {
         return sum + (t.items || [])
           .filter((i: any) => i.staffId === staff.id)
           .reduce((s: number, i: any) => s + i.price * i.quantity, 0);
       }, 0);
+    // monthRange already scopes transactions to current month from DB;
+    // allAppointments is NOT date-scoped (H-1 scope), so filter stays
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
     const apptCount = (allAppointments || [])
       .filter((a: any) => a.staffId === staff.id && new Date(a.date) >= monthStart && a.status !== 'CANCELLED')
       .length;
