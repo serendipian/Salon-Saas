@@ -6,7 +6,7 @@ import { SupplierList } from './components/SupplierList';
 import { SupplierForm } from './components/SupplierForm';
 
 export const SuppliersModule: React.FC = () => {
-  const { suppliers, searchTerm, setSearchTerm, addSupplier, updateSupplier } = useSuppliers();
+  const { suppliers, searchTerm, setSearchTerm, addSupplier, updateSupplier, deleteSupplier } = useSuppliers();
   const [view, setView] = useState<ViewState>('LIST');
   const [selectedSupplierId, setSelectedSupplierId] = useState<string | null>(null);
 
@@ -41,10 +41,11 @@ export const SuppliersModule: React.FC = () => {
         />
       )}
       {(view === 'ADD' || view === 'EDIT') && (
-        <SupplierForm 
-          existingSupplier={suppliers.find(s => s.id === selectedSupplierId)} 
+        <SupplierForm
+          existingSupplier={suppliers.find(s => s.id === selectedSupplierId)}
           onSave={handleSave}
           onCancel={() => setView('LIST')}
+          onDelete={selectedSupplierId ? (id) => { deleteSupplier(id); setView('LIST'); } : undefined}
         />
       )}
     </div>

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 import { Supplier } from '../../../types';
 import { Section, Input, TextArea, Select } from '../../../components/FormElements';
 import { PhoneInput } from '../../../components/PhoneInput';
@@ -11,9 +11,10 @@ interface SupplierFormProps {
   existingSupplier?: Supplier;
   onSave: (s: Supplier) => void;
   onCancel: () => void;
+  onDelete?: (id: string) => void;
 }
 
-export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, onSave, onCancel }) => {
+export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, onSave, onCancel, onDelete }) => {
   const { errors, validate, clearFieldError } = useFormValidation(supplierSchema);
   const [formData, setFormData] = useState<Supplier>(existingSupplier || {
     id: '',
@@ -110,13 +111,27 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, on
                <Save size={16} />
                Enregistrer
              </button>
-             <button 
+             <button
               type="button"
               onClick={onCancel}
               className="w-full py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium transition-all text-sm"
             >
                Annuler
              </button>
+             {existingSupplier && onDelete && (
+               <button
+                 type="button"
+                 onClick={() => {
+                   if (window.confirm('Supprimer ce fournisseur ? Cette action est irréversible.')) {
+                     onDelete(existingSupplier.id);
+                   }
+                 }}
+                 className="w-full py-2.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg font-medium transition-all text-sm flex justify-center items-center gap-2"
+               >
+                 <Trash2 size={16} />
+                 Supprimer
+               </button>
+             )}
            </div>
 
            <Section title="Paramètres">

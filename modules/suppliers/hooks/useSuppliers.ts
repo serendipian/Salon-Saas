@@ -13,7 +13,7 @@ export const useSuppliers = () => {
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
-  const { toastOnError } = useMutationToast();
+  const { toastOnError, toastOnSuccess } = useMutationToast();
   useRealtimeSync('suppliers');
 
   const { data: suppliers = [], isLoading } = useQuery({
@@ -60,6 +60,22 @@ export const useSuppliers = () => {
     onError: toastOnError("Impossible de modifier le fournisseur"),
   });
 
+  const deleteSupplierMutation = useMutation({
+    mutationFn: async (supplierId: string) => {
+      const { error } = await supabase
+        .from('suppliers')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', supplierId)
+        .eq('salon_id', salonId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['suppliers', salonId] });
+      toastOnSuccess('Fournisseur supprimé')();
+    },
+    onError: toastOnError('Impossible de supprimer le fournisseur'),
+  });
+
   const filteredSuppliers = useMemo(() => {
     if (!searchTerm) return suppliers;
     const term = searchTerm.toLowerCase();
@@ -77,5 +93,6 @@ export const useSuppliers = () => {
     setSearchTerm,
     addSupplier: (supplier: Supplier) => addSupplierMutation.mutate(supplier),
     updateSupplier: (supplier: Supplier) => updateSupplierMutation.mutate(supplier),
+    deleteSupplier: (supplierId: string) => deleteSupplierMutation.mutate(supplierId),
   };
 };
