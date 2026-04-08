@@ -539,8 +539,8 @@ export const DashboardModule: React.FC = () => {
         />
       </div>
 
-      {/* Revenue / Expenses / Bonus Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Revenue / Expenses / Bonus / Résultat Net Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Chiffre d'Affaires + Payment Breakdown */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start mb-1">
@@ -560,36 +560,33 @@ export const DashboardModule: React.FC = () => {
             )}
             <span className="text-xs text-slate-400">vs période préc.</span>
           </div>
-          {paymentBreakdown.methods.length > 0 ? (
-            <div className="space-y-2 pt-3 border-t border-slate-100">
-              {paymentBreakdown.methods.map(({ method, amount, percent }) => {
-                const Icon = PAYMENT_METHOD_ICONS[method] || Wallet;
-                const colorClass = PAYMENT_METHOD_COLORS[method] || 'bg-slate-50 text-slate-600';
-                return (
-                  <div key={method} className="flex items-center gap-2.5">
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
-                      <Icon size={14} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-xs font-medium text-slate-600 truncate">{method}</span>
-                        <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(amount)}</span>
-                      </div>
-                      <div className="h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
-                        <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">{percent.toFixed(0)}%</span>
+          <div className="space-y-2 pt-3 border-t border-slate-100">
+            {paymentBreakdown.methods.map(({ method, amount, percent }) => {
+              const Icon = PAYMENT_METHOD_ICONS[method] || Wallet;
+              const colorClass = PAYMENT_METHOD_COLORS[method] || 'bg-slate-50 text-slate-600';
+              const isIdle = amount === 0;
+              return (
+                <div key={method} className={`flex items-center gap-2.5 ${isIdle ? 'opacity-40' : ''}`}>
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
+                    <Icon size={14} />
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-xs text-slate-400 italic pt-3 border-t border-slate-100">Aucune vente sur la période</p>
-          )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-xs font-medium text-slate-600 truncate">{method}</span>
+                      <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(amount)}</span>
+                    </div>
+                    <div className="h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
+                      <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">{percent.toFixed(0)}%</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Expenses */}
+        {/* Expenses + Payment Methods */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start mb-1">
             <h3 className="text-sm font-semibold text-slate-500">Dépenses</h3>
@@ -609,7 +606,7 @@ export const DashboardModule: React.FC = () => {
             <span className="text-xs text-slate-400">vs période préc.</span>
           </div>
           <div className="pt-3 border-t border-slate-100 space-y-2">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-2">
               <span className="text-xs text-slate-500">{expenseStats.count} dépense{expenseStats.count !== 1 ? 's' : ''}</span>
               <button
                 onClick={() => navigate('/finances')}
@@ -618,26 +615,44 @@ export const DashboardModule: React.FC = () => {
                 Détails <ChevronRight size={12} />
               </button>
             </div>
-            {/* Net Profit indicator */}
-            <div className="bg-slate-50 rounded-lg p-3 mt-2">
-              <div className="flex justify-between items-baseline">
-                <span className="text-xs font-medium text-slate-500">Résultat net</span>
-                <span className={`text-sm font-bold ${stats.revenue - expenseStats.total >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                  {formatPrice(stats.revenue - expenseStats.total)}
-                </span>
+            {expenseStats.methods.map(({ method, amount, percent }) => {
+              const label = EXPENSE_METHOD_LABELS[method] || method;
+              const Icon = EXPENSE_METHOD_ICONS[method] || Wallet;
+              const colorClass = EXPENSE_METHOD_COLORS[method] || 'bg-slate-50 text-slate-600';
+              return (
+                <div key={method} className="flex items-center gap-2.5">
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
+                    <Icon size={14} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-xs font-medium text-slate-600 truncate">{label}</span>
+                      <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(amount)}</span>
+                    </div>
+                    <div className="h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
+                      <div className="h-full bg-red-300 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">{percent.toFixed(0)}%</span>
+                </div>
+              );
+            })}
+            {expenseStats.unknownAmount > 0 && (
+              <div className="flex items-center gap-2.5 opacity-50">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-slate-50 text-slate-500">
+                  <Wallet size={14} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs font-medium text-slate-600 truncate">Non spécifié</span>
+                    <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(expenseStats.unknownAmount)}</span>
+                  </div>
+                </div>
               </div>
-              <div className="h-1.5 bg-slate-200 rounded-full mt-2 overflow-hidden">
-                {stats.revenue > 0 && (
-                  <div
-                    className="h-full bg-emerald-400 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(100, Math.max(0, ((stats.revenue - expenseStats.total) / stats.revenue) * 100))}%` }}
-                  />
-                )}
-              </div>
-              <div className="flex justify-between mt-1">
-                <span className="text-[10px] text-slate-400">Marge: {stats.revenue > 0 ? (((stats.revenue - expenseStats.total) / stats.revenue) * 100).toFixed(1) : '0.0'}%</span>
-              </div>
-            </div>
+            )}
+            {expenseStats.methods.length === 0 && expenseStats.unknownAmount === 0 && (
+              <p className="text-xs text-slate-400 italic">Aucune dépense sur la période</p>
+            )}
           </div>
         </div>
 
@@ -698,6 +713,72 @@ export const DashboardModule: React.FC = () => {
               className="w-full text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center justify-center gap-1 pt-1"
             >
               Voir l'équipe <ChevronRight size={12} />
+            </button>
+          </div>
+        </div>
+
+        {/* Résultat Net */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <div className="flex justify-between items-start mb-1">
+            <h3 className="text-sm font-semibold text-slate-500">Résultat Net</h3>
+            <TrendingUp size={16} className="text-slate-400 shrink-0" />
+          </div>
+          <div className={`text-2xl font-bold tracking-tight ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+            {formatPrice(stats.revenue - expenseStats.total - bonusStats.total)}
+          </div>
+          <div className="flex items-center gap-2 mt-1 mb-4">
+            <span className="text-xs text-slate-400">
+              Marge: {stats.revenue > 0 ? (((stats.revenue - expenseStats.total - bonusStats.total) / stats.revenue) * 100).toFixed(1) : '0.0'}%
+            </span>
+          </div>
+          <div className="pt-3 border-t border-slate-100 space-y-2.5">
+            {/* Revenue line */}
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                <span className="text-xs font-medium text-slate-600">Chiffre d'Affaires</span>
+              </div>
+              <span className="text-xs font-bold text-emerald-600">{formatPrice(stats.revenue)}</span>
+            </div>
+            {/* Expenses line */}
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
+                <span className="text-xs font-medium text-slate-600">Dépenses</span>
+              </div>
+              <span className="text-xs font-bold text-red-500">-{formatPrice(expenseStats.total)}</span>
+            </div>
+            {/* Bonus line */}
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                <span className="text-xs font-medium text-slate-600">Bonus & Commissions</span>
+              </div>
+              <span className="text-xs font-bold text-amber-600">-{formatPrice(bonusStats.total)}</span>
+            </div>
+            {/* Divider */}
+            <div className="border-t border-dashed border-slate-200 my-1" />
+            {/* Net result */}
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold text-slate-700">Net</span>
+              <span className={`text-sm font-bold ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                {formatPrice(stats.revenue - expenseStats.total - bonusStats.total)}
+              </span>
+            </div>
+            {/* Margin bar */}
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden mt-2">
+              {stats.revenue > 0 && (
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`}
+                  style={{ width: `${Math.min(100, Math.max(0, ((stats.revenue - expenseStats.total - bonusStats.total) / stats.revenue) * 100))}%` }}
+                />
+              )}
+            </div>
+            <button
+              onClick={() => navigate('/finances')}
+              className="w-full text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center justify-center gap-1 pt-1"
+            >
+              Comptabilité <ChevronRight size={12} />
             </button>
           </div>
         </div>
