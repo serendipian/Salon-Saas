@@ -46,13 +46,17 @@ export const ClientsModule: React.FC = () => {
     }
   };
 
-  const handleSave = (client: Client) => {
-    if (selectedClientId && view === 'EDIT') {
-      updateClient(client);
-      setView('DETAILS'); 
-    } else {
-      addClient(client);
-      setView('LIST');
+  const handleSave = async (client: Client) => {
+    try {
+      if (selectedClientId && view === 'EDIT') {
+        await updateClient(client);
+        setView('DETAILS');
+      } else {
+        await addClient(client);
+        setView('LIST');
+      }
+    } catch {
+      // Error toast handled by mutation's onError — stay on form
     }
   };
 

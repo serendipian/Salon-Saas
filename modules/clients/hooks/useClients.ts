@@ -90,8 +90,8 @@ export const useClients = () => {
     clients,
     allClients: clients,
     isLoading,
-    addClient: (client: Client) => addClientMutation.mutate(client),
-    updateClient: (client: Client) => updateClientMutation.mutate(client),
+    addClient: (client: Client) => addClientMutation.mutateAsync(client),
+    updateClient: (client: Client) => updateClientMutation.mutateAsync(client),
     deleteClient: (id: string) => deleteClientMutation.mutateAsync(id),
   };
 };
