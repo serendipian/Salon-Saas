@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import type { StaffMember } from '../../../types';
 import { Input } from '../../../components/FormElements';
+import { useToast } from '../../../context/ToastContext';
 import { Field, SectionHeader } from './profile-shared';
 
 interface ProfilePiiSectionProps {
@@ -13,6 +14,7 @@ interface ProfilePiiSectionProps {
 }
 
 export const ProfilePiiSection: React.FC<ProfilePiiSectionProps> = ({ staff, loadPii, onSave, isSaving, currencySymbol }) => {
+  const { addToast } = useToast();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<StaffMember>>({});
   const [piiLoading, setPiiLoading] = useState(false);
@@ -27,6 +29,8 @@ export const ProfilePiiSection: React.FC<ProfilePiiSectionProps> = ({ staff, loa
         socialSecurityNumber: piiData.socialSecurityNumber ?? staff.socialSecurityNumber,
       });
       setEditing(true);
+    } catch {
+      addToast({ type: 'error', message: 'Impossible de charger les données sensibles' });
     } finally {
       setPiiLoading(false);
     }
@@ -38,9 +42,13 @@ export const ProfilePiiSection: React.FC<ProfilePiiSectionProps> = ({ staff, loa
   };
 
   const saveSection = async () => {
-    await onSave(draft);
-    setEditing(false);
-    setDraft({});
+    try {
+      await onSave(draft);
+      setEditing(false);
+      setDraft({});
+    } catch {
+      addToast({ type: 'error', message: 'Impossible de sauvegarder les données sensibles' });
+    }
   };
 
   return (

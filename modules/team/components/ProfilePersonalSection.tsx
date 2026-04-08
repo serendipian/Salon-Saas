@@ -3,6 +3,7 @@ import { Camera, User, Loader2 } from 'lucide-react';
 import type { StaffMember } from '../../../types';
 import { Input, Select, TextArea } from '../../../components/FormElements';
 import { useStaffPhotoUpload } from '../hooks/useStaffPhotoUpload';
+import { useToast } from '../../../context/ToastContext';
 import { Field, SectionHeader, formatDate } from './profile-shared';
 
 interface ProfilePersonalSectionProps {
@@ -12,6 +13,7 @@ interface ProfilePersonalSectionProps {
 }
 
 export const ProfilePersonalSection: React.FC<ProfilePersonalSectionProps> = ({ staff, onSave, isSaving }) => {
+  const { addToast } = useToast();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<StaffMember>>({});
   const { uploadPhoto, isUploading: isUploadingPhoto } = useStaffPhotoUpload();
@@ -50,9 +52,13 @@ export const ProfilePersonalSection: React.FC<ProfilePersonalSectionProps> = ({ 
   };
 
   const saveSection = async () => {
-    await onSave(draft);
-    setEditing(false);
-    setDraft({});
+    try {
+      await onSave(draft);
+      setEditing(false);
+      setDraft({});
+    } catch {
+      addToast({ type: 'error', message: 'Impossible de sauvegarder les informations personnelles' });
+    }
   };
 
   return (

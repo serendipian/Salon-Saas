@@ -4,6 +4,7 @@ import type { StaffMember, WorkSchedule } from '../../../types';
 import { Input, Select } from '../../../components/FormElements';
 import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
 import { useServices } from '../../services/hooks/useServices';
+import { useToast } from '../../../context/ToastContext';
 import { Field, SectionHeader, DAY_LABELS, ORDERED_DAYS, CONTRACT_LABELS, formatDate } from './profile-shared';
 
 interface ProfileContractSectionProps {
@@ -14,6 +15,7 @@ interface ProfileContractSectionProps {
 
 export const ProfileContractSection: React.FC<ProfileContractSectionProps> = ({ staff, onSave, isSaving }) => {
   const { serviceCategories } = useServices();
+  const { addToast } = useToast();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<StaffMember>>({});
 
@@ -35,9 +37,13 @@ export const ProfileContractSection: React.FC<ProfileContractSectionProps> = ({ 
   };
 
   const saveSection = async () => {
-    await onSave(draft);
-    setEditing(false);
-    setDraft({});
+    try {
+      await onSave(draft);
+      setEditing(false);
+      setDraft({});
+    } catch {
+      addToast({ type: 'error', message: 'Impossible de sauvegarder le contrat' });
+    }
   };
 
   const getCategoryName = (id: string) => {
