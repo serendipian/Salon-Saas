@@ -68,7 +68,6 @@ const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon, isC
 
 export const DashboardModule: React.FC = () => {
   const navigate = useNavigate();
-  const { transactions } = useTransactions();
   const { allAppointments: appointments, updateAppointment } = useAppointments();
   const { allClients: clients } = useClients();
   const { services, serviceCategories } = useServices();
@@ -83,6 +82,17 @@ export const DashboardModule: React.FC = () => {
         label: "Aujourd'hui"
     };
   });
+
+  // Widen query to include previous period for trend comparisons
+  const queryRange = useMemo(() => {
+    const from = new Date(dateRange.from).getTime();
+    const to = new Date(dateRange.to).getTime();
+    const duration = to - from;
+    const prevFrom = new Date(from - duration - 1);
+    return { from: prevFrom.toISOString(), to: new Date(to).toISOString() };
+  }, [dateRange]);
+
+  const { transactions } = useTransactions(queryRange);
 
   // --- 1. Filter Data based on Selection (Current & Previous) ---
   const data = useMemo(() => {
