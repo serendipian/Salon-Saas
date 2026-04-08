@@ -5,10 +5,15 @@ import { POSCatalog } from './components/POSCatalog';
 import { POSCart } from './components/POSCart';
 import { PaymentModal } from './components/PaymentModal';
 import { ItemEditorModal, ServiceVariantModal, ReceiptModal, TransactionDetailModal } from './components/POSModals';
+import { VoidModal } from './components/VoidModal';
+import { RefundModal } from './components/RefundModal';
 import { Service, Product, ServiceVariant, Transaction, CartItem, PaymentEntry } from '../../types';
 import { useMediaQuery } from '../../context/MediaQueryContext';
 import { MiniCartBar } from './components/MiniCartBar';
 import { CartBottomSheet } from './components/CartBottomSheet';
+import { usePermissions } from '../../hooks/usePermissions';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 
 export const POSModule: React.FC = () => {
   const {
@@ -31,7 +36,18 @@ export const POSModule: React.FC = () => {
     pendingAppointments,
     linkedAppointmentId,
     importAppointment,
+    voidTransaction: doVoid,
+    refundTransaction: doRefund,
+    isVoiding,
+    isRefunding,
   } = usePOS();
+
+  // Auth & Permissions
+  const { role } = useAuth();
+  const { can } = usePermissions(role);
+  const canVoid = can('void', 'pos');
+  const canRefund = can('refund', 'pos');
+  const { addToast } = useToast();
 
   // Modal States
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -40,6 +56,8 @@ export const POSModule: React.FC = () => {
   const [variantModalData, setVariantModalData] = useState<{service: Service} | null>(null);
   const [receiptTransaction, setReceiptTransaction] = useState<Transaction | null>(null);
   const [detailTransaction, setDetailTransaction] = useState<Transaction | null>(null);
+  const [voidTarget, setVoidTarget] = useState<Transaction | null>(null);
+  const [refundTarget, setRefundTarget] = useState<Transaction | null>(null);
   const { isMobile } = useMediaQuery();
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -94,6 +112,28 @@ export const POSModule: React.FC = () => {
     }
   };
 
+  const handleVoidConfirm = async (reasonCategory: string, reasonNote: string) => {
+    if (!voidTarget) return;
+    await doVoid(voidTarget.id, reasonCategory, reasonNote);
+    setVoidTarget(null);
+    setDetailTransaction(null);
+    addToast({ type: 'success', message: 'Transaction annulée' });
+  };
+
+  const handleRefundConfirm = async (
+    items: { original_item_id: string | null; quantity: number; price_override?: number; price?: number; name?: string }[],
+    payments: { method: string; amount: number }[],
+    reasonCategory: string,
+    reasonNote: string,
+    restock: boolean
+  ) => {
+    if (!refundTarget) return;
+    await doRefund(refundTarget.id, items, payments, reasonCategory, reasonNote, restock);
+    setRefundTarget(null);
+    setDetailTransaction(null);
+    addToast({ type: 'success', message: 'Remboursement effectué' });
+  };
+
   return (
     <div className={`flex w-full bg-slate-100 overflow-hidden ${isMobile ? 'flex-col h-full' : 'h-[calc(100vh-6rem)] rounded-xl border border-slate-200 shadow-sm'}`}>
 
@@ -112,6 +152,9 @@ export const POSModule: React.FC = () => {
         onProductClick={handleProductClick}
         onReceiptClick={setReceiptTransaction}
         onDetailClick={setDetailTransaction}
+        onVoidClick={canVoid ? setVoidTarget : undefined}
+        onRefundClick={canRefund ? setRefundTarget : undefined}
+        allTransactions={transactions}
         pendingAppointments={pendingAppointments}
         onImportAppointment={importAppointment}
         linkedAppointmentId={linkedAppointmentId}
@@ -195,6 +238,7 @@ export const POSModule: React.FC = () => {
       {receiptTransaction && (
         <ReceiptModal
           transaction={receiptTransaction}
+          allTransactions={transactions}
           onClose={() => setReceiptTransaction(null)}
         />
       )}
@@ -202,7 +246,29 @@ export const POSModule: React.FC = () => {
       {detailTransaction && (
         <TransactionDetailModal
           transaction={detailTransaction}
+          allTransactions={transactions}
           onClose={() => setDetailTransaction(null)}
+          onVoidClick={canVoid ? (t: Transaction) => { setDetailTransaction(null); setVoidTarget(t); } : undefined}
+          onRefundClick={canRefund ? (t: Transaction) => { setDetailTransaction(null); setRefundTarget(t); } : undefined}
+        />
+      )}
+
+      {voidTarget && (
+        <VoidModal
+          transaction={voidTarget}
+          onConfirm={handleVoidConfirm}
+          onClose={() => setVoidTarget(null)}
+          isPending={isVoiding}
+        />
+      )}
+
+      {refundTarget && (
+        <RefundModal
+          transaction={refundTarget}
+          allTransactions={transactions}
+          onConfirm={handleRefundConfirm}
+          onClose={() => setRefundTarget(null)}
+          isPending={isRefunding}
         />
       )}
     </div>

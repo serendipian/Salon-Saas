@@ -21,7 +21,7 @@ export const usePOS = () => {
     return { from: from.toISOString(), to: to.toISOString() };
   }, []);
 
-  const { transactions, addTransaction } = useTransactions(posRange);
+  const { transactions, addTransaction, voidTransaction, refundTransaction, isVoiding, isRefunding } = useTransactions(posRange);
   const { salonSettings } = useSettings();
 
   const { allClients: clients } = useClients();
@@ -207,5 +207,9 @@ export const usePOS = () => {
     removeFromCart,
     processTransaction,
     importAppointment,
+    voidTransaction,
+    refundTransaction,
+    isVoiding,
+    isRefunding,
   };
 };

@@ -1,12 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Clock, Receipt, User, Scissors, ShoppingBag, StickyNote, CreditCard, Banknote, Smartphone, Gift } from 'lucide-react';
+import { X, Clock, Receipt, User, Scissors, ShoppingBag, StickyNote, CreditCard, Banknote, Smartphone, Gift, Ban, RotateCcw } from 'lucide-react';
 import { CartItem, Service, ServiceVariant, Transaction } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
 import { Input } from '../../../components/FormElements';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { getTransactionStatus } from '../mappers';
+import { VOID_CATEGORIES, REFUND_CATEGORIES } from '../constants';
 
 // Shared hook for mobile fullscreen modal accessibility
 function useMobileModalA11y(isMobile: boolean, onClose: () => void) {
@@ -282,8 +284,9 @@ export const ServiceVariantModal: React.FC<{
 // --- Receipt Viewer ---
 export const ReceiptModal: React.FC<{
   transaction: Transaction;
+  allTransactions: Transaction[];
   onClose: () => void;
-}> = ({ transaction, onClose }) => {
+}> = ({ transaction, allTransactions, onClose }) => {
   const { salonSettings } = useSettings();
   const totalPaid = transaction.payments.reduce((acc, p) => acc + p.amount, 0);
   const change = Math.max(0, totalPaid - transaction.total);
@@ -293,6 +296,9 @@ export const ReceiptModal: React.FC<{
   const vatAmount = transaction.total * (vatRate / 100) / (1 + vatRate / 100);
   const { isMobile } = useMediaQuery();
   useMobileModalA11y(isMobile, onClose);
+
+  const receiptStatus = getTransactionStatus(transaction, allTransactions);
+  const watermark = receiptStatus === 'voided' ? 'ANNULÉ' : receiptStatus === 'fully_refunded' ? 'REMBOURSÉ' : null;
 
   if (isMobile) {
     return createPortal(
@@ -311,7 +317,12 @@ export const ReceiptModal: React.FC<{
         </div>
 
         <div className="flex-1 overflow-y-auto p-5">
-          <div className="bg-white border border-slate-200 shadow-sm p-6 rounded-lg text-center">
+          <div className="bg-white border border-slate-200 shadow-sm p-6 rounded-lg text-center relative overflow-hidden">
+            {watermark && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-5xl font-black text-red-200 -rotate-12 select-none opacity-60">{watermark}</span>
+              </div>
+            )}
             <div className="w-12 h-12 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-xl mx-auto mb-3">
               {salonSettings.name.charAt(0)}
             </div>
@@ -447,10 +458,26 @@ const paymentMethodIcon = (method: string) => {
 
 export const TransactionDetailModal: React.FC<{
   transaction: Transaction;
+  allTransactions: Transaction[];
   onClose: () => void;
-}> = ({ transaction, onClose }) => {
+  onVoidClick?: (t: Transaction) => void;
+  onRefundClick?: (t: Transaction) => void;
+}> = ({ transaction, allTransactions, onClose, onVoidClick, onRefundClick }) => {
   const { isMobile } = useMediaQuery();
   useMobileModalA11y(isMobile, onClose);
+
+  const status = getTransactionStatus(transaction, allTransactions);
+  const isToday = new Date(transaction.date).toDateString() === new Date().toDateString();
+  const showVoid = onVoidClick && transaction.type === 'SALE' && status === 'active' && isToday;
+  const showRefund = onRefundClick && transaction.type === 'SALE' && status !== 'voided' && status !== 'fully_refunded';
+
+  const getCategoryLabel = (key: string) => {
+    const v = VOID_CATEGORIES.find(c => c.key === key);
+    if (v) return v.label;
+    const r = REFUND_CATEGORIES.find(c => c.key === key);
+    if (r) return r.label;
+    return key;
+  };
 
   const serviceItems = transaction.items.filter(i => i.type === 'SERVICE');
   const productItems = transaction.items.filter(i => i.type === 'PRODUCT');
@@ -483,6 +510,25 @@ export const TransactionDetailModal: React.FC<{
             <span className="italic text-slate-400">Client de passage</span>
           )}
         </div>
+        {transaction.type !== 'SALE' && (
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-500">Type</span>
+            <span className={`font-medium ${transaction.type === 'VOID' ? 'text-red-600' : 'text-orange-600'}`}>
+              {transaction.type === 'VOID' ? 'Annulation' : 'Remboursement'}
+            </span>
+          </div>
+        )}
+        {transaction.reasonCategory && (
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-500">Motif</span>
+            <span className="font-medium text-slate-700">{getCategoryLabel(transaction.reasonCategory)}</span>
+          </div>
+        )}
+        {transaction.reasonNote && (
+          <div className="text-sm mt-2 p-2 bg-white rounded border border-slate-100 text-slate-600 italic">
+            {transaction.reasonNote}
+          </div>
+        )}
       </div>
 
       {/* Services */}
@@ -600,6 +646,28 @@ export const TransactionDetailModal: React.FC<{
           </div>
         )}
       </div>
+
+      {/* Void/Refund action buttons */}
+      {(showVoid || showRefund) && (
+        <div className="flex gap-2 pt-2">
+          {showVoid && (
+            <button
+              onClick={() => onVoidClick!(transaction)}
+              className="flex-1 py-2.5 rounded-lg text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+            >
+              <Ban size={16} /> Annuler
+            </button>
+          )}
+          {showRefund && (
+            <button
+              onClick={() => onRefundClick!(transaction)}
+              className="flex-1 py-2.5 rounded-lg text-sm font-medium text-orange-600 border border-orange-200 hover:bg-orange-50 transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+            >
+              <RotateCcw size={16} /> Rembourser
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 

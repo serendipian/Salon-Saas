@@ -1,11 +1,12 @@
 
 import React from 'react';
-import { Search, Scissors, ShoppingBag, History, Plus, Receipt, Calendar, Eye } from 'lucide-react';
+import { Search, Scissors, ShoppingBag, History, Plus, Receipt, Calendar, Eye, Ban, RotateCcw } from 'lucide-react';
 import { Service, Product, ServiceCategory, ProductCategory, Transaction, Appointment } from '../../../types';
 import { PendingAppointments } from './PendingAppointments';
 import { POSViewMode } from '../hooks/usePOS';
 import { formatPrice } from '../../../lib/format';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { getTransactionStatus, TransactionStatus } from '../mappers';
 
 interface POSCatalogProps {
   viewMode: POSViewMode;
@@ -22,6 +23,9 @@ interface POSCatalogProps {
   onProductClick: (p: Product) => void;
   onReceiptClick: (t: Transaction) => void;
   onDetailClick: (t: Transaction) => void;
+  onVoidClick?: (t: Transaction) => void;
+  onRefundClick?: (t: Transaction) => void;
+  allTransactions: Transaction[];
   pendingAppointments: Appointment[];
   onImportAppointment: (appointment: Appointment) => void;
   linkedAppointmentId: string | null;
@@ -38,11 +42,25 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
   onProductClick,
   onReceiptClick,
   onDetailClick,
+  onVoidClick,
+  onRefundClick,
+  allTransactions,
   pendingAppointments,
   onImportAppointment,
   linkedAppointmentId,
 }) => {
   const { isMobile } = useMediaQuery();
+
+  const statusBadge = (status: TransactionStatus, trx: Transaction) => {
+    if (trx.type === 'VOID') return <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">Annulation</span>;
+    if (trx.type === 'REFUND') return <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Remboursement</span>;
+    if (status === 'voided') return <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">Annulé</span>;
+    if (status === 'fully_refunded') return <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Remboursé</span>;
+    if (status === 'partially_refunded') return <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Remb. partiel</span>;
+    return null;
+  };
+
+  const isToday = (date: string) => new Date(date).toDateString() === new Date().toDateString();
 
   return (
     <div className={`flex-1 flex flex-col h-full ${isMobile ? '' : 'border-r border-slate-200'}`}>
@@ -199,10 +217,15 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
              ) : isMobile ? (
                /* Mobile: card layout */
                <div className="p-3 space-y-3">
-                 {transactions.map((trx) => (
+                 {transactions.map((trx) => {
+                   const status = getTransactionStatus(trx, allTransactions);
+                   const isVoided = status === 'voided' || trx.type === 'VOID';
+                   const showVoid = onVoidClick && trx.type === 'SALE' && status === 'active' && isToday(trx.date);
+                   const showRefund = onRefundClick && trx.type === 'SALE' && status !== 'voided' && status !== 'fully_refunded';
+                   return (
                    <div
                      key={trx.id}
-                     className="w-full text-left bg-white rounded-lg border border-slate-200 p-4 shadow-sm"
+                     className={`w-full text-left bg-white rounded-lg border border-slate-200 p-4 shadow-sm ${isVoided ? 'opacity-60' : ''}`}
                    >
                      <button
                        type="button"
@@ -212,20 +235,33 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                      >
                        <div className="flex justify-between items-start mb-2">
                          <div>
-                           <div className="font-semibold text-slate-900 text-sm">
+                           <div className={`font-semibold text-slate-900 text-sm ${isVoided ? 'line-through' : ''}`}>
                              {trx.clientName || <span className="text-slate-400 italic">Client de passage</span>}
                            </div>
-                           <div className="text-xs text-slate-500 mt-0.5">
-                             {new Date(trx.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                           <div className="flex items-center gap-2 mt-0.5">
+                             <span className="text-xs text-slate-500">
+                               {new Date(trx.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                             </span>
+                             {statusBadge(status, trx)}
                            </div>
                          </div>
-                         <span className="font-bold text-slate-900">{formatPrice(trx.total)}</span>
+                         <span className={`font-bold ${trx.total < 0 ? 'text-red-600' : 'text-slate-900'}`}>{formatPrice(trx.total)}</span>
                        </div>
                        <div className="text-xs text-slate-500 truncate">
                          {trx.items.length} article{trx.items.length > 1 ? 's' : ''} · {trx.items.map(i => i.name).join(', ')}
                        </div>
                      </button>
                      <div className="flex justify-end mt-2 pt-2 border-t border-slate-100 gap-2">
+                       {showVoid && (
+                         <button type="button" onClick={() => onVoidClick!(trx)} className="p-2 text-red-400 hover:text-red-600 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Annuler">
+                           <Ban size={16} />
+                         </button>
+                       )}
+                       {showRefund && (
+                         <button type="button" onClick={() => onRefundClick!(trx)} className="p-2 text-orange-400 hover:text-orange-600 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Rembourser">
+                           <RotateCcw size={16} />
+                         </button>
+                       )}
                        <button
                          type="button"
                          onClick={() => onReceiptClick(trx)}
@@ -236,7 +272,8 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                        </button>
                      </div>
                    </div>
-                 ))}
+                   );
+                 })}
                </div>
              ) : (
                /* Desktop: table layout */
@@ -251,28 +288,46 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {transactions.map((trx) => (
-                      <tr key={trx.id} className="hover:bg-slate-50/80 transition-colors">
+                    {transactions.map((trx) => {
+                      const status = getTransactionStatus(trx, allTransactions);
+                      const isVoided = status === 'voided' || trx.type === 'VOID';
+                      const showVoid = onVoidClick && trx.type === 'SALE' && status === 'active' && isToday(trx.date);
+                      const showRefund = onRefundClick && trx.type === 'SALE' && status !== 'voided' && status !== 'fully_refunded';
+                      return (
+                      <tr key={trx.id} className={`hover:bg-slate-50/80 transition-colors ${isVoided ? 'opacity-60' : ''}`}>
                          <td className="px-6 py-4 font-medium text-slate-700">
                            {new Date(trx.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                          </td>
                          <td className="px-6 py-4">
-                           {trx.clientName ? (
-                             <span className="text-slate-900 font-medium text-sm">{trx.clientName}</span>
-                           ) : (
-                             <span className="text-slate-400 italic text-sm">Client de passage</span>
-                           )}
+                           <div className="flex items-center gap-2">
+                             {trx.clientName ? (
+                               <span className={`text-slate-900 font-medium text-sm ${isVoided ? 'line-through' : ''}`}>{trx.clientName}</span>
+                             ) : (
+                               <span className="text-slate-400 italic text-sm">Client de passage</span>
+                             )}
+                             {statusBadge(status, trx)}
+                           </div>
                          </td>
                          <td className="px-6 py-4">
                             <div className="text-sm text-slate-600 max-w-xs truncate">
                               {trx.items.map(i => i.name).join(', ')}
                             </div>
                          </td>
-                         <td className="px-6 py-4 text-right font-bold text-slate-900">
+                         <td className={`px-6 py-4 text-right font-bold ${trx.total < 0 ? 'text-red-600' : 'text-slate-900'}`}>
                            {formatPrice(trx.total)}
                          </td>
                          <td className="px-6 py-4 text-right">
                            <div className="flex items-center justify-end gap-1">
+                             {showVoid && (
+                               <button onClick={() => onVoidClick!(trx)} className="p-2 text-red-300 hover:text-red-600 transition-colors" title="Annuler">
+                                 <Ban size={16} />
+                               </button>
+                             )}
+                             {showRefund && (
+                               <button onClick={() => onRefundClick!(trx)} className="p-2 text-orange-300 hover:text-orange-600 transition-colors" title="Rembourser">
+                                 <RotateCcw size={16} />
+                               </button>
+                             )}
                              <button
                                 onClick={() => onDetailClick(trx)}
                                 className="p-2 text-slate-300 hover:text-slate-900 transition-colors"
@@ -290,7 +345,8 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                            </div>
                          </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                </table>
              )}
