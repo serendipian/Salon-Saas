@@ -55,10 +55,12 @@ export function useTeamSettings() {
         .is('deleted_at', null)
         .order('created_at', { ascending: true });
       if (error) throw error;
-      return (data || []).map((row: any) => ({
-        ...row,
-        profile: row.profiles,
-      })) as MemberRow[];
+      return (data || [])
+        .filter((row: any) => row.profiles)
+        .map((row: any) => ({
+          ...row,
+          profile: row.profiles,
+        })) as MemberRow[];
     },
     enabled: !!salonId,
   });
