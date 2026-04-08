@@ -16,6 +16,7 @@ export const ProductsModule: React.FC = () => {
     setSearchTerm,
     addProduct,
     updateProduct,
+    deleteProduct,
   } = useProducts();
   const { canAddProduct } = useBilling();
   const { addToast } = useToast();
@@ -65,6 +66,12 @@ export const ProductsModule: React.FC = () => {
           categories={productCategories}
           onSave={handleSaveProduct}
           onCancel={() => setView('LIST')}
+          onDelete={view === 'EDIT' && selectedProductId ? () => {
+            if (window.confirm('Supprimer ce produit ? Cette action est irréversible.')) {
+              deleteProduct(selectedProductId);
+              setView('LIST');
+            }
+          } : undefined}
         />
       )}
     </div>

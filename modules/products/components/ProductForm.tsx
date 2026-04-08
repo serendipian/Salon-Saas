@@ -14,6 +14,7 @@ interface ProductFormProps {
   categories: ProductCategory[];
   onSave: (p: Product, supplierId?: string | null) => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }
 
 const USAGE_TYPE_OPTIONS: { value: UsageType; label: string; description: string }[] = [
@@ -22,7 +23,7 @@ const USAGE_TYPE_OPTIONS: { value: UsageType; label: string; description: string
   { value: 'both', label: 'Mixte', description: 'Usage interne + revente' },
 ];
 
-export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categories, onSave, onCancel }) => {
+export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categories, onSave, onCancel, onDelete }) => {
   const { salonSettings } = useSettings();
   const { allSuppliers } = useSuppliers();
   const { brands } = useProducts();
@@ -158,6 +159,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({ existingProduct, categ
             >
                Annuler
              </button>
+             {onDelete && (
+               <button
+                 type="button"
+                 onClick={onDelete}
+                 className="w-full py-2.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg font-medium transition-all text-sm"
+               >
+                 Supprimer
+               </button>
+             )}
            </div>
 
            <Section title="Type d'utilisation">

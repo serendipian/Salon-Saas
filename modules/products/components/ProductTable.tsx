@@ -3,6 +3,7 @@ import { ChevronRight, Package } from 'lucide-react';
 import { Product, ProductCategory, Brand } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
+import { useProductSettings } from '../hooks/useProductSettings';
 import { UsageTypeBadge } from './UsageTypeBadge';
 
 interface ProductTableProps {
@@ -13,6 +14,9 @@ interface ProductTableProps {
 }
 
 export const ProductTable: React.FC<ProductTableProps> = ({ products, categories, brands = [], onEdit }) => {
+  const { productSettings } = useProductSettings();
+  const lowStockThreshold = productSettings.lowStockThreshold ?? 10;
+
   if (products.length === 0) {
     return (
       <EmptyState
@@ -42,7 +46,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({ products, categories
             const brand = brands.find(b => b.id === product.brandId);
             let stockStatus = <span className="text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded text-xs font-medium">En stock</span>;
             if (product.stock === 0) stockStatus = <span className="text-red-700 bg-red-50 border border-red-100 px-2 py-0.5 rounded text-xs font-medium">Épuisé</span>;
-            else if (product.stock < 10) stockStatus = <span className="text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded text-xs font-medium">Faible</span>;
+            else if (product.stock < lowStockThreshold) stockStatus = <span className="text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded text-xs font-medium">Faible</span>;
 
             return (
               <tr key={product.id} className="hover:bg-slate-50 transition-colors group cursor-pointer" onClick={() => onEdit(product.id)}>

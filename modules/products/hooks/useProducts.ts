@@ -152,6 +152,23 @@ export const useProducts = () => {
     onError: toastOnError("Impossible de modifier les marques"),
   });
 
+  // Delete product (soft-delete via deleted_at)
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: string) => {
+      const { error } = await supabase
+        .from('products')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', productId)
+        .eq('salon_id', salonId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products', salonId] });
+      toastOnSuccess('Produit supprimé')();
+    },
+    onError: toastOnError('Impossible de supprimer le produit'),
+  });
+
   // Filtering
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products;
@@ -176,6 +193,7 @@ export const useProducts = () => {
       updateProductMutation.mutate({ product, supplierId }),
     updateProductCategories: (payload: CategoryUpdatePayload) =>
       updateProductCategoriesMutation.mutate(payload),
+    deleteProduct: (productId: string) => deleteProductMutation.mutate(productId),
     updateBrands: (brandList: Brand[]) =>
       updateBrandsMutation.mutate(brandList),
   };
