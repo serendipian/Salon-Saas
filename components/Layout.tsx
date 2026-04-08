@@ -143,6 +143,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
     { id: 'finances/revenus', label: 'Revenus' },
     { id: 'finances/depenses', label: 'Dépenses' },
     { id: 'finances/journal', label: 'Journal' },
+    { id: 'finances/annulations', label: 'Annulations' },
   ];
 
   const managementNavItems: NavItem[] = [

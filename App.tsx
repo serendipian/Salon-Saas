@@ -67,6 +67,7 @@ import { FinancesOverview } from './modules/accounting/components/FinancesOvervi
 import { RevenuesPage } from './modules/accounting/components/RevenuesPage';
 import { DepensesPage } from './modules/accounting/components/DepensesPage';
 import { JournalPage } from './modules/accounting/components/JournalPage';
+import { RefundsPage } from './modules/accounting/components/RefundsPage';
 
 
 const AppContent = () => {
@@ -161,6 +162,7 @@ const AppContent = () => {
           <Route path="revenus" element={<RevenuesPage />} />
           <Route path="depenses" element={<DepensesPage />} />
           <Route path="journal" element={<JournalPage />} />
+          <Route path="annulations" element={<RefundsPage />} />
         </Route>
         <Route path="/profile" element={
           <ErrorBoundary moduleName="Profil"><ProfilePage /></ErrorBoundary>
