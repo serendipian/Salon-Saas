@@ -587,6 +587,7 @@ export type Database = {
           deleted_at: string | null
           description: string
           id: string
+          payment_method: string | null
           proof_url: string | null
           salon_id: string
           supplier_id: string | null
@@ -602,6 +603,7 @@ export type Database = {
           deleted_at?: string | null
           description: string
           id?: string
+          payment_method?: string | null
           proof_url?: string | null
           salon_id: string
           supplier_id?: string | null
@@ -617,6 +619,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string
           id?: string
+          payment_method?: string | null
           proof_url?: string | null
           salon_id?: string
           supplier_id?: string | null
@@ -2013,6 +2016,7 @@ export type Database = {
           id: string
           name: string
           note: string | null
+          original_item_id: string | null
           original_price: number | null
           price: number
           quantity: number
@@ -2029,6 +2033,7 @@ export type Database = {
           id?: string
           name: string
           note?: string | null
+          original_item_id?: string | null
           original_price?: number | null
           price: number
           quantity?: number
@@ -2045,6 +2050,7 @@ export type Database = {
           id?: string
           name?: string
           note?: string | null
+          original_item_id?: string | null
           original_price?: number | null
           price?: number
           quantity?: number
@@ -2057,6 +2063,13 @@ export type Database = {
           variant_name?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "transaction_items_original_item_id_fkey"
+            columns: ["original_item_id"]
+            isOneToOne: false
+            referencedRelation: "transaction_items"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transaction_items_salon_id_fkey"
             columns: ["salon_id"]
@@ -2156,8 +2169,12 @@ export type Database = {
           date: string
           id: string
           notes: string | null
+          original_transaction_id: string | null
+          reason_category: string | null
+          reason_note: string | null
           salon_id: string
           total: number
+          type: string
         }
         Insert: {
           appointment_id?: string | null
@@ -2167,8 +2184,12 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          original_transaction_id?: string | null
+          reason_category?: string | null
+          reason_note?: string | null
           salon_id: string
           total: number
+          type?: string
         }
         Update: {
           appointment_id?: string | null
@@ -2178,8 +2199,12 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          original_transaction_id?: string | null
+          reason_category?: string | null
+          reason_note?: string | null
           salon_id?: string
           total?: number
+          type?: string
         }
         Relationships: [
           {
@@ -2215,6 +2240,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_original_transaction_id_fkey"
+            columns: ["original_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
           {
@@ -2674,6 +2706,18 @@ export type Database = {
         Returns: undefined
       }
       leave_salon: { Args: { p_salon_id: string }; Returns: undefined }
+      refund_transaction: {
+        Args: {
+          p_items: Json
+          p_payments: Json
+          p_reason_category: string
+          p_reason_note: string
+          p_restock?: boolean
+          p_salon_id: string
+          p_transaction_id: string
+        }
+        Returns: string
+      }
       revoke_membership: {
         Args: { p_membership_id: string }
         Returns: undefined
@@ -2730,6 +2774,15 @@ export type Database = {
         Returns: string[]
       }
       user_staff_id_in_salon: { Args: { p_salon_id: string }; Returns: string }
+      void_transaction: {
+        Args: {
+          p_reason_category: string
+          p_reason_note: string
+          p_salon_id: string
+          p_transaction_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
