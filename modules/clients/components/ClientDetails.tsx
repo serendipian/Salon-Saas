@@ -25,7 +25,7 @@ import {
   User
 } from 'lucide-react';
 import { Client, AppointmentStatus } from '../../../types';
-import { useAppointments } from '../../appointments/hooks/useAppointments';
+import { useClientAppointments } from '../hooks/useClientAppointments';
 import { useTeam } from '../../team/hooks/useTeam';
 import { formatPrice } from '../../../lib/format';
 
@@ -37,15 +37,11 @@ interface ClientDetailsProps {
 }
 
 export const ClientDetails: React.FC<ClientDetailsProps> = ({ client, onBack, onEdit, onDelete }) => {
-  const { allAppointments: appointments } = useAppointments();
+  const { appointments: clientAppointments } = useClientAppointments(client.id);
   const { allStaff: team } = useTeam();
   const initials = `${client.firstName?.[0] ?? ''}${client.lastName?.[0] ?? ''}`.toUpperCase();
 
   const preferredStaff = team.find(t => t.id === client.preferredStaffId);
-
-  // Filter appointments for this client
-  const clientAppointments = appointments.filter(apt => apt.clientId === client.id)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const PermissionItem = ({ label, value, detail }: { label: string, value?: boolean, detail?: string }) => (
     <div className="flex items-start justify-between text-sm py-2 border-b border-slate-50 last:border-0">

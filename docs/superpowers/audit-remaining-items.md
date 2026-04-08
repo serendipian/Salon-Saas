@@ -5,12 +5,10 @@
 
 ---
 
-## HIGH (2 remaining) — Performance & Refactoring
+## HIGH (1 remaining) — Performance & Refactoring
 
-### H-1: ClientDetails loads ALL salon appointments
-**File:** `modules/clients/components/ClientDetails.tsx:40`
-**Issue:** `useAppointments()` fetches every appointment for the salon + sets up a realtime subscription, just to `.filter(apt => apt.clientId === client.id)`. For large salons this is wasteful.
-**Fix:** Create a targeted `useClientAppointments(clientId)` hook with `WHERE client_id = $clientId` pushed to the DB query. Remove `useAppointments()` from ClientDetails.
+### ~~H-1: ClientDetails loads ALL salon appointments~~ RESOLVED
+**Resolved:** 2026-04-08. Created `useClientAppointments(clientId)` hook with `WHERE client_id = $clientId` pushed to DB. Query key `['appointments', salonId, 'client', clientId]` — prefix-matched by existing invalidation. Removed `useAppointments()` from ClientDetails.
 
 ### H-2: StaffProfileTab is 719 LOC — largest component
 **File:** `modules/team/components/StaffProfileTab.tsx`
