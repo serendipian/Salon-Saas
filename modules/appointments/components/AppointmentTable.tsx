@@ -204,6 +204,11 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                                 status={appt.status}
                                 onStatusChange={onStatusChange ? (s) => onStatusChange(appt.id, s) : undefined}
                               />
+                              {appt.deletedAt && (
+                                <div className="text-[10px] text-red-500 mt-0.5">
+                                  Supprimé le {new Date(appt.deletedAt).toLocaleDateString('fr-FR')}
+                                </div>
+                              )}
                             </td>
                             <td className="px-4 py-3 align-top text-right">
                               <div className="flex items-center justify-end gap-1">
