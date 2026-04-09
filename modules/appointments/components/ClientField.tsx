@@ -232,7 +232,6 @@ export default function ClientField({
         </div>
       </div>
 
-      <p className="text-slate-400 text-[10px] mt-2">Ajouté automatiquement au CRM</p>
       {error && <p className="text-red-500 text-xs mt-1.5">{error}</p>}
     </div>
   );

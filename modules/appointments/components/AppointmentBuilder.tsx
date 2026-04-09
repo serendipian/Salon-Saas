@@ -35,7 +35,7 @@ export default function AppointmentBuilder({
             <ArrowLeft size={18} className="text-slate-500" />
           </button>
           <h1 className="text-xl font-bold text-slate-900">
-            {form.initialData?.serviceBlocks ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous'}
+            {form.initialData?.serviceBlocks ? 'Modifier le Rendez-Vous' : 'Nouveau Rendez-Vous'}
           </h1>
         </div>
         <div className="flex gap-2">
@@ -124,72 +124,66 @@ export default function AppointmentBuilder({
           )}
         </div>
 
-        {/* RIGHT PANEL */}
-        <div className="flex-[0.6] space-y-4">
-          {/* Step 4 — Date & Heure (only wraps calendar + time picker) */}
-          <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
-            <div className="flex items-center gap-2.5 mb-3">
-              <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">4</span>
-              <CalendarDays size={14} className="text-blue-600" />
-              <span className="text-slate-900 text-sm font-semibold">Date & Heure</span>
-            </div>
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-              <div className="p-5 space-y-5">
-                <div>
-                  <div className="text-xs font-medium text-slate-500 mb-2">Date *</div>
-                  <InlineCalendar
-                    value={form.activeBlock?.date ?? null}
-                    onChange={(date) => form.updateBlock(form.activeBlockIndex, { date })}
-                  />
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-slate-500 mb-2">Heure *</div>
-                  <TimePicker
-                    hour={form.activeBlock?.hour ?? null}
-                    minute={form.activeBlock?.minute ?? 0}
-                    onHourChange={(hour) => form.updateBlock(form.activeBlockIndex, { hour })}
-                    onMinuteChange={(minute) => form.updateBlock(form.activeBlockIndex, { minute })}
-                    unavailableHours={form.unavailableHours}
-                    dateSelected={(form.activeBlock?.date ?? null) !== null}
-                  />
-                </div>
+        {/* RIGHT PANEL — single card containing step 4 + Rappel + Notes */}
+        <div className="flex-[0.6]">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-5">
+            {/* Step 4 — Date & Heure (blue section containing only date + time pickers) */}
+            <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
+              <div className="flex items-center gap-2.5 mb-3">
+                <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">4</span>
+                <CalendarDays size={14} className="text-blue-600" />
+                <span className="text-slate-900 text-sm font-semibold">Date & Heure</span>
+              </div>
+              <div className="space-y-4">
+                <InlineCalendar
+                  value={form.activeBlock?.date ?? null}
+                  onChange={(date) => form.updateBlock(form.activeBlockIndex, { date })}
+                />
+                <TimePicker
+                  hour={form.activeBlock?.hour ?? null}
+                  minute={form.activeBlock?.minute ?? 0}
+                  onHourChange={(hour) => form.updateBlock(form.activeBlockIndex, { hour })}
+                  onMinuteChange={(minute) => form.updateBlock(form.activeBlockIndex, { minute })}
+                  unavailableHours={form.unavailableHours}
+                  dateSelected={(form.activeBlock?.date ?? null) !== null}
+                />
               </div>
             </div>
-          </div>
 
-          {/* Rappel */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-            <ReminderToggle value={form.reminderMinutes} onChange={form.setReminderMinutes} />
-          </div>
-
-          {/* Notes — toggleable */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <StickyNote size={14} className="text-slate-400" />
-                <span className="text-xs font-medium text-slate-500">Notes</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const next = !showNotes;
-                  setShowNotes(next);
-                  if (!next) form.setNotes('');
-                }}
-                className={`w-10 h-[22px] rounded-full relative transition-colors ${showNotes ? 'bg-blue-500' : 'bg-slate-300'}`}
-              >
-                <div className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all shadow-sm ${showNotes ? 'right-[2px]' : 'left-[2px]'}`} />
-              </button>
+            {/* Rappel */}
+            <div className="pt-1">
+              <ReminderToggle value={form.reminderMinutes} onChange={form.setReminderMinutes} />
             </div>
-            {showNotes && (
-              <textarea
-                value={form.notes}
-                onChange={(e) => form.setNotes(e.target.value)}
-                placeholder="Ajouter des notes..."
-                rows={3}
-                className="mt-3 w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none resize-none min-h-[44px] transition-all"
-              />
-            )}
+
+            {/* Notes — toggleable */}
+            <div>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <StickyNote size={14} className="text-slate-400" />
+                  <span className="text-xs font-medium text-slate-500">Notes</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !showNotes;
+                    setShowNotes(next);
+                    if (!next) form.setNotes('');
+                  }}
+                  className={`w-10 h-[22px] rounded-full relative transition-colors ${showNotes ? 'bg-blue-500' : 'bg-slate-300'}`}
+                >
+                  <div className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all shadow-sm ${showNotes ? 'right-[2px]' : 'left-[2px]'}`} />
+                </button>
+              </div>
+              {showNotes && (
+                <textarea
+                  value={form.notes}
+                  onChange={(e) => form.setNotes(e.target.value)}
+                  placeholder="Ajouter des notes..."
+                  rows={3}
+                  className="mt-3 w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none resize-none min-h-[44px] transition-all"
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>

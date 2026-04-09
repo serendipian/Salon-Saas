@@ -33,7 +33,7 @@ export default function ReminderToggle({ value, onChange }: ReminderToggleProps)
           <div className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all shadow-sm ${isOn ? 'right-[2px]' : 'left-[2px]'}`} />
         </button>
       </div>
-      {isOn ? (
+      {isOn && (
         <div className="flex gap-2 flex-wrap">
           {REMINDER_OPTIONS.map((opt) => (
             <button
@@ -50,8 +50,6 @@ export default function ReminderToggle({ value, onChange }: ReminderToggleProps)
             </button>
           ))}
         </div>
-      ) : (
-        <p className="text-slate-400 text-xs italic">Activer pour configurer un rappel</p>
       )}
     </div>
   );
