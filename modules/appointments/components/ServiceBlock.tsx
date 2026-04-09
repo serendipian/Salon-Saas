@@ -67,21 +67,25 @@ export default function ServiceBlock({
     [services, activeCategoryId],
   );
 
-  // Category lock: when items exist (and not a pack block), pills are locked to the
-  // locked category OR the Favoris tab (so the user can still browse their favorites
-  // of the locked category).
-  const isLocked = block.items.length > 0 && !block.packId;
+  // Two kinds of lock:
+  //  - Pack lock: block is part of a pack → only the Packs tab is usable.
+  //  - Category lock: block has services from one category → only that category
+  //    (and Favoris for browsing) is usable.
+  const isPackLocked = !!block.packId;
+  const isCategoryLocked = block.items.length > 0 && !block.packId;
+  const isLocked = isPackLocked || isCategoryLocked;
 
   // The category the block is anchored to (derived from first item's service).
   const lockedCategoryId = useMemo<string | null>(() => {
-    if (!isLocked) return null;
+    if (!isCategoryLocked) return null;
     const firstSvc = services.find((s) => s.id === block.items[0].serviceId);
     return firstSvc?.categoryId ?? null;
-  }, [isLocked, block.items, services]);
+  }, [isCategoryLocked, block.items, services]);
 
-  // While locked, only Favoris and the locked category pill are switchable.
+  // Which pills are still clickable while a lock is active.
   const isPillAllowedWhenLocked = (pillId: string): boolean => {
-    if (!isLocked) return true;
+    if (isPackLocked) return pillId === 'PACKS';
+    if (!isCategoryLocked) return true;
     if (pillId === 'FAVORITES') return true;
     if (pillId === 'PACKS') return false;
     return pillId === lockedCategoryId;
@@ -94,6 +98,15 @@ export default function ServiceBlock({
   };
 
   const handleClear = () => {
+    // Pack-locked: toggle the current pack off. addPackBlocks preserves this
+    // block's ID on toggle-off so the user stays on the Packs tab.
+    if (isPackLocked && block.packId && onAddPackBlocks) {
+      const currentPack = packs.find((p) => p.id === block.packId);
+      if (currentPack) {
+        onAddPackBlocks(currentPack);
+        return;
+      }
+    }
     onClearItems();
   };
 
@@ -240,22 +253,30 @@ export default function ServiceBlock({
             </button>
           );
         })()}
-        {packs.length > 0 && !isLocked && (
-          <button
-            type="button"
-            onClick={() => handleCategoryChange('PACKS')}
-            className={`
-              px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
-              ${activeCategoryId === 'PACKS'
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50'
-              }
-            `}
-          >
-            <Package size={14} />
-            Packs
-          </button>
-        )}
+        {packs.length > 0 && (() => {
+          const disabled = !isPillAllowedWhenLocked('PACKS');
+          const activePill = activeCategoryId === 'PACKS';
+          return (
+            <button
+              type="button"
+              onClick={() => handleCategoryChange('PACKS')}
+              disabled={disabled}
+              aria-disabled={disabled}
+              className={`
+                px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
+                ${activePill
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm'
+                  : disabled
+                    ? 'bg-white text-slate-300 border-slate-100 cursor-not-allowed'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50'
+                }
+              `}
+            >
+              <Package size={14} />
+              Packs
+            </button>
+          );
+        })()}
         {categories.map((cat) => {
           const isActivePill = cat.id === activeCategoryId;
           const disabled = !isPillAllowedWhenLocked(cat.id);

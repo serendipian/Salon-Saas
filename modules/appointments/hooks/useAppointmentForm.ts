@@ -14,6 +14,7 @@ import type {
 import { appointmentGroupSchema, newClientSchema } from '../schemas';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import { useStaffAvailability } from './useStaffAvailability';
+import { useToast } from '../../../context/ToastContext';
 import { formatPrice, formatDuration } from '../../../lib/format';
 
 export interface UseAppointmentFormProps {
@@ -126,6 +127,7 @@ export function getBlockPrice(block: ServiceBlockState, services: Service[]): nu
 
 export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentFormReturn {
   const { services, team, appointments, onSave, excludeAppointmentIds, initialData } = props;
+  const { addToast } = useToast();
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -213,6 +215,31 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
 
   const toggleBlockItem = useCallback(
     (index: number, serviceId: string, variantId: string) => {
+      // Pre-compute cross-category rejection outside the updater so the
+      // reducer stays pure and the toast can fire from a normal code path.
+      // M-17: previously the reject path was silent and confusing.
+      const currentBlock = serviceBlocks[index];
+      if (
+        currentBlock &&
+        !currentBlock.packId &&
+        currentBlock.items.length > 0 &&
+        !currentBlock.items.some((item) => item.serviceId === serviceId)
+      ) {
+        const lockedSvc = services.find((s) => s.id === currentBlock.items[0].serviceId);
+        const candidateSvc = services.find((s) => s.id === serviceId);
+        if (
+          lockedSvc?.categoryId &&
+          candidateSvc?.categoryId &&
+          lockedSvc.categoryId !== candidateSvc.categoryId
+        ) {
+          addToast({
+            type: 'warning',
+            message: 'Impossible de mélanger les catégories dans un même créneau.',
+          });
+          return;
+        }
+      }
+
       setServiceBlocks((prev) =>
         prev.map((b, i) => {
           if (i !== index) return b;
@@ -229,21 +256,21 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
             nextItems[existingIdx] = { ...existing, variantId };
             return { ...b, items: nextItems };
           }
-          // New service → enforce category consistency (defense in depth).
-          // All items in a block must share a single category because the block
-          // is performed by one staff member, and staff competence is category-scoped.
+          // New service → defensive same-category check (should be unreachable
+          // now that the pre-check above rejects with a toast; kept as a
+          // belt-and-braces guard against stale closures or race conditions).
           if (b.items.length > 0) {
             const lockedSvc = services.find((s) => s.id === b.items[0].serviceId);
             const candidateSvc = services.find((s) => s.id === serviceId);
             if (lockedSvc?.categoryId && candidateSvc?.categoryId && lockedSvc.categoryId !== candidateSvc.categoryId) {
-              return b; // reject: cross-category insert
+              return b;
             }
           }
           return { ...b, items: [...b.items, { serviceId, variantId }] };
         }),
       );
     },
-    [services],
+    [serviceBlocks, services, addToast],
   );
 
   const clearBlockItems = useCallback((index: number) => {
@@ -304,17 +331,37 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     let firstNewBlockIndex = 0;
 
     setServiceBlocks((prev) => {
-      // Toggle: if the same pack is already selected, remove all its blocks.
-      // If that would leave the form empty, replace with a fresh empty placeholder.
+      // Toggle: if the same pack is already selected, clear it in place.
+      // Preserve the first pack block's ID (with fields cleared) and drop the
+      // other blocks of that pack. Keeping the ID keeps the ServiceBlock
+      // component mounted, so its activeCategoryId state stays on 'PACKS'
+      // instead of falling back to Favoris on remount.
       const hasPack = prev.some((b) => b.packId === pack.id);
       if (hasPack) {
-        const remaining = prev.filter((b) => b.packId !== pack.id);
-        if (remaining.length === 0) {
-          firstNewBlockIndex = 0;
-          return [createEmptyBlock()];
+        const firstPackIdx = prev.findIndex((b) => b.packId === pack.id);
+        const next: ServiceBlockState[] = [];
+        let newActiveIdx = 0;
+        for (let i = 0; i < prev.length; i++) {
+          const b = prev[i];
+          if (i === firstPackIdx) {
+            newActiveIdx = next.length;
+            next.push({
+              ...b,
+              categoryId: null,
+              items: [],
+              staffId: null,
+              date: null,
+              hour: null,
+              minute: 0,
+              packId: null,
+            });
+          } else if (b.packId !== pack.id) {
+            next.push(b);
+          }
+          // else: drop additional blocks of the same pack
         }
-        firstNewBlockIndex = remaining.length - 1;
-        return remaining;
+        firstNewBlockIndex = newActiveIdx;
+        return next;
       }
 
       // Strip any blocks from a previously selected pack (switching packs),
