@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { History, ChevronLeft, ChevronRight, ArrowLeft, Eye, Receipt, Ban, RotateCcw, Search, Scissors, ShoppingBag, CreditCard, TrendingUp, Banknote, Wallet, Smartphone, Gift, FileText } from 'lucide-react';
+import { History, ChevronLeft, ChevronRight, ArrowLeft, Eye, Receipt, Ban, RotateCcw, Search, Scissors, ShoppingBag, CreditCard, TrendingUp, Banknote, Wallet, Smartphone, Gift, FileText, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -60,6 +60,8 @@ export const TransactionHistoryPage: React.FC = () => {
     setSearchTerm('');
     setStatusFilter('all');
     setPaymentFilter(null);
+    setSortBy('time');
+    setSortDesc(true);
   };
 
   const goToNextDay = () => {
@@ -72,6 +74,8 @@ export const TransactionHistoryPage: React.FC = () => {
     setSearchTerm('');
     setStatusFilter('all');
     setPaymentFilter(null);
+    setSortBy('time');
+    setSortDesc(true);
   };
 
   // Data
@@ -92,10 +96,12 @@ export const TransactionHistoryPage: React.FC = () => {
   const [voidTarget, setVoidTarget] = useState<Transaction | null>(null);
   const [refundTarget, setRefundTarget] = useState<Transaction | null>(null);
 
-  // Search & filter state
+  // Search, filter & sort state
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'voided' | 'refunded'>('all');
   const [paymentFilter, setPaymentFilter] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'time' | 'amount' | 'client' | 'items'>('time');
+  const [sortDesc, setSortDesc] = useState(true);
 
   // Filter by selected date
   const filteredTransactions = React.useMemo(() => {
@@ -149,9 +155,9 @@ export const TransactionHistoryPage: React.FC = () => {
     return { statusCounts: counts, paymentCounts: methodSet };
   }, [groupedTransactions, transactions]);
 
-  // Apply search + status + payment filters
+  // Apply search + status + payment filters, then sort
   const displayedTransactions = React.useMemo(() => {
-    return groupedTransactions.filter(({ parent: trx }) => {
+    const filtered = groupedTransactions.filter(({ parent: trx }) => {
       // Search filter
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
@@ -175,7 +181,26 @@ export const TransactionHistoryPage: React.FC = () => {
 
       return true;
     });
-  }, [groupedTransactions, searchTerm, statusFilter, paymentFilter, transactions]);
+
+    // Sort
+    const dir = sortDesc ? -1 : 1;
+    filtered.sort((a, b) => {
+      const ta = a.parent, tb = b.parent;
+      switch (sortBy) {
+        case 'time': return dir * (new Date(ta.date).getTime() - new Date(tb.date).getTime());
+        case 'amount': return dir * (ta.total - tb.total);
+        case 'client': {
+          const na = ta.clientName?.toLowerCase() || '\uffff';
+          const nb = tb.clientName?.toLowerCase() || '\uffff';
+          return dir * na.localeCompare(nb);
+        }
+        case 'items': return dir * (ta.items.length - tb.items.length);
+        default: return 0;
+      }
+    });
+
+    return filtered;
+  }, [groupedTransactions, searchTerm, statusFilter, paymentFilter, transactions, sortBy, sortDesc]);
 
   const PAYMENT_METHOD_SHORT: Record<string, string> = {
     'Carte Bancaire': 'Carte',
@@ -291,7 +316,7 @@ export const TransactionHistoryPage: React.FC = () => {
           </button>
           {!isHistoryToday && (
             <button
-              onClick={() => { setHistoryDate(new Date()); setSearchTerm(''); setStatusFilter('all'); setPaymentFilter(null); }}
+              onClick={() => { setHistoryDate(new Date()); setSearchTerm(''); setStatusFilter('all'); setPaymentFilter(null); setSortBy('time'); setSortDesc(true); }}
               className="text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors ml-1"
             >
               Aujourd'hui
@@ -392,6 +417,27 @@ export const TransactionHistoryPage: React.FC = () => {
                   );
                 })}
               </div>
+              {/* Sort button — right-aligned */}
+              {!isMobile && (
+                <div className="ml-auto flex-shrink-0 relative group/sort">
+                  <button
+                    className="h-8 px-3 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+                    onClick={() => {
+                      const fields: Array<'time' | 'amount' | 'client' | 'items'> = ['time', 'amount', 'client', 'items'];
+                      const idx = fields.indexOf(sortBy);
+                      if (sortDesc) {
+                        setSortDesc(false);
+                      } else {
+                        setSortBy(fields[(idx + 1) % fields.length]);
+                        setSortDesc(true);
+                      }
+                    }}
+                  >
+                    {sortDesc ? <ArrowDown size={12} /> : <ArrowUp size={12} />}
+                    {{ time: 'Heure', amount: 'Montant', client: 'Client', items: 'Prestations' }[sortBy]}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
