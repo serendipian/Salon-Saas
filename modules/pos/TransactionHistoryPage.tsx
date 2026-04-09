@@ -114,11 +114,11 @@ export const TransactionHistoryPage: React.FC = () => {
   const isToday = (date: string) => new Date(date).toDateString() === new Date().toDateString();
 
   const statusBadge = (status: TransactionStatus, trx: Transaction) => {
-    if (trx.type === 'VOID') return <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">Annulation</span>;
-    if (trx.type === 'REFUND') return <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Remboursement</span>;
-    if (status === 'voided') return <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">Annulé</span>;
-    if (status === 'fully_refunded') return <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Remboursé</span>;
-    if (status === 'partially_refunded') return <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Remb. partiel</span>;
+    if (trx.type === 'VOID') return <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-red-200 text-red-600">Annulation</span>;
+    if (trx.type === 'REFUND') return <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-orange-200 text-orange-600">Remboursement</span>;
+    if (status === 'voided') return <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-red-200 text-red-600">Annulé</span>;
+    if (status === 'fully_refunded') return <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-orange-200 text-orange-600">Remboursé</span>;
+    if (status === 'partially_refunded') return <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-orange-200 text-orange-600">Remb. partiel</span>;
     return null;
   };
 
@@ -201,9 +201,9 @@ export const TransactionHistoryPage: React.FC = () => {
         </div>
 
         {filteredTransactions.length === 0 ? (
-          <div className="p-12 text-center text-slate-400">
-            <History size={48} className="mx-auto mb-4 opacity-50" />
-            <p>Aucune transaction enregistrée.</p>
+          <div className="p-12 text-center">
+            <History size={36} className="mx-auto mb-4 text-slate-300" />
+            <p className="text-slate-400">Aucune transaction enregistrée.</p>
           </div>
         ) : isMobile ? (
           /* Mobile: card layout */
