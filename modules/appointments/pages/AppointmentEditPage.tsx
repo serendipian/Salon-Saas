@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppointments } from '../hooks/useAppointments';
 import { useClients } from '../../clients/hooks/useClients';
@@ -37,8 +37,8 @@ export const AppointmentEditPage: React.FC = () => {
     return [selectedAppt.id];
   }, [selectedAppt, allAppointments]);
 
-  const editInitialData = useMemo(() => {
-    if (!selectedAppt) return undefined;
+  const { editInitialData, unresolvedCount } = useMemo(() => {
+    if (!selectedAppt) return { editInitialData: undefined, unresolvedCount: 0 };
 
     const groupAppts = selectedAppt.groupId
       ? allAppointments.filter((a) => a.groupId === selectedAppt.groupId)
@@ -52,6 +52,7 @@ export const AppointmentEditPage: React.FC = () => {
     const serviceBlocks: ServiceBlockState[] = [];
     let current: ServiceBlockState | null = null;
     let currentCursorEnd: Date | null = null;
+    let unresolved = 0;
 
     for (const appt of sorted) {
       const apptStart = new Date(appt.date);
@@ -59,20 +60,31 @@ export const AppointmentEditPage: React.FC = () => {
       const dateStr = `${apptStart.getFullYear()}-${String(apptStart.getMonth() + 1).padStart(2, '0')}-${String(apptStart.getDate()).padStart(2, '0')}`;
 
       const svc = services.find((s) => s.id === appt.serviceId);
+      // Resolve variant: exact ID match first, then fall back to price+duration
+      // for legacy rows with null variantId. If neither path yields a variant,
+      // skip this appointment — an empty variantId would make the block
+      // unsaveable and surface an opaque schema error to the user.
       const variant = appt.variantId
         ? svc?.variants.find((v) => v.id === appt.variantId)
         : svc?.variants.find((v) => v.price === appt.price && v.durationMinutes === appt.durationMinutes);
 
+      if (!svc || !variant) {
+        unresolved += 1;
+        current = null; // break the merge chain at a hole
+        currentCursorEnd = null;
+        continue;
+      }
+
       const item = {
-        serviceId: appt.serviceId ?? '',
-        variantId: variant?.id ?? '',
+        serviceId: svc.id,
+        variantId: variant.id,
       };
 
       const canMerge =
         current != null &&
         !current.packId && // pack blocks are atomic
         current.staffId === (appt.staffId ?? null) &&
-        current.categoryId === (svc?.categoryId ?? null) &&
+        current.categoryId === (svc.categoryId ?? null) &&
         current.date === dateStr &&
         currentCursorEnd != null &&
         currentCursorEnd.getTime() === apptStart.getTime();
@@ -83,7 +95,7 @@ export const AppointmentEditPage: React.FC = () => {
       } else {
         current = {
           id: crypto.randomUUID(),
-          categoryId: svc?.categoryId ?? null,
+          categoryId: svc.categoryId ?? null,
           items: [item],
           staffId: appt.staffId ?? null,
           date: dateStr,
@@ -96,13 +108,33 @@ export const AppointmentEditPage: React.FC = () => {
     }
 
     return {
-      clientId: selectedAppt.clientId,
-      status: selectedAppt.status,
-      notes: selectedAppt.notes ?? '',
-      reminderMinutes: null as number | null,
-      serviceBlocks,
+      editInitialData: {
+        clientId: selectedAppt.clientId,
+        status: selectedAppt.status,
+        notes: selectedAppt.notes ?? '',
+        reminderMinutes: null as number | null,
+        serviceBlocks,
+      },
+      unresolvedCount: unresolved,
     };
   }, [selectedAppt, allAppointments, services]);
+
+  // Warn once per load if any appointments in the group couldn't be loaded
+  // into the editor (deleted service or unresolvable variant).
+  const warnedRef = useRef<string | null>(null);
+  useEffect(() => {
+    const key = `${id}:${unresolvedCount}`;
+    if (unresolvedCount > 0 && warnedRef.current !== key) {
+      warnedRef.current = key;
+      addToast({
+        type: 'warning',
+        message:
+          unresolvedCount === 1
+            ? "Une prestation n'a pas pu être chargée (service ou variante supprimé). Le bloc a été ignoré."
+            : `${unresolvedCount} prestations n'ont pas pu être chargées (service ou variante supprimé). Les blocs ont été ignorés.`,
+      });
+    }
+  }, [unresolvedCount, id, addToast]);
 
   if (isLoading) {
     return (

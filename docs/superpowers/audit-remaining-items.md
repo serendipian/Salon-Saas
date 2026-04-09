@@ -16,11 +16,13 @@
 | Severity | Count | Status |
 |---|---|---|
 | CRITICAL | 0 | — |
-| HIGH | 13 | Actionable this sprint |
+| HIGH | 7 remaining (5 fixed, 1 invalid) | Batch A shipped 2026-04-10 |
 | MEDIUM | 28 | Batch work |
 | LOW | 22 | Polish queue |
 
 **Of the 19 previously-documented MEDIUM items:** 1 RESOLVED, 1 PARTIAL, 17 still apply (all re-listed below).
+
+**Batch A completed 2026-04-10:** H-2, H-7, H-9, H-10, H-13 fixed. H-6 investigated and marked invalid (non-bug). See each finding below for details.
 
 ---
 
@@ -37,10 +39,9 @@ No critical issues found. The codebase has no silent data corruption, no securit
 **Issue:** The `expenses` table schema only has `supplier_id` (FK) — there is no `supplier` text column. `toExpense` reads `suppliers?.name` from the join, `toExpenseInsert` only writes `supplier_id`, and `updateExpenseMutation` (`useAccounting.ts:101-123`) only updates `supplier_id`. Meanwhile the form maintains `isCustomSupplier` state and a `formData.supplier` text field as if ad-hoc supplier names were stored. When a user types a custom supplier name, nothing is persisted — on reload the field is empty. This has been latent for at least one release.
 **Fix:** Either add a `supplier_text` nullable column and wire it through mapper/insert/update, or remove the entire custom-supplier UI path and require selection from the pre-defined suppliers list.
 
-### H-2: Edit-mode variant fallback produces empty `variantId` when no match
-**File:** `modules/appointments/pages/AppointmentEditPage.tsx:62-68`
-**Issue:** When an existing appointment has `variantId === null`, the code falls back to matching by `price + durationMinutes`. If no variant matches (e.g., the variant was deleted or the pack pro-rated the price), `variant?.id` is undefined and the item is pushed with `variantId: ''`. The Zod schema later rejects empty strings, surfacing a generic "form invalid" error with no explanation of which block is broken.
-**Fix:** Add an explicit null-check before push. If `variant` cannot be resolved, drop the appointment with a toast `"Une prestation n'a pas pu être chargée — édition incomplète"` or keep it but flag the block for user attention.
+### ~~H-2: Edit-mode variant fallback produces empty `variantId` when no match~~ RESOLVED (2026-04-10)
+**File:** `modules/appointments/pages/AppointmentEditPage.tsx:40-134`
+**Resolved:** The loop now skips appointments whose service or variant cannot be resolved, increments an `unresolvedCount`, and shows a warning toast once per load. Also breaks the merge chain at a hole so partially-loaded groups don't incorrectly merge appointments across the gap.
 
 ### H-3: `toggle_favorite` RPC still races on concurrent toggles
 **File:** `supabase/migrations/20260409200000_toggle_favorite_rpc.sql:53-66`
@@ -57,30 +58,26 @@ No critical issues found. The codebase has no silent data corruption, no securit
 **Issue:** Commit `c898f3a` switched pack deletion from soft to hard delete with confirmation. Appointments that reference the deleted pack retain a dangling `pack_id`, breaking historical "Pack Promo" tag rendering and appointment audit trails. The delete confirmation does not check or warn about active references.
 **Fix:** Pre-query `appointments` for live `pack_id` references and warn in the confirmation: `"Ce pack est utilisé dans N rendez-vous. La suppression est définitive."` Consider reverting to soft-delete with `deleted_at` to preserve referential integrity, or add `ON DELETE SET NULL` to the FK.
 
-### H-6: Expense delete mutation only invalidates `expenses` — ledger/charts stale until realtime catches up
-**File:** `modules/accounting/hooks/useAccounting.ts:135-140`
-**Issue:** `deleteExpenseMutation.onSuccess` only invalidates `['expenses', salonId]`. `useAccounting` exposes `ledgerData`, `chartData`, and financial KPIs all derived from expenses. Realtime sync eventually invalidates, but there's a visible stale window.
-**Fix:** Explicitly invalidate related query keys in `onSuccess`, or rely on `useRealtimeSync('expenses')` being present (verify).
+### ~~H-6: Expense delete — ledger/charts stale~~ INVALID (2026-04-10)
+**File:** `modules/accounting/hooks/useAccounting.ts:125-140,461-489`
+**Investigated and dismissed:** `ledgerData` and `chartData` are `useMemo`-derived from `data.current.expenses` / `data.current.transactions`, which themselves come from the `['expenses', salonId]` / `['transactions', salonId, ...]` base queries. There is no separate `['ledger', ...]` or `['chart', ...]` query key. Invalidating `['expenses', salonId]` refetches, the hook re-runs, the memos recompute. No stale window. The original audit agent mistook derived memoization for a separate cache.
 
-### H-7: Role-change mutation doesn't invalidate `staff_members` cache
-**File:** `modules/settings/hooks/useTeamSettings.ts:84-106`
-**Issue:** `changeRoleMutation` updates both `salon_memberships.role` and `staff_members.role` atomically but only invalidates `['team-settings-members', salonId]`. Team module and appointment hooks that query `staff_members` directly see stale role data until the next natural refetch.
-**Fix:** Add `queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] })` in the `onSuccess` callback.
+### ~~H-7: Role-change mutation doesn't invalidate `staff_members`~~ RESOLVED (2026-04-10)
+**File:** `modules/settings/hooks/useTeamSettings.ts:101-107`
+**Resolved:** Added `queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] })` in `changeRoleMutation.onSuccess`. Prefix match cascades to `useTeam`'s `['staff_members', salonId, { includeArchived }]` key.
 
 ### H-8: Settings modals missing focus trap + aria-modal semantics
 **Files:** `modules/settings/components/RevokeAccessModal.tsx:14-15`, `TransferOwnershipModal.tsx:23-24`
 **Issue:** Both desktop modals lack `role="dialog"`, `aria-modal="true"`, and focus management. `MobileDrawer` has focus trap support but these desktop modals do not.
 **Fix:** Add ARIA attributes and a `useEffect` that focuses the first interactive element on mount and restores focus on close. Ideally extract a shared `<Modal>` wrapper.
 
-### H-9: Settings `useTeamSettings` query response cast as `any`, bypassing type safety
-**File:** `modules/settings/hooks/useTeamSettings.ts:59-60`
-**Issue:** Result from the `salon_memberships` + `profiles` join is cast `as any` and then filtered/mapped without type safety. Silent failures if schema changes.
-**Fix:** Define a proper row type from `Database['public']['Tables']['salon_memberships']['Row'] & { profiles: ... }` or use a typed join wrapper.
+### ~~H-9: Settings `useTeamSettings` query response cast as `any`~~ RESOLVED (2026-04-10)
+**File:** `modules/settings/hooks/useTeamSettings.ts:48-82`
+**Resolved:** Replaced `any` with a typed `JoinedRow` local type, added explicit `Promise<MemberRow[]>` return type, and disambiguated the `profiles` join via the explicit FK name `salon_memberships_profile_id_fkey` (previously PostgREST errored on ambiguous relationship). Single `as unknown as` remains at the Supabase response boundary because PostgREST's inferred type differs from the runtime shape after embed normalization.
 
-### H-10: InvitationsTab expiration days hardcoded in UI, will drift from backend
-**File:** `modules/settings/components/InvitationsTab.tsx:111`
-**Issue:** UI says "expire dans 7 jours" but the value is hardcoded in the component. `useTeamSettings.ts` (`+7` in the create mutation) is the source of truth. Changes to one will silently desync.
-**Fix:** Export a `INVITATION_EXPIRY_DAYS` constant from the hook and import it in the component.
+### ~~H-10: InvitationsTab expiration days hardcoded~~ RESOLVED (2026-04-10)
+**File:** `modules/settings/hooks/useTeamSettings.ts:7`, `modules/settings/components/InvitationsTab.tsx:3,112`
+**Resolved:** Exported `INVITATION_EXPIRY_DAYS = 7` from `useTeamSettings`. Both the create mutation (line 144) and the UI copy (`InvitationsTab.tsx`) now import and use the constant.
 
 ### H-11: `useAppointmentForm` save-flattening uses local-timezone Date construction before UTC serialization
 **File:** `modules/appointments/hooks/useAppointmentForm.ts:430-448`
@@ -92,10 +89,9 @@ No critical issues found. The codebase has no silent data corruption, no securit
 **Issue:** The merge condition is `currentCursorEnd.getTime() === apptStart.getTime()`. Any drift (a 1-second difference from a manual DB edit, a daylight-savings crossing, a clock adjustment on the server) breaks the merge and the contiguous block appears as separate blocks in edit mode.
 **Fix:** Use a tolerance window (e.g., within 60 seconds). Also detect the case where appointments should merge but don't and emit a debug log so this can be monitored.
 
-### H-13: Unsafe `any` types in `useStaffCompensation`
-**File:** `modules/team/hooks/useStaffCompensation.ts:31-34`
-**Issue:** `.reduce((sum: number, t: any) => { ... .filter((i: any) => ... })` — filter/reduce callbacks untyped. Carried over from 2026-04-08 audit.
-**Fix:** Type with `Transaction` and `CartItem`.
+### ~~H-13: Unsafe `any` types in `useStaffCompensation`~~ RESOLVED (2026-04-10)
+**File:** `modules/team/hooks/useStaffCompensation.ts:3,30-37`
+**Resolved:** Imported `Transaction` and `CartItem` from `types.ts`; typed all reduce/filter callbacks.
 
 ---
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Copy, Check, X, Loader2, Link as LinkIcon } from 'lucide-react';
-import type { InvitationRow } from '../hooks/useTeamSettings';
+import { type InvitationRow, INVITATION_EXPIRY_DAYS } from '../hooks/useTeamSettings';
 
 const ROLE_LABELS: Record<string, string> = {
   manager: 'Manager',
@@ -108,7 +108,7 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
           ) : (
             <>
               <p className="text-sm text-slate-600">
-                Lien d'invitation ({ROLE_LABELS[selectedRole]}) — expire dans 7 jours.
+                Lien d'invitation ({ROLE_LABELS[selectedRole]}) — expire dans {INVITATION_EXPIRY_DAYS} jours.
               </p>
               <div className="flex items-center gap-2">
                 <input

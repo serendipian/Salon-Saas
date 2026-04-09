@@ -4,6 +4,9 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { Role } from '../../../lib/auth.types';
 
+/** Number of days before a generated invitation link expires. */
+export const INVITATION_EXPIRY_DAYS = 7;
+
 export interface MemberRow {
   id: string;
   role: Role;
@@ -47,20 +50,38 @@ export function useTeamSettings() {
 
   const { data: members = [], isLoading: membersLoading } = useQuery({
     queryKey: ['team-settings-members', salonId],
-    queryFn: async () => {
+    queryFn: async (): Promise<MemberRow[]> => {
+      // Disambiguate the profiles join via the FK name — salon_memberships
+      // has two FKs to profiles (profile_id and invited_by) so Supabase
+      // requires an explicit hint. `!salon_memberships_profile_id_fkey`
+      // tells PostgREST which relationship to embed.
       const { data, error } = await supabase
         .from('salon_memberships')
-        .select('id, role, status, created_at, accepted_at, profile_id, profiles:profile_id(id, first_name, last_name, email, avatar_url)')
+        .select('id, role, status, created_at, accepted_at, profile_id, profile:profiles!salon_memberships_profile_id_fkey(id, first_name, last_name, email, avatar_url)')
         .eq('salon_id', salonId!)
         .is('deleted_at', null)
         .order('created_at', { ascending: true });
       if (error) throw error;
-      return (data || [])
-        .filter((row: any) => row.profiles)
-        .map((row: any) => ({
-          ...row,
-          profile: row.profiles,
-        })) as MemberRow[];
+      // Supabase returns the embedded row as either a single object or array
+      // depending on FK cardinality inference. Normalize and drop rows with
+      // no joined profile (shouldn't happen in practice given the FK).
+      type JoinedRow = Omit<MemberRow, 'profile' | 'role'> & {
+        role: string;
+        profile: MemberRow['profile'] | MemberRow['profile'][] | null;
+      };
+      return ((data as unknown as JoinedRow[] | null) ?? []).flatMap((row) => {
+        const profile = Array.isArray(row.profile) ? row.profile[0] : row.profile;
+        if (!profile) return [];
+        return [{
+          id: row.id,
+          role: row.role as Role,
+          status: row.status,
+          created_at: row.created_at,
+          accepted_at: row.accepted_at,
+          profile_id: row.profile_id,
+          profile,
+        }];
+      });
     },
     enabled: !!salonId,
   });
@@ -100,6 +121,9 @@ export function useTeamSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-settings-members', salonId] });
+      // Also invalidate staff_members — role change writes to both tables, and
+      // team/appointments modules query staff_members directly.
+      queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });
       toastOnSuccess('Rôle mis à jour')();
     },
     onError: toastOnError('Erreur lors du changement de rôle'),
@@ -137,7 +161,7 @@ export function useTeamSettings() {
     mutationFn: async (role: string) => {
       const token = crypto.randomUUID();
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7);
+      expiresAt.setDate(expiresAt.getDate() + INVITATION_EXPIRY_DAYS);
 
       const { data, error } = await supabase
         .from('invitations')
