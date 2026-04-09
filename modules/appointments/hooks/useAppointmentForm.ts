@@ -304,11 +304,17 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     let firstNewBlockIndex = 0;
 
     setServiceBlocks((prev) => {
-      // If the same pack is already added, just activate its first block.
-      const existingIdx = prev.findIndex((b) => b.packId === pack.id);
-      if (existingIdx >= 0) {
-        firstNewBlockIndex = existingIdx;
-        return prev;
+      // Toggle: if the same pack is already selected, remove all its blocks.
+      // If that would leave the form empty, replace with a fresh empty placeholder.
+      const hasPack = prev.some((b) => b.packId === pack.id);
+      if (hasPack) {
+        const remaining = prev.filter((b) => b.packId !== pack.id);
+        if (remaining.length === 0) {
+          firstNewBlockIndex = 0;
+          return [createEmptyBlock()];
+        }
+        firstNewBlockIndex = remaining.length - 1;
+        return remaining;
       }
 
       // Strip any blocks from a previously selected pack (switching packs),
