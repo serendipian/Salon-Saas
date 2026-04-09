@@ -1,18 +1,29 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Star, GripVertical, ChevronDown, ChevronRight, Save } from 'lucide-react';
 import { useServices } from '../hooks/useServices';
+import { usePacks } from '../hooks/usePacks';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import type { FavoriteItem } from '../../../types';
 
 export function FavoritesTab() {
   const { allServices, serviceCategories, favorites, toggleFavorite, reorderFavorites } = useServices();
+  const { packs } = usePacks();
 
-  const [localOrder, setLocalOrder] = useState<FavoriteItem[]>(favorites);
+  // Merge pack favorites into the favorites list (packs keep their own favorite
+  // state in the packs table, so they aren't part of useServices.favorites).
+  const allFavorites = useMemo<FavoriteItem[]>(() => {
+    const packFavs: FavoriteItem[] = packs
+      .filter((p) => p.isFavorite)
+      .map((p) => ({ type: 'pack' as const, pack: p, sortOrder: p.favoriteSortOrder ?? 0 }));
+    return [...favorites, ...packFavs].sort((a, b) => a.sortOrder - b.sortOrder);
+  }, [favorites, packs]);
+
+  const [localOrder, setLocalOrder] = useState<FavoriteItem[]>(allFavorites);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    setLocalOrder(favorites);
-  }, [favorites]);
+    setLocalOrder(allFavorites);
+  }, [allFavorites]);
 
   const getFavoriteId = (f: FavoriteItem): string => {
     if (f.type === 'service') return f.service.id;
@@ -22,13 +33,13 @@ export function FavoritesTab() {
 
   const hasOrderChanged = JSON.stringify(localOrder.map(f => {
     return `${f.type}:${getFavoriteId(f)}`;
-  })) !== JSON.stringify(favorites.map(f => {
+  })) !== JSON.stringify(allFavorites.map(f => {
     return `${f.type}:${getFavoriteId(f)}`;
   }));
 
   const handleSaveOrder = () => {
     const items = localOrder.map((item, index) => ({
-      type: item.type as 'service' | 'variant',
+      type: item.type,
       id: getFavoriteId(item),
       sortOrder: index,
     }));
@@ -106,6 +117,9 @@ export function FavoritesTab() {
                   {item.type === 'variant' && (
                     <span className="text-xs text-slate-400 shrink-0">variante</span>
                   )}
+                  {item.type === 'pack' && (
+                    <span className="text-xs text-purple-600 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded shrink-0">pack</span>
+                  )}
                   {category && (
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border shrink-0 ${category.color}`}>
                       <CategoryIcon categoryName={category.name} iconName={category.icon} size={10} />
@@ -121,7 +135,7 @@ export function FavoritesTab() {
 
       {localOrder.length === 0 && (
         <div className="text-center py-8 text-sm text-slate-400">
-          Aucun favori sélectionné — utilisez les étoiles sur les services ou cochez-les ci-dessous.
+          Aucun favori sélectionné — utilisez les étoiles sur les services, variantes ou packs.
         </div>
       )}
 

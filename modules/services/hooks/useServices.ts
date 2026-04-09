@@ -236,7 +236,7 @@ export const useServices = () => {
 
   // Reorder Favorites (via RPC for atomic operation)
   const reorderFavoritesMutation = useMutation({
-    mutationFn: async (items: { type: 'service' | 'variant'; id: string; sortOrder: number }[]) => {
+    mutationFn: async (items: { type: 'service' | 'variant' | 'pack'; id: string; sortOrder: number }[]) => {
       const p_items = items.map(item => ({
         type: item.type,
         id: item.id,
@@ -250,6 +250,7 @@ export const useServices = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
+      queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
       toastOnSuccess('Ordre des favoris enregistré')();
     },
     onError: toastOnError("Impossible de réordonner les favoris"),
@@ -302,7 +303,7 @@ export const useServices = () => {
       updateServiceCategoriesMutation.mutate(payload),
     toggleFavorite: (params: { type: 'service' | 'variant'; id: string; isFavorite: boolean }) =>
       toggleFavoriteMutation.mutate(params),
-    reorderFavorites: (items: { type: 'service' | 'variant'; id: string; sortOrder: number }[]) =>
+    reorderFavorites: (items: { type: 'service' | 'variant' | 'pack'; id: string; sortOrder: number }[]) =>
       reorderFavoritesMutation.mutate(items),
   };
 };
