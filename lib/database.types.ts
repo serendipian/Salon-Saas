@@ -1428,7 +1428,9 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           duration_minutes: number
+          favorite_sort_order: number
           id: string
+          is_favorite: boolean
           name: string
           price: number
           salon_id: string
@@ -1442,7 +1444,9 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           duration_minutes: number
+          favorite_sort_order?: number
           id?: string
+          is_favorite?: boolean
           name: string
           price: number
           salon_id: string
@@ -1456,7 +1460,9 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           duration_minutes?: number
+          favorite_sort_order?: number
           id?: string
+          is_favorite?: boolean
           name?: string
           price?: number
           salon_id?: string
@@ -1503,7 +1509,9 @@ export type Database = {
           created_by: string | null
           deleted_at: string | null
           description: string | null
+          favorite_sort_order: number
           id: string
+          is_favorite: boolean
           name: string
           salon_id: string
           updated_at: string
@@ -1516,7 +1524,9 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           description?: string | null
+          favorite_sort_order?: number
           id?: string
+          is_favorite?: boolean
           name: string
           salon_id: string
           updated_at?: string
@@ -1529,7 +1539,9 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           description?: string | null
+          favorite_sort_order?: number
           id?: string
+          is_favorite?: boolean
           name?: string
           salon_id?: string
           updated_at?: string
@@ -2782,6 +2794,10 @@ export type Database = {
           p_transaction_id: string
         }
         Returns: string
+      }
+      reorder_favorites: {
+        Args: { p_items: Json; p_salon_id: string }
+        Returns: undefined
       }
       revoke_membership: {
         Args: { p_membership_id: string }
