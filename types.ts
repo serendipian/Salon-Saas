@@ -52,6 +52,8 @@ export interface ServiceVariant {
   price: number;
   cost: number; // Internal cost for profit calculation
   additionalCost: number; // Extra material cost (caps, tips, accessories)
+  isFavorite: boolean;
+  favoriteSortOrder: number;
 }
 
 export interface ServiceCategory {
@@ -76,9 +78,15 @@ export interface Service {
   description: string;
   variants: ServiceVariant[];
   active: boolean;
+  isFavorite: boolean;
+  favoriteSortOrder: number;
   price?: number;
   durationMinutes?: number;
 }
+
+export type FavoriteItem =
+  | { type: 'service'; service: Service; sortOrder: number }
+  | { type: 'variant'; variant: ServiceVariant; parentService: Service; sortOrder: number };
 
 export interface ProductSettings {
   lowStockThreshold: number;

@@ -13,6 +13,8 @@ interface ServiceVariantRow {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  is_favorite: boolean;
+  favorite_sort_order: number;
 }
 
 interface ServiceRow {
@@ -27,6 +29,8 @@ interface ServiceRow {
   created_by: string | null;
   updated_by: string | null;
   deleted_at: string | null;
+  is_favorite: boolean;
+  favorite_sort_order: number;
   service_variants?: ServiceVariantRow[];
 }
 
@@ -50,6 +54,8 @@ export function toServiceVariant(row: ServiceVariantRow): ServiceVariant {
     price: row.price,
     cost: row.cost,
     additionalCost: row.additional_cost,
+    isFavorite: row.is_favorite,
+    favoriteSortOrder: row.favorite_sort_order,
   };
 }
 
@@ -63,6 +69,8 @@ export function toService(row: ServiceRow): Service {
       .filter(v => !v.deleted_at)
       .map(toServiceVariant),
     active: row.active,
+    isFavorite: row.is_favorite,
+    favoriteSortOrder: row.favorite_sort_order,
   };
 }
 
