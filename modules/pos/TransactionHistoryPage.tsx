@@ -1,11 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { History, ChevronLeft, ChevronRight, ArrowLeft, Eye, Receipt, Ban, RotateCcw, Search, Scissors, ShoppingBag, CreditCard, TrendingUp, Banknote, Wallet, Smartphone, Gift, FileText, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
-import { useMediaQuery } from '../../context/MediaQueryContext';
 import { formatPrice } from '../../lib/format';
 import { getTransactionStatus, TransactionStatus } from './mappers';
 import { Transaction } from '../../types';
@@ -29,7 +28,7 @@ const toLocalDate = (d: Date) =>
 
 export const TransactionHistoryPage: React.FC = () => {
   const navigate = useNavigate();
-  const { isMobile } = useMediaQuery();
+
   const { role } = useAuth();
   const { can } = usePermissions(role);
   const canVoid = can('void', 'pos');
@@ -100,8 +99,19 @@ export const TransactionHistoryPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'voided' | 'refunded'>('all');
   const [paymentFilter, setPaymentFilter] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'time' | 'amount' | 'client' | 'items'>('time');
+  const [sortBy, setSortBy] = useState<'time' | 'amount'>('time');
+  const [sortOpen, setSortOpen] = useState(false);
   const [sortDesc, setSortDesc] = useState(true);
+  const sortRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!sortOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setSortOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [sortOpen]);
 
   // Filter by selected date
   const filteredTransactions = React.useMemo(() => {
@@ -189,12 +199,6 @@ export const TransactionHistoryPage: React.FC = () => {
       switch (sortBy) {
         case 'time': return dir * (new Date(ta.date).getTime() - new Date(tb.date).getTime());
         case 'amount': return dir * (ta.total - tb.total);
-        case 'client': {
-          const na = ta.clientName?.toLowerCase() || '\uffff';
-          const nb = tb.clientName?.toLowerCase() || '\uffff';
-          return dir * na.localeCompare(nb);
-        }
-        case 'items': return dir * (ta.items.length - tb.items.length);
         default: return 0;
       }
     });
@@ -327,7 +331,7 @@ export const TransactionHistoryPage: React.FC = () => {
 
       {/* Stat Cards */}
       {dailySummary && (
-        <div className={`grid gap-3 ${isMobile ? 'grid-cols-2' : 'grid-cols-4'}`}>
+        <div className="grid gap-3 grid-cols-4">
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
             <div className="flex items-center gap-2 text-slate-400 mb-1">
               <TrendingUp size={14} />
@@ -359,176 +363,102 @@ export const TransactionHistoryPage: React.FC = () => {
         </div>
       )}
 
+      {/* Search, Filter & Sort Bar */}
+      {filteredTransactions.length > 0 && (
+        <div className="flex gap-2 items-center">
+          {/* Search input */}
+          <div className="relative flex-shrink-0" style={{ width: 260 }}>
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Rechercher..."
+              className="w-full pl-8 pr-3 h-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            />
+          </div>
+          {/* Filter pills */}
+          <div className="flex gap-1.5 flex-wrap">
+            {/* Status pills */}
+            {(['all', 'voided', 'refunded'] as const).map(f => {
+              const labels = { all: 'Tous', voided: 'Annulés', refunded: 'Remboursés' };
+              const icons = { all: History, voided: Ban, refunded: RotateCcw };
+              const count = statusCounts[f];
+              const isActive = statusFilter === f;
+              const Icon = icons[f];
+              return (
+                <button
+                  key={f}
+                  onClick={() => setStatusFilter(f)}
+                  className={`h-8 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                >
+                  <Icon size={12} />
+                  {labels[f]}
+                  <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
+                </button>
+              );
+            })}
+            {/* Separator */}
+            <div className="w-px h-8 bg-slate-200 flex-shrink-0" />
+            {/* Payment method pills */}
+            {ALL_PAYMENT_METHODS.map(method => {
+              const isActive = paymentFilter === method;
+              const count = paymentCounts.get(method) || 0;
+              const Icon = PAYMENT_ICONS[method] || CreditCard;
+              return (
+                <button
+                  key={method}
+                  onClick={() => setPaymentFilter(isActive ? null : method)}
+                  className={`h-8 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                >
+                  <Icon size={12} />
+                  {PAYMENT_METHOD_SHORT[method] || method}
+                  <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+          {/* Sort dropdown — right-aligned */}
+          <div ref={sortRef} className="ml-auto flex-shrink-0 relative">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setSortOpen(!sortOpen)}
+                className="h-8 px-3 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+              >
+                <ArrowUpDown size={12} />
+                {{ time: 'Heure', amount: 'Montant' }[sortBy]}
+              </button>
+              <button
+                onClick={() => setSortDesc(!sortDesc)}
+                className="h-8 w-8 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex items-center justify-center"
+                title={sortDesc ? 'Décroissant' : 'Croissant'}
+              >
+                {sortDesc ? <ArrowDown size={12} /> : <ArrowUp size={12} />}
+              </button>
+            </div>
+            {sortOpen && (
+              <div className="absolute right-0 top-full mt-1 bg-white rounded-lg border border-slate-200 shadow-lg py-1 z-10 min-w-[120px]">
+                {([['time', 'Heure'], ['amount', 'Montant']] as const).map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => { setSortBy(key); setSortOpen(false); }}
+                    className={`w-full text-left px-3 py-1.5 text-xs transition-colors ${sortBy === key ? 'bg-blue-50 text-blue-600 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Transaction List Card */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-
-        {filteredTransactions.length > 0 && (
-          <div className="px-4 pt-4 pb-3 border-b border-slate-100">
-            <div className={`flex gap-2 ${isMobile ? 'flex-col' : 'items-center'}`}>
-              {/* Search input */}
-              <div className="relative flex-shrink-0" style={isMobile ? undefined : { width: 260 }}>
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  placeholder="Rechercher..."
-                  className="w-full pl-8 pr-3 h-8 rounded-lg bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                />
-              </div>
-              {/* Filter pills — same row as search */}
-              <div className={`flex gap-1.5 ${isMobile ? 'overflow-x-auto flex-nowrap pb-1' : 'flex-wrap'}`}>
-                {/* Status pills */}
-                {(['all', 'voided', 'refunded'] as const).map(f => {
-                  const labels = { all: 'Tous', voided: 'Annulés', refunded: 'Remboursés' };
-                  const icons = { all: History, voided: Ban, refunded: RotateCcw };
-                  const count = statusCounts[f];
-                  const isActive = statusFilter === f;
-                  const Icon = icons[f];
-                  return (
-                    <button
-                      key={f}
-                      onClick={() => setStatusFilter(f)}
-                      className={`h-8 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                    >
-                      <Icon size={12} />
-                      {labels[f]}
-                      <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
-                    </button>
-                  );
-                })}
-                {/* Separator */}
-                <div className="w-px h-8 bg-slate-200 flex-shrink-0" />
-                {/* Payment method pills — all methods always shown */}
-                {ALL_PAYMENT_METHODS.map(method => {
-                  const isActive = paymentFilter === method;
-                  const count = paymentCounts.get(method) || 0;
-                  const Icon = PAYMENT_ICONS[method] || CreditCard;
-                  return (
-                    <button
-                      key={method}
-                      onClick={() => setPaymentFilter(isActive ? null : method)}
-                      className={`h-8 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                    >
-                      <Icon size={12} />
-                      {PAYMENT_METHOD_SHORT[method] || method}
-                      <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              {/* Sort button — right-aligned */}
-              {!isMobile && (
-                <div className="ml-auto flex-shrink-0 relative group/sort">
-                  <button
-                    className="h-8 px-3 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
-                    onClick={() => {
-                      const fields: Array<'time' | 'amount' | 'client' | 'items'> = ['time', 'amount', 'client', 'items'];
-                      const idx = fields.indexOf(sortBy);
-                      if (sortDesc) {
-                        setSortDesc(false);
-                      } else {
-                        setSortBy(fields[(idx + 1) % fields.length]);
-                        setSortDesc(true);
-                      }
-                    }}
-                  >
-                    {sortDesc ? <ArrowDown size={12} /> : <ArrowUp size={12} />}
-                    {{ time: 'Heure', amount: 'Montant', client: 'Client', items: 'Prestations' }[sortBy]}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {filteredTransactions.length === 0 ? (
           <div className="p-12 text-center">
             <History size={36} className="mx-auto mb-4 text-slate-300" />
             <p className="text-slate-400">Aucune transaction enregistrée.</p>
-          </div>
-        ) : isMobile ? (
-          /* Mobile: card layout */
-          <div className="divide-y divide-slate-100">
-            {displayedTransactions.map(({ parent: trx, children }) => {
-              const status = getTransactionStatus(trx, transactions);
-              const isVoided = status === 'voided';
-              const showVoid = canVoid && trx.type === 'SALE' && status === 'active' && isToday(trx.date);
-              const showRefund = canRefund && trx.type === 'SALE' && status !== 'voided' && status !== 'fully_refunded';
-              return (
-              <div key={trx.id}>
-              <div className={`w-full text-left px-4 py-4 ${isVoided ? 'opacity-60' : ''}`}>
-                <button
-                  type="button"
-                  onClick={() => setDetailTransaction(trx)}
-                  className="w-full text-left focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus:outline-none"
-                  aria-label={`Détails transaction ${trx.clientName || 'Client de passage'}, ${formatPrice(trx.total)}`}
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <div className={`font-semibold text-slate-900 text-sm ${isVoided ? 'line-through' : ''}`}>
-                        {trx.clientName || <span className="text-slate-400 italic">Client de passage</span>}
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-slate-500">
-                          {new Date(trx.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                        {statusBadge(status, trx)}
-                      </div>
-                    </div>
-                    <span className={`font-bold ${trx.total < 0 ? 'text-red-600' : 'text-slate-900'}`}>{formatPrice(trx.total)}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {getStaffNames(trx).map(name => (
-                      <span key={name} className={TAG}>{name}</span>
-                    ))}
-                    {trx.items.map((item, idx) => (
-                      <span key={idx} className={SERVICE_TAG}>{itemLabel(item)}</span>
-                    ))}
-                    {trx.payments.map((p, idx) => (
-                      <span key={idx} className="text-xs font-medium bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded border border-emerald-100">{PAYMENT_METHOD_SHORT[p.method] || p.method}</span>
-                    ))}
-                  </div>
-                </button>
-                <div className="flex justify-end mt-2 pt-2 border-t border-slate-100 gap-2">
-                  {showVoid && (
-                    <button type="button" onClick={() => setVoidTarget(trx)} className="p-2 text-red-400 hover:text-red-600 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Annuler">
-                      <Ban size={16} />
-                    </button>
-                  )}
-                  {showRefund && (
-                    <button type="button" onClick={() => setRefundTarget(trx)} className="p-2 text-orange-400 hover:text-orange-600 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Rembourser">
-                      <RotateCcw size={16} />
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setReceiptTransaction(trx)}
-                    className="p-2 text-slate-400 hover:text-slate-900 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                    aria-label="Ticket de caisse"
-                  >
-                    <Receipt size={16} />
-                  </button>
-                </div>
-              </div>
-              {children.map(child => (
-                <button
-                  key={child.id}
-                  type="button"
-                  onClick={() => setDetailTransaction(child)}
-                  className="w-full text-left ml-4 mt-1 bg-slate-50 rounded-lg border border-slate-100 px-3 py-2 flex justify-between items-center"
-                >
-                  <div className="flex items-center gap-2">
-                    {child.type === 'VOID' ? <Ban size={12} className="text-red-500" /> : <RotateCcw size={12} className="text-orange-500" />}
-                    {statusBadge('active', child)}
-                    <span className="text-xs text-slate-500">{new Date(child.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  </div>
-                  <span className="font-semibold text-sm text-red-600">{formatPrice(child.total)}</span>
-                </button>
-              ))}
-              </div>
-              );
-            })}
           </div>
         ) : (
           /* Desktop: table layout */
