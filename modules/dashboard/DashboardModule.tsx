@@ -216,6 +216,9 @@ export const DashboardModule: React.FC = () => {
     // Current Metrics
     const revenue = data.current.transactions.reduce((sum, t) => sum + t.total, 0);
     const saleCount = data.current.transactions.filter(t => t.type === 'SALE').length;
+    const prestationCount = data.current.transactions
+      .filter(t => t.type === 'SALE')
+      .reduce((sum, t) => sum + t.items.filter(i => i.type === 'SERVICE').reduce((s, i) => s + i.quantity, 0), 0);
     const totalAppts = data.current.appointments.length;
     const newClientsCount = data.current.newClients.length;
     const avgBasket = saleCount > 0 ? revenue / saleCount : 0;
@@ -247,6 +250,7 @@ export const DashboardModule: React.FC = () => {
 
       saleCount,
       saleCountTrend: calcTrend(saleCount, prevSaleCount),
+      prestationCount,
 
       transactionCount: data.current.transactions.length,
       transactionCountTrend: calcTrend(data.current.transactions.length, data.previous.transactions.length),
@@ -535,7 +539,7 @@ export const DashboardModule: React.FC = () => {
               onClick={() => navigate('/historique')}
               className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0"
             >
-              {stats.transactionCount} prestation{stats.transactionCount !== 1 ? 's' : ''}
+              {stats.prestationCount} prestation{stats.prestationCount !== 1 ? 's' : ''}
               <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
                 <ChevronRight size={14} />
               </div>
