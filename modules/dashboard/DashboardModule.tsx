@@ -573,8 +573,8 @@ export const DashboardModule: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start mb-1">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
-                <Receipt size={16} className="text-amber-500" />
+              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                <Receipt size={16} className="text-blue-500" />
               </div>
               <h3 className="text-sm font-semibold text-slate-500">Dépenses</h3>
             </div>
@@ -582,7 +582,10 @@ export const DashboardModule: React.FC = () => {
               onClick={() => navigate('/finances/depenses')}
               className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0"
             >
-              {expenseStats.count} dépense{expenseStats.count !== 1 ? 's' : ''} <ChevronRight size={12} />
+              {expenseStats.count} dépense{expenseStats.count !== 1 ? 's' : ''}
+              <div className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
+                <ChevronRight size={12} />
+              </div>
             </button>
           </div>
           <div className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(expenseStats.total)}</div>
@@ -644,8 +647,8 @@ export const DashboardModule: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start mb-1">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center shrink-0">
-                <Gift size={16} className="text-purple-500" />
+              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                <Gift size={16} className="text-blue-500" />
               </div>
               <h3 className="text-sm font-semibold text-slate-500">Bonus</h3>
             </div>
@@ -704,8 +707,8 @@ export const DashboardModule: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start mb-1">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                <TrendingUp size={16} className="text-emerald-500" />
+              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                <TrendingUp size={16} className="text-blue-500" />
               </div>
               <h3 className="text-sm font-semibold text-slate-500">Résultat Net</h3>
             </div>

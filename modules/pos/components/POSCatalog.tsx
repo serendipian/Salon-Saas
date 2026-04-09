@@ -27,6 +27,13 @@ interface POSCatalogProps {
   onAddToCart: (item: import('../../../types').CartItem) => void;
 }
 
+// Extract a vibrant accent color (e.g. bg-rose-500) from category color classes like "bg-rose-100 text-rose-800 border-rose-200"
+const getAccentColor = (colorClasses?: string): string => {
+  if (!colorClasses) return 'bg-slate-400';
+  const match = colorClasses.match(/bg-(\w+)-\d+/);
+  return match ? `bg-${match[1]}-500` : 'bg-slate-400';
+};
+
 export const POSCatalog: React.FC<POSCatalogProps> = ({
   viewMode, setViewMode,
   searchTerm, setSearchTerm,
@@ -125,7 +132,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                  className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border shrink-0 overflow-hidden relative ${selectedCategory === cat.id ? 'bg-slate-200 text-slate-900 border-slate-300' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
                  style={{ scrollSnapAlign: 'start' }}
                >
-                 <div className={`absolute left-0 top-0 w-1 h-full ${cat.color.split(' ')[0] || 'bg-slate-200'}`} />
+                 <div className={`absolute left-0 top-0 w-1 h-full ${getAccentColor(cat.color)}`} />
                  {viewMode === 'SERVICES' && <CategoryIcon categoryName={cat.name} iconName={(cat as ServiceCategory).icon} size={14} />}
                  {cat.name}
                </button>
@@ -161,7 +168,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                     }}
                     className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all text-left flex flex-col h-40 group relative overflow-hidden"
                   >
-                    <div className={`absolute top-0 left-0 w-1 h-full ${category?.color.split(' ')[0] || 'bg-slate-200'}`} />
+                    <div className={`absolute top-0 left-0 w-1 h-full ${getAccentColor(category?.color)}`} />
                     <div className="flex-1">
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
                         <CategoryIcon categoryName={category?.name || ''} iconName={category?.icon} size={10} />
@@ -194,7 +201,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                   onClick={() => onServiceClick(service)}
                   className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all text-left flex flex-col h-40 group relative overflow-hidden"
                 >
-                  <div className={`absolute top-0 left-0 w-1 h-full ${category?.color.split(' ')[0] || 'bg-slate-200'}`} />
+                  <div className={`absolute top-0 left-0 w-1 h-full ${getAccentColor(category?.color)}`} />
                   <div className="flex-1">
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
                       <CategoryIcon categoryName={category?.name || ''} iconName={category?.icon} size={10} />
@@ -238,7 +245,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                    onClick={() => isService ? onServiceClick(item as Service) : onProductClick(item as Product)}
                    className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all text-left flex flex-col h-40 group relative overflow-hidden"
                  >
-                   <div className={`absolute top-0 left-0 w-1 h-full ${category?.color.split(' ')[0] || 'bg-slate-200'}`} />
+                   <div className={`absolute top-0 left-0 w-1 h-full ${getAccentColor(category?.color)}`} />
 
                    <div className="flex-1">
                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
