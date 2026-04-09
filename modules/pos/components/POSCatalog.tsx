@@ -130,7 +130,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                  onClick={() => setSelectedCategory('FAVORITES')}
                  className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border shrink-0 ${
                    selectedCategory === 'FAVORITES'
-                     ? 'bg-amber-500 text-white border-amber-500'
+                     ? 'bg-yellow-600 text-white border-yellow-600'
                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                  }`}
                  style={{ scrollSnapAlign: 'start' }}
