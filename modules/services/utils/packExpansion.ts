@@ -62,3 +62,16 @@ export function getPackDiscount(pack: Pack): number {
   if (totalOriginal === 0) return 0;
   return Math.round(((totalOriginal - pack.price) / totalOriginal) * 100);
 }
+
+/**
+ * Formats pack item count for UI display.
+ * - All unique: "3 prestations"
+ * - Duplicates present: "2 services (3 prestations)"
+ */
+export function formatPackItemCount(pack: Pack): string {
+  const total = pack.items.length;
+  const unique = new Set(pack.items.map((i) => i.serviceVariantId)).size;
+  const prestationLabel = `${total} prestation${total !== 1 ? 's' : ''}`;
+  if (unique === total) return prestationLabel;
+  return `${unique} service${unique !== 1 ? 's' : ''} (${prestationLabel})`;
+}

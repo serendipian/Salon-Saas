@@ -2,7 +2,7 @@
 import React from 'react';
 import { Search, Scissors, ShoppingBag, Plus, Calendar, Star, Package } from 'lucide-react';
 import { Service, Product, ServiceCategory, ProductCategory, Appointment, FavoriteItem, Pack } from '../../../types';
-import { getPackDiscount } from '../../services/utils/packExpansion';
+import { getPackDiscount, formatPackItemCount } from '../../services/utils/packExpansion';
 import { PendingAppointments } from './PendingAppointments';
 import { POSViewMode } from '../hooks/usePOS';
 import { formatPrice } from '../../../lib/format';
@@ -205,7 +205,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                         {pack.name}
                       </h3>
                       <span className="text-xs text-slate-400">
-                        {pack.items.length} service{pack.items.length !== 1 ? 's' : ''}
+                        {formatPackItemCount(pack)}
                       </span>
                     </div>
                     <div className="mt-auto flex justify-between items-end">
@@ -315,7 +315,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                       {pack.name}
                     </h3>
                     <span className="text-xs text-slate-400">
-                      {pack.items.length} service{pack.items.length !== 1 ? 's' : ''}
+                      {formatPackItemCount(pack)}
                     </span>
                   </div>
                   <div className="mt-auto flex justify-between items-end">

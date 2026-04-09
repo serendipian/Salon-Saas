@@ -3,7 +3,7 @@ import { Check, Star, Package } from 'lucide-react';
 import type { Service, ServiceCategory, FavoriteItem, Pack } from '../../../types';
 import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
-import { getPackDiscount } from '../../services/utils/packExpansion';
+import { getPackDiscount, formatPackItemCount } from '../../services/utils/packExpansion';
 
 interface MobileServicePickerProps {
   services: Service[];
@@ -151,7 +151,7 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
                 <div className="text-left">
                   <div className="text-sm font-medium text-slate-900">{pack.name}</div>
                   <div className="text-xs text-slate-500 mt-0.5">
-                    {pack.items.length} service{pack.items.length !== 1 ? 's' : ''}
+                    {formatPackItemCount(pack)}
                     {discount > 0 && ` · -${discount}%`}
                   </div>
                 </div>
@@ -184,7 +184,7 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
                   <div className="text-left">
                     <div className="text-sm font-medium text-slate-900">{pack.name}</div>
                     <div className="text-xs text-slate-500 mt-0.5">
-                      {pack.items.length} service{pack.items.length !== 1 ? 's' : ''}
+                      {formatPackItemCount(pack)}
                       {discount > 0 && ` · -${discount}%`}
                     </div>
                   </div>

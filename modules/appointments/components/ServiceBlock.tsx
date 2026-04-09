@@ -3,7 +3,7 @@ import type { Service, ServiceCategory, StaffMember, FavoriteItem, Pack } from '
 import type { ServiceBlockState } from '../../../types';
 import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
-import { getPackDiscount } from '../../services/utils/packExpansion';
+import { getPackDiscount, formatPackItemCount } from '../../services/utils/packExpansion';
 import ServiceGrid from './ServiceGrid';
 import StaffPills from './StaffPills';
 import { X, Clock, Calendar, Star, Package } from 'lucide-react';
@@ -264,7 +264,7 @@ export default function ServiceBlock({
                 }`}
               >
                 <div className="text-xs text-emerald-600 font-medium mb-1">
-                  {pack.items.length} service{pack.items.length !== 1 ? 's' : ''}
+                  {formatPackItemCount(pack)}
                   {discount > 0 && ` · -${discount}%`}
                 </div>
                 <div className="text-sm font-medium text-slate-900 truncate">{pack.name}</div>

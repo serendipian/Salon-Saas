@@ -2,7 +2,7 @@ import React from 'react';
 import { Plus, Package, AlertTriangle, Star, Trash2, Edit3 } from 'lucide-react';
 import type { Pack } from '../../../types';
 import { formatPrice } from '../../../lib/format';
-import { isPackValid, getPackDiscount } from '../utils/packExpansion';
+import { isPackValid, getPackDiscount, formatPackItemCount } from '../utils/packExpansion';
 
 interface PackListProps {
   packs: Pack[];
@@ -74,7 +74,7 @@ export const PackList: React.FC<PackListProps> = ({
                       )}
                     </div>
                     <p className="text-sm text-slate-500">
-                      {pack.items.length} service{pack.items.length !== 1 ? 's' : ''} · {formatPrice(totalOriginal)} → <span className="font-semibold text-slate-800">{formatPrice(pack.price)}</span>
+                      {formatPackItemCount(pack)} · {formatPrice(totalOriginal)} → <span className="font-semibold text-slate-800">{formatPrice(pack.price)}</span>
                     </p>
                     {pack.description && (
                       <p className="text-xs text-slate-400 mt-1 truncate">{pack.description}</p>
