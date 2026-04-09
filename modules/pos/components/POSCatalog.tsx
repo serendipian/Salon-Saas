@@ -27,11 +27,12 @@ interface POSCatalogProps {
   onAddToCart: (item: import('../../../types').CartItem) => void;
 }
 
-// Extract a vibrant accent color (e.g. bg-rose-500) from category color classes like "bg-rose-100 text-rose-800 border-rose-200"
+// Convert the text-{color}-{shade} from category color classes into a bg- class for accent bars
+// e.g. "bg-rose-100 text-rose-800 border-rose-200" → "bg-rose-800"
 const getAccentColor = (colorClasses?: string): string => {
   if (!colorClasses) return 'bg-slate-400';
-  const match = colorClasses.match(/bg-(\w+)-\d+/);
-  return match ? `bg-${match[1]}-500` : 'bg-slate-400';
+  const match = colorClasses.match(/text-(\w+-\d+)/);
+  return match ? `bg-${match[1]}` : 'bg-slate-400';
 };
 
 export const POSCatalog: React.FC<POSCatalogProps> = ({
