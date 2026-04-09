@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Layers, Settings, Star } from 'lucide-react';
+import { ArrowLeft, Layers, Package, Settings, Star } from 'lucide-react';
 import { CategoriesTab } from './components/CategoriesTab';
 import { GeneralTab } from './components/GeneralTab';
 import { FavoritesTab } from './components/FavoritesTab';
+import { PacksTab } from './components/PacksTab';
 
-type Tab = 'favorites' | 'categories' | 'general';
+type Tab = 'favorites' | 'packs' | 'categories' | 'general';
 
 export function ServiceSettingsPage() {
   const navigate = useNavigate();
@@ -40,6 +41,17 @@ export function ServiceSettingsPage() {
             Favoris
           </button>
           <button
+            onClick={() => setActiveTab('packs')}
+            className={`inline-flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'packs'
+                ? 'border-slate-900 text-slate-900'
+                : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Package size={16} />
+            Packs
+          </button>
+          <button
             onClick={() => setActiveTab('categories')}
             className={`inline-flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'categories'
@@ -66,6 +78,7 @@ export function ServiceSettingsPage() {
 
       {/* Tab content */}
       {activeTab === 'favorites' && <FavoritesTab />}
+      {activeTab === 'packs' && <PacksTab />}
       {activeTab === 'categories' && <CategoriesTab />}
       {activeTab === 'general' && <GeneralTab />}
     </div>
