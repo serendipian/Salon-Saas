@@ -583,8 +583,8 @@ export const DashboardModule: React.FC = () => {
               className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0"
             >
               {expenseStats.count} dépense{expenseStats.count !== 1 ? 's' : ''}
-              <div className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
-                <ChevronRight size={12} />
+              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                <ChevronRight size={14} />
               </div>
             </button>
           </div>
@@ -656,9 +656,9 @@ export const DashboardModule: React.FC = () => {
               onClick={() => navigate('/team')}
               className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0"
             >
-              Voir l'équipe
-              <div className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
-                <ChevronRight size={12} />
+              Détails
+              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                <ChevronRight size={14} />
               </div>
             </button>
           </div>
@@ -719,9 +719,9 @@ export const DashboardModule: React.FC = () => {
               onClick={() => navigate('/finances')}
               className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0"
             >
-              Comptabilité
-              <div className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
-                <ChevronRight size={12} />
+              Détails
+              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                <ChevronRight size={14} />
               </div>
             </button>
           </div>
