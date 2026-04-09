@@ -460,14 +460,14 @@ export const TransactionHistoryPage: React.FC = () => {
         ) : (
           /* Desktop: table layout */
           <table className="w-full text-left">
-            <thead className="border-b border-slate-100">
-              <tr>
-                <th className="px-6 py-3 text-xs text-slate-400 font-normal">Heure</th>
-                <th className="px-6 py-3 text-xs text-slate-400 font-normal">Client</th>
-                <th className="px-6 py-3 text-xs text-slate-400 font-normal">Styliste</th>
-                <th className="px-6 py-3 text-xs text-slate-400 font-normal">Détails</th>
-                <th className="px-6 py-3 text-xs text-slate-400 font-normal text-right">Total</th>
-                <th className="px-6 py-3 text-xs text-slate-400 font-normal">Paiement</th>
+            <thead>
+              <tr className="border-b-2 border-slate-200 bg-slate-50">
+                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Heure</th>
+                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Client</th>
+                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Styliste</th>
+                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Détails</th>
+                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider text-right">Total</th>
+                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Paiement</th>
                 <th className="px-6 py-3"></th>
               </tr>
             </thead>
@@ -479,7 +479,7 @@ export const TransactionHistoryPage: React.FC = () => {
                 const showRefund = canRefund && status !== 'voided' && status !== 'fully_refunded';
                 return (
                 <React.Fragment key={trx.id}>
-                <tr className={`transition-colors ${idx % 2 === 1 ? 'bg-slate-50/60' : ''} hover:bg-slate-100/60 ${isVoided ? 'opacity-60' : ''}`}>
+                <tr className={`transition-colors ${idx % 2 === 1 ? 'bg-slate-100/50' : ''} hover:bg-slate-100/70 ${isVoided ? 'opacity-60' : ''}`}>
                   <td className="px-6 py-5 font-medium text-slate-700">
                     {new Date(trx.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </td>
@@ -512,9 +512,12 @@ export const TransactionHistoryPage: React.FC = () => {
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex flex-wrap gap-1">
-                      {trx.payments.map((p, idx) => (
-                        <span key={idx} className={TAG}>{PAYMENT_METHOD_SHORT[p.method] || p.method}</span>
-                      ))}
+                      {trx.payments.map((p, idx) => {
+                        const PIcon = PAYMENT_ICONS[p.method] || CreditCard;
+                        return (
+                          <span key={idx} className={TAG + ' flex items-center gap-1'}><PIcon size={11} />{PAYMENT_METHOD_SHORT[p.method] || p.method}</span>
+                        );
+                      })}
                     </div>
                   </td>
                   <td className="px-6 py-5 text-right">
