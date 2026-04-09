@@ -130,7 +130,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                  onClick={() => setSelectedCategory('FAVORITES')}
                  className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border shrink-0 ${
                    selectedCategory === 'FAVORITES'
-                     ? 'bg-yellow-600 text-white border-yellow-600'
+                     ? 'bg-amber-400 text-slate-900 border-amber-400'
                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                  }`}
                  style={{ scrollSnapAlign: 'start' }}
@@ -141,9 +141,10 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
              )}
              <button
                onClick={() => setSelectedCategory('ALL')}
-               className={`px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border shrink-0 ${selectedCategory === 'ALL' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+               className={`flex items-center px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border shrink-0 overflow-hidden relative ${selectedCategory === 'ALL' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
                style={{ scrollSnapAlign: 'start' }}
              >
+               <div className="absolute left-0 top-0 w-1 h-full bg-slate-900" />
                Tout
              </button>
              {(viewMode === 'SERVICES' ? serviceCategories : productCategories).map(cat => (
