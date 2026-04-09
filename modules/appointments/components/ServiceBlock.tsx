@@ -228,6 +228,7 @@ export default function ServiceBlock({
         <ServiceGrid
           services={filteredServices}
           favorites={activeCategoryId === 'FAVORITES' ? favorites : []}
+          categories={categories}
           selectedServiceId={block.serviceId}
           selectedVariantId={block.variantId}
           onSelectService={handleServiceSelect}
