@@ -25,7 +25,6 @@ export function usePacks() {
         .from('packs')
         .select('*, pack_items(*, services(name), service_variants(name, price, duration_minutes, deleted_at))')
         .eq('salon_id', salonId)
-        .is('deleted_at', null)
         .order('sort_order');
 
       if (error) throw error;
@@ -152,46 +151,22 @@ export function usePacks() {
     onError: toastOnError('Erreur lors de la mise à jour'),
   });
 
+  // Toggle Favorite — delegates to the toggle_favorite RPC so the next sort
+  // order is computed atomically across services, variants, and packs.
   const toggleFavoriteMutation = useMutation({
     mutationFn: async ({ packId, isFavorite }: { packId: string; isFavorite: boolean }) => {
       if (!salonId) throw new Error('No salon');
-
-      if (!isFavorite) {
-        const { error } = await supabase
-          .from('packs')
-          .update({ is_favorite: false, favorite_sort_order: null })
-          .eq('id', packId)
-          .eq('salon_id', salonId);
-        if (error) throw error;
-        return;
-      }
-
-      // Atomic: compute next sort order and set in one query via RPC-style raw SQL
-      // Fallback: read-then-write but with optimistic locking via the update filter
-      const { data: maxPack } = await supabase
-        .from('packs')
-        .select('favorite_sort_order')
-        .eq('salon_id', salonId)
-        .eq('is_favorite', true)
-        .order('favorite_sort_order', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      const favoriteOrder = (maxPack?.favorite_sort_order ?? 0) + 1;
-
-      const { error } = await supabase
-        .from('packs')
-        .update({
-          is_favorite: true,
-          favorite_sort_order: favoriteOrder,
-        })
-        .eq('id', packId)
-        .eq('salon_id', salonId);
-
+      const { error } = await supabase.rpc('toggle_favorite', {
+        p_salon_id: salonId,
+        p_type: 'pack',
+        p_id: packId,
+        p_is_favorite: isFavorite,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
+      queryClient.invalidateQueries({ queryKey: ['services', salonId] });
     },
     onError: toastOnError('Erreur lors de la mise à jour'),
   });

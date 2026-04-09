@@ -2986,6 +2986,15 @@ export type Database = {
         Args: { p_service_id: string }
         Returns: undefined
       }
+      toggle_favorite: {
+        Args: {
+          p_id: string
+          p_is_favorite: boolean
+          p_salon_id: string
+          p_type: string
+        }
+        Returns: undefined
+      }
       transfer_ownership: {
         Args: { p_new_owner_id: string; p_salon_id: string }
         Returns: undefined

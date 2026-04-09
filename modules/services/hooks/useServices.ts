@@ -201,35 +201,21 @@ export const useServices = () => {
     onError: toastOnError("Impossible de modifier les catégories de services"),
   });
 
-  // Toggle Favorite
+  // Toggle Favorite — delegates to the toggle_favorite RPC so the next sort
+  // order is computed atomically across services, variants, and packs.
   const toggleFavoriteMutation = useMutation({
     mutationFn: async ({ type, id, isFavorite }: { type: 'service' | 'variant'; id: string; isFavorite: boolean }) => {
-      const table = type === 'service' ? 'services' : 'service_variants';
-
-      let sortOrder = 0;
-      if (isFavorite) {
-        let maxOrder = 0;
-        for (const s of services) {
-          if (s.isFavorite) maxOrder = Math.max(maxOrder, s.favoriteSortOrder);
-          for (const v of s.variants) {
-            if (v.isFavorite) maxOrder = Math.max(maxOrder, v.favoriteSortOrder);
-          }
-        }
-        sortOrder = maxOrder + 1;
-      }
-
-      const { error } = await supabase
-        .from(table)
-        .update({
-          is_favorite: isFavorite,
-          favorite_sort_order: isFavorite ? sortOrder : 0,
-        })
-        .eq('id', id)
-        .eq('salon_id', salonId);
+      const { error } = await supabase.rpc('toggle_favorite', {
+        p_salon_id: salonId,
+        p_type: type,
+        p_id: id,
+        p_is_favorite: isFavorite,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
+      queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
     },
     onError: toastOnError('Impossible de modifier le favori'),
   });
