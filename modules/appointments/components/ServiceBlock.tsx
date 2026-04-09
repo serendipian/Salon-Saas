@@ -41,9 +41,17 @@ export default function ServiceBlock({
   onAddPackBlocks,
   stepOffset = 0,
 }: ServiceBlockProps) {
-  const [activeCategoryId, setActiveCategoryId] = useState<string>(
-    favorites.length > 0 ? 'FAVORITES' : block.categoryId || categories[0]?.id || ''
-  );
+  const [activeCategoryId, setActiveCategoryId] = useState<string>(() => {
+    // If the block already has a service selected (e.g. from a pack or during edit),
+    // open the tab matching that service's category so the selection stays visible.
+    if (block.serviceId) {
+      const svc = services.find((s) => s.id === block.serviceId);
+      if (svc?.categoryId) return svc.categoryId;
+    }
+    if (block.categoryId) return block.categoryId;
+    if (favorites.length > 0) return 'FAVORITES';
+    return categories[0]?.id || '';
+  });
 
   const filteredServices = useMemo(
     () => activeCategoryId === 'FAVORITES'
