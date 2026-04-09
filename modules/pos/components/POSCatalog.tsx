@@ -6,6 +6,7 @@ import { PendingAppointments } from './PendingAppointments';
 import { POSViewMode } from '../hooks/usePOS';
 import { formatPrice } from '../../../lib/format';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { CategoryIcon } from '../../../lib/categoryIcons';
 
 interface POSCatalogProps {
   viewMode: POSViewMode;
@@ -99,20 +100,20 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
              {viewMode === 'SERVICES' && favorites.length > 0 && (
                <button
                  onClick={() => setSelectedCategory('FAVORITES')}
-                 className={`flex items-center gap-1.5 px-4 ${isMobile ? 'py-2' : 'py-1.5'} rounded-lg text-xs font-medium whitespace-nowrap transition-colors border shrink-0 ${
+                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border shrink-0 ${
                    selectedCategory === 'FAVORITES'
                      ? 'bg-amber-500 text-white border-amber-500'
                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                  }`}
                  style={{ scrollSnapAlign: 'start' }}
                >
-                 <Star size={12} className={selectedCategory === 'FAVORITES' ? 'fill-white' : ''} />
+                 <Star size={14} className={selectedCategory === 'FAVORITES' ? 'fill-white' : ''} />
                  Favoris
                </button>
              )}
              <button
                onClick={() => setSelectedCategory('ALL')}
-               className={`px-4 ${isMobile ? 'py-2' : 'py-1.5'} rounded-lg text-xs font-medium whitespace-nowrap transition-colors border shrink-0 ${selectedCategory === 'ALL' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+               className={`px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border shrink-0 ${selectedCategory === 'ALL' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
                style={{ scrollSnapAlign: 'start' }}
              >
                Tout
@@ -121,9 +122,11 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                <button
                  key={cat.id}
                  onClick={() => setSelectedCategory(cat.id)}
-                 className={`px-4 ${isMobile ? 'py-2' : 'py-1.5'} rounded-lg text-xs font-medium whitespace-nowrap transition-colors border shrink-0 ${selectedCategory === cat.id ? 'bg-slate-200 text-slate-900 border-slate-300' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border shrink-0 overflow-hidden relative ${selectedCategory === cat.id ? 'bg-slate-200 text-slate-900 border-slate-300' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
                  style={{ scrollSnapAlign: 'start' }}
                >
+                 <div className={`absolute left-0 top-0 w-1 h-full ${cat.color.split(' ')[0] || 'bg-slate-200'}`} />
+                 {viewMode === 'SERVICES' && <CategoryIcon categoryName={cat.name} iconName={(cat as ServiceCategory).icon} size={14} />}
                  {cat.name}
                </button>
              ))}
@@ -160,7 +163,8 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                   >
                     <div className={`absolute top-0 left-0 w-1 h-full ${category?.color.split(' ')[0] || 'bg-slate-200'}`} />
                     <div className="flex-1">
-                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
+                        <CategoryIcon categoryName={category?.name || ''} iconName={category?.icon} size={10} />
                         {category?.name || 'General'}
                       </span>
                       <h3 className="font-semibold text-slate-900 leading-tight mb-1 group-hover:text-slate-700 transition-colors line-clamp-2">
@@ -192,7 +196,8 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                 >
                   <div className={`absolute top-0 left-0 w-1 h-full ${category?.color.split(' ')[0] || 'bg-slate-200'}`} />
                   <div className="flex-1">
-                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
+                      <CategoryIcon categoryName={category?.name || ''} iconName={category?.icon} size={10} />
                       {category?.name || 'General'}
                     </span>
                     <h3 className="font-semibold text-slate-900 leading-tight mb-1 group-hover:text-slate-700 transition-colors line-clamp-2">
@@ -236,7 +241,8 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                    <div className={`absolute top-0 left-0 w-1 h-full ${category?.color.split(' ')[0] || 'bg-slate-200'}`} />
 
                    <div className="flex-1">
-                     <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
+                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
+                       {isService && <CategoryIcon categoryName={category?.name || ''} iconName={(category as ServiceCategory)?.icon} size={10} />}
                        {category?.name || 'General'}
                      </span>
                      <h3 className="font-semibold text-slate-900 leading-tight mb-1 group-hover:text-slate-700 transition-colors line-clamp-2">
