@@ -140,6 +140,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
             {/* Favorites view: render all favorites in unified sort order */}
             {selectedCategory === 'FAVORITES' && favorites.map(fav => {
               if (fav.type === 'variant') {
+                const category = serviceCategories.find(c => c.id === fav.parentService.categoryId);
                 return (
                   <button
                     key={`fav-var-${fav.variant.id}`}
@@ -157,10 +158,10 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                     }}
                     className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all text-left flex flex-col h-40 group relative overflow-hidden"
                   >
-                    <div className="absolute top-0 left-0 w-1 h-full bg-amber-400" />
+                    <div className={`absolute top-0 left-0 w-1 h-full ${category?.color.split(' ')[0] || 'bg-slate-200'}`} />
                     <div className="flex-1">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-amber-50 text-amber-600 border-amber-200">
-                        <Star size={9} className="fill-amber-400 text-amber-400" /> Favori
+                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
+                        {category?.name || 'General'}
                       </span>
                       <h3 className="font-semibold text-slate-900 leading-tight mb-1 group-hover:text-slate-700 transition-colors line-clamp-2">
                         {fav.parentService.name}
