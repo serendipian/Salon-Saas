@@ -5,6 +5,7 @@ import { useAppointments } from '../hooks/useAppointments';
 import { useClients } from '../../clients/hooks/useClients';
 import { useServices } from '../../services/hooks/useServices';
 import { useTeam } from '../../team/hooks/useTeam';
+import { usePacks } from '../../services/hooks/usePacks';
 import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
@@ -23,6 +24,7 @@ export const AppointmentEditPage: React.FC = () => {
   const { allClients: clients } = useClients();
   const { allServices: services, serviceCategories, favorites } = useServices();
   const { allStaff: team } = useTeam();
+  const { validPacks } = usePacks();
 
   const selectedAppt = allAppointments.find(a => a.id === id);
 
@@ -127,6 +129,7 @@ export const AppointmentEditPage: React.FC = () => {
     services,
     categories: serviceCategories,
     favorites,
+    packs: validPacks,
     team,
     clients,
     appointments: allAppointments,

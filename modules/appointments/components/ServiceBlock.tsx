@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import type { Service, ServiceCategory, StaffMember, FavoriteItem } from '../../../types';
+import type { Service, ServiceCategory, StaffMember, FavoriteItem, Pack } from '../../../types';
 import type { ServiceBlockState } from '../../../types';
 import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
+import { getPackDiscount } from '../../services/utils/packExpansion';
 import ServiceGrid from './ServiceGrid';
 import StaffPills from './StaffPills';
-import { X, Clock, Calendar, Star } from 'lucide-react';
+import { X, Clock, Calendar, Star, Package } from 'lucide-react';
 
 interface ServiceBlockProps {
   block: ServiceBlockState;
@@ -19,6 +20,8 @@ interface ServiceBlockProps {
   onRemove: () => void;
   onChange: (updates: Partial<ServiceBlockState>) => void;
   summaryText?: string;
+  packs?: Pack[];
+  onAddPackBlocks?: (pack: Pack) => void;
 }
 
 export default function ServiceBlock({
@@ -33,6 +36,8 @@ export default function ServiceBlock({
   onRemove,
   onChange,
   summaryText,
+  packs = [],
+  onAddPackBlocks,
 }: ServiceBlockProps) {
   const [activeCategoryId, setActiveCategoryId] = useState<string>(
     favorites.length > 0 ? 'FAVORITES' : block.categoryId || categories[0]?.id || ''
@@ -181,6 +186,22 @@ export default function ServiceBlock({
             Favoris
           </button>
         )}
+        {packs.length > 0 && (
+          <button
+            type="button"
+            onClick={() => handleCategoryChange('PACKS')}
+            className={`
+              px-3 py-2 text-xs whitespace-nowrap transition-colors flex items-center gap-1.5
+              ${activeCategoryId === 'PACKS'
+                ? 'text-emerald-600 border-b-2 border-emerald-500 -mb-[1px] font-semibold'
+                : 'text-slate-500 hover:text-slate-700'
+              }
+            `}
+          >
+            <Package size={13} />
+            Packs
+          </button>
+        )}
         {categories.map((cat) => (
           <button
             key={cat.id}
@@ -201,14 +222,40 @@ export default function ServiceBlock({
       </div>
 
       {/* Service grid */}
-      <ServiceGrid
-        services={filteredServices}
-        favorites={activeCategoryId === 'FAVORITES' ? favorites : []}
-        selectedServiceId={block.serviceId}
-        selectedVariantId={block.variantId}
-        onSelectService={handleServiceSelect}
-        onSelectVariant={handleVariantSelect}
-      />
+      {activeCategoryId !== 'PACKS' && (
+        <ServiceGrid
+          services={filteredServices}
+          favorites={activeCategoryId === 'FAVORITES' ? favorites : []}
+          selectedServiceId={block.serviceId}
+          selectedVariantId={block.variantId}
+          onSelectService={handleServiceSelect}
+          onSelectVariant={handleVariantSelect}
+        />
+      )}
+
+      {/* Packs grid */}
+      {activeCategoryId === 'PACKS' && (
+        <div className="grid grid-cols-2 gap-2 mt-3">
+          {packs.map((pack) => {
+            const discount = getPackDiscount(pack);
+            return (
+              <button
+                key={pack.id}
+                type="button"
+                onClick={() => onAddPackBlocks?.(pack)}
+                className="bg-white p-3 rounded-lg border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all text-left"
+              >
+                <div className="text-xs text-emerald-600 font-medium mb-1">
+                  {pack.items.length} service{pack.items.length !== 1 ? 's' : ''}
+                  {discount > 0 && ` · -${discount}%`}
+                </div>
+                <div className="text-sm font-medium text-slate-900 truncate">{pack.name}</div>
+                <div className="text-sm font-semibold text-slate-700 mt-1">{formatPrice(pack.price)}</div>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Staff pills (show after service is selected) */}
       {block.serviceId && (

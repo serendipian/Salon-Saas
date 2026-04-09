@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Search, Scissors, ShoppingBag, Plus, Calendar, Star } from 'lucide-react';
-import { Service, Product, ServiceCategory, ProductCategory, Appointment, FavoriteItem } from '../../../types';
+import { Search, Scissors, ShoppingBag, Plus, Calendar, Star, Package } from 'lucide-react';
+import { Service, Product, ServiceCategory, ProductCategory, Appointment, FavoriteItem, Pack } from '../../../types';
+import { getPackDiscount } from '../../services/utils/packExpansion';
 import { PendingAppointments } from './PendingAppointments';
 import { POSViewMode } from '../hooks/usePOS';
 import { formatPrice } from '../../../lib/format';
@@ -25,6 +26,8 @@ interface POSCatalogProps {
   linkedAppointmentId: string | null;
   favorites: FavoriteItem[];
   onAddToCart: (item: import('../../../types').CartItem) => void;
+  packs: Pack[];
+  onPackClick: (pack: Pack) => void;
 }
 
 // Map category color class strings to their accent dot color (bg-{color}-400)
@@ -68,6 +71,8 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
   linkedAppointmentId,
   favorites,
   onAddToCart,
+  packs,
+  onPackClick,
 }) => {
   const { isMobile } = useMediaQuery();
 
@@ -139,6 +144,20 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                  Favoris
                </button>
              )}
+             {viewMode === 'SERVICES' && packs.length > 0 && (
+               <button
+                 onClick={() => setSelectedCategory('PACKS')}
+                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border shrink-0 ${
+                   selectedCategory === 'PACKS'
+                     ? 'bg-emerald-500 text-white border-emerald-500'
+                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                 }`}
+                 style={{ scrollSnapAlign: 'start' }}
+               >
+                 <Package size={14} />
+                 Packs
+               </button>
+             )}
              <button
                onClick={() => setSelectedCategory('ALL')}
                className={`flex items-center px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border shrink-0 overflow-hidden relative ${selectedCategory === 'ALL' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
@@ -171,6 +190,42 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
             {/* Favorites view: render all favorites in unified sort order */}
             {selectedCategory === 'FAVORITES' && favorites.map(fav => {
+              if (fav.type === 'pack') {
+                const pack = fav.pack;
+                const discount = getPackDiscount(pack);
+                return (
+                  <button
+                    key={`fav-pack-${pack.id}`}
+                    onClick={() => onPackClick(pack)}
+                    className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all text-left flex flex-col h-40 group relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400" />
+                    <div className="flex-1">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-emerald-100 text-emerald-800 border-emerald-200">
+                        <Package size={10} />
+                        Pack
+                      </span>
+                      <h3 className="font-semibold text-slate-900 leading-tight mb-1 group-hover:text-slate-700 transition-colors line-clamp-2">
+                        {pack.name}
+                      </h3>
+                      <span className="text-xs text-slate-400">
+                        {pack.items.length} service{pack.items.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <div className="mt-auto flex justify-between items-end">
+                      <div>
+                        <span className="text-lg font-bold text-slate-800">{formatPrice(pack.price)}</span>
+                        {discount > 0 && (
+                          <span className="ml-1.5 text-xs text-emerald-600 font-medium">-{discount}%</span>
+                        )}
+                      </div>
+                      <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                        <Plus size={18} />
+                      </div>
+                    </div>
+                  </button>
+                );
+              }
               if (fav.type === 'variant') {
                 const category = serviceCategories.find(c => c.id === fav.parentService.categoryId);
                 return (
@@ -245,7 +300,43 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                 </button>
               );
             })}
-            {selectedCategory !== 'FAVORITES' && filteredItems.map((item) => {
+            {/* Packs view */}
+            {selectedCategory === 'PACKS' && packs.map((pack) => {
+              const discount = getPackDiscount(pack);
+              return (
+                <button
+                  key={`pack-${pack.id}`}
+                  onClick={() => onPackClick(pack)}
+                  className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all text-left flex flex-col h-40 group relative overflow-hidden"
+                >
+                  <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400" />
+                  <div className="flex-1">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-emerald-100 text-emerald-800 border-emerald-200">
+                      <Package size={10} />
+                      Pack
+                    </span>
+                    <h3 className="font-semibold text-slate-900 leading-tight mb-1 group-hover:text-slate-700 transition-colors line-clamp-2">
+                      {pack.name}
+                    </h3>
+                    <span className="text-xs text-slate-400">
+                      {pack.items.length} service{pack.items.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div className="mt-auto flex justify-between items-end">
+                    <div>
+                      <span className="text-lg font-bold text-slate-800">{formatPrice(pack.price)}</span>
+                      {discount > 0 && (
+                        <span className="ml-1.5 text-xs text-emerald-600 font-medium">-{discount}%</span>
+                      )}
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                      <Plus size={18} />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+            {selectedCategory !== 'FAVORITES' && selectedCategory !== 'PACKS' && filteredItems.map((item) => {
                const isService = viewMode === 'SERVICES';
                const category = isService
                   ? serviceCategories.find(c => c.id === item.categoryId)

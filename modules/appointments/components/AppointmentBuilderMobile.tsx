@@ -379,6 +379,7 @@ export default function AppointmentBuilderMobile({
             services={hookProps.services}
             categories={hookProps.categories}
             favorites={hookProps.favorites}
+            packs={hookProps.packs}
             initialCategoryId={form.serviceBlocks[serviceSheetBlockIndex]?.categoryId ?? null}
             onSelect={(selection) => {
               form.updateBlock(serviceSheetBlockIndex, {
@@ -386,6 +387,9 @@ export default function AppointmentBuilderMobile({
                 variantId: selection.variantId,
                 categoryId: selection.categoryId,
               });
+            }}
+            onPackSelect={(pack) => {
+              form.addPackBlocks(pack);
             }}
             onClose={() => setServiceSheetOpen(false)}
           />

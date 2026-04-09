@@ -60,12 +60,17 @@ export const usePOS = () => {
   const addToCart = (item: CartItem) => {
     const itemWithMeta = {
         ...item,
-        originalPrice: item.price // Store reference for discounts
+        originalPrice: item.originalPrice ?? item.price // Store reference for discounts
     };
 
     setCart(prev => {
+      // Pack items always append (never merge) to preserve pro-rata pricing
+      if (item.packId) {
+        return [...prev, itemWithMeta];
+      }
+
       const existingItemIndex = prev.findIndex(
-        i => i.referenceId === item.referenceId && i.variantName === item.variantName
+        i => i.referenceId === item.referenceId && i.variantName === item.variantName && !i.packId
       );
 
       if (existingItemIndex >= 0) {

@@ -86,7 +86,31 @@ export interface Service {
 
 export type FavoriteItem =
   | { type: 'service'; service: Service; sortOrder: number }
-  | { type: 'variant'; variant: ServiceVariant; parentService: Service; sortOrder: number };
+  | { type: 'variant'; variant: ServiceVariant; parentService: Service; sortOrder: number }
+  | { type: 'pack'; pack: Pack; sortOrder: number };
+
+export interface PackItem {
+  id: string;
+  serviceId: string;
+  serviceVariantId: string;
+  serviceName: string;
+  variantName: string;
+  originalPrice: number;
+  durationMinutes: number;
+  sortOrder: number;
+}
+
+export interface Pack {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  active: boolean;
+  isFavorite: boolean;
+  favoriteSortOrder: number | null;
+  sortOrder: number;
+  items: PackItem[];
+}
 
 export interface ProductSettings {
   lowStockThreshold: number;
@@ -353,6 +377,7 @@ export interface ServiceBlockState {
   date: string | null;
   hour: number | null;
   minute: number;
+  priceOverride?: number;
 }
 
 // POS & Cart Domain
@@ -370,6 +395,8 @@ export interface CartItem {
   staffId?: string;
   staffName?: string;
   originalItemId?: string;
+  packId?: string;
+  packName?: string;
 }
 
 export interface PaymentEntry {

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { History } from 'lucide-react';
 import { usePOS } from './hooks/usePOS';
@@ -9,7 +9,9 @@ import { PaymentModal } from './components/PaymentModal';
 import { ItemEditorModal, ServiceVariantModal, ReceiptModal, TransactionDetailModal } from './components/POSModals';
 import { VoidModal } from './components/VoidModal';
 import { RefundModal } from './components/RefundModal';
-import { Service, Product, ServiceVariant, Transaction, CartItem, PaymentEntry } from '../../types';
+import { Service, Product, ServiceVariant, Transaction, CartItem, PaymentEntry, Pack, FavoriteItem } from '../../types';
+import { usePacks } from '../services/hooks/usePacks';
+import { expandPack } from '../services/utils/packExpansion';
 import { useMediaQuery } from '../../context/MediaQueryContext';
 import { MiniCartBar } from './components/MiniCartBar';
 import { CartBottomSheet } from './components/CartBottomSheet';
@@ -42,6 +44,16 @@ export const POSModule: React.FC = () => {
     isVoiding,
     isRefunding,
   } = usePOS();
+
+  const { validPacks } = usePacks();
+
+  // Merge pack favorites into the favorites list
+  const allFavorites = useMemo(() => {
+    const packFavs: FavoriteItem[] = validPacks
+      .filter((p) => p.isFavorite)
+      .map((p) => ({ type: 'pack' as const, pack: p, sortOrder: p.favoriteSortOrder ?? 0 }));
+    return [...favorites, ...packFavs].sort((a, b) => a.sortOrder - b.sortOrder);
+  }, [favorites, validPacks]);
 
   // Auth & Permissions
   const { role } = useAuth();
@@ -84,6 +96,11 @@ export const POSModule: React.FC = () => {
       quantity: 1
     });
     setVariantModalData(null);
+  };
+
+  const handlePackClick = (pack: Pack) => {
+    const items = expandPack(pack);
+    items.forEach((item) => addToCart(item));
   };
 
   const handleProductClick = (product: Product) => {
@@ -171,8 +188,10 @@ export const POSModule: React.FC = () => {
         pendingAppointments={pendingAppointments}
         onImportAppointment={importAppointment}
         linkedAppointmentId={linkedAppointmentId}
-        favorites={favorites}
+        favorites={allFavorites}
         onAddToCart={addToCart}
+        packs={validPacks}
+        onPackClick={handlePackClick}
       />
 
       {/* Desktop: sidebar cart */}

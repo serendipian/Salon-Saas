@@ -5,6 +5,7 @@ import { useAppointments } from '../hooks/useAppointments';
 import { useClients } from '../../clients/hooks/useClients';
 import { useServices } from '../../services/hooks/useServices';
 import { useTeam } from '../../team/hooks/useTeam';
+import { usePacks } from '../../services/hooks/usePacks';
 import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
@@ -22,6 +23,7 @@ export const AppointmentNewPage: React.FC = () => {
   const { allClients: clients } = useClients();
   const { allServices: services, serviceCategories, favorites } = useServices();
   const { allStaff: team } = useTeam();
+  const { validPacks } = usePacks();
 
   const handleSave = async (payload: Parameters<typeof addAppointmentGroup>[0] & { newClient: { firstName: string; lastName: string; phone: string } | null }) => {
     if (payload.newClient && activeSalon) {
@@ -52,6 +54,7 @@ export const AppointmentNewPage: React.FC = () => {
     services,
     categories: serviceCategories,
     favorites,
+    packs: validPacks,
     team,
     clients,
     appointments: allAppointments,

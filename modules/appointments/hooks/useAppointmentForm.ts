@@ -8,6 +8,7 @@ import type {
   StaffMember,
   Client,
   FavoriteItem,
+  Pack,
 } from '../../../types';
 import { appointmentGroupSchema, newClientSchema } from '../schemas';
 import { useFormValidation } from '../../../hooks/useFormValidation';
@@ -18,6 +19,7 @@ export interface UseAppointmentFormProps {
   services: Service[];
   categories: ServiceCategory[];
   favorites?: FavoriteItem[];
+  packs?: Pack[];
   team: StaffMember[];
   clients: Client[];
   appointments: Appointment[];
@@ -81,6 +83,7 @@ export interface AppointmentFormReturn {
   updateBlock: (index: number, updates: Partial<ServiceBlockState>) => void;
   removeBlock: (index: number) => void;
   addBlock: () => void;
+  addPackBlocks: (pack: Pack) => void;
   clearFieldError: (field: string) => void;
 
   // Helpers
@@ -181,7 +184,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     return serviceBlocks.reduce((sum, b) => {
       const svc = services.find(s => s.id === b.serviceId);
       const variant = svc?.variants.find(v => v.id === b.variantId);
-      return sum + (variant?.price ?? svc?.price ?? 0);
+      return sum + (b.priceOverride ?? variant?.price ?? svc?.price ?? 0);
     }, 0);
   }, [serviceBlocks, services]);
 
@@ -217,6 +220,46 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
       }
       setActiveBlockIndex(prev.length);
       return [...prev, newBlock];
+    });
+  }, []);
+
+  const addPackBlocks = useCallback((pack: Pack) => {
+    const totalOriginal = pack.items.reduce((sum, item) => sum + item.originalPrice, 0);
+    if (totalOriginal === 0 || pack.items.length === 0) return;
+
+    // Compute pro-rata prices with rounding fix
+    const proRataPrices = pack.items.map((item) =>
+      Math.round((item.originalPrice / totalOriginal) * pack.price * 100) / 100
+    );
+    const roundedSum = proRataPrices.reduce((s, p) => s + p, 0);
+    const diff = Math.round((pack.price - roundedSum) * 100) / 100;
+    if (diff !== 0) {
+      let maxIdx = 0;
+      for (let i = 1; i < pack.items.length; i++) {
+        if (pack.items[i].originalPrice > pack.items[maxIdx].originalPrice) maxIdx = i;
+      }
+      proRataPrices[maxIdx] = Math.round((proRataPrices[maxIdx] + diff) * 100) / 100;
+    }
+
+    setServiceBlocks((prev) => {
+      const base = prev.length === 1 && !prev[0].serviceId ? [] : prev;
+      const lastBlock = base[base.length - 1];
+      const lastDate = lastBlock?.date ?? null;
+
+      const newBlocks: ServiceBlockState[] = pack.items.map((item, i) => ({
+        id: crypto.randomUUID(),
+        categoryId: null,
+        serviceId: item.serviceId,
+        variantId: item.serviceVariantId,
+        staffId: null,
+        date: lastDate,
+        hour: null,
+        minute: 0,
+        priceOverride: proRataPrices[i],
+      }));
+
+      setActiveBlockIndex(base.length);
+      return [...base, ...newBlocks];
     });
   }, []);
 
@@ -294,7 +337,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
           staffId: b.staffId,
           date: isoDate,
           durationMinutes: variant?.durationMinutes ?? svc?.durationMinutes ?? 30,
-          price: variant?.price ?? svc?.price ?? 0,
+          price: b.priceOverride ?? variant?.price ?? svc?.price ?? 0,
         };
       }),
     };
@@ -344,6 +387,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     updateBlock,
     removeBlock,
     addBlock,
+    addPackBlocks,
     clearFieldError,
 
     // Helpers

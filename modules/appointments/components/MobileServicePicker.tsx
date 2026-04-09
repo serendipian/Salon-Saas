@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { Check, Star } from 'lucide-react';
-import type { Service, ServiceCategory, FavoriteItem } from '../../../types';
+import { Check, Star, Package } from 'lucide-react';
+import type { Service, ServiceCategory, FavoriteItem, Pack } from '../../../types';
 import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
+import { getPackDiscount } from '../../services/utils/packExpansion';
 
 interface MobileServicePickerProps {
   services: Service[];
   categories: ServiceCategory[];
   favorites?: FavoriteItem[];
+  packs?: Pack[];
   initialCategoryId: string | null;
   onSelect: (selection: { serviceId: string; variantId: string; categoryId: string }) => void;
+  onPackSelect?: (pack: Pack) => void;
   onClose: () => void;
 }
 
@@ -17,8 +20,10 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
   services,
   categories,
   favorites = [],
+  packs = [],
   initialCategoryId,
   onSelect,
+  onPackSelect,
   onClose,
 }) => {
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(
@@ -92,6 +97,20 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
             Favoris
           </button>
         )}
+        {packs.length > 0 && (
+          <button
+            type="button"
+            onClick={() => handleCategoryTap('PACKS')}
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium whitespace-nowrap shrink-0 min-h-[36px] transition-colors ${
+              activeCategoryId === 'PACKS'
+                ? 'bg-emerald-500 text-white shadow-sm'
+                : 'bg-slate-100 text-slate-600'
+            }`}
+          >
+            <Package size={14} className={activeCategoryId === 'PACKS' ? 'text-white' : 'text-slate-500'} />
+            Packs
+          </button>
+        )}
         {categories.map((cat) => (
           <button
             key={cat.id}
@@ -113,6 +132,37 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
           </button>
         ))}
       </div>
+
+      {/* Packs list */}
+      {activeCategoryId === 'PACKS' && (
+        <div className="flex flex-col gap-2">
+          {packs.map((pack) => {
+            const discount = getPackDiscount(pack);
+            return (
+              <button
+                key={pack.id}
+                type="button"
+                onClick={() => {
+                  onPackSelect?.(pack);
+                  onClose();
+                }}
+                className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-white border border-slate-200 min-h-[52px] transition-colors active:bg-emerald-50"
+              >
+                <div className="text-left">
+                  <div className="text-sm font-medium text-slate-900">{pack.name}</div>
+                  <div className="text-xs text-slate-500 mt-0.5">
+                    {pack.items.length} service{pack.items.length !== 1 ? 's' : ''}
+                    {discount > 0 && ` · -${discount}%`}
+                  </div>
+                </div>
+                <span className="text-sm font-semibold text-emerald-600 shrink-0 ml-2">
+                  {formatPrice(pack.price)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Favorites list */}
       {activeCategoryId === 'FAVORITES' && (
@@ -187,7 +237,7 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
       )}
 
       {/* Service list */}
-      {activeCategoryId !== 'FAVORITES' && (
+      {activeCategoryId !== 'FAVORITES' && activeCategoryId !== 'PACKS' && (
         <div className="flex flex-col gap-2">
           {filteredServices.length === 0 && (
             <p className="text-center text-sm text-slate-400 py-8">
