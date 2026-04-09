@@ -212,6 +212,10 @@ export const TransactionHistoryPage: React.FC = () => {
   };
 
   const TAG = "text-xs font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200";
+  const SERVICE_TAG = "text-xs font-medium bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100";
+
+  const itemLabel = (item: { name: string; variantName?: string }) =>
+    item.variantName ? `${item.name} - ${item.variantName}` : item.name;
 
   const handleVoidConfirm = async (reasonCategory: string, reasonNote: string) => {
     if (!voidTarget) return;
@@ -412,10 +416,10 @@ export const TransactionHistoryPage: React.FC = () => {
                       <span key={name} className={TAG}>{name}</span>
                     ))}
                     {trx.items.map((item, idx) => (
-                      <span key={idx} className={TAG}>{item.variantName || item.name}</span>
+                      <span key={idx} className={SERVICE_TAG}>{itemLabel(item)}</span>
                     ))}
                     {trx.payments.map((p, idx) => (
-                      <span key={idx} className="text-xs font-medium bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100">{PAYMENT_METHOD_SHORT[p.method] || p.method}</span>
+                      <span key={idx} className="text-xs font-medium bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded border border-emerald-100">{PAYMENT_METHOD_SHORT[p.method] || p.method}</span>
                     ))}
                   </div>
                 </button>
@@ -505,7 +509,7 @@ export const TransactionHistoryPage: React.FC = () => {
                   <td className="px-6 py-5">
                     <div className="flex flex-wrap gap-1 max-w-xs">
                       {trx.items.map((item, idx) => (
-                        <span key={idx} className={TAG}>{item.variantName || item.name}</span>
+                        <span key={idx} className={SERVICE_TAG}>{itemLabel(item)}</span>
                       ))}
                     </div>
                   </td>
@@ -563,7 +567,7 @@ export const TransactionHistoryPage: React.FC = () => {
                     <td className="px-6 py-2">
                       <div className="flex flex-wrap gap-1">
                         {child.items.map((item, idx) => (
-                          <span key={idx} className="text-[11px] font-medium bg-slate-50 text-slate-500 px-1.5 py-0.5 rounded border border-slate-100">{item.variantName || item.name}</span>
+                          <span key={idx} className="text-[11px] font-medium bg-blue-50/50 text-blue-500 px-1.5 py-0.5 rounded border border-blue-100">{itemLabel(item)}</span>
                         ))}
                       </div>
                     </td>
