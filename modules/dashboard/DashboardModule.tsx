@@ -656,7 +656,10 @@ export const DashboardModule: React.FC = () => {
               onClick={() => navigate('/team')}
               className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0"
             >
-              Voir l'équipe <ChevronRight size={12} />
+              Voir l'équipe
+              <div className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
+                <ChevronRight size={12} />
+              </div>
             </button>
           </div>
           <div className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(bonusStats.total)}</div>
@@ -716,7 +719,10 @@ export const DashboardModule: React.FC = () => {
               onClick={() => navigate('/finances')}
               className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0"
             >
-              Comptabilité <ChevronRight size={12} />
+              Comptabilité
+              <div className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
+                <ChevronRight size={12} />
+              </div>
             </button>
           </div>
           <div className={`text-2xl font-bold tracking-tight ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'text-blue-600' : 'text-slate-600'}`}>
