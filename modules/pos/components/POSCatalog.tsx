@@ -137,46 +137,80 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
         {/* Grid View */}
         {(viewMode === 'SERVICES' || viewMode === 'PRODUCTS') && (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-            {/* Variant-type favorites as standalone cards when in FAVORITES filter */}
-            {selectedCategory === 'FAVORITES' && favorites
-              .filter((f): f is Extract<typeof f, { type: 'variant' }> => f.type === 'variant')
-              .map(fav => (
+            {/* Favorites view: render all favorites in unified sort order */}
+            {selectedCategory === 'FAVORITES' && favorites.map(fav => {
+              if (fav.type === 'variant') {
+                return (
+                  <button
+                    key={`fav-var-${fav.variant.id}`}
+                    onClick={() => {
+                      onAddToCart({
+                        id: crypto.randomUUID(),
+                        referenceId: fav.variant.id,
+                        type: 'SERVICE',
+                        name: fav.parentService.name,
+                        variantName: fav.variant.name,
+                        price: fav.variant.price,
+                        originalPrice: fav.variant.price,
+                        quantity: 1,
+                      });
+                    }}
+                    className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all text-left flex flex-col h-40 group relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 left-0 w-1 h-full bg-amber-400" />
+                    <div className="flex-1">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-amber-50 text-amber-600 border-amber-200">
+                        <Star size={9} className="fill-amber-400 text-amber-400" /> Favori
+                      </span>
+                      <h3 className="font-semibold text-slate-900 leading-tight mb-1 group-hover:text-slate-700 transition-colors line-clamp-2">
+                        {fav.parentService.name}
+                      </h3>
+                      <span className="text-xs text-slate-500">{fav.variant.name}</span>
+                    </div>
+                    <div className="mt-auto flex justify-between items-end">
+                      <span className="text-lg font-bold text-slate-800">{formatPrice(fav.variant.price)}</span>
+                      <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                        <Plus size={18} />
+                      </div>
+                    </div>
+                  </button>
+                );
+              }
+              // Service-type favorite — render as regular service card
+              const service = fav.service;
+              const category = serviceCategories.find(c => c.id === service.categoryId);
+              const prices = service.variants.map(v => v.price);
+              const min = Math.min(...prices);
+              let priceDisplay = formatPrice(min);
+              if (prices.length > 1) priceDisplay += '+';
+              return (
                 <button
-                  key={`fav-var-${fav.variant.id}`}
-                  onClick={() => {
-                    onAddToCart({
-                      id: crypto.randomUUID(),
-                      referenceId: fav.variant.id,
-                      type: 'SERVICE',
-                      name: fav.parentService.name,
-                      variantName: fav.variant.name,
-                      price: fav.variant.price,
-                      originalPrice: fav.variant.price,
-                      quantity: 1,
-                    });
-                  }}
+                  key={`fav-svc-${service.id}`}
+                  onClick={() => onServiceClick(service)}
                   className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all text-left flex flex-col h-40 group relative overflow-hidden"
                 >
-                  <div className="absolute top-0 left-0 w-1 h-full bg-amber-400" />
+                  <div className={`absolute top-0 left-0 w-1 h-full ${category?.color.split(' ')[0] || 'bg-slate-200'}`} />
                   <div className="flex-1">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-amber-50 text-amber-600 border-amber-200">
-                      <Star size={9} className="fill-amber-400 text-amber-400" /> Favori
+                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
+                      {category?.name || 'General'}
                     </span>
                     <h3 className="font-semibold text-slate-900 leading-tight mb-1 group-hover:text-slate-700 transition-colors line-clamp-2">
-                      {fav.parentService.name}
+                      {service.name}
                     </h3>
-                    <span className="text-xs text-slate-500">{fav.variant.name}</span>
+                    {service.variants.length > 1 && (
+                      <span className="text-xs text-slate-400">{service.variants.length} options</span>
+                    )}
                   </div>
                   <div className="mt-auto flex justify-between items-end">
-                    <span className="text-lg font-bold text-slate-800">{formatPrice(fav.variant.price)}</span>
+                    <span className="text-lg font-bold text-slate-800">{priceDisplay}</span>
                     <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-colors">
                       <Plus size={18} />
                     </div>
                   </div>
                 </button>
-              ))
-            }
-            {filteredItems.map((item) => {
+              );
+            })}
+            {selectedCategory !== 'FAVORITES' && filteredItems.map((item) => {
                const isService = viewMode === 'SERVICES';
                const category = isService
                   ? serviceCategories.find(c => c.id === item.categoryId)

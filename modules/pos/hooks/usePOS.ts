@@ -114,10 +114,8 @@ export const usePOS = () => {
   const filteredItems = useMemo(() => {
     if (viewMode === 'SERVICES') {
       if (selectedCategory === 'FAVORITES') {
-        return favorites
-          .filter((f): f is Extract<typeof f, { type: 'service' }> => f.type === 'service')
-          .map(f => f.service)
-          .filter(s => s.active && s.variants.length > 0);
+        // POSCatalog renders favorites directly from the favorites list (unified sort order)
+        return [];
       }
       return services.filter(s => {
         if (!s.active || s.variants.length === 0) return false;
