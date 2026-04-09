@@ -24,10 +24,10 @@ export default function ServiceGrid({
   const showFavorites = favorites.length > 0;
 
   return (
-    <div className="bg-white/60 border border-slate-200 border-t-0 rounded-b-xl p-2">
-      {/* Favorites list */}
+    <div className="bg-white/60 border border-slate-200 rounded-xl p-2">
+      {/* Favorites grid */}
       {showFavorites && (
-        <div className="space-y-1.5 mb-2">
+        <div className="grid grid-cols-3 max-md:grid-cols-2 gap-2 mb-2">
           {favorites.map((fav) => {
             if (fav.type === 'service') {
               const svc = fav.service;

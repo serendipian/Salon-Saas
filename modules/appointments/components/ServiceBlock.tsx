@@ -237,7 +237,7 @@ export default function ServiceBlock({
 
       {/* Packs grid */}
       {activeCategoryId === 'PACKS' && (
-        <div className="grid grid-cols-2 gap-2 mt-3">
+        <div className="grid grid-cols-3 max-md:grid-cols-2 gap-2 mt-3">
           {packs.map((pack) => {
             const discount = getPackDiscount(pack);
             return (
