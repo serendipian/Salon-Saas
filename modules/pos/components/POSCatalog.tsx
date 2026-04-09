@@ -133,10 +133,10 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
              {viewMode === 'SERVICES' && favorites.length > 0 && (
                <button
                  onClick={() => setSelectedCategory('FAVORITES')}
-                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border shrink-0 ${
+                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors shrink-0 ${
                    selectedCategory === 'FAVORITES'
-                     ? 'bg-amber-400 text-slate-900 border-amber-400'
-                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                     ? 'bg-amber-400 text-slate-900'
+                     : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                  }`}
                  style={{ scrollSnapAlign: 'start' }}
                >
@@ -149,7 +149,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                  onClick={() => setSelectedCategory('PACKS')}
                  className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border shrink-0 ${
                    selectedCategory === 'PACKS'
-                     ? 'bg-emerald-500 text-white border-emerald-500'
+                     ? 'bg-slate-900 text-white border-slate-900'
                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                  }`}
                  style={{ scrollSnapAlign: 'start' }}
