@@ -523,8 +523,12 @@ export const DashboardModule: React.FC = () => {
         {/* Chiffre d'Affaires + Payment Breakdown */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start mb-1">
-            <h3 className="text-sm font-semibold text-slate-500">Chiffre d'Affaires</h3>
-            <DollarSign size={16} className="text-slate-400 shrink-0" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                <DollarSign size={16} className="text-blue-500" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-500">Chiffre d'Affaires</h3>
+            </div>
           </div>
           <div className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(stats.revenue)}</div>
           <div className="flex items-center gap-2 mt-1 mb-4">
@@ -568,7 +572,12 @@ export const DashboardModule: React.FC = () => {
         {/* Expenses + Payment Methods */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start mb-1">
-            <h3 className="text-sm font-semibold text-slate-500">Dépenses</h3>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+                <Receipt size={16} className="text-amber-500" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-500">Dépenses</h3>
+            </div>
             <button
               onClick={() => navigate('/finances/depenses')}
               className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0"
@@ -634,8 +643,18 @@ export const DashboardModule: React.FC = () => {
         {/* Bonus */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start mb-1">
-            <h3 className="text-sm font-semibold text-slate-500">Bonus</h3>
-            <Gift size={16} className="text-slate-400 shrink-0" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center shrink-0">
+                <Gift size={16} className="text-purple-500" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-500">Bonus</h3>
+            </div>
+            <button
+              onClick={() => navigate('/team')}
+              className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0"
+            >
+              Voir l'équipe <ChevronRight size={12} />
+            </button>
           </div>
           <div className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(bonusStats.total)}</div>
           <div className="flex items-center gap-2 mt-1 mb-4">
@@ -678,20 +697,24 @@ export const DashboardModule: React.FC = () => {
                 +{bonusStats.staffBreakdown.length - 4} autre{bonusStats.staffBreakdown.length - 4 > 1 ? 's' : ''}
               </div>
             )}
-            <button
-              onClick={() => navigate('/team')}
-              className="w-full text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center justify-center gap-1 pt-1"
-            >
-              Voir l'équipe <ChevronRight size={12} />
-            </button>
           </div>
         </div>
 
         {/* Résultat Net */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start mb-1">
-            <h3 className="text-sm font-semibold text-slate-500">Résultat Net</h3>
-            <TrendingUp size={16} className="text-slate-400 shrink-0" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                <TrendingUp size={16} className="text-emerald-500" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-500">Résultat Net</h3>
+            </div>
+            <button
+              onClick={() => navigate('/finances')}
+              className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0"
+            >
+              Comptabilité <ChevronRight size={12} />
+            </button>
           </div>
           <div className={`text-2xl font-bold tracking-tight ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'text-blue-600' : 'text-slate-600'}`}>
             {formatPrice(stats.revenue - expenseStats.total - bonusStats.total)}
@@ -744,12 +767,6 @@ export const DashboardModule: React.FC = () => {
                 />
               )}
             </div>
-            <button
-              onClick={() => navigate('/finances')}
-              className="w-full text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center justify-center gap-1 pt-1"
-            >
-              Comptabilité <ChevronRight size={12} />
-            </button>
           </div>
         </div>
       </div>
