@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { History, ChevronLeft, ChevronRight, ArrowLeft, Eye, Receipt, Ban, RotateCcw, Search } from 'lucide-react';
+import { History, ChevronLeft, ChevronRight, ArrowLeft, Eye, Receipt, Ban, RotateCcw, Search, Scissors, ShoppingBag, CreditCard, TrendingUp } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -122,16 +122,22 @@ export const TransactionHistoryPage: React.FC = () => {
     return grouped;
   }, [filteredTransactions]);
 
-  // Derive available payment methods from this day's transactions
-  const availablePaymentMethods = React.useMemo(() => {
-    const methods = new Set<string>();
-    for (const { parent } of groupedTransactions) {
-      for (const p of parent.payments) {
-        methods.add(p.method);
+  // Derive available payment methods and counts from this day's transactions
+  const { availablePaymentMethods, statusCounts, paymentCounts } = React.useMemo(() => {
+    const methodSet = new Map<string, number>();
+    const counts = { all: 0, voided: 0, refunded: 0 };
+    for (const { parent: trx } of groupedTransactions) {
+      const status = getTransactionStatus(trx, transactions);
+      counts.all++;
+      if (status === 'voided') counts.voided++;
+      if (status === 'fully_refunded' || status === 'partially_refunded') counts.refunded++;
+      for (const p of trx.payments) {
+        methodSet.set(p.method, (methodSet.get(p.method) || 0) + 1);
       }
     }
-    return [...methods].sort();
-  }, [groupedTransactions]);
+    const methods = [...methodSet.keys()].sort();
+    return { availablePaymentMethods: methods, statusCounts: counts, paymentCounts: methodSet };
+  }, [groupedTransactions, transactions]);
 
   // Apply search + status + payment filters
   const displayedTransactions = React.useMemo(() => {
@@ -174,14 +180,20 @@ export const TransactionHistoryPage: React.FC = () => {
     if (activeSales.length === 0) return null;
 
     const total = activeSales.reduce((sum, { parent }) => sum + parent.total, 0);
+    let serviceCount = 0;
+    let productCount = 0;
     const byMethod: Record<string, number> = {};
     for (const { parent } of activeSales) {
+      for (const item of parent.items) {
+        if (item.type === 'SERVICE') serviceCount += item.quantity;
+        else if (item.type === 'PRODUCT') productCount += item.quantity;
+      }
       for (const p of parent.payments) {
         byMethod[p.method] = (byMethod[p.method] || 0) + p.amount;
       }
     }
 
-    return { total, count: activeSales.length, byMethod };
+    return { total, count: activeSales.length, serviceCount, productCount, byMethod };
   }, [groupedTransactions, transactions]);
 
   const isToday = (date: string) => new Date(date).toDateString() === new Date().toDateString();
@@ -195,12 +207,11 @@ export const TransactionHistoryPage: React.FC = () => {
     return null;
   };
 
-  const getStaffDisplay = (trx: Transaction): { label: string; title?: string } | null => {
-    const names = [...new Set(trx.items.filter(i => i.staffName).map(i => i.staffName!))];
-    if (names.length === 0) return null;
-    if (names.length === 1) return { label: names[0] };
-    return { label: `${names[0]} +${names.length - 1}`, title: names.join(', ') };
+  const getStaffNames = (trx: Transaction): string[] => {
+    return [...new Set(trx.items.filter(i => i.staffName).map(i => i.staffName!))];
   };
+
+  const TAG = "text-xs font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200";
 
   const handleVoidConfirm = async (reasonCategory: string, reasonNote: string) => {
     if (!voidTarget) return;
@@ -275,6 +286,40 @@ export const TransactionHistoryPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Stat Cards */}
+      {dailySummary && (
+        <div className={`grid gap-3 ${isMobile ? 'grid-cols-2' : 'grid-cols-4'}`}>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+            <div className="flex items-center gap-2 text-slate-400 mb-1">
+              <TrendingUp size={14} />
+              <span className="text-xs font-medium">Chiffre d'affaires</span>
+            </div>
+            <div className="text-lg font-bold text-slate-900">{formatPrice(dailySummary.total)}</div>
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+            <div className="flex items-center gap-2 text-slate-400 mb-1">
+              <Receipt size={14} />
+              <span className="text-xs font-medium">Transactions</span>
+            </div>
+            <div className="text-lg font-bold text-slate-900">{dailySummary.count}</div>
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+            <div className="flex items-center gap-2 text-slate-400 mb-1">
+              <Scissors size={14} />
+              <span className="text-xs font-medium">Prestations</span>
+            </div>
+            <div className="text-lg font-bold text-slate-900">{dailySummary.serviceCount}</div>
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+            <div className="flex items-center gap-2 text-slate-400 mb-1">
+              <ShoppingBag size={14} />
+              <span className="text-xs font-medium">Produits</span>
+            </div>
+            <div className="text-lg font-bold text-slate-900">{dailySummary.productCount}</div>
+          </div>
+        </div>
+      )}
+
       {/* Transaction List Card */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
 
@@ -296,6 +341,7 @@ export const TransactionHistoryPage: React.FC = () => {
               {/* Status pills */}
               {(['all', 'voided', 'refunded'] as const).map(f => {
                 const labels = { all: 'Tous', voided: 'Annulés', refunded: 'Remboursés' };
+                const count = statusCounts[f];
                 const isActive = statusFilter === f;
                 return (
                   <button
@@ -303,46 +349,26 @@ export const TransactionHistoryPage: React.FC = () => {
                     onClick={() => setStatusFilter(f)}
                     className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                   >
-                    {labels[f]}
+                    {labels[f]} <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
                   </button>
                 );
               })}
               {/* Payment method pills */}
               {availablePaymentMethods.map(method => {
                 const isActive = paymentFilter === method;
+                const count = paymentCounts.get(method) || 0;
                 return (
                   <button
                     key={method}
                     onClick={() => setPaymentFilter(isActive ? null : method)}
                     className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                   >
-                    {method}
+                    {method} <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
                   </button>
                 );
               })}
             </div>
           </div>
-        )}
-
-        {dailySummary && (
-          isMobile ? (
-            <div className="px-4 py-3 border-b border-slate-100 text-xs text-slate-500">
-              <div>{formatPrice(dailySummary.total)} · {dailySummary.count} vente{dailySummary.count > 1 ? 's' : ''}</div>
-              <div className="mt-0.5">
-                {Object.entries(dailySummary.byMethod).map(([method, amount], i) => (
-                  <span key={method}>{i > 0 ? ' · ' : ''}{PAYMENT_METHOD_SHORT[method] || method}: {formatPrice(amount)}</span>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="px-6 py-3 border-b border-slate-100 text-sm text-slate-500">
-              <span className="font-medium text-slate-700">{formatPrice(dailySummary.total)}</span>
-              {' · '}{dailySummary.count} vente{dailySummary.count > 1 ? 's' : ''}
-              {Object.entries(dailySummary.byMethod).map(([method, amount]) => (
-                <span key={method}> · {method}: {formatPrice(amount)}</span>
-              ))}
-            </div>
-          )
         )}
 
         {filteredTransactions.length === 0 ? (
@@ -375,19 +401,22 @@ export const TransactionHistoryPage: React.FC = () => {
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-xs text-slate-500">
                           {new Date(trx.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          {(() => {
-                            const staff = getStaffDisplay(trx);
-                            if (!staff) return null;
-                            return <span title={staff.title}> · {staff.label}</span>;
-                          })()}
                         </span>
                         {statusBadge(status, trx)}
                       </div>
                     </div>
                     <span className={`font-bold ${trx.total < 0 ? 'text-red-600' : 'text-slate-900'}`}>{formatPrice(trx.total)}</span>
                   </div>
-                  <div className="text-xs text-slate-500 truncate">
-                    {trx.items.length} article{trx.items.length > 1 ? 's' : ''} · {trx.items.map(i => i.name).join(', ')}
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {getStaffNames(trx).map(name => (
+                      <span key={name} className={TAG}>{name}</span>
+                    ))}
+                    {trx.items.map((item, idx) => (
+                      <span key={idx} className={TAG}>{item.variantName || item.name}</span>
+                    ))}
+                    {trx.payments.map((p, idx) => (
+                      <span key={idx} className="text-xs font-medium bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100">{PAYMENT_METHOD_SHORT[p.method] || p.method}</span>
+                    ))}
                   </div>
                 </button>
                 <div className="flex justify-end mt-2 pt-2 border-t border-slate-100 gap-2">
@@ -440,6 +469,7 @@ export const TransactionHistoryPage: React.FC = () => {
                 <th className="px-6 py-3 text-xs text-slate-400 font-normal">Styliste</th>
                 <th className="px-6 py-3 text-xs text-slate-400 font-normal">Détails</th>
                 <th className="px-6 py-3 text-xs text-slate-400 font-normal text-right">Total</th>
+                <th className="px-6 py-3 text-xs text-slate-400 font-normal">Paiement</th>
                 <th className="px-6 py-3"></th>
               </tr>
             </thead>
@@ -466,19 +496,28 @@ export const TransactionHistoryPage: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    {(() => {
-                      const staff = getStaffDisplay(trx);
-                      if (!staff) return null;
-                      return <span className="text-sm text-slate-600" title={staff.title}>{staff.label}</span>;
-                    })()}
+                    <div className="flex flex-wrap gap-1">
+                      {getStaffNames(trx).map(name => (
+                        <span key={name} className={TAG}>{name}</span>
+                      ))}
+                    </div>
                   </td>
                   <td className="px-6 py-5">
-                    <div className="text-sm text-slate-600 max-w-xs truncate">
-                      {trx.items.map(i => i.name).join(', ')}
+                    <div className="flex flex-wrap gap-1 max-w-xs">
+                      {trx.items.map((item, idx) => (
+                        <span key={idx} className={TAG}>{item.variantName || item.name}</span>
+                      ))}
                     </div>
                   </td>
                   <td className={`px-6 py-5 text-right font-bold ${trx.total < 0 ? 'text-red-600' : 'text-slate-900'}`}>
                     {formatPrice(trx.total)}
+                  </td>
+                  <td className="px-6 py-5">
+                    <div className="flex flex-wrap gap-1">
+                      {trx.payments.map((p, idx) => (
+                        <span key={idx} className={TAG}>{PAYMENT_METHOD_SHORT[p.method] || p.method}</span>
+                      ))}
+                    </div>
                   </td>
                   <td className="px-6 py-5 text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
@@ -522,13 +561,16 @@ export const TransactionHistoryPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-2"></td>
                     <td className="px-6 py-2">
-                      <div className="text-xs text-slate-500 max-w-xs truncate">
-                        {child.items.map(i => i.name).join(', ')}
+                      <div className="flex flex-wrap gap-1">
+                        {child.items.map((item, idx) => (
+                          <span key={idx} className="text-[11px] font-medium bg-slate-50 text-slate-500 px-1.5 py-0.5 rounded border border-slate-100">{item.variantName || item.name}</span>
+                        ))}
                       </div>
                     </td>
                     <td className="px-6 py-2 text-right font-semibold text-sm text-red-600">
                       {formatPrice(child.total)}
                     </td>
+                    <td className="px-6 py-2"></td>
                     <td className="px-6 py-2 text-right">
                       <button onClick={() => setDetailTransaction(child)} className="p-1.5 text-slate-300 hover:text-slate-900 transition-colors" title="Voir les détails">
                         <Eye size={14} />
