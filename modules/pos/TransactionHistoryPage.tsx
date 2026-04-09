@@ -161,6 +161,29 @@ export const TransactionHistoryPage: React.FC = () => {
     });
   }, [groupedTransactions, searchTerm, statusFilter, paymentFilter, transactions]);
 
+  const PAYMENT_METHOD_SHORT: Record<string, string> = {
+    'Carte Bancaire': 'Carte',
+    'Carte Cadeau': 'Cadeau',
+  };
+
+  const dailySummary = React.useMemo(() => {
+    const activeSales = groupedTransactions.filter(({ parent: trx }) => {
+      const status = getTransactionStatus(trx, transactions);
+      return trx.type === 'SALE' && (status === 'active' || status === 'partially_refunded');
+    });
+    if (activeSales.length === 0) return null;
+
+    const total = activeSales.reduce((sum, { parent }) => sum + parent.total, 0);
+    const byMethod: Record<string, number> = {};
+    for (const { parent } of activeSales) {
+      for (const p of parent.payments) {
+        byMethod[p.method] = (byMethod[p.method] || 0) + p.amount;
+      }
+    }
+
+    return { total, count: activeSales.length, byMethod };
+  }, [groupedTransactions, transactions]);
+
   const isToday = (date: string) => new Date(date).toDateString() === new Date().toDateString();
 
   const statusBadge = (status: TransactionStatus, trx: Transaction) => {
@@ -299,6 +322,27 @@ export const TransactionHistoryPage: React.FC = () => {
               })}
             </div>
           </div>
+        )}
+
+        {dailySummary && (
+          isMobile ? (
+            <div className="px-4 py-3 border-b border-slate-100 text-xs text-slate-500">
+              <div>{formatPrice(dailySummary.total)} · {dailySummary.count} vente{dailySummary.count > 1 ? 's' : ''}</div>
+              <div className="mt-0.5">
+                {Object.entries(dailySummary.byMethod).map(([method, amount], i) => (
+                  <span key={method}>{i > 0 ? ' · ' : ''}{PAYMENT_METHOD_SHORT[method] || method}: {formatPrice(amount)}</span>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="px-6 py-3 border-b border-slate-100 text-sm text-slate-500">
+              <span className="font-medium text-slate-700">{formatPrice(dailySummary.total)}</span>
+              {' · '}{dailySummary.count} vente{dailySummary.count > 1 ? 's' : ''}
+              {Object.entries(dailySummary.byMethod).map(([method, amount]) => (
+                <span key={method}> · {method}: {formatPrice(amount)}</span>
+              ))}
+            </div>
+          )
         )}
 
         {filteredTransactions.length === 0 ? (
