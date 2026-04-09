@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { History, ChevronLeft, ChevronRight, ArrowLeft, Eye, Receipt, Ban, RotateCcw } from 'lucide-react';
+import { History, ChevronLeft, ChevronRight, ArrowLeft, Eye, Receipt, Ban, RotateCcw, Search } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -46,6 +46,9 @@ export const TransactionHistoryPage: React.FC = () => {
       d.setDate(d.getDate() - 1);
       return d;
     });
+    setSearchTerm('');
+    setStatusFilter('all');
+    setPaymentFilter(null);
   };
 
   const goToNextDay = () => {
@@ -55,6 +58,9 @@ export const TransactionHistoryPage: React.FC = () => {
       d.setDate(d.getDate() + 1);
       return d;
     });
+    setSearchTerm('');
+    setStatusFilter('all');
+    setPaymentFilter(null);
   };
 
   // Data
@@ -74,6 +80,11 @@ export const TransactionHistoryPage: React.FC = () => {
   const [detailTransaction, setDetailTransaction] = useState<Transaction | null>(null);
   const [voidTarget, setVoidTarget] = useState<Transaction | null>(null);
   const [refundTarget, setRefundTarget] = useState<Transaction | null>(null);
+
+  // Search & filter state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'voided' | 'refunded'>('all');
+  const [paymentFilter, setPaymentFilter] = useState<string | null>(null);
 
   // Filter by selected date
   const filteredTransactions = React.useMemo(() => {
@@ -110,6 +121,45 @@ export const TransactionHistoryPage: React.FC = () => {
 
     return grouped;
   }, [filteredTransactions]);
+
+  // Derive available payment methods from this day's transactions
+  const availablePaymentMethods = React.useMemo(() => {
+    const methods = new Set<string>();
+    for (const { parent } of groupedTransactions) {
+      for (const p of parent.payments) {
+        methods.add(p.method);
+      }
+    }
+    return [...methods].sort();
+  }, [groupedTransactions]);
+
+  // Apply search + status + payment filters
+  const displayedTransactions = React.useMemo(() => {
+    return groupedTransactions.filter(({ parent: trx }) => {
+      // Search filter
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        const matchClient = trx.clientName?.toLowerCase().includes(term);
+        const matchItem = trx.items.some(i => i.name.toLowerCase().includes(term));
+        if (!matchClient && !matchItem) return false;
+      }
+
+      // Status filter
+      if (statusFilter !== 'all') {
+        const status = getTransactionStatus(trx, transactions);
+        if (statusFilter === 'voided' && status !== 'voided') return false;
+        if (statusFilter === 'refunded' && status !== 'fully_refunded' && status !== 'partially_refunded') return false;
+      }
+
+      // Payment method filter
+      if (paymentFilter) {
+        const hasMethod = trx.payments.some(p => p.method === paymentFilter);
+        if (!hasMethod) return false;
+      }
+
+      return true;
+    });
+  }, [groupedTransactions, searchTerm, statusFilter, paymentFilter, transactions]);
 
   const isToday = (date: string) => new Date(date).toDateString() === new Date().toDateString();
 
@@ -193,7 +243,7 @@ export const TransactionHistoryPage: React.FC = () => {
           </button>
           {!isHistoryToday && (
             <button
-              onClick={() => setHistoryDate(new Date())}
+              onClick={() => { setHistoryDate(new Date()); setSearchTerm(''); setStatusFilter('all'); setPaymentFilter(null); }}
               className="text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors ml-1"
             >
               Aujourd'hui
@@ -205,6 +255,52 @@ export const TransactionHistoryPage: React.FC = () => {
       {/* Transaction List Card */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
 
+        {filteredTransactions.length > 0 && (
+          <div className="px-4 pt-4 pb-2 space-y-3 border-b border-slate-100">
+            {/* Search input */}
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder="Rechercher un client ou service..."
+                className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+            {/* Filter pills */}
+            <div className={`flex gap-2 ${isMobile ? 'overflow-x-auto flex-nowrap pb-1' : 'flex-wrap'}`}>
+              {/* Status pills */}
+              {(['all', 'voided', 'refunded'] as const).map(f => {
+                const labels = { all: 'Tous', voided: 'Annulés', refunded: 'Remboursés' };
+                const isActive = statusFilter === f;
+                return (
+                  <button
+                    key={f}
+                    onClick={() => setStatusFilter(f)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                  >
+                    {labels[f]}
+                  </button>
+                );
+              })}
+              {/* Payment method pills */}
+              {availablePaymentMethods.map(method => {
+                const isActive = paymentFilter === method;
+                return (
+                  <button
+                    key={method}
+                    onClick={() => setPaymentFilter(isActive ? null : method)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                  >
+                    {method}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {filteredTransactions.length === 0 ? (
           <div className="p-12 text-center">
             <History size={36} className="mx-auto mb-4 text-slate-300" />
@@ -213,7 +309,7 @@ export const TransactionHistoryPage: React.FC = () => {
         ) : isMobile ? (
           /* Mobile: card layout */
           <div className="divide-y divide-slate-100">
-            {groupedTransactions.map(({ parent: trx, children }) => {
+            {displayedTransactions.map(({ parent: trx, children }) => {
               const status = getTransactionStatus(trx, transactions);
               const isVoided = status === 'voided';
               const showVoid = canVoid && trx.type === 'SALE' && status === 'active' && isToday(trx.date);
@@ -304,7 +400,7 @@ export const TransactionHistoryPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {groupedTransactions.map(({ parent: trx, children }) => {
+              {displayedTransactions.map(({ parent: trx, children }) => {
                 const status = getTransactionStatus(trx, transactions);
                 const isVoided = status === 'voided';
                 const showVoid = canVoid && status === 'active' && isToday(trx.date);
