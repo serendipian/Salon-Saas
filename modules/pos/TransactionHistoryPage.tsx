@@ -122,6 +122,13 @@ export const TransactionHistoryPage: React.FC = () => {
     return null;
   };
 
+  const getStaffDisplay = (trx: Transaction): { label: string; title?: string } | null => {
+    const names = [...new Set(trx.items.filter(i => i.staffName).map(i => i.staffName!))];
+    if (names.length === 0) return null;
+    if (names.length === 1) return { label: names[0] };
+    return { label: `${names[0]} +${names.length - 1}`, title: names.join(', ') };
+  };
+
   const handleVoidConfirm = async (reasonCategory: string, reasonNote: string) => {
     if (!voidTarget) return;
     try {
@@ -228,6 +235,11 @@ export const TransactionHistoryPage: React.FC = () => {
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-xs text-slate-500">
                           {new Date(trx.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {(() => {
+                            const staff = getStaffDisplay(trx);
+                            if (!staff) return null;
+                            return <span title={staff.title}> · {staff.label}</span>;
+                          })()}
                         </span>
                         {statusBadge(status, trx)}
                       </div>
@@ -285,6 +297,7 @@ export const TransactionHistoryPage: React.FC = () => {
               <tr>
                 <th className="px-6 py-3 text-xs text-slate-400 font-normal">Heure</th>
                 <th className="px-6 py-3 text-xs text-slate-400 font-normal">Client</th>
+                <th className="px-6 py-3 text-xs text-slate-400 font-normal">Styliste</th>
                 <th className="px-6 py-3 text-xs text-slate-400 font-normal">Détails</th>
                 <th className="px-6 py-3 text-xs text-slate-400 font-normal text-right">Total</th>
                 <th className="px-6 py-3"></th>
@@ -311,6 +324,13 @@ export const TransactionHistoryPage: React.FC = () => {
                       )}
                       {statusBadge(status, trx)}
                     </div>
+                  </td>
+                  <td className="px-6 py-5">
+                    {(() => {
+                      const staff = getStaffDisplay(trx);
+                      if (!staff) return null;
+                      return <span className="text-sm text-slate-600" title={staff.title}>{staff.label}</span>;
+                    })()}
                   </td>
                   <td className="px-6 py-5">
                     <div className="text-sm text-slate-600 max-w-xs truncate">
@@ -360,6 +380,7 @@ export const TransactionHistoryPage: React.FC = () => {
                         {statusBadge('active', child)}
                       </div>
                     </td>
+                    <td className="px-6 py-2"></td>
                     <td className="px-6 py-2">
                       <div className="text-xs text-slate-500 max-w-xs truncate">
                         {child.items.map(i => i.name).join(', ')}
