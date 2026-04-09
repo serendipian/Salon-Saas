@@ -46,6 +46,7 @@ export function toPackItem(row: PackItemRow): PackItem {
     originalPrice: row.service_variants?.price ?? 0,
     durationMinutes: row.service_variants?.duration_minutes ?? 0,
     sortOrder: row.sort_order,
+    isDeleted: row.service_variants?.deleted_at != null,
   };
 }
 

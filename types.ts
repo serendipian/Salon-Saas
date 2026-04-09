@@ -98,6 +98,7 @@ export interface PackItem {
   originalPrice: number;
   durationMinutes: number;
   sortOrder: number;
+  isDeleted: boolean;
 }
 
 export interface Pack {

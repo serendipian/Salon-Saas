@@ -270,7 +270,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
       const variant = svc?.variants.find((v) => v.id === block.variantId);
       const staff = team.find((m) => m.id === block.staffId);
       const duration = variant?.durationMinutes ?? svc?.durationMinutes;
-      const price = variant?.price ?? svc?.price;
+      const price = block.priceOverride ?? variant?.price ?? svc?.price;
       const parts = [
         svc?.name,
         variant ? `· ${variant.name}` : null,

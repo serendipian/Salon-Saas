@@ -65,21 +65,25 @@ const CartItemRow: React.FC<{
       </div>
     </div>
     <div className="flex justify-between items-center mt-1">
-      <div className="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200" onClick={(e) => e.stopPropagation()}>
-        <button
-          onClick={() => item.quantity > 1 ? onUpdateQuantity(item.id, -1) : onRemoveItem(item.id)}
-          className="w-6 h-6 flex items-center justify-center hover:bg-white rounded text-slate-600 transition-colors shadow-sm"
-        >
-          {item.quantity > 1 ? <Minus size={14} /> : <Trash2 size={14} className="text-red-500" />}
-        </button>
-        <span className="w-8 text-center text-sm font-bold text-slate-800">{item.quantity}</span>
-        <button
-          onClick={() => onUpdateQuantity(item.id, 1)}
-          className="w-6 h-6 flex items-center justify-center hover:bg-white rounded text-slate-600 transition-colors shadow-sm"
-        >
-          <Plus size={14} />
-        </button>
-      </div>
+      {!item.packId ? (
+        <div className="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => item.quantity > 1 ? onUpdateQuantity(item.id, -1) : onRemoveItem(item.id)}
+            className="w-6 h-6 flex items-center justify-center hover:bg-white rounded text-slate-600 transition-colors shadow-sm"
+          >
+            {item.quantity > 1 ? <Minus size={14} /> : <Trash2 size={14} className="text-red-500" />}
+          </button>
+          <span className="w-8 text-center text-sm font-bold text-slate-800">{item.quantity}</span>
+          <button
+            onClick={() => onUpdateQuantity(item.id, 1)}
+            className="w-6 h-6 flex items-center justify-center hover:bg-white rounded text-slate-600 transition-colors shadow-sm"
+          >
+            <Plus size={14} />
+          </button>
+        </div>
+      ) : (
+        <div />
+      )}
       <div className="text-xs text-slate-400 flex items-center gap-1 group-hover:text-slate-600">
         <Edit3 size={12} />
         <span>Modifier</span>

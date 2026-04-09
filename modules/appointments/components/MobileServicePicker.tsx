@@ -168,6 +168,32 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
       {activeCategoryId === 'FAVORITES' && (
         <div className="flex flex-col gap-2">
           {favorites.map((fav) => {
+            if (fav.type === 'pack') {
+              const pack = fav.pack;
+              const discount = getPackDiscount(pack);
+              return (
+                <button
+                  key={`fav-pack-${pack.id}`}
+                  type="button"
+                  onClick={() => {
+                    onPackSelect?.(pack);
+                    onClose();
+                  }}
+                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-white border border-slate-200 min-h-[52px] transition-colors active:bg-emerald-50"
+                >
+                  <div className="text-left">
+                    <div className="text-sm font-medium text-slate-900">{pack.name}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      {pack.items.length} service{pack.items.length !== 1 ? 's' : ''}
+                      {discount > 0 && ` · -${discount}%`}
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold text-emerald-600 shrink-0 ml-2">
+                    {formatPrice(pack.price)}
+                  </span>
+                </button>
+              );
+            }
             if (fav.type === 'service') {
               const service = fav.service;
               const isExpanded = expandedServiceId === service.id;

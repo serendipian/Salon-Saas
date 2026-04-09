@@ -32,7 +32,7 @@ export function expandPack(pack: Pack): CartItem[] {
 
   if (diff !== 0) {
     let maxIndex = 0;
-    let maxPrice = 0;
+    let maxPrice = -1;
     for (let i = 0; i < items.length; i++) {
       if (pack.items[i].originalPrice > maxPrice) {
         maxPrice = pack.items[i].originalPrice;
@@ -50,7 +50,7 @@ export function expandPack(pack: Pack): CartItem[] {
  */
 export function isPackValid(pack: Pack): boolean {
   return pack.items.length > 0 && pack.items.every(
-    (item) => item.serviceName !== '' && item.variantName !== '' && item.originalPrice > 0
+    (item) => item.serviceName !== '' && item.variantName !== '' && !item.isDeleted
   );
 }
 
