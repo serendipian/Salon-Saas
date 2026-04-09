@@ -1,10 +1,9 @@
 import React from 'react';
 import { formatPrice, formatDuration } from '../../../lib/format';
-import type { Service, ServiceVariant } from '../../../types';
+import type { Service, ServiceBlockItem } from '../../../types';
 
 interface ServiceBlockSummary {
-  serviceId: string | null;
-  variantId: string | null;
+  items: ServiceBlockItem[];
   staffId: string | null;
   date: string | null;
   hour: number | null;
@@ -14,16 +13,6 @@ interface ServiceBlockSummary {
 interface AppointmentSummaryProps {
   serviceBlocks: ServiceBlockSummary[];
   services: Service[];
-}
-
-function getVariant(services: Service[], serviceId: string | null, variantId: string | null): ServiceVariant | null {
-  if (!serviceId || !variantId) return null;
-  const svc = services.find((s) => s.id === serviceId);
-  return svc?.variants.find((v) => v.id === variantId) ?? null;
-}
-
-function getService(services: Service[], serviceId: string | null) {
-  return services.find((s) => s.id === serviceId) ?? null;
 }
 
 function formatTime(hour: number | null, minute: number, durationMinutes: number): string {
@@ -47,17 +36,28 @@ export default function AppointmentSummary({
   serviceBlocks,
   services,
 }: AppointmentSummaryProps) {
+  // Build one display row per block; multi-item blocks show concatenated service names
   const blockDetails = serviceBlocks.map((block) => {
-    const svc = getService(services, block.serviceId);
-    const variant = getVariant(services, block.serviceId, block.variantId);
-    const duration = variant?.durationMinutes ?? svc?.durationMinutes ?? 0;
-    const price = variant?.price ?? svc?.price ?? 0;
+    const itemDetails = block.items.map((item) => {
+      const svc = services.find((s) => s.id === item.serviceId);
+      const variant = svc?.variants.find((v) => v.id === item.variantId);
+      return {
+        name: svc?.name ?? '',
+        variantName: variant?.name ?? '',
+        duration: variant?.durationMinutes ?? svc?.durationMinutes ?? 0,
+        price: item.priceOverride ?? variant?.price ?? svc?.price ?? 0,
+      };
+    });
+    const totalDuration = itemDetails.reduce((sum, i) => sum + i.duration, 0);
+    const totalPrice = itemDetails.reduce((sum, i) => sum + i.price, 0);
+    const label =
+      itemDetails.length === 1
+        ? `${itemDetails[0].name}${itemDetails[0].variantName ? ` · ${itemDetails[0].variantName}` : ''}`
+        : `${itemDetails.length} prestations : ${itemDetails.map((i) => i.name).join(', ')}`;
     return {
-      name: svc?.name ?? '',
-      variantName: variant?.name ?? '',
-      duration,
-      price,
-      time: formatTime(block.hour, block.minute, duration),
+      label,
+      duration: totalDuration,
+      price: totalPrice,
       date: block.date,
       hour: block.hour,
       minute: block.minute,
@@ -78,7 +78,7 @@ export default function AppointmentSummary({
             <div className="flex justify-between text-sm">
               <span className="text-slate-600">
                 <span className="w-5 h-5 bg-slate-200 text-slate-600 rounded-full inline-flex items-center justify-center text-[10px] font-bold mr-2">{i + 1}</span>
-                {b.name}{b.variantName ? ` · ${b.variantName}` : ''}
+                {b.label}
               </span>
               <span className="text-slate-800 font-medium">{formatPrice(b.price)}</span>
             </div>
