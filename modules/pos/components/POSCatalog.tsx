@@ -191,7 +191,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                   >
                     <div className={`absolute top-0 left-0 w-1 h-full ${getAccentColor(category?.color)}`} />
                     <div className="flex-1">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border ${category?.color || 'bg-white text-slate-600'}`}>
                         <CategoryIcon categoryName={category?.name || ''} iconName={category?.icon} size={10} />
                         {category?.name || 'General'}
                       </span>
@@ -224,7 +224,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                 >
                   <div className={`absolute top-0 left-0 w-1 h-full ${getAccentColor(category?.color)}`} />
                   <div className="flex-1">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border ${category?.color || 'bg-white text-slate-600'}`}>
                       <CategoryIcon categoryName={category?.name || ''} iconName={category?.icon} size={10} />
                       {category?.name || 'General'}
                     </span>
@@ -269,7 +269,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                    <div className={`absolute top-0 left-0 w-1 h-full ${getAccentColor(category?.color)}`} />
 
                    <div className="flex-1">
-                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border bg-white text-slate-600">
+                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 border ${category?.color || 'bg-white text-slate-600'}`}>
                        {isService && <CategoryIcon categoryName={category?.name || ''} iconName={(category as ServiceCategory)?.icon} size={10} />}
                        {category?.name || 'General'}
                      </span>
