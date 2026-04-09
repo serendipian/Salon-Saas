@@ -41,29 +41,59 @@ export const AppointmentEditPage: React.FC = () => {
     if (!selectedAppt) return undefined;
 
     const groupAppts = selectedAppt.groupId
-      ? allAppointments.filter(a => a.groupId === selectedAppt.groupId)
+      ? allAppointments.filter((a) => a.groupId === selectedAppt.groupId)
       : [selectedAppt];
 
-    const serviceBlocks: ServiceBlockState[] = groupAppts.map(appt => {
-      const dateObj = new Date(appt.date);
-      const dateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+    // Sort chronologically — required for the merge heuristic
+    const sorted = [...groupAppts].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
 
-      const svc = services.find(s => s.id === appt.serviceId);
+    const serviceBlocks: ServiceBlockState[] = [];
+    let current: ServiceBlockState | null = null;
+    let currentCursorEnd: Date | null = null;
+
+    for (const appt of sorted) {
+      const apptStart = new Date(appt.date);
+      const apptEnd = new Date(apptStart.getTime() + (appt.durationMinutes ?? 0) * 60_000);
+      const dateStr = `${apptStart.getFullYear()}-${String(apptStart.getMonth() + 1).padStart(2, '0')}-${String(apptStart.getDate()).padStart(2, '0')}`;
+
+      const svc = services.find((s) => s.id === appt.serviceId);
       const variant = appt.variantId
-        ? svc?.variants.find(v => v.id === appt.variantId)
-        : svc?.variants.find(v => v.price === appt.price && v.durationMinutes === appt.durationMinutes);
+        ? svc?.variants.find((v) => v.id === appt.variantId)
+        : svc?.variants.find((v) => v.price === appt.price && v.durationMinutes === appt.durationMinutes);
 
-      return {
-        id: crypto.randomUUID(),
-        categoryId: svc?.categoryId ?? null,
-        serviceId: appt.serviceId || null,
-        variantId: variant?.id ?? null,
-        staffId: appt.staffId || null,
-        date: dateStr,
-        hour: dateObj.getHours(),
-        minute: dateObj.getMinutes(),
+      const item = {
+        serviceId: appt.serviceId ?? '',
+        variantId: variant?.id ?? '',
       };
-    });
+
+      const canMerge =
+        current != null &&
+        !current.packId && // pack blocks are atomic
+        current.staffId === (appt.staffId ?? null) &&
+        current.categoryId === (svc?.categoryId ?? null) &&
+        current.date === dateStr &&
+        currentCursorEnd != null &&
+        currentCursorEnd.getTime() === apptStart.getTime();
+
+      if (canMerge && current) {
+        current.items.push(item);
+        currentCursorEnd = apptEnd;
+      } else {
+        current = {
+          id: crypto.randomUUID(),
+          categoryId: svc?.categoryId ?? null,
+          items: [item],
+          staffId: appt.staffId ?? null,
+          date: dateStr,
+          hour: apptStart.getHours(),
+          minute: apptStart.getMinutes(),
+        };
+        serviceBlocks.push(current);
+        currentCursorEnd = apptEnd;
+      }
+    }
 
     return {
       clientId: selectedAppt.clientId,
