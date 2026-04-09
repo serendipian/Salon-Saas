@@ -27,12 +27,32 @@ interface POSCatalogProps {
   onAddToCart: (item: import('../../../types').CartItem) => void;
 }
 
-// Extract a vibrant accent color from category color classes
-// e.g. "bg-rose-100 text-rose-800 border-rose-200" → "bg-rose-500"
+// Map category color class strings to their accent dot color (bg-{color}-400)
+// Must use full class names so Tailwind can detect them at build time
+const ACCENT_COLOR_MAP: Record<string, string> = {
+  'bg-slate-100 text-slate-800 border-slate-200': 'bg-slate-400',
+  'bg-pink-100 text-pink-800 border-pink-200': 'bg-pink-400',
+  'bg-rose-100 text-rose-800 border-rose-200': 'bg-rose-400',
+  'bg-red-100 text-red-800 border-red-200': 'bg-red-400',
+  'bg-orange-100 text-orange-800 border-orange-200': 'bg-orange-400',
+  'bg-amber-100 text-amber-800 border-amber-200': 'bg-amber-400',
+  'bg-yellow-100 text-yellow-800 border-yellow-200': 'bg-yellow-400',
+  'bg-lime-100 text-lime-800 border-lime-200': 'bg-lime-400',
+  'bg-green-100 text-green-800 border-green-200': 'bg-green-400',
+  'bg-emerald-100 text-emerald-800 border-emerald-200': 'bg-emerald-400',
+  'bg-teal-100 text-teal-800 border-teal-200': 'bg-teal-400',
+  'bg-cyan-100 text-cyan-800 border-cyan-200': 'bg-cyan-400',
+  'bg-sky-100 text-sky-800 border-sky-200': 'bg-sky-400',
+  'bg-blue-100 text-blue-800 border-blue-200': 'bg-blue-400',
+  'bg-indigo-100 text-indigo-800 border-indigo-200': 'bg-indigo-400',
+  'bg-violet-100 text-violet-800 border-violet-200': 'bg-violet-400',
+  'bg-purple-100 text-purple-800 border-purple-200': 'bg-purple-400',
+  'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200': 'bg-fuchsia-400',
+};
+
 const getAccentColor = (colorClasses?: string): string => {
   if (!colorClasses) return 'bg-slate-400';
-  const match = colorClasses.match(/bg-(\w+)-\d+/);
-  return match ? `bg-${match[1]}-500` : 'bg-slate-400';
+  return ACCENT_COLOR_MAP[colorClasses] ?? 'bg-slate-400';
 };
 
 export const POSCatalog: React.FC<POSCatalogProps> = ({
