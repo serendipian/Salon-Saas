@@ -46,7 +46,7 @@ export default function ServiceGrid({
                 ? selectedVariantId === variant?.id
                 : svc.id === selectedServiceId;
 
-              // Single-variant service: render as flat card like a variant favorite
+              // Single-variant service: render as flat card matching variant favorite layout
               if (isSingleVariant && variant) {
                 return (
                   <div
@@ -61,18 +61,20 @@ export default function ServiceGrid({
                     tabIndex={0}
                     onKeyDown={(e) => e.key === 'Enter' && !isSelected && onSelectVariant(variant.id, svc.id)}
                   >
-                    <div className="flex justify-between items-start">
-                      <div className="min-w-0 flex-1">
-                        {catName && <span className="text-[11px] text-slate-400">{catName}</span>}
-                        <div className={`text-xs font-medium ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>{svc.name}</div>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        {catName && <><span className={`text-xs font-medium ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>{catName}</span><span className="text-xs text-slate-500"> — </span></>}
+                        <span className={`text-xs ${catName ? 'text-slate-500' : `font-medium ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}`}>{svc.name}</span>
                       </div>
-                      {isSelected && (
-                        <span className="w-5 h-5 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0 ml-1">
-                          <Check size={12} strokeWidth={2.5} />
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-slate-500">{formatDuration(variant.durationMinutes)} — {formatPrice(variant.price)}</span>
+                        {isSelected && (
+                          <span className="w-5 h-5 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm">
+                            <Check size={12} strokeWidth={2.5} />
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-[11px] text-slate-500 mt-1">{formatDuration(variant.durationMinutes)} — {formatPrice(variant.price)}</div>
                   </div>
                 );
               }
