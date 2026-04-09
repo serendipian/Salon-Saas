@@ -2945,6 +2945,10 @@ export type Database = {
         Args: { p_items: Json; p_salon_id: string }
         Returns: undefined
       }
+      replace_pack_items: {
+        Args: { p_items: Json; p_pack_id: string; p_salon_id: string }
+        Returns: undefined
+      }
       revoke_membership: {
         Args: { p_membership_id: string }
         Returns: undefined

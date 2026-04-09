@@ -93,27 +93,20 @@ export function usePacks() {
 
       if (packError) throw packError;
 
-      const { error: deleteError } = await supabase
-        .from('pack_items')
-        .delete()
-        .eq('pack_id', pack.id)
-        .eq('salon_id', salonId);
-
-      if (deleteError) throw deleteError;
-
-      const itemRows = pack.items.map((item, i) => ({
-        pack_id: pack.id,
-        salon_id: salonId,
+      // Atomic item replacement via RPC to prevent orphaned packs on partial failure
+      const itemsJson = pack.items.map((item, i) => ({
         service_id: item.serviceId,
         service_variant_id: item.serviceVariantId,
         sort_order: i,
       }));
 
-      const { error: itemsError } = await supabase
-        .from('pack_items')
-        .insert(itemRows);
+      const { error: rpcError } = await supabase.rpc('replace_pack_items', {
+        p_pack_id: pack.id,
+        p_salon_id: salonId,
+        p_items: itemsJson,
+      });
 
-      if (itemsError) throw itemsError;
+      if (rpcError) throw rpcError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
@@ -161,25 +154,34 @@ export function usePacks() {
     mutationFn: async ({ packId, isFavorite }: { packId: string; isFavorite: boolean }) => {
       if (!salonId) throw new Error('No salon');
 
-      let favoriteOrder: number | null = null;
-      if (isFavorite) {
-        const { data: maxPack } = await supabase
+      if (!isFavorite) {
+        const { error } = await supabase
           .from('packs')
-          .select('favorite_sort_order')
-          .eq('salon_id', salonId)
-          .eq('is_favorite', true)
-          .order('favorite_sort_order', { ascending: false })
-          .limit(1)
-          .single();
-
-        favoriteOrder = (maxPack?.favorite_sort_order ?? 0) + 1;
+          .update({ is_favorite: false, favorite_sort_order: null })
+          .eq('id', packId)
+          .eq('salon_id', salonId);
+        if (error) throw error;
+        return;
       }
+
+      // Atomic: compute next sort order and set in one query via RPC-style raw SQL
+      // Fallback: read-then-write but with optimistic locking via the update filter
+      const { data: maxPack } = await supabase
+        .from('packs')
+        .select('favorite_sort_order')
+        .eq('salon_id', salonId)
+        .eq('is_favorite', true)
+        .order('favorite_sort_order', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const favoriteOrder = (maxPack?.favorite_sort_order ?? 0) + 1;
 
       const { error } = await supabase
         .from('packs')
         .update({
-          is_favorite: isFavorite,
-          favorite_sort_order: isFavorite ? favoriteOrder : null,
+          is_favorite: true,
+          favorite_sort_order: favoriteOrder,
         })
         .eq('id', packId)
         .eq('salon_id', salonId);

@@ -213,14 +213,17 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
 
   const addBlock = useCallback(() => {
     const newBlock = createEmptyBlock();
+    let newLength = 0;
     setServiceBlocks((prev) => {
       const lastBlock = prev[prev.length - 1];
       if (lastBlock?.date) {
         newBlock.date = lastBlock.date;
       }
-      setActiveBlockIndex(prev.length);
+      newLength = prev.length + 1;
       return [...prev, newBlock];
     });
+    // Use functional updater to derive from current — no nesting inside setServiceBlocks
+    setActiveBlockIndex(() => newLength - 1);
   }, []);
 
   const addPackBlocks = useCallback((pack: Pack) => {
@@ -241,10 +244,14 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
       proRataPrices[maxIdx] = Math.round((proRataPrices[maxIdx] + diff) * 100) / 100;
     }
 
+    let firstNewBlockIndex = 0;
+
     setServiceBlocks((prev) => {
       const base = prev.length === 1 && !prev[0].serviceId ? [] : prev;
       const lastBlock = base[base.length - 1];
       const lastDate = lastBlock?.date ?? null;
+
+      firstNewBlockIndex = base.length;
 
       const newBlocks: ServiceBlockState[] = pack.items.map((item, i) => ({
         id: crypto.randomUUID(),
@@ -258,9 +265,10 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
         priceOverride: proRataPrices[i],
       }));
 
-      setActiveBlockIndex(base.length);
       return [...base, ...newBlocks];
     });
+    // Separate setState call — don't nest setState inside another updater
+    setActiveBlockIndex(firstNewBlockIndex);
   }, []);
 
   // Build summary text for collapsed blocks
