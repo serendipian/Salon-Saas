@@ -26,6 +26,7 @@ import { DateRange, AppointmentStatus, PaymentEntry, Transaction } from '../../t
 import { toExpense, ExpenseRow } from '../accounting/mappers';
 import { calcBonus, calcCommission } from '../team/utils';
 import { DateRangePicker } from '../../components/DateRangePicker';
+import { StaffAvatar } from '../../components/StaffAvatar';
 import { TodayCalendarCard } from './components/TodayCalendarCard';
 
 interface MetricCardProps {
@@ -317,7 +318,7 @@ export const DashboardModule: React.FC = () => {
     });
 
     // Per-staff bonus breakdown
-    const staffBreakdown: { name: string; bonus: number }[] = [];
+    const staffBreakdown: { firstName: string; lastName: string; photoUrl?: string; color?: string; bonus: number }[] = [];
     let totalBonus = 0;
 
     staffRevMap.forEach((revenue, staffId) => {
@@ -326,7 +327,13 @@ export const DashboardModule: React.FC = () => {
         const bonus = calcBonus(revenue, staff.bonusTiers);
         totalBonus += bonus;
         if (bonus > 0) {
-          staffBreakdown.push({ name: `${staff.firstName} ${staff.lastName}`.trim(), bonus });
+          staffBreakdown.push({
+            firstName: staff.firstName,
+            lastName: staff.lastName,
+            photoUrl: staff.photoUrl,
+            color: staff.color,
+            bonus,
+          });
         }
       }
     });
@@ -647,23 +654,28 @@ export const DashboardModule: React.FC = () => {
             )}
             <span className="text-xs text-slate-400">vs période préc.</span>
           </div>
-          <div className="pt-3 border-t border-slate-100 space-y-3">
+          <div className="space-y-2 pt-3 border-t border-slate-100">
             {bonusStats.staffBreakdown.length === 0 ? (
               <p className="text-xs text-slate-400 text-center py-2">Aucun bonus sur cette période</p>
             ) : (
-              bonusStats.staffBreakdown.slice(0, 4).map((entry) => (
-                <div key={entry.name} className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-blue-50 text-blue-600">
-                    <Gift size={14} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-xs font-medium text-slate-600 truncate">{entry.name}</span>
-                      <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(entry.bonus)}</span>
+              bonusStats.staffBreakdown.slice(0, 4).map((entry) => {
+                const percent = bonusStats.total > 0 ? (entry.bonus / bonusStats.total) * 100 : 0;
+                return (
+                  <div key={`${entry.firstName}-${entry.lastName}`} className="flex items-center gap-2.5">
+                    <StaffAvatar firstName={entry.firstName} lastName={entry.lastName} photoUrl={entry.photoUrl} color={entry.color} size={28} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs font-medium text-slate-600 truncate">{entry.firstName} {entry.lastName}</span>
+                        <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(entry.bonus)}</span>
+                      </div>
+                      <div className="h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
+                        <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
+                      </div>
                     </div>
+                    <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">{percent.toFixed(0)}%</span>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
             {bonusStats.staffBreakdown.length > 4 && (
               <div className="text-xs text-slate-400 text-center">
