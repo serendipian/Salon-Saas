@@ -90,6 +90,8 @@ const PAYMENT_METHOD_COLORS: Record<string, string> = {
 // All known payment methods for revenue (matching POS options, idle ones show too)
 const ALL_REVENUE_METHODS = ['Espèces', 'Carte Bancaire', 'Carte Cadeau', 'Autre'] as const;
 
+const ALL_EXPENSE_METHODS = ['especes', 'carte', 'virement', 'cheque', 'prelevement'] as const;
+
 // Expense payment method labels
 const EXPENSE_METHOD_LABELS: Record<string, string> = {
   'especes': 'Espèces',
@@ -294,10 +296,10 @@ export const DashboardModule: React.FC = () => {
       const key = e.paymentMethod || 'unknown';
       methodMap.set(key, (methodMap.get(key) || 0) + e.amount);
     });
-    const methods = Array.from(methodMap.entries())
-      .filter(([key]) => key !== 'unknown')
-      .map(([method, amount]) => ({ method, amount, percent: total > 0 ? (amount / total) * 100 : 0 }))
-      .sort((a, b) => b.amount - a.amount);
+    const methods = ALL_EXPENSE_METHODS.map(method => {
+      const amount = methodMap.get(method) || 0;
+      return { method, amount, percent: total > 0 ? (amount / total) * 100 : 0 };
+    });
     const unknownAmount = methodMap.get('unknown') || 0;
 
     return { total, trend, count: data.current.expenses.length, methods, unknownAmount };
@@ -606,8 +608,9 @@ export const DashboardModule: React.FC = () => {
               const label = EXPENSE_METHOD_LABELS[method] || method;
               const Icon = EXPENSE_METHOD_ICONS[method] || Wallet;
               const colorClass = EXPENSE_METHOD_COLORS[method] || 'bg-slate-50 text-slate-600';
+              const isIdle = amount === 0;
               return (
-                <div key={method} className="flex items-center gap-2.5">
+                <div key={method} className={`flex items-center gap-2.5 ${isIdle ? 'opacity-40' : ''}`}>
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
                     <Icon size={14} />
                   </div>
@@ -636,9 +639,6 @@ export const DashboardModule: React.FC = () => {
                   </div>
                 </div>
               </div>
-            )}
-            {expenseStats.methods.length === 0 && expenseStats.unknownAmount === 0 && (
-              <p className="text-xs text-slate-400 italic">Aucune dépense sur la période</p>
             )}
           </div>
         </div>
