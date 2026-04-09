@@ -118,16 +118,18 @@ export function usePacks() {
   const deletePackMutation = useMutation({
     mutationFn: async (packId: string) => {
       if (!salonId) throw new Error('No salon');
+      // Hard delete: packs have no persistent references outside pack_items
+      // (which cascades). The audit trigger still records the full row state.
       const { error } = await supabase
         .from('packs')
-        .update({ deleted_at: new Date().toISOString() })
+        .delete()
         .eq('id', packId)
         .eq('salon_id', salonId);
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
       toastOnSuccess('Pack supprimé')();
     },
     onError: toastOnError('Erreur lors de la suppression du pack'),

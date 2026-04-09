@@ -101,7 +101,11 @@ export const PackList: React.FC<PackListProps> = ({
                       <Edit3 size={16} className="text-slate-500" />
                     </button>
                     <button
-                      onClick={() => onDelete(pack.id)}
+                      onClick={() => {
+                        if (window.confirm(`Supprimer le pack "${pack.name}" ? Cette action est irréversible.`)) {
+                          onDelete(pack.id);
+                        }
+                      }}
                       className="p-2 rounded-lg hover:bg-red-50 transition-colors"
                     >
                       <Trash2 size={16} className="text-slate-400 hover:text-red-500" />
