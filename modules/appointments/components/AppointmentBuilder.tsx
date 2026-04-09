@@ -97,7 +97,9 @@ export default function AppointmentBuilder({
                 onAddPackBlocks={form.addPackBlocks}
                 onActivate={() => form.setActiveBlockIndex(i)}
                 onRemove={() => form.removeBlock(i)}
-                onChange={(updates) => form.updateBlock(i, updates)}
+                onUpdate={(updates) => form.updateBlock(i, updates)}
+                onToggleItem={(serviceId, variantId) => form.toggleBlockItem(i, serviceId, variantId)}
+                onClearItems={() => form.clearBlockItems(i)}
                 summaryText={form.getBlockSummary(block)}
                 stepOffset={1}
               />
