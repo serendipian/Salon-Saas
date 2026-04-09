@@ -152,7 +152,7 @@ export const TransactionHistoryPage: React.FC = () => {
 
   return (
     <div className="w-full space-y-6">
-      {/* Page Header */}
+      {/* Merged Header: back + title on left, date nav on right */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
@@ -164,41 +164,39 @@ export const TransactionHistoryPage: React.FC = () => {
           </button>
           <h1 className="text-2xl font-bold text-slate-900">Historique</h1>
         </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={goToPrevDay}
+            className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-900"
+            aria-label="Jour précédent"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700 min-w-[120px] text-center">
+            {historyDateLabel}
+            <span className="ml-1.5 text-xs text-slate-400 font-normal">{filteredTransactions.length}</span>
+          </span>
+          <button
+            onClick={goToNextDay}
+            disabled={isHistoryToday}
+            className={`p-1.5 rounded-lg transition-colors ${isHistoryToday ? 'text-slate-200 cursor-not-allowed' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-900'}`}
+            aria-label="Jour suivant"
+          >
+            <ChevronRight size={18} />
+          </button>
+          {!isHistoryToday && (
+            <button
+              onClick={() => setHistoryDate(new Date())}
+              className="text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors ml-1"
+            >
+              Aujourd'hui
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Date Navigation + Transaction List */}
+      {/* Transaction List Card */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={goToPrevDay}
-              className="p-1.5 rounded-lg hover:bg-slate-200 transition-colors text-slate-500 hover:text-slate-900"
-              aria-label="Jour précédent"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <h3 className="font-bold text-slate-900 text-sm min-w-[120px] text-center">{historyDateLabel}</h3>
-            <button
-              onClick={goToNextDay}
-              disabled={isHistoryToday}
-              className={`p-1.5 rounded-lg transition-colors ${isHistoryToday ? 'text-slate-200 cursor-not-allowed' : 'hover:bg-slate-200 text-slate-500 hover:text-slate-900'}`}
-              aria-label="Jour suivant"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-500 font-medium">{filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}</span>
-            {!isHistoryToday && (
-              <button
-                onClick={() => setHistoryDate(new Date())}
-                className="text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors"
-              >
-                Aujourd'hui
-              </button>
-            )}
-          </div>
-        </div>
 
         {filteredTransactions.length === 0 ? (
           <div className="p-12 text-center">
