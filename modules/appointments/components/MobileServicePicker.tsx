@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Check } from 'lucide-react';
-import type { Service, ServiceCategory } from '../../../types';
+import { Check, Star } from 'lucide-react';
+import type { Service, ServiceCategory, FavoriteItem } from '../../../types';
 import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 
 interface MobileServicePickerProps {
   services: Service[];
   categories: ServiceCategory[];
+  favorites?: FavoriteItem[];
   initialCategoryId: string | null;
   onSelect: (selection: { serviceId: string; variantId: string; categoryId: string }) => void;
   onClose: () => void;
@@ -15,18 +16,19 @@ interface MobileServicePickerProps {
 export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
   services,
   categories,
+  favorites = [],
   initialCategoryId,
   onSelect,
   onClose,
 }) => {
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(
-    initialCategoryId ?? categories[0]?.id ?? null
+    favorites.length > 0 ? 'FAVORITES' : initialCategoryId ?? categories[0]?.id ?? null
   );
   const [expandedServiceId, setExpandedServiceId] = useState<string | null>(null);
 
-  const filteredServices = services.filter(
-    (s) => s.active && s.categoryId === activeCategoryId
-  );
+  const filteredServices = activeCategoryId === 'FAVORITES'
+    ? []
+    : services.filter((s) => s.active && s.categoryId === activeCategoryId);
 
   const handleCategoryTap = (categoryId: string) => {
     setActiveCategoryId(categoryId);
@@ -76,6 +78,20 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
     <div>
       {/* Category pills */}
       <div className="flex gap-2 overflow-x-auto pb-3 mb-3 -mx-5 px-5 scrollbar-hide">
+        {favorites.length > 0 && (
+          <button
+            type="button"
+            onClick={() => handleCategoryTap('FAVORITES')}
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium whitespace-nowrap shrink-0 min-h-[36px] transition-colors ${
+              activeCategoryId === 'FAVORITES'
+                ? 'bg-amber-500 text-white shadow-sm'
+                : 'bg-slate-100 text-slate-600'
+            }`}
+          >
+            <Star size={14} className={activeCategoryId === 'FAVORITES' ? 'text-white fill-white' : 'text-slate-500'} />
+            Favoris
+          </button>
+        )}
         {categories.map((cat) => (
           <button
             key={cat.id}
@@ -98,70 +114,144 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
         ))}
       </div>
 
-      {/* Service list */}
-      <div className="flex flex-col gap-2">
-        {filteredServices.length === 0 && (
-          <p className="text-center text-sm text-slate-400 py-8">
-            Aucun service dans cette catégorie
-          </p>
-        )}
-
-        {filteredServices.map((service) => {
-          const isExpanded = expandedServiceId === service.id;
-
-          return (
-            <div key={service.id}>
-              <button
-                type="button"
-                onClick={() => handleServiceTap(service)}
-                className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl min-h-[52px] transition-colors ${
-                  isExpanded
-                    ? 'bg-blue-50 border-2 border-blue-400'
-                    : 'bg-white border border-slate-200'
-                }`}
-              >
-                <div className="text-left">
-                  <div className="text-sm font-medium text-slate-900">
-                    {service.name}
-                  </div>
-                  <div className="text-xs text-slate-500 mt-0.5">
-                    {getServiceSubtitle(service)}
-                  </div>
+      {/* Favorites list */}
+      {activeCategoryId === 'FAVORITES' && (
+        <div className="flex flex-col gap-2">
+          {favorites.map((fav) => {
+            if (fav.type === 'service') {
+              const service = fav.service;
+              const isExpanded = expandedServiceId === service.id;
+              return (
+                <div key={`fav-svc-${service.id}`}>
+                  <button
+                    type="button"
+                    onClick={() => handleServiceTap(service)}
+                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl min-h-[52px] transition-colors ${
+                      isExpanded
+                        ? 'bg-blue-50 border-2 border-blue-400'
+                        : 'bg-white border border-slate-200'
+                    }`}
+                  >
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-slate-900">{service.name}</div>
+                      <div className="text-xs text-slate-500 mt-0.5">{getServiceSubtitle(service)}</div>
+                    </div>
+                    {service.variants.length === 1 && (
+                      <Check size={16} className="text-slate-400 shrink-0 ml-2" />
+                    )}
+                  </button>
+                  {isExpanded && service.variants.length > 1 && (
+                    <div className="ml-3 mt-2 flex flex-col gap-1.5">
+                      {service.variants.map((variant) => (
+                        <button
+                          key={variant.id}
+                          type="button"
+                          onClick={() => handleVariantTap(service, variant.id)}
+                          className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white border border-slate-200 min-h-[48px] transition-colors active:bg-slate-50"
+                        >
+                          <div className="text-left">
+                            <span className="text-sm font-medium text-slate-900">{variant.name}</span>
+                            <span className="text-xs text-slate-500 ml-2">{formatDuration(variant.durationMinutes)}</span>
+                          </div>
+                          <span className="text-sm font-semibold text-blue-600 shrink-0 ml-2">{formatPrice(variant.price)}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                {service.variants.length === 1 && (
+              );
+            } else {
+              // Variant-type favorite — direct select
+              const { variant, parentService } = fav;
+              return (
+                <button
+                  key={`fav-var-${variant.id}`}
+                  type="button"
+                  onClick={() => handleVariantTap(parentService, variant.id)}
+                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-white border border-slate-200 min-h-[52px] transition-colors active:bg-slate-50"
+                >
+                  <div className="text-left">
+                    <div className="text-sm font-medium text-slate-900">
+                      {parentService.name} — {variant.name}
+                    </div>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      {formatDuration(variant.durationMinutes)} · {formatPrice(variant.price)}
+                    </div>
+                  </div>
                   <Check size={16} className="text-slate-400 shrink-0 ml-2" />
-                )}
-              </button>
+                </button>
+              );
+            }
+          })}
+        </div>
+      )}
 
-              {/* Variant list (multi-variant expansion) */}
-              {isExpanded && service.variants.length > 1 && (
-                <div className="ml-3 mt-2 flex flex-col gap-1.5">
-                  {service.variants.map((variant) => (
-                    <button
-                      key={variant.id}
-                      type="button"
-                      onClick={() => handleVariantTap(service, variant.id)}
-                      className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white border border-slate-200 min-h-[48px] transition-colors active:bg-slate-50"
-                    >
-                      <div className="text-left">
-                        <span className="text-sm font-medium text-slate-900">
-                          {variant.name}
+      {/* Service list */}
+      {activeCategoryId !== 'FAVORITES' && (
+        <div className="flex flex-col gap-2">
+          {filteredServices.length === 0 && (
+            <p className="text-center text-sm text-slate-400 py-8">
+              Aucun service dans cette catégorie
+            </p>
+          )}
+
+          {filteredServices.map((service) => {
+            const isExpanded = expandedServiceId === service.id;
+
+            return (
+              <div key={service.id}>
+                <button
+                  type="button"
+                  onClick={() => handleServiceTap(service)}
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl min-h-[52px] transition-colors ${
+                    isExpanded
+                      ? 'bg-blue-50 border-2 border-blue-400'
+                      : 'bg-white border border-slate-200'
+                  }`}
+                >
+                  <div className="text-left">
+                    <div className="text-sm font-medium text-slate-900">
+                      {service.name}
+                    </div>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      {getServiceSubtitle(service)}
+                    </div>
+                  </div>
+                  {service.variants.length === 1 && (
+                    <Check size={16} className="text-slate-400 shrink-0 ml-2" />
+                  )}
+                </button>
+
+                {/* Variant list (multi-variant expansion) */}
+                {isExpanded && service.variants.length > 1 && (
+                  <div className="ml-3 mt-2 flex flex-col gap-1.5">
+                    {service.variants.map((variant) => (
+                      <button
+                        key={variant.id}
+                        type="button"
+                        onClick={() => handleVariantTap(service, variant.id)}
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white border border-slate-200 min-h-[48px] transition-colors active:bg-slate-50"
+                      >
+                        <div className="text-left">
+                          <span className="text-sm font-medium text-slate-900">
+                            {variant.name}
+                          </span>
+                          <span className="text-xs text-slate-500 ml-2">
+                            {formatDuration(variant.durationMinutes)}
+                          </span>
+                        </div>
+                        <span className="text-sm font-semibold text-blue-600 shrink-0 ml-2">
+                          {formatPrice(variant.price)}
                         </span>
-                        <span className="text-xs text-slate-500 ml-2">
-                          {formatDuration(variant.durationMinutes)}
-                        </span>
-                      </div>
-                      <span className="text-sm font-semibold text-blue-600 shrink-0 ml-2">
-                        {formatPrice(variant.price)}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

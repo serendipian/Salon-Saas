@@ -378,6 +378,7 @@ export default function AppointmentBuilderMobile({
           <MobileServicePicker
             services={hookProps.services}
             categories={hookProps.categories}
+            favorites={hookProps.favorites}
             initialCategoryId={form.serviceBlocks[serviceSheetBlockIndex]?.categoryId ?? null}
             onSelect={(selection) => {
               form.updateBlock(serviceSheetBlockIndex, {
