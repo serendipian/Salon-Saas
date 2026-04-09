@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers } from 'lucide-react';
+import { Layers, Star } from 'lucide-react';
 import { Service, ServiceCategory } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
@@ -10,6 +10,8 @@ interface ServiceCardProps {
   categories: ServiceCategory[];
   onEdit: (id: string) => void;
   groupByCategory?: boolean;
+  canToggleFavorite?: boolean;
+  onToggleFavorite?: (type: 'service' | 'variant', id: string, isFavorite: boolean) => void;
 }
 
 export const ServiceCard: React.FC<ServiceCardProps> = ({
@@ -17,6 +19,8 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   categories,
   onEdit,
   groupByCategory = false,
+  canToggleFavorite = false,
+  onToggleFavorite,
 }) => {
   if (services.length === 0) {
     return (
@@ -46,14 +50,32 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
           <div className="font-semibold text-slate-900 text-sm truncate">
             {service.name}
           </div>
-          {showCategory && (category ? (
-            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium border shrink-0 ${category.color}`}>
-              <CategoryIcon categoryName={category.name} iconName={category.icon} size={12} />
-              {category.name}
-            </span>
-          ) : (
-            <span className="text-slate-400 text-xs italic shrink-0">Non classé</span>
-          ))}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {canToggleFavorite && onToggleFavorite && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite('service', service.id, !service.isFavorite);
+                }}
+                className="p-0.5 transition-colors hover:scale-110"
+                title={service.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              >
+                <Star
+                  size={14}
+                  className={service.isFavorite ? 'fill-amber-400 text-amber-400' : 'text-slate-300 hover:text-amber-400'}
+                />
+              </button>
+            )}
+            {showCategory && (category ? (
+              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium border shrink-0 ${category.color}`}>
+                <CategoryIcon categoryName={category.name} iconName={category.icon} size={12} />
+                {category.name}
+              </span>
+            ) : (
+              <span className="text-slate-400 text-xs italic shrink-0">Non classé</span>
+            ))}
+          </div>
         </div>
         <div className="text-xs text-slate-500 mb-3 line-clamp-2">
           {service.description}

@@ -19,6 +19,7 @@ interface ServiceListProps {
   onSearchChange: (val: string) => void;
   onAdd: () => void;
   onEdit: (id: string) => void;
+  onToggleFavorite?: (type: 'service' | 'variant', id: string, isFavorite: boolean) => void;
 }
 
 export const ServiceList: React.FC<ServiceListProps> = ({
@@ -28,6 +29,7 @@ export const ServiceList: React.FC<ServiceListProps> = ({
   onSearchChange,
   onAdd,
   onEdit,
+  onToggleFavorite,
 }) => {
   const navigate = useNavigate();
   const { role } = useAuth();
@@ -130,6 +132,8 @@ export const ServiceList: React.FC<ServiceListProps> = ({
             categories={categories}
             onEdit={onEdit}
             groupByCategory={groupByCategory}
+            canToggleFavorite={!!onToggleFavorite}
+            onToggleFavorite={onToggleFavorite}
           />
         )}
       </div>

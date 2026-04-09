@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { ViewState, Service } from '../../types';
 import { useServices } from './hooks/useServices';
+import { useAuth } from '../../context/AuthContext';
+import { usePermissions } from '../../hooks/usePermissions';
 import { ServiceList } from './components/ServiceList';
 import { ServiceForm } from './components/ServiceForm';
 
@@ -16,7 +18,11 @@ export const ServicesModule: React.FC = () => {
     addService,
     updateService,
     deleteService,
+    toggleFavorite,
   } = useServices();
+  const { role } = useAuth();
+  const { can } = usePermissions(role);
+  const canEditServices = can('edit', 'services');
 
   const [view, setView] = useState<ViewState>('LIST');
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
@@ -51,13 +57,14 @@ export const ServicesModule: React.FC = () => {
   return (
     <div className="w-full">
       {view === 'LIST' && (
-        <ServiceList 
-          services={services} 
+        <ServiceList
+          services={services}
           categories={serviceCategories}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
-          onAdd={handleAdd} 
+          onAdd={handleAdd}
           onEdit={handleEdit}
+          onToggleFavorite={canEditServices ? (type, id, isFavorite) => toggleFavorite({ type, id, isFavorite }) : undefined}
         />
       )}
       {(view === 'ADD' || view === 'EDIT') && (
