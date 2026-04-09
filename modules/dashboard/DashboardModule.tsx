@@ -531,6 +531,15 @@ export const DashboardModule: React.FC = () => {
               </div>
               <h3 className="text-sm font-semibold text-slate-500">Chiffre d'Affaires</h3>
             </div>
+            <button
+              onClick={() => navigate('/historique')}
+              className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0"
+            >
+              {stats.transactionCount} prestation{stats.transactionCount !== 1 ? 's' : ''}
+              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                <ChevronRight size={14} />
+              </div>
+            </button>
           </div>
           <div className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(stats.revenue)}</div>
           <div className="flex items-center gap-2 mt-1 mb-4">
