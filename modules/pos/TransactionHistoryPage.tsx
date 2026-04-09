@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { History, ChevronLeft, ChevronRight, ArrowLeft, Eye, Receipt, Ban, RotateCcw, Search, Scissors, ShoppingBag, CreditCard, TrendingUp, Banknote, Wallet, Smartphone, Gift, FileText, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
+import { History, ChevronLeft, ChevronRight, ArrowLeft, Eye, Receipt, Ban, RotateCcw, Search, Scissors, ShoppingBag, CreditCard, TrendingUp, Banknote, Gift, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -12,14 +12,11 @@ import { ReceiptModal, TransactionDetailModal } from './components/POSModals';
 import { VoidModal } from './components/VoidModal';
 import { RefundModal } from './components/RefundModal';
 
-const ALL_PAYMENT_METHODS = ['Espèces', 'Carte Bancaire', 'Virement', 'Chèque', 'Mobile', 'Carte Cadeau'] as const;
+const ALL_PAYMENT_METHODS = ['Espèces', 'Carte Bancaire', 'Carte Cadeau'] as const;
 
 const PAYMENT_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   'Espèces': Banknote,
   'Carte Bancaire': CreditCard,
-  'Virement': Wallet,
-  'Chèque': FileText,
-  'Mobile': Smartphone,
   'Carte Cadeau': Gift,
 };
 
@@ -365,7 +362,7 @@ export const TransactionHistoryPage: React.FC = () => {
 
       {/* Search, Filter & Sort Bar */}
       {filteredTransactions.length > 0 && (
-        <div className="flex gap-2 items-center">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3 flex gap-2 items-center">
           {/* Search input */}
           <div className="relative flex-shrink-0" style={{ width: 260 }}>
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
