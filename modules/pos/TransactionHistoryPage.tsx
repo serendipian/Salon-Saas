@@ -205,7 +205,7 @@ export const TransactionHistoryPage: React.FC = () => {
           </div>
         ) : isMobile ? (
           /* Mobile: card layout */
-          <div className="p-3 space-y-3">
+          <div className="divide-y divide-slate-100">
             {groupedTransactions.map(({ parent: trx, children }) => {
               const status = getTransactionStatus(trx, transactions);
               const isVoided = status === 'voided';
@@ -213,14 +213,14 @@ export const TransactionHistoryPage: React.FC = () => {
               const showRefund = canRefund && trx.type === 'SALE' && status !== 'voided' && status !== 'fully_refunded';
               return (
               <div key={trx.id}>
-              <div className={`w-full text-left bg-white rounded-lg border border-slate-200 p-4 shadow-sm ${isVoided ? 'opacity-60' : ''}`}>
+              <div className={`w-full text-left px-4 py-4 ${isVoided ? 'opacity-60' : ''}`}>
                 <button
                   type="button"
                   onClick={() => setDetailTransaction(trx)}
                   className="w-full text-left focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus:outline-none"
                   aria-label={`Détails transaction ${trx.clientName || 'Client de passage'}, ${formatPrice(trx.total)}`}
                 >
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="flex justify-between items-start mb-3">
                     <div>
                       <div className={`font-semibold text-slate-900 text-sm ${isVoided ? 'line-through' : ''}`}>
                         {trx.clientName || <span className="text-slate-400 italic">Client de passage</span>}
@@ -281,13 +281,13 @@ export const TransactionHistoryPage: React.FC = () => {
         ) : (
           /* Desktop: table layout */
           <table className="w-full text-left">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">
+            <thead className="border-b border-slate-100">
               <tr>
-                <th className="px-6 py-4">Heure</th>
-                <th className="px-6 py-4">Client</th>
-                <th className="px-6 py-4">Détails</th>
-                <th className="px-6 py-4 text-right">Total</th>
-                <th className="px-6 py-4"></th>
+                <th className="px-6 py-3 text-xs text-slate-400 font-normal">Heure</th>
+                <th className="px-6 py-3 text-xs text-slate-400 font-normal">Client</th>
+                <th className="px-6 py-3 text-xs text-slate-400 font-normal">Détails</th>
+                <th className="px-6 py-3 text-xs text-slate-400 font-normal text-right">Total</th>
+                <th className="px-6 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -298,11 +298,11 @@ export const TransactionHistoryPage: React.FC = () => {
                 const showRefund = canRefund && status !== 'voided' && status !== 'fully_refunded';
                 return (
                 <React.Fragment key={trx.id}>
-                <tr className={`hover:bg-slate-50/80 transition-colors ${isVoided ? 'opacity-60' : ''}`}>
-                  <td className="px-6 py-4 font-medium text-slate-700">
+                <tr className={`group hover:bg-slate-50/80 transition-colors ${isVoided ? 'opacity-60' : ''}`}>
+                  <td className="px-6 py-5 font-medium text-slate-700">
                     {new Date(trx.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-5">
                     <div className="flex items-center gap-2">
                       {trx.clientName ? (
                         <span className={`text-slate-900 font-medium text-sm ${isVoided ? 'line-through' : ''}`}>{trx.clientName}</span>
@@ -312,16 +312,16 @@ export const TransactionHistoryPage: React.FC = () => {
                       {statusBadge(status, trx)}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-5">
                     <div className="text-sm text-slate-600 max-w-xs truncate">
                       {trx.items.map(i => i.name).join(', ')}
                     </div>
                   </td>
-                  <td className={`px-6 py-4 text-right font-bold ${trx.total < 0 ? 'text-red-600' : 'text-slate-900'}`}>
+                  <td className={`px-6 py-5 text-right font-bold ${trx.total < 0 ? 'text-red-600' : 'text-slate-900'}`}>
                     {formatPrice(trx.total)}
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
+                  <td className="px-6 py-5 text-right">
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                       {showVoid && (
                         <button onClick={() => setVoidTarget(trx)} className="p-2 text-red-300 hover:text-red-600 transition-colors" title="Annuler">
                           <Ban size={16} />
