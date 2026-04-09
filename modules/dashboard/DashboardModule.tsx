@@ -153,7 +153,7 @@ export const DashboardModule: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('expenses')
-        .select('*, expense_categories(name, color), suppliers(name, category)')
+        .select('*, expense_categories(name, color), suppliers(name)')
         .eq('salon_id', salonId)
         .is('deleted_at', null)
         .order('date', { ascending: false });
@@ -302,12 +302,9 @@ export const DashboardModule: React.FC = () => {
     return { total, trend, count: data.current.expenses.length, methods, unknownAmount };
   }, [data.current.expenses, data.previous.expenses]);
 
-  // --- 2d. Bonus & Commissions ---
+  // --- 2d. Bonus (per-staff breakdown) ---
   const bonusStats = useMemo(() => {
-    // Compute from staff revenue + their commission/bonus config
     const staffMap = new Map(allStaff.map(s => [s.id, s]));
-    let totalCommission = 0;
-    let totalBonus = 0;
 
     // Aggregate revenue per staff from transactions
     const staffRevMap = new Map<string, number>();
@@ -319,13 +316,22 @@ export const DashboardModule: React.FC = () => {
       });
     });
 
+    // Per-staff bonus breakdown
+    const staffBreakdown: { name: string; bonus: number }[] = [];
+    let totalBonus = 0;
+
     staffRevMap.forEach((revenue, staffId) => {
       const staff = staffMap.get(staffId);
       if (staff) {
-        totalCommission += calcCommission(revenue, staff.commissionRate);
-        totalBonus += calcBonus(revenue, staff.bonusTiers);
+        const bonus = calcBonus(revenue, staff.bonusTiers);
+        totalBonus += bonus;
+        if (bonus > 0) {
+          staffBreakdown.push({ name: `${staff.firstName} ${staff.lastName}`.trim(), bonus });
+        }
       }
     });
+
+    staffBreakdown.sort((a, b) => b.bonus - a.bonus);
 
     // Previous period
     const prevStaffRevMap = new Map<string, number>();
@@ -341,15 +347,13 @@ export const DashboardModule: React.FC = () => {
     prevStaffRevMap.forEach((revenue, staffId) => {
       const staff = staffMap.get(staffId);
       if (staff) {
-        prevTotal += calcCommission(revenue, staff.commissionRate);
         prevTotal += calcBonus(revenue, staff.bonusTiers);
       }
     });
 
-    const total = totalCommission + totalBonus;
-    const trend = prevTotal === 0 ? (total > 0 ? 100 : 0) : ((total - prevTotal) / prevTotal) * 100;
+    const trend = prevTotal === 0 ? (totalBonus > 0 ? 100 : 0) : ((totalBonus - prevTotal) / prevTotal) * 100;
 
-    return { total, commission: totalCommission, bonus: totalBonus, trend };
+    return { total: totalBonus, trend, staffBreakdown };
   }, [data.current.transactions, data.previous.transactions, allStaff]);
 
   // --- 3. Generate Dynamic Chart Data (Smart Granularity) ---
@@ -624,10 +628,10 @@ export const DashboardModule: React.FC = () => {
           </div>
         </div>
 
-        {/* Bonus & Commissions */}
+        {/* Bonus */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start mb-1">
-            <h3 className="text-sm font-semibold text-slate-500">Bonus & Commissions</h3>
+            <h3 className="text-sm font-semibold text-slate-500">Bonus</h3>
             <Gift size={16} className="text-slate-400 shrink-0" />
           </div>
           <div className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(bonusStats.total)}</div>
@@ -644,36 +648,26 @@ export const DashboardModule: React.FC = () => {
             <span className="text-xs text-slate-400">vs période préc.</span>
           </div>
           <div className="pt-3 border-t border-slate-100 space-y-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-blue-50 text-blue-600">
-                <TrendingUp size={14} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-xs font-medium text-slate-600">Commissions</span>
-                  <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(bonusStats.commission)}</span>
+            {bonusStats.staffBreakdown.length === 0 ? (
+              <p className="text-xs text-slate-400 text-center py-2">Aucun bonus sur cette période</p>
+            ) : (
+              bonusStats.staffBreakdown.slice(0, 4).map((entry) => (
+                <div key={entry.name} className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-blue-50 text-blue-600">
+                    <Gift size={14} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-xs font-medium text-slate-600 truncate">{entry.name}</span>
+                      <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(entry.bonus)}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-blue-50 text-blue-500">
-                <Gift size={14} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-xs font-medium text-slate-600">Bonus</span>
-                  <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(bonusStats.bonus)}</span>
-                </div>
-              </div>
-            </div>
-            {stats.revenue > 0 && (
-              <div className="bg-slate-50 rounded-lg p-3 mt-1">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-xs font-medium text-slate-500">% du CA</span>
-                  <span className="text-sm font-bold text-slate-700">
-                    {((bonusStats.total / stats.revenue) * 100).toFixed(1)}%
-                  </span>
-                </div>
+              ))
+            )}
+            {bonusStats.staffBreakdown.length > 4 && (
+              <div className="text-xs text-slate-400 text-center">
+                +{bonusStats.staffBreakdown.length - 4} autre{bonusStats.staffBreakdown.length - 4 > 1 ? 's' : ''}
               </div>
             )}
             <button
@@ -720,7 +714,7 @@ export const DashboardModule: React.FC = () => {
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-blue-200 shrink-0" />
-                <span className="text-xs font-medium text-slate-600">Bonus & Commissions</span>
+                <span className="text-xs font-medium text-slate-600">Bonus</span>
               </div>
               <span className="text-xs font-bold text-slate-600">-{formatPrice(bonusStats.total)}</span>
             </div>
