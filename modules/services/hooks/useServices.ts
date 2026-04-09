@@ -6,7 +6,7 @@ import {
   toService, toServiceInsert, toVariantInsert,
   toServiceCategory,
 } from '../mappers';
-import type { Service, ServiceCategory } from '../../../types';
+import type { Service, ServiceCategory, FavoriteItem } from '../../../types';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 
@@ -201,6 +201,60 @@ export const useServices = () => {
     onError: toastOnError("Impossible de modifier les catégories de services"),
   });
 
+  // Toggle Favorite
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: async ({ type, id, isFavorite }: { type: 'service' | 'variant'; id: string; isFavorite: boolean }) => {
+      const table = type === 'service' ? 'services' : 'service_variants';
+
+      let sortOrder = 0;
+      if (isFavorite) {
+        let maxOrder = 0;
+        for (const s of services) {
+          if (s.isFavorite) maxOrder = Math.max(maxOrder, s.favoriteSortOrder);
+          for (const v of s.variants) {
+            if (v.isFavorite) maxOrder = Math.max(maxOrder, v.favoriteSortOrder);
+          }
+        }
+        sortOrder = maxOrder + 1;
+      }
+
+      const { error } = await supabase
+        .from(table)
+        .update({
+          is_favorite: isFavorite,
+          favorite_sort_order: isFavorite ? sortOrder : 0,
+        })
+        .eq('id', id)
+        .eq('salon_id', salonId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['services', salonId] });
+    },
+    onError: toastOnError('Impossible de modifier le favori'),
+  });
+
+  // Reorder Favorites (via RPC for atomic operation)
+  const reorderFavoritesMutation = useMutation({
+    mutationFn: async (items: { type: 'service' | 'variant'; id: string; sortOrder: number }[]) => {
+      const p_items = items.map(item => ({
+        type: item.type,
+        id: item.id,
+        sort_order: item.sortOrder,
+      }));
+      const { error } = await supabase.rpc('reorder_favorites', {
+        p_salon_id: salonId,
+        p_items: p_items,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['services', salonId] });
+      toastOnSuccess('Ordre des favoris enregistré')();
+    },
+    onError: toastOnError("Impossible de réordonner les favoris"),
+  });
+
   // Filtering
   const filteredServices = useMemo(() => {
     if (!searchTerm) return services;
@@ -208,10 +262,36 @@ export const useServices = () => {
     return services.filter(s => s.name.toLowerCase().includes(term));
   }, [services, searchTerm]);
 
+  // Favorites derived data
+  const favorites = useMemo<FavoriteItem[]>(() => {
+    const items: FavoriteItem[] = [];
+    const favoritedServiceIds = new Set<string>();
+
+    for (const service of services) {
+      if (service.isFavorite) {
+        favoritedServiceIds.add(service.id);
+        items.push({ type: 'service', service, sortOrder: service.favoriteSortOrder });
+      }
+    }
+
+    for (const service of services) {
+      if (favoritedServiceIds.has(service.id)) continue;
+      for (const variant of service.variants) {
+        if (variant.isFavorite) {
+          items.push({ type: 'variant', variant, parentService: service, sortOrder: variant.favoriteSortOrder });
+        }
+      }
+    }
+
+    items.sort((a, b) => a.sortOrder - b.sortOrder);
+    return items;
+  }, [services]);
+
   return {
     services: filteredServices,
     allServices: services,
     serviceCategories,
+    favorites,
     isLoading: isLoadingServices || isLoadingCategories,
     searchTerm,
     setSearchTerm,
@@ -220,5 +300,9 @@ export const useServices = () => {
     deleteService: (serviceId: string) => deleteServiceMutation.mutate(serviceId),
     updateServiceCategories: (payload: CategoryUpdatePayload) =>
       updateServiceCategoriesMutation.mutate(payload),
+    toggleFavorite: (params: { type: 'service' | 'variant'; id: string; isFavorite: boolean }) =>
+      toggleFavoriteMutation.mutate(params),
+    reorderFavorites: (items: { type: 'service' | 'variant'; id: string; sortOrder: number }[]) =>
+      reorderFavoritesMutation.mutate(items),
   };
 };
