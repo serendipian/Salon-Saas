@@ -569,7 +569,12 @@ export const DashboardModule: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start mb-1">
             <h3 className="text-sm font-semibold text-slate-500">Dépenses</h3>
-            <Receipt size={16} className="text-slate-400 shrink-0" />
+            <button
+              onClick={() => navigate('/finances/depenses')}
+              className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0"
+            >
+              {expenseStats.count} dépense{expenseStats.count !== 1 ? 's' : ''} <ChevronRight size={12} />
+            </button>
           </div>
           <div className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(expenseStats.total)}</div>
           <div className="flex items-center gap-2 mt-1 mb-4">
@@ -585,15 +590,6 @@ export const DashboardModule: React.FC = () => {
             <span className="text-xs text-slate-400">vs période préc.</span>
           </div>
           <div className="pt-3 border-t border-slate-100 space-y-2">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs text-slate-500">{expenseStats.count} dépense{expenseStats.count !== 1 ? 's' : ''}</span>
-              <button
-                onClick={() => navigate('/finances')}
-                className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"
-              >
-                Détails <ChevronRight size={12} />
-              </button>
-            </div>
             {expenseStats.methods.map(({ method, amount, percent }) => {
               const label = EXPENSE_METHOD_LABELS[method] || method;
               const Icon = EXPENSE_METHOD_ICONS[method] || Wallet;
