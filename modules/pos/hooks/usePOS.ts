@@ -1,5 +1,5 @@
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useTransactions } from '../../../hooks/useTransactions';
 import { useProducts } from '../../products/hooks/useProducts';
 import { useServices } from '../../services/hooks/useServices';
@@ -9,7 +9,7 @@ import { useTeam } from '../../team/hooks/useTeam';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
 import { CartItem, Client, Service, Product, PaymentEntry, Appointment } from '../../../types';
 
-export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'HISTORY' | 'APPOINTMENTS';
+export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'APPOINTMENTS';
 
 export const usePOS = () => {
   const posRange = useMemo(() => {
@@ -26,7 +26,7 @@ export const usePOS = () => {
 
   const { allClients: clients } = useClients();
 
-  const { allServices: services, serviceCategories } = useServices();
+  const { allServices: services, serviceCategories, favorites } = useServices();
   const { products, productCategories } = useProducts();
   const { allStaff } = useTeam();
   const { allAppointments } = useAppointments();
@@ -45,6 +45,15 @@ export const usePOS = () => {
   selectedClientRef.current = selectedClient;
   const linkedAppointmentIdRef = useRef(linkedAppointmentId);
   linkedAppointmentIdRef.current = linkedAppointmentId;
+
+  // Default to FAVORITES filter when favorites exist and on SERVICES view
+  const hasDefaultedToFavorites = useRef(false);
+  useEffect(() => {
+    if (!hasDefaultedToFavorites.current && favorites.length > 0 && viewMode === 'SERVICES') {
+      setSelectedCategory('FAVORITES');
+      hasDefaultedToFavorites.current = true;
+    }
+  }, [favorites, viewMode]);
 
   // --- Cart Actions ---
 
@@ -98,13 +107,18 @@ export const usePOS = () => {
     // Read from refs to avoid stale closures (realtime events can cause re-renders)
     await addTransaction(cartRef.current, payments, selectedClientRef.current?.id, linkedAppointmentIdRef.current ?? undefined);
     clearCart();
-    setViewMode('HISTORY');
   };
 
   // --- Filtering & Derived State ---
 
   const filteredItems = useMemo(() => {
     if (viewMode === 'SERVICES') {
+      if (selectedCategory === 'FAVORITES') {
+        return favorites
+          .filter((f): f is Extract<typeof f, { type: 'service' }> => f.type === 'service')
+          .map(f => f.service)
+          .filter(s => s.active && s.variants.length > 0);
+      }
       return services.filter(s => {
         if (!s.active || s.variants.length === 0) return false;
         const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -120,7 +134,7 @@ export const usePOS = () => {
       });
     }
     return [];
-  }, [viewMode, searchTerm, selectedCategory, services, products]);
+  }, [viewMode, searchTerm, selectedCategory, services, products, favorites]);
 
   const pendingAppointments = useMemo(() => {
     const now = new Date();
@@ -192,6 +206,7 @@ export const usePOS = () => {
 
     // Data
     services, serviceCategories,
+    favorites,
     products, productCategories,
     clients, allStaff,
     transactions,

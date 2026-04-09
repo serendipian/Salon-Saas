@@ -63,6 +63,7 @@ import { OpeningHoursSettings } from './modules/settings/components/OpeningHours
 import { TeamPermissionsSettings } from './modules/settings/components/TeamPermissionsSettings';
 import { BillingModule } from './modules/billing/BillingModule';
 import { POSModule } from './modules/pos/POSModule';
+import { TransactionHistoryPage } from './modules/pos/TransactionHistoryPage';
 import { FinancesLayout } from './modules/accounting/FinancesLayout';
 import { FinancesOverview } from './modules/accounting/components/FinancesOverview';
 import { RevenuesPage } from './modules/accounting/components/RevenuesPage';
@@ -155,6 +156,11 @@ const AppContent = () => {
         <Route path="/pos" element={
           <ProtectedRoute action="view" resource="pos">
             <ErrorBoundary moduleName="Caisse"><POSModule /></ErrorBoundary>
+          </ProtectedRoute>
+        } />
+        <Route path="/pos/historique" element={
+          <ProtectedRoute action="view" resource="pos">
+            <ErrorBoundary moduleName="Historique"><TransactionHistoryPage /></ErrorBoundary>
           </ProtectedRoute>
         } />
         <Route path="/finances" element={

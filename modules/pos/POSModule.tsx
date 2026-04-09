@@ -1,5 +1,7 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { History } from 'lucide-react';
 import { usePOS } from './hooks/usePOS';
 import { POSCatalog } from './components/POSCatalog';
 import { POSCart } from './components/POSCart';
@@ -21,7 +23,7 @@ export const POSModule: React.FC = () => {
     selectedCategory, setSelectedCategory,
     selectedClient, setSelectedClient,
     cart,
-    services, serviceCategories,
+    services, serviceCategories, favorites,
     products, productCategories,
     transactions,
     clients, allStaff,
@@ -46,6 +48,7 @@ export const POSModule: React.FC = () => {
   const { can } = usePermissions(role);
   const canVoid = can('void', 'pos');
   const canRefund = can('refund', 'pos');
+  const navigate = useNavigate();
   // Modal States
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -138,7 +141,20 @@ export const POSModule: React.FC = () => {
   };
 
   return (
-    <div className={`flex w-full bg-slate-100 overflow-hidden ${isMobile ? 'flex-col h-full' : 'h-[calc(100vh-6rem)] rounded-xl border border-slate-200 shadow-sm'}`}>
+    <div className="w-full flex flex-col gap-4" style={isMobile ? { height: '100%' } : {}}>
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-slate-900">Caisse</h1>
+        <button
+          onClick={() => navigate('/pos/historique')}
+          className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors shadow-sm"
+        >
+          <History size={16} />
+          Historique
+        </button>
+      </div>
+
+      <div className={`flex w-full bg-slate-100 overflow-hidden ${isMobile ? 'flex-col flex-1 min-h-0' : 'h-[calc(100vh-10rem)] rounded-xl border border-slate-200 shadow-sm'}`}>
 
       <POSCatalog
         viewMode={viewMode}
@@ -150,17 +166,13 @@ export const POSModule: React.FC = () => {
         serviceCategories={serviceCategories}
         productCategories={productCategories}
         filteredItems={filteredItems}
-        transactions={transactions}
         onServiceClick={handleServiceClick}
         onProductClick={handleProductClick}
-        onReceiptClick={setReceiptTransaction}
-        onDetailClick={setDetailTransaction}
-        onVoidClick={canVoid ? setVoidTarget : undefined}
-        onRefundClick={canRefund ? setRefundTarget : undefined}
-        allTransactions={transactions}
         pendingAppointments={pendingAppointments}
         onImportAppointment={importAppointment}
         linkedAppointmentId={linkedAppointmentId}
+        favorites={favorites}
+        onAddToCart={addToCart}
       />
 
       {/* Desktop: sidebar cart */}
@@ -275,6 +287,7 @@ export const POSModule: React.FC = () => {
           isPending={isRefunding}
         />
       )}
+      </div>
     </div>
   );
 };
