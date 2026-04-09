@@ -264,8 +264,8 @@ export default function ServiceBlock({
       {block.serviceId && (
         <div className="mt-4 pt-4 border-t border-slate-200/60">
           <div className="flex items-center gap-2.5 mb-3">
-            <span className="bg-slate-200 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
-            <span className="text-slate-700 text-sm font-semibold">Praticien</span>
+            <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">3</span>
+            <span className="text-slate-900 text-sm font-semibold">Praticien</span>
           </div>
           <StaffPills
             team={team}

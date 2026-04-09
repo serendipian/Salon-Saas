@@ -132,27 +132,29 @@ export default function AppointmentBuilder({
         )}
       </div>
 
-      {/* RIGHT PANEL — Step 3: Date & Time */}
+      {/* RIGHT PANEL — Step 4: Date & Time */}
       <div className="flex-[0.6]">
-        <div className="flex items-center gap-2.5 mb-3">
-          <span className="bg-slate-200 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">4</span>
-          <CalendarDays size={14} className="text-slate-500" />
-          <span className="text-slate-700 text-sm font-semibold">Date & Heure</span>
+        <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">4</span>
+            <CalendarDays size={14} className="text-blue-600" />
+            <span className="text-slate-900 text-sm font-semibold">Date & Heure</span>
+          </div>
+          <SchedulingPanel
+            activeDate={form.activeBlock?.date ?? null}
+            activeHour={form.activeBlock?.hour ?? null}
+            activeMinute={form.activeBlock?.minute ?? 0}
+            onDateChange={(date) => form.updateBlock(form.activeBlockIndex, { date })}
+            onHourChange={(hour) => form.updateBlock(form.activeBlockIndex, { hour })}
+            onMinuteChange={(minute) => form.updateBlock(form.activeBlockIndex, { minute })}
+            status={form.status}
+            onStatusChange={form.setStatus}
+            reminderMinutes={form.reminderMinutes}
+            onReminderChange={form.setReminderMinutes}
+            unavailableHours={form.unavailableHours}
+            hideStatus
+          />
         </div>
-        <SchedulingPanel
-          activeDate={form.activeBlock?.date ?? null}
-          activeHour={form.activeBlock?.hour ?? null}
-          activeMinute={form.activeBlock?.minute ?? 0}
-          onDateChange={(date) => form.updateBlock(form.activeBlockIndex, { date })}
-          onHourChange={(hour) => form.updateBlock(form.activeBlockIndex, { hour })}
-          onMinuteChange={(minute) => form.updateBlock(form.activeBlockIndex, { minute })}
-          status={form.status}
-          onStatusChange={form.setStatus}
-          reminderMinutes={form.reminderMinutes}
-          onReminderChange={form.setReminderMinutes}
-          unavailableHours={form.unavailableHours}
-          hideStatus
-        />
       </div>
     </div>
   );

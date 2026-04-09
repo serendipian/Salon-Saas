@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import type { Service, ServiceCategory, FavoriteItem } from '../../../types';
 import VariantList from './VariantList';
 import { Check } from 'lucide-react';
-import { formatPrice, formatDuration } from '../../../lib/format';
 
 interface ServiceGridProps {
   services: Service[];
@@ -66,14 +65,11 @@ export default function ServiceGrid({
                         {catName && <><span className={`text-xs font-medium ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>{catName}</span><span className="text-xs text-slate-500"> — </span></>}
                         <span className={`text-xs ${catName ? 'text-slate-500' : `font-medium ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}`}>{svc.name}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-slate-500">{formatDuration(variant.durationMinutes)} — {formatPrice(variant.price)}</span>
-                        {isSelected && (
-                          <span className="w-5 h-5 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm">
-                            <Check size={12} strokeWidth={2.5} />
-                          </span>
-                        )}
-                      </div>
+                      {isSelected && (
+                        <span className="w-5 h-5 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm">
+                          <Check size={12} strokeWidth={2.5} />
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
@@ -135,14 +131,11 @@ export default function ServiceGrid({
                       <span className={`text-xs font-medium ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>{parentService.name}</span>
                       <span className="text-xs text-slate-500"> — {variant.name}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-slate-500">{formatDuration(variant.durationMinutes)} — {formatPrice(variant.price)}</span>
-                      {isSelected && (
-                        <span className="w-5 h-5 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm">
-                          <Check size={12} strokeWidth={2.5} />
-                        </span>
-                      )}
-                    </div>
+                    {isSelected && (
+                      <span className="w-5 h-5 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm">
+                        <Check size={12} strokeWidth={2.5} />
+                      </span>
+                    )}
                   </div>
                 </div>
               );
