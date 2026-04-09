@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { History, ChevronLeft, ChevronRight, ArrowLeft, Eye, Receipt, Ban, RotateCcw, Search, Scissors, ShoppingBag, CreditCard, TrendingUp } from 'lucide-react';
+import { History, ChevronLeft, ChevronRight, ArrowLeft, Eye, Receipt, Ban, RotateCcw, Search, Scissors, ShoppingBag, CreditCard, TrendingUp, Banknote, Wallet, Smartphone, Gift, FileText } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -12,6 +12,17 @@ import { Transaction } from '../../types';
 import { ReceiptModal, TransactionDetailModal } from './components/POSModals';
 import { VoidModal } from './components/VoidModal';
 import { RefundModal } from './components/RefundModal';
+
+const ALL_PAYMENT_METHODS = ['Espèces', 'Carte Bancaire', 'Virement', 'Chèque', 'Mobile', 'Carte Cadeau'] as const;
+
+const PAYMENT_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  'Espèces': Banknote,
+  'Carte Bancaire': CreditCard,
+  'Virement': Wallet,
+  'Chèque': FileText,
+  'Mobile': Smartphone,
+  'Carte Cadeau': Gift,
+};
 
 const toLocalDate = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -122,8 +133,8 @@ export const TransactionHistoryPage: React.FC = () => {
     return grouped;
   }, [filteredTransactions]);
 
-  // Derive available payment methods and counts from this day's transactions
-  const { availablePaymentMethods, statusCounts, paymentCounts } = React.useMemo(() => {
+  // Derive filter counts from this day's transactions
+  const { statusCounts, paymentCounts } = React.useMemo(() => {
     const methodSet = new Map<string, number>();
     const counts = { all: 0, voided: 0, refunded: 0 };
     for (const { parent: trx } of groupedTransactions) {
@@ -135,8 +146,7 @@ export const TransactionHistoryPage: React.FC = () => {
         methodSet.set(p.method, (methodSet.get(p.method) || 0) + 1);
       }
     }
-    const methods = [...methodSet.keys()].sort();
-    return { availablePaymentMethods: methods, statusCounts: counts, paymentCounts: methodSet };
+    return { statusCounts: counts, paymentCounts: methodSet };
   }, [groupedTransactions, transactions]);
 
   // Apply search + status + payment filters
@@ -328,49 +338,60 @@ export const TransactionHistoryPage: React.FC = () => {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
 
         {filteredTransactions.length > 0 && (
-          <div className="px-4 pt-4 pb-2 space-y-3 border-b border-slate-100">
-            {/* Search input */}
-            <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                placeholder="Rechercher un client ou service..."
-                className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              />
-            </div>
-            {/* Filter pills */}
-            <div className={`flex gap-2 ${isMobile ? 'overflow-x-auto flex-nowrap pb-1' : 'flex-wrap'}`}>
-              {/* Status pills */}
-              {(['all', 'voided', 'refunded'] as const).map(f => {
-                const labels = { all: 'Tous', voided: 'Annulés', refunded: 'Remboursés' };
-                const count = statusCounts[f];
-                const isActive = statusFilter === f;
-                return (
-                  <button
-                    key={f}
-                    onClick={() => setStatusFilter(f)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                  >
-                    {labels[f]} <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
-                  </button>
-                );
-              })}
-              {/* Payment method pills */}
-              {availablePaymentMethods.map(method => {
-                const isActive = paymentFilter === method;
-                const count = paymentCounts.get(method) || 0;
-                return (
-                  <button
-                    key={method}
-                    onClick={() => setPaymentFilter(isActive ? null : method)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                  >
-                    {method} <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
-                  </button>
-                );
-              })}
+          <div className="px-4 pt-4 pb-3 border-b border-slate-100">
+            <div className={`flex gap-2 ${isMobile ? 'flex-col' : 'items-center'}`}>
+              {/* Search input */}
+              <div className="relative flex-shrink-0" style={isMobile ? undefined : { width: 260 }}>
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  placeholder="Rechercher..."
+                  className="w-full pl-8 pr-3 h-8 rounded-lg bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+              {/* Filter pills — same row as search */}
+              <div className={`flex gap-1.5 ${isMobile ? 'overflow-x-auto flex-nowrap pb-1' : 'flex-wrap'}`}>
+                {/* Status pills */}
+                {(['all', 'voided', 'refunded'] as const).map(f => {
+                  const labels = { all: 'Tous', voided: 'Annulés', refunded: 'Remboursés' };
+                  const icons = { all: History, voided: Ban, refunded: RotateCcw };
+                  const count = statusCounts[f];
+                  const isActive = statusFilter === f;
+                  const Icon = icons[f];
+                  return (
+                    <button
+                      key={f}
+                      onClick={() => setStatusFilter(f)}
+                      className={`h-8 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                    >
+                      <Icon size={12} />
+                      {labels[f]}
+                      <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
+                    </button>
+                  );
+                })}
+                {/* Separator */}
+                <div className="w-px h-8 bg-slate-200 flex-shrink-0" />
+                {/* Payment method pills — all methods always shown */}
+                {ALL_PAYMENT_METHODS.map(method => {
+                  const isActive = paymentFilter === method;
+                  const count = paymentCounts.get(method) || 0;
+                  const Icon = PAYMENT_ICONS[method] || CreditCard;
+                  return (
+                    <button
+                      key={method}
+                      onClick={() => setPaymentFilter(isActive ? null : method)}
+                      className={`h-8 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                    >
+                      <Icon size={12} />
+                      {PAYMENT_METHOD_SHORT[method] || method}
+                      <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
