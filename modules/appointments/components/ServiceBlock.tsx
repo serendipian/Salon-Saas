@@ -22,6 +22,7 @@ interface ServiceBlockProps {
   summaryText?: string;
   packs?: Pack[];
   onAddPackBlocks?: (pack: Pack) => void;
+  stepOffset?: number;
 }
 
 export default function ServiceBlock({
@@ -38,6 +39,7 @@ export default function ServiceBlock({
   summaryText,
   packs = [],
   onAddPackBlocks,
+  stepOffset = 0,
 }: ServiceBlockProps) {
   const [activeCategoryId, setActiveCategoryId] = useState<string>(
     favorites.length > 0 ? 'FAVORITES' : block.categoryId || categories[0]?.id || ''
@@ -131,7 +133,7 @@ export default function ServiceBlock({
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
             <span className="bg-slate-200 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-              {index + 1}
+              {index + 1 + stepOffset}
             </span>
             <span className="text-slate-700 text-sm font-medium">{selectedService?.name ?? 'Service'}</span>
             {serviceInfoBadge}
@@ -154,7 +156,7 @@ export default function ServiceBlock({
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
-            {index + 1}
+            {index + 1 + stepOffset}
           </span>
           <span className="text-slate-900 text-sm font-semibold">{selectedService?.name ?? 'Service'}</span>
           {serviceInfoBadge}
@@ -168,21 +170,21 @@ export default function ServiceBlock({
         </button>
       </div>
 
-      {/* Category tabs */}
-      <div className="flex gap-0 border-b border-slate-200 mb-0 overflow-x-auto">
+      {/* Category buttons */}
+      <div className="flex gap-2 flex-wrap mb-3">
         {favorites.length > 0 && (
           <button
             type="button"
             onClick={() => handleCategoryChange('FAVORITES')}
             className={`
-              px-3 py-2 text-xs whitespace-nowrap transition-colors flex items-center gap-1.5
+              px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
               ${activeCategoryId === 'FAVORITES'
-                ? 'text-amber-600 border-b-2 border-amber-500 -mb-[1px] font-semibold'
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-amber-50 text-amber-700 border-amber-300 shadow-sm'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-amber-300 hover:bg-amber-50/50'
               }
             `}
           >
-            <Star size={13} className={activeCategoryId === 'FAVORITES' ? 'fill-amber-400 text-amber-400' : ''} />
+            <Star size={14} className={activeCategoryId === 'FAVORITES' ? 'fill-amber-400 text-amber-400' : ''} />
             Favoris
           </button>
         )}
@@ -191,14 +193,14 @@ export default function ServiceBlock({
             type="button"
             onClick={() => handleCategoryChange('PACKS')}
             className={`
-              px-3 py-2 text-xs whitespace-nowrap transition-colors flex items-center gap-1.5
+              px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
               ${activeCategoryId === 'PACKS'
-                ? 'text-emerald-600 border-b-2 border-emerald-500 -mb-[1px] font-semibold'
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50'
               }
             `}
           >
-            <Package size={13} />
+            <Package size={14} />
             Packs
           </button>
         )}
@@ -208,14 +210,14 @@ export default function ServiceBlock({
             type="button"
             onClick={() => handleCategoryChange(cat.id)}
             className={`
-              px-3 py-2 text-xs whitespace-nowrap transition-colors flex items-center gap-1.5
+              px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
               ${cat.id === activeCategoryId
-                ? 'text-blue-600 border-b-2 border-blue-500 -mb-[1px] font-semibold'
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-blue-50 text-blue-700 border-blue-300 shadow-sm'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
               }
             `}
           >
-            <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={13} className="shrink-0" />
+            <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={14} className="shrink-0" />
             {cat.name}
           </button>
         ))}
@@ -259,12 +261,17 @@ export default function ServiceBlock({
 
       {/* Staff pills (show after service is selected) */}
       {block.serviceId && (
-        <div className="mt-3">
+        <div className="mt-4 pt-4 border-t border-slate-200/60">
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="bg-slate-200 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
+            <span className="text-slate-700 text-sm font-semibold">Praticien</span>
+          </div>
           <StaffPills
             team={team}
             categoryId={selectedService?.categoryId ?? null}
             selectedStaffId={block.staffId}
             onSelect={handleStaffSelect}
+            hideLabel
           />
         </div>
       )}

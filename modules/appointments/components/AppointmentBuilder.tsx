@@ -95,6 +95,7 @@ export default function AppointmentBuilder({
               onRemove={() => form.removeBlock(i)}
               onChange={(updates) => form.updateBlock(i, updates)}
               summaryText={form.getBlockSummary(block)}
+              stepOffset={1}
             />
           ))}
         </div>
@@ -134,7 +135,7 @@ export default function AppointmentBuilder({
       {/* RIGHT PANEL — Step 3: Date & Time */}
       <div className="flex-[0.6]">
         <div className="flex items-center gap-2.5 mb-3">
-          <span className="bg-slate-200 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
+          <span className="bg-slate-200 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">4</span>
           <CalendarDays size={14} className="text-slate-500" />
           <span className="text-slate-700 text-sm font-semibold">Date & Heure</span>
         </div>

@@ -7,9 +7,10 @@ interface StaffPillsProps {
   categoryId: string | null;
   selectedStaffId: string | null;
   onSelect: (staffId: string | null) => void;
+  hideLabel?: boolean;
 }
 
-export default function StaffPills({ team, categoryId, selectedStaffId, onSelect }: StaffPillsProps) {
+export default function StaffPills({ team, categoryId, selectedStaffId, onSelect, hideLabel }: StaffPillsProps) {
   const eligibleStaff = useMemo(() => {
     if (!categoryId) return team.filter((m) => m.active);
     return team.filter((m) => m.active && m.skills.includes(categoryId));
@@ -17,7 +18,7 @@ export default function StaffPills({ team, categoryId, selectedStaffId, onSelect
 
   return (
     <div>
-      <div className="text-xs font-medium text-slate-500 mb-2">Praticien</div>
+      {!hideLabel && <div className="text-xs font-medium text-slate-500 mb-2">Praticien</div>}
       <div className="flex gap-2 flex-wrap">
         <button
           type="button"
