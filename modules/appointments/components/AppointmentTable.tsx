@@ -123,29 +123,44 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                 </tr>
 
                 {clientGroups.map((clientAppts, groupIdx) => {
-                  const clientName = clientAppts[0].clientName || 'Sans client';
                   const isMulti = clientAppts.length > 1;
 
                   return (
                     <React.Fragment key={clientAppts[0].clientId || groupIdx}>
-                      {/* Client subgroup separator — only show when multiple appointments for this client */}
-                      {isMulti && (
-                        <tr className="bg-blue-50/50 border-t border-slate-100">
-                          <td colSpan={COL_COUNT} className="px-4 py-1.5">
-                            <span className="text-xs font-semibold text-blue-700">{clientName} — {clientAppts.length} services</span>
-                          </td>
-                        </tr>
-                      )}
-
-                      {clientAppts.map((appt) => {
+                      {clientAppts.map((appt, apptIdx) => {
                         const date = new Date(appt.date);
+                        const blockFirst = isMulti && apptIdx === 0;
+                        const blockLast = isMulti && apptIdx === clientAppts.length - 1;
+                        const blockMiddle = isMulti && !blockFirst && !blockLast;
+
+                        // Row background + top border for block cohesion
+                        const rowBase = 'transition-colors group cursor-pointer';
+                        const rowBg = isMulti
+                          ? 'bg-blue-50/40 hover:bg-blue-100/60'
+                          : 'hover:bg-slate-50';
+                        const rowBorder = blockMiddle || blockLast
+                          ? 'border-t border-transparent'
+                          : 'border-t border-slate-50';
+                        // 3D edge: subtle inset highlight on the first row of a block
+                        const rowEdge = blockFirst
+                          ? 'shadow-[inset_0_1px_0_0_rgba(96,165,250,0.35)]'
+                          : '';
+
+                        // Left rail on the first cell via ::before pseudo-element
+                        const railBase = isMulti
+                          ? "relative before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px] before:bg-gradient-to-b before:from-blue-400 before:to-indigo-500 before:shadow-[0_0_8px_rgba(59,130,246,0.4)]"
+                          : '';
+                        const railTop = blockFirst ? 'before:rounded-t-full' : '';
+                        const railBottom = blockLast ? 'before:rounded-b-full' : '';
+                        const firstCellRail = [railBase, railTop, railBottom].filter(Boolean).join(' ');
+
                         return (
                           <tr
                             key={appt.id}
-                            className="hover:bg-slate-50 transition-colors group cursor-pointer border-t border-slate-50"
+                            className={`${rowBase} ${rowBg} ${rowBorder} ${rowEdge}`}
                             onClick={() => onDetails(appt.id)}
                           >
-                            <td className="px-4 py-3 align-top border-r border-slate-100">
+                            <td className={`px-4 py-3 align-top border-r border-slate-100 ${firstCellRail}`}>
                               <span className="text-sm text-slate-500 capitalize">
                                 {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
                               </span>
@@ -156,9 +171,17 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                               </span>
                             </td>
                             <td className="px-4 py-3 align-top border-r border-slate-100">
-                              <span className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                              <span className={`flex items-center gap-2 text-sm font-medium ${blockMiddle || blockLast ? 'text-slate-500' : 'text-slate-900'}`}>
                                 <ClientAvatar name={appt.clientName || '?'} />
-                                {appt.clientName || '—'}
+                                <span className="truncate">{appt.clientName || '—'}</span>
+                                {blockFirst && (
+                                  <span
+                                    className="inline-flex items-center px-1.5 py-px rounded-md bg-gradient-to-br from-blue-500 to-indigo-500 text-white text-[9px] font-bold tracking-wide shadow-sm shadow-blue-500/30 ring-1 ring-white/20"
+                                    title={`${clientAppts.length} services`}
+                                  >
+                                    ×{clientAppts.length}
+                                  </span>
+                                )}
                               </span>
                             </td>
                             <td className="px-4 py-3 align-top border-r border-slate-100">
