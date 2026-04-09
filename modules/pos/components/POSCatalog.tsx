@@ -140,18 +140,14 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
                  }`}
                  style={{ scrollSnapAlign: 'start' }}
                >
-                 <Star size={14} className={selectedCategory === 'FAVORITES' ? 'fill-white' : ''} />
+                 <Star size={14} className={selectedCategory === 'FAVORITES' ? 'fill-white text-white' : ''} />
                  Favoris
                </button>
              )}
              {viewMode === 'SERVICES' && packs.length > 0 && (
                <button
                  onClick={() => setSelectedCategory('PACKS')}
-                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border shrink-0 ${
-                   selectedCategory === 'PACKS'
-                     ? 'bg-slate-900 text-white border-slate-900'
-                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                 }`}
+                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors shrink-0 bg-slate-900 text-white border border-slate-900"
                  style={{ scrollSnapAlign: 'start' }}
                >
                  <Package size={14} />
