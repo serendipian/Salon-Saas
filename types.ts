@@ -381,16 +381,20 @@ export interface AppointmentGroup {
   appointments: Appointment[];
 }
 
+export interface ServiceBlockItem {
+  serviceId: string;
+  variantId: string;
+  priceOverride?: number;
+}
+
 export interface ServiceBlockState {
   id: string;
   categoryId: string | null;
-  serviceId: string | null;
-  variantId: string | null;
+  items: ServiceBlockItem[];
   staffId: string | null;
   date: string | null;
   hour: number | null;
   minute: number;
-  priceOverride?: number;
   packId?: string | null;
 }
 
