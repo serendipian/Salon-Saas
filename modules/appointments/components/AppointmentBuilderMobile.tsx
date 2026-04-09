@@ -45,17 +45,35 @@ export default function AppointmentBuilderMobile({
     return hookProps.clients.find((c) => c.id === form.clientId) ?? null;
   }, [form.clientId, hookProps.clients]);
 
-  // Get service/variant info for a block
-  const getBlockService = (block: { serviceId: string | null; variantId: string | null }) => {
-    if (!block.serviceId) return null;
-    const svc = hookProps.services.find((s) => s.id === block.serviceId);
-    if (!svc) return null;
-    const variant = block.variantId ? svc.variants.find((v) => v.id === block.variantId) : null;
-    return { service: svc, variant };
+  // Build display info for a block's items (multi-item aware)
+  const getBlockInfo = (block: { items: Array<{ serviceId: string; variantId: string; priceOverride?: number }> }) => {
+    if (block.items.length === 0) return null;
+    const details = block.items.map((item) => {
+      const svc = hookProps.services.find((s) => s.id === item.serviceId);
+      const variant = svc?.variants.find((v) => v.id === item.variantId);
+      return {
+        service: svc ?? null,
+        variant: variant ?? null,
+        duration: variant?.durationMinutes ?? svc?.durationMinutes ?? 0,
+        price: item.priceOverride ?? variant?.price ?? svc?.price ?? 0,
+      };
+    });
+    const duration = details.reduce((sum, d) => sum + d.duration, 0);
+    const price = details.reduce((sum, d) => sum + d.price, 0);
+    const primary = details[0];
+    const label =
+      details.length === 1
+        ? `${primary.service?.name ?? ''}`
+        : `${details.length} prestations`;
+    const subtitle =
+      details.length === 1
+        ? [primary.variant?.name, formatDuration(duration), formatPrice(price)].filter(Boolean).join(' · ')
+        : `${details.map((d) => d.service?.name).filter(Boolean).join(' · ')} · ${formatDuration(duration)} · ${formatPrice(price)}`;
+    return { label, subtitle, primaryService: primary.service, firstCategoryId: primary.service?.categoryId ?? null };
   };
 
   // Summary for footer
-  const serviceCount = form.serviceBlocks.filter((b) => b.serviceId && b.variantId).length;
+  const serviceCount = form.serviceBlocks.filter((b) => b.items.length > 0).length;
 
   const openServiceSheet = (blockIndex: number) => {
     setServiceSheetBlockIndex(blockIndex);
@@ -190,13 +208,9 @@ export default function AppointmentBuilderMobile({
 
             <div className="space-y-3">
               {form.serviceBlocks.map((block, i) => {
-                const info = getBlockService(block);
+                const info = getBlockInfo(block);
 
                 if (info) {
-                  const { service, variant } = info;
-                  const duration = variant?.durationMinutes ?? service.durationMinutes ?? 0;
-                  const price = variant?.price ?? service.price ?? 0;
-
                   return (
                     <div key={block.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                       {/* Service header */}
@@ -206,11 +220,10 @@ export default function AppointmentBuilderMobile({
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium text-slate-900 truncate">
-                            {service.name}
+                            {info.label}
                           </div>
-                          <div className="text-xs text-slate-500 mt-0.5">
-                            {variant?.name && <span>{variant.name} &middot; </span>}
-                            {formatDuration(duration)} &middot; {formatPrice(price)}
+                          <div className="text-xs text-slate-500 mt-0.5 truncate">
+                            {info.subtitle}
                           </div>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
@@ -237,7 +250,7 @@ export default function AppointmentBuilderMobile({
                       <div className="border-t border-slate-100 pt-2 px-4 pb-3">
                         <StaffPills
                           team={hookProps.team}
-                          categoryId={block.categoryId}
+                          categoryId={info.firstCategoryId}
                           selectedStaffId={block.staffId}
                           onSelect={(staffId) => form.updateBlock(i, { staffId })}
                         />
@@ -246,7 +259,7 @@ export default function AppointmentBuilderMobile({
                   );
                 }
 
-                // No service selected
+                // No items yet
                 return (
                   <button
                     key={block.id}
@@ -381,11 +394,11 @@ export default function AppointmentBuilderMobile({
             favorites={hookProps.favorites}
             packs={hookProps.packs}
             initialCategoryId={form.serviceBlocks[serviceSheetBlockIndex]?.categoryId ?? null}
-            onSelect={(selection) => {
+            initialItems={form.serviceBlocks[serviceSheetBlockIndex]?.items ?? []}
+            onConfirm={(items, categoryId) => {
               form.updateBlock(serviceSheetBlockIndex, {
-                serviceId: selection.serviceId,
-                variantId: selection.variantId,
-                categoryId: selection.categoryId,
+                items,
+                categoryId,
               });
             }}
             onPackSelect={(pack) => {
@@ -401,7 +414,7 @@ export default function AppointmentBuilderMobile({
   // ─── SCREEN 2: Quand ───
 
   const activeBlock = form.activeBlock;
-  const activeBlockInfo = activeBlock ? getBlockService(activeBlock) : null;
+  const activeBlockInfo = activeBlock ? getBlockInfo(activeBlock) : null;
 
   // Find staff name for context header
   const activeStaffName = form.activeStaff
@@ -417,8 +430,8 @@ export default function AppointmentBuilderMobile({
 
   const serviceNames = form.serviceBlocks
     .map((b) => {
-      const info = getBlockService(b);
-      return info?.service.name;
+      const info = getBlockInfo(b);
+      return info?.label;
     })
     .filter(Boolean)
     .join(' + ');
@@ -445,7 +458,7 @@ export default function AppointmentBuilderMobile({
         {form.serviceBlocks.length > 1 && (
           <div className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-hide">
             {form.serviceBlocks.map((block, i) => {
-              const info = getBlockService(block);
+              const info = getBlockInfo(block);
               const isActive = i === form.activeBlockIndex;
               const isScheduled = block.date !== null && block.hour !== null;
 
@@ -469,7 +482,7 @@ export default function AppointmentBuilderMobile({
                   >
                     {i + 1}
                   </span>
-                  {info?.service.name ?? `Service ${i + 1}`}
+                  {info?.label ?? `Service ${i + 1}`}
                 </button>
               );
             })}
@@ -481,7 +494,7 @@ export default function AppointmentBuilderMobile({
           <div className="text-xs font-medium text-slate-500 mb-1">Planifier</div>
           {activeBlockInfo && (
             <div className="text-sm text-slate-700">
-              {activeBlockInfo.service.name}
+              {activeBlockInfo.label}
               {activeStaffName && (
                 <span className="text-slate-400"> &middot; {activeStaffName}</span>
               )}
