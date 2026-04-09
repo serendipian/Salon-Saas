@@ -379,6 +379,7 @@ export interface ServiceBlockState {
   hour: number | null;
   minute: number;
   priceOverride?: number;
+  packId?: string | null;
 }
 
 // POS & Cart Domain

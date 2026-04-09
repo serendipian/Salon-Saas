@@ -42,7 +42,9 @@ export default function ServiceBlock({
   stepOffset = 0,
 }: ServiceBlockProps) {
   const [activeCategoryId, setActiveCategoryId] = useState<string>(() => {
-    // If the block already has a service selected (e.g. from a pack or during edit),
+    // Pack-derived block → keep the user on the Packs tab so the selected pack is visible.
+    if (block.packId) return 'PACKS';
+    // Otherwise, if the block already has a service selected (e.g. during edit),
     // open the tab matching that service's category so the selection stays visible.
     if (block.serviceId) {
       const svc = services.find((s) => s.id === block.serviceId);
@@ -249,12 +251,17 @@ export default function ServiceBlock({
         <div className="grid grid-cols-3 max-md:grid-cols-2 gap-2 mt-3">
           {packs.map((pack) => {
             const discount = getPackDiscount(pack);
+            const isSelected = block.packId === pack.id;
             return (
               <button
                 key={pack.id}
                 type="button"
                 onClick={() => onAddPackBlocks?.(pack)}
-                className="bg-white p-3 rounded-lg border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all text-left"
+                className={`p-3 rounded-lg transition-all text-left ${
+                  isSelected
+                    ? 'bg-emerald-50 border-2 border-emerald-400 shadow-sm'
+                    : 'bg-white border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50'
+                }`}
               >
                 <div className="text-xs text-emerald-600 font-medium mb-1">
                   {pack.items.length} service{pack.items.length !== 1 ? 's' : ''}

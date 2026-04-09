@@ -247,7 +247,19 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     let firstNewBlockIndex = 0;
 
     setServiceBlocks((prev) => {
-      const base = prev.length === 1 && !prev[0].serviceId ? [] : prev;
+      // If the same pack is already added, just activate its first block.
+      const existingIdx = prev.findIndex((b) => b.packId === pack.id);
+      if (existingIdx >= 0) {
+        firstNewBlockIndex = existingIdx;
+        return prev;
+      }
+
+      // Strip any blocks from a previously selected pack (switching packs),
+      // and drop a lone empty placeholder block if that's all there is.
+      const base = prev.length === 1 && !prev[0].serviceId
+        ? []
+        : prev.filter((b) => !b.packId);
+
       const lastBlock = base[base.length - 1];
       const lastDate = lastBlock?.date ?? null;
 
@@ -263,6 +275,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
         hour: null,
         minute: 0,
         priceOverride: proRataPrices[i],
+        packId: pack.id,
       }));
 
       return [...base, ...newBlocks];
