@@ -70,7 +70,7 @@ export const useAccounting = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('expenses')
-        .select('*, expense_categories(name, color), suppliers(name, category)')
+        .select('*, expense_categories(name, color), suppliers(name)')
         .eq('salon_id', salonId)
         .is('deleted_at', null)
         .order('date', { ascending: false });

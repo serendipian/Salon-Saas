@@ -17,7 +17,7 @@ export interface ExpenseRow {
   updated_at: string;
   deleted_at: string | null;
   expense_categories: { name: string; color: string } | null;
-  suppliers: { name: string; category: string | null } | null;
+  suppliers: { name: string } | null;
 }
 
 // --- Row → Frontend ---
