@@ -3,6 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { ArrowLeft, Save, Trash2, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft, Info, Upload, X, Image, FileText, Loader2, CheckCircle2, Home, Users, ShoppingCart, Megaphone, Layers, Zap, Wifi, Shield, Landmark, SprayCan, Wrench, Truck, Calculator, Receipt, Monitor, Armchair, CreditCard as CardIcon, Tag } from 'lucide-react';
 import { Expense, ExpenseCategory, PaymentMethod } from '../../../types';
 import { Section, Input, Select } from '../../../components/FormElements';
+import { ConfirmModal } from '../../../components/ConfirmModal';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
 import { useFormValidation } from '../../../hooks/useFormValidation';
@@ -79,6 +80,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(
     existingExpense?.proofUrl ? 'Justificatif' : null
   );
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
 
   const { supplierCategories } = useSuppliers();
@@ -396,12 +398,9 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
              </button>
              {isEdit && onDelete && (
                <button
-                 onClick={() => {
-                   if (window.confirm('Supprimer cette dépense ? Cette action est irréversible.')) {
-                     onDelete(existingExpense!.id);
-                   }
-                 }}
-                 className="w-full py-2.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg font-medium transition-all text-sm flex justify-center items-center gap-2"
+                 onClick={() => setShowDeleteConfirm(true)}
+                 disabled={isPending}
+                 className="w-full py-2.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg font-medium transition-all text-sm flex justify-center items-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
                >
                  <Trash2 size={16} />
                  Supprimer
@@ -410,6 +409,22 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
            </div>
         </div>
       </div>
+
+      {isEdit && onDelete && (
+        <ConfirmModal
+          isOpen={showDeleteConfirm}
+          title="Supprimer cette dépense"
+          tone="danger"
+          confirmLabel="Supprimer"
+          isLoading={isPending}
+          onConfirm={() => {
+            onDelete(existingExpense!.id);
+            setShowDeleteConfirm(false);
+          }}
+          onClose={() => setShowDeleteConfirm(false)}
+          message="Cette action est irréversible. La dépense sera définitivement supprimée de votre journal comptable."
+        />
+      )}
     </div>
   );
 };

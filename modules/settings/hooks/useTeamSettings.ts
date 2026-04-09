@@ -41,7 +41,7 @@ const STAFF_ROLE_MAP: Record<string, string> = {
 };
 
 export function useTeamSettings() {
-  const { activeSalon, profile, role: currentUserRole } = useAuth();
+  const { activeSalon, profile, role: currentUserRole, memberships } = useAuth();
   const salonId = activeSalon?.id;
   const queryClient = useQueryClient();
   const { toastOnError, toastOnSuccess } = useMutationToast();
@@ -133,10 +133,19 @@ export function useTeamSettings() {
     mutationFn: async (membershipId: string) => {
       const { error } = await supabase.rpc('revoke_membership', { p_membership_id: membershipId });
       if (error) throw error;
+      return membershipId;
     },
-    onSuccess: () => {
+    onSuccess: (revokedMembershipId) => {
       queryClient.invalidateQueries({ queryKey: ['team-settings-members', salonId] });
+      queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });
       toastOnSuccess('Accès révoqué')();
+      // M-1: Defensive — if the current user just revoked their own
+      // membership (UI blocks this today, but server-side RPC may not),
+      // reload so AuthContext re-derives from the remaining memberships.
+      const currentMembership = memberships.find((m) => m.salon_id === salonId);
+      if (currentMembership?.id === revokedMembershipId) {
+        window.location.reload();
+      }
     },
     onError: toastOnError('Impossible de retirer ce membre'),
   });
@@ -209,7 +218,9 @@ export function useTeamSettings() {
     changeRole: (membershipId: string, newRole: Role) =>
       changeRoleMutation.mutateAsync({ membershipId, newRole }),
     isChangingRole: changeRoleMutation.isPending,
-    revokeMember: (membershipId: string) => revokeMutation.mutateAsync(membershipId),
+    revokeMember: async (membershipId: string) => {
+      await revokeMutation.mutateAsync(membershipId);
+    },
     isRevoking: revokeMutation.isPending,
     transferOwnership: (newOwnerProfileId: string) => transferMutation.mutateAsync(newOwnerProfileId),
     isTransferring: transferMutation.isPending,

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Copy, Check, X, Loader2, Link as LinkIcon } from 'lucide-react';
 import { type InvitationRow, INVITATION_EXPIRY_DAYS } from '../hooks/useTeamSettings';
+import { useToast } from '../../../context/ToastContext';
 
 const ROLE_LABELS: Record<string, string> = {
   manager: 'Manager',
@@ -35,21 +36,40 @@ interface InvitationsTabProps {
 export const InvitationsTab: React.FC<InvitationsTabProps> = ({
   invitations, onCreate, isCreating, onCancel, isCancelling,
 }) => {
+  const { addToast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [selectedRole, setSelectedRole] = useState('stylist');
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const handleCreate = async () => {
-    const token = await onCreate(selectedRole);
-    setGeneratedLink(`${window.location.origin}/accept-invitation?token=${token}`);
+    // M-4: mutation's onError already toasts via useMutationToast, but we
+    // catch here so an unexpected rejection (network blip, auth lock) can't
+    // leave the async call dangling and so the generated-link UI only
+    // appears on success.
+    try {
+      const token = await onCreate(selectedRole);
+      setGeneratedLink(`${window.location.origin}/accept-invitation?token=${token}`);
+    } catch {
+      // Error is already surfaced via the mutation's toastOnError; swallow
+      // so the promise chain stays clean.
+    }
   };
 
   const handleCopy = async () => {
     if (!generatedLink) return;
-    await navigator.clipboard.writeText(generatedLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    // M-3: clipboard can fail (permission denied, non-HTTPS, browser quirks).
+    // Don't flash "Copié" unless the write actually succeeded.
+    try {
+      await navigator.clipboard.writeText(generatedLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      addToast({
+        type: 'error',
+        message: 'Impossible de copier le lien. Copiez-le manuellement depuis le champ.',
+      });
+    }
   };
 
   const handleClose = () => {

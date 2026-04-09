@@ -16,13 +16,14 @@
 | Severity | Count | Status |
 |---|---|---|
 | CRITICAL | 0 | — |
-| HIGH | 7 remaining (5 fixed, 1 invalid) | Batch A shipped 2026-04-10 |
-| MEDIUM | 28 | Batch work |
+| HIGH | 5 remaining (7 fixed, 1 invalid) | Batches A+B shipped 2026-04-10 |
+| MEDIUM | 23 remaining (5 fixed) | Batch work |
 | LOW | 22 | Polish queue |
 
-**Of the 19 previously-documented MEDIUM items:** 1 RESOLVED, 1 PARTIAL, 17 still apply (all re-listed below).
+**Of the 19 previously-documented MEDIUM items:** 1 RESOLVED (pre-batch), 1 PARTIAL, 17 still apply.
 
-**Batch A completed 2026-04-10:** H-2, H-7, H-9, H-10, H-13 fixed. H-6 investigated and marked invalid (non-bug). See each finding below for details.
+**Batch A completed 2026-04-10:** H-2, H-7, H-9, H-10, H-13 fixed. H-6 investigated and marked invalid.
+**Batch B completed 2026-04-10:** H-4, H-8 fixed via new shared `<Modal>` + `<ConfirmModal>` components. M-1, M-2, M-3, M-4, M-17 fixed alongside.
 
 ---
 
@@ -48,10 +49,9 @@ No critical issues found. The codebase has no silent data corruption, no securit
 **Issue:** The RPC was added to fix sort-order collisions between services/variants/packs, but it still computes `MAX(favorite_sort_order) + 1` in a SELECT and then UPDATEs the target row. Nothing locks the three tables between SELECT and UPDATE. Two concurrent transactions (e.g., owner + manager rapid-click) can both see the same MAX, compute the same `v_next`, and both write it — reintroducing the exact collision the RPC was meant to prevent. No unique constraint enforces uniqueness.
 **Fix:** Take a per-salon advisory lock at function entry: `PERFORM pg_advisory_xact_lock(hashtext('fav_order_' || p_salon_id::text));`. Alternative: add a `favorite_sort_order_seq` sequence per salon.
 
-### H-4: Expense delete confirmation uses `window.confirm` instead of design-system modal
-**File:** `modules/accounting/components/ExpenseForm.tsx` (delete button handler)
-**Issue:** Matches an existing LOW in clients module — native `window.confirm` blocks the main thread, doesn't match design, and has poor mobile UX.
-**Fix:** Replace with a confirmation modal component (see `AppointmentDetails` pattern).
+### ~~H-4: Expense delete confirmation uses `window.confirm`~~ RESOLVED (2026-04-10)
+**File:** `modules/accounting/components/ExpenseForm.tsx:82,400-415`
+**Resolved:** Replaced `window.confirm` with the new shared `<ConfirmModal>` component. Delete button is now disabled during any pending mutation. Same-design-system modal, accessible, dismissible only when not loading.
 
 ### H-5: Pack hard-delete orphans `appointments.pack_id` references silently
 **File:** `modules/services/hooks/usePacks.ts` (delete mutation) + migration `20260409190000_cleanup_soft_deleted_packs.sql`
@@ -66,10 +66,9 @@ No critical issues found. The codebase has no silent data corruption, no securit
 **File:** `modules/settings/hooks/useTeamSettings.ts:101-107`
 **Resolved:** Added `queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] })` in `changeRoleMutation.onSuccess`. Prefix match cascades to `useTeam`'s `['staff_members', salonId, { includeArchived }]` key.
 
-### H-8: Settings modals missing focus trap + aria-modal semantics
-**Files:** `modules/settings/components/RevokeAccessModal.tsx:14-15`, `TransferOwnershipModal.tsx:23-24`
-**Issue:** Both desktop modals lack `role="dialog"`, `aria-modal="true"`, and focus management. `MobileDrawer` has focus trap support but these desktop modals do not.
-**Fix:** Add ARIA attributes and a `useEffect` that focuses the first interactive element on mount and restores focus on close. Ideally extract a shared `<Modal>` wrapper.
+### ~~H-8: Settings modals missing focus trap + aria-modal~~ RESOLVED (2026-04-10)
+**Files:** `components/Modal.tsx` (new), `components/ConfirmModal.tsx` (new), `modules/settings/components/RevokeAccessModal.tsx`, `TransferOwnershipModal.tsx`
+**Resolved:** Extracted a shared accessible `<Modal>` component with focus trap, Escape-to-close, backdrop click, body scroll lock, and `inert` on main content (same a11y pattern as `MobileDrawer`). Built `<ConfirmModal>` on top with danger/warning/info tones. Refactored both settings modals to use the new wrapper. `RevokeAccessModal` is now a 20-line wrapper around `ConfirmModal`; `TransferOwnershipModal` uses `Modal` directly for its form-like body.
 
 ### ~~H-9: Settings `useTeamSettings` query response cast as `any`~~ RESOLVED (2026-04-10)
 **File:** `modules/settings/hooks/useTeamSettings.ts:48-82`
@@ -99,25 +98,21 @@ No critical issues found. The codebase has no silent data corruption, no securit
 
 ### Equipe & Permissions Settings
 
-#### M-1: Revoke membership mutation doesn't refresh auth context if user is self
-**File:** `modules/settings/hooks/useTeamSettings.ts:108-118`
-**Issue:** If a user revokes their own membership (edge case, possible), `AuthContext` still holds the stale membership. No `refreshProfile()` call.
-**Fix:** Call `refreshProfile()` in `onSuccess` or invalidate `['salon_memberships', salonId]`.
+#### ~~M-1: Revoke membership — no refresh on self-revoke~~ RESOLVED (2026-04-10)
+**File:** `modules/settings/hooks/useTeamSettings.ts:44,111-131`
+**Resolved:** `revokeMutation` now returns the revoked membership ID; `onSuccess` checks it against the current user's membership and triggers `window.location.reload()` if they just revoked themselves. Also added `['staff_members', salonId]` invalidation. `MembersTab.canRevoke` still blocks the UI path today, so this is defensive.
 
-#### M-2: TransferOwnershipModal: no handling when no eligible members exist
-**File:** `modules/settings/components/TransferOwnershipModal.tsx:19,47-52`
-**Issue:** If `eligibleMembers` is empty, the select shows only a placeholder — user can open the modal but cannot confirm, with no guidance.
-**Fix:** Check `eligibleMembers.length === 0` before opening the modal, or show "Aucun membre éligible pour le transfert".
+#### ~~M-2: TransferOwnershipModal — empty eligible list~~ RESOLVED (2026-04-10)
+**File:** `modules/settings/components/TransferOwnershipModal.tsx:21-43`
+**Resolved:** Modal now branches on `eligibleMembers.length === 0` and shows an explanatory message ("Aucun membre éligible pour le transfert. Invitez d'abord un autre manager ou styliste actif, puis réessayez.") with a single "Fermer" button.
 
-#### M-3: Clipboard copy in InvitationsTab lacks try/catch
-**File:** `modules/settings/components/InvitationsTab.tsx:48-53`
-**Issue:** `navigator.clipboard.writeText()` is awaited without a catch block. If it fails (permission denied, non-HTTPS context), `setCopied(true)` still runs, misleading the user.
-**Fix:** Wrap in try/catch, only set `copied=true` on success, toast on failure.
+#### ~~M-3: Clipboard copy lacks try/catch~~ RESOLVED (2026-04-10)
+**File:** `modules/settings/components/InvitationsTab.tsx:62-76`
+**Resolved:** Wrapped `navigator.clipboard.writeText` in try/catch. On failure, shows an error toast ("Impossible de copier le lien. Copiez-le manuellement depuis le champ.") and leaves `copied` false. `setCopied(true)` + timeout only run on success.
 
-#### M-4: Handle async errors from `onCreate` in InvitationsTab
-**File:** `modules/settings/components/InvitationsTab.tsx:43-46`
-**Issue:** `handleCreate` calls `onCreate(selectedRole)` without try/catch. The mutation's `toastOnError` will fire at the hook level, but the component's `isCreating` local state may not reset cleanly if the promise rejects in an unexpected path.
-**Fix:** Wrap in try/finally to ensure `setIsCreating(false)` always runs.
+#### ~~M-4: Handle async errors in InvitationsTab.handleCreate~~ RESOLVED (2026-04-10)
+**File:** `modules/settings/components/InvitationsTab.tsx:48-60`
+**Resolved:** `handleCreate` now wraps `onCreate(selectedRole)` in try/catch. The mutation's `onError` still toasts via `useMutationToast`, but the component-level catch ensures the `generatedLink` UI only appears on success and unhandled rejections don't leak.
 
 ### Accounting — Expense Flow
 
@@ -183,10 +178,9 @@ No critical issues found. The codebase has no silent data corruption, no securit
 **Issue:** When items are selected, all category pills except the active tab are disabled — even though the desktop `ServiceBlock` allows switching to both the locked category and Favorites.
 **Fix:** Mirror desktop logic in `isCategoryPillDisabled`: allow switch to locked category OR Favorites.
 
-#### M-17: Cross-category swap via `toggleBlockItem` is silently rejected, no user feedback
-**File:** `modules/appointments/hooks/useAppointmentForm.ts:232-241`
-**Issue:** The invariant guard returns the block unchanged if a cross-category item is added, but emits nothing to the UI. User clicks a service, sees nothing happen, and has no idea why.
-**Fix:** Return a sentinel value or call `addToast` to emit `"Impossible de mélanger les catégories dans un même créneau"`.
+#### ~~M-17: Cross-category swap silently rejected~~ RESOLVED (2026-04-10)
+**File:** `modules/appointments/hooks/useAppointmentForm.ts:18,218-244`
+**Resolved:** `toggleBlockItem` now pre-computes the cross-category rejection outside the state updater (keeping the reducer pure) and emits `addToast({ type: 'warning', message: 'Impossible de mélanger les catégories dans un même créneau.' })` before returning. The in-reducer check is kept as a belt-and-braces defensive guard.
 
 #### M-18: `getBlockPrice` silently returns 0 when service/variant missing
 **File:** `modules/appointments/hooks/useAppointmentForm.ts:119-125`
