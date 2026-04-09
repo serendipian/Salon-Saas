@@ -471,15 +471,15 @@ export const TransactionHistoryPage: React.FC = () => {
                 <th className="px-6 py-3"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {displayedTransactions.map(({ parent: trx, children }) => {
+            <tbody>
+              {displayedTransactions.map(({ parent: trx, children }, idx) => {
                 const status = getTransactionStatus(trx, transactions);
                 const isVoided = status === 'voided';
                 const showVoid = canVoid && status === 'active' && isToday(trx.date);
                 const showRefund = canRefund && status !== 'voided' && status !== 'fully_refunded';
                 return (
                 <React.Fragment key={trx.id}>
-                <tr className={`group hover:bg-slate-50/80 transition-colors ${isVoided ? 'opacity-60' : ''}`}>
+                <tr className={`transition-colors ${idx % 2 === 1 ? 'bg-slate-50/60' : ''} hover:bg-slate-100/60 ${isVoided ? 'opacity-60' : ''}`}>
                   <td className="px-6 py-5 font-medium text-slate-700">
                     {new Date(trx.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </td>
@@ -518,7 +518,7 @@ export const TransactionHistoryPage: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-5 text-right">
-                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-1">
                       {showVoid && (
                         <button onClick={() => setVoidTarget(trx)} className="p-2 text-red-300 hover:text-red-600 transition-colors" title="Annuler">
                           <Ban size={16} />
