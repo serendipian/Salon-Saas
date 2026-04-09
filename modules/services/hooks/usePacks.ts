@@ -5,14 +5,15 @@ import { useAuth } from '../../../context/AuthContext';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { toPack } from '../packMappers';
-import { isPackValid } from '../utils/packExpansion';
-import type { Pack } from '../../../types';
+import { isPackValid, isPackVisible } from '../utils/packExpansion';
+import { usePackGroups } from './usePackGroups';
 
 export function usePacks() {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id;
   const queryClient = useQueryClient();
   const { toastOnError, toastOnSuccess } = useMutationToast();
+  const { packGroups, isLoading: groupsLoading } = usePackGroups();
 
   useRealtimeSync('packs');
   useRealtimeSync('pack_items');
@@ -33,13 +34,18 @@ export function usePacks() {
     enabled: !!salonId,
   });
 
+  // validPacks = customer-facing: pack is valid + visible (active, and group is live if grouped).
+  // While groups are still loading we return [] to avoid briefly leaking packs
+  // whose group is inactive (they'd look "orphaned" until the groups query resolves).
   const validPacks = useMemo(
-    () => packs.filter((p) => p.active && isPackValid(p)),
-    [packs],
+    () => groupsLoading
+      ? []
+      : packs.filter((p) => isPackValid(p) && isPackVisible(p, packGroups)),
+    [packs, packGroups, groupsLoading],
   );
 
   const addPackMutation = useMutation({
-    mutationFn: async (pack: { name: string; description: string; price: number; items: Array<{ serviceId: string; serviceVariantId: string }> }) => {
+    mutationFn: async (pack: { name: string; description: string; price: number; groupId: string | null; items: Array<{ serviceId: string; serviceVariantId: string }> }) => {
       if (!salonId) throw new Error('No salon');
 
       const { data: packRow, error: packError } = await supabase
@@ -49,6 +55,7 @@ export function usePacks() {
           name: pack.name,
           description: pack.description || null,
           price: pack.price,
+          pack_group_id: pack.groupId,
         })
         .select('id')
         .single();
@@ -77,7 +84,7 @@ export function usePacks() {
   });
 
   const updatePackMutation = useMutation({
-    mutationFn: async (pack: { id: string; name: string; description: string; price: number; items: Array<{ serviceId: string; serviceVariantId: string }> }) => {
+    mutationFn: async (pack: { id: string; name: string; description: string; price: number; groupId: string | null; items: Array<{ serviceId: string; serviceVariantId: string }> }) => {
       if (!salonId) throw new Error('No salon');
 
       const { error: packError } = await supabase
@@ -86,6 +93,7 @@ export function usePacks() {
           name: pack.name,
           description: pack.description || null,
           price: pack.price,
+          pack_group_id: pack.groupId,
         })
         .eq('id', pack.id)
         .eq('salon_id', salonId);

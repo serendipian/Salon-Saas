@@ -1,4 +1,4 @@
-import type { Pack, CartItem } from '../../../types';
+import type { Pack, PackGroup, CartItem } from '../../../types';
 
 /**
  * Expands a pack into individual CartItems with pro-rata discounted prices.
@@ -74,4 +74,30 @@ export function formatPackItemCount(pack: Pack): string {
   const prestationLabel = `${total} prestation${total !== 1 ? 's' : ''}`;
   if (unique === total) return prestationLabel;
   return `${unique} service${unique !== 1 ? 's' : ''} (${prestationLabel})`;
+}
+
+/**
+ * Checks if a pack group is currently live:
+ * - group.active is true
+ * - now is within [starts_at, ends_at] if either is set
+ */
+export function isPackGroupLive(group: PackGroup, now: Date = new Date()): boolean {
+  if (!group.active) return false;
+  if (group.startsAt && new Date(group.startsAt) > now) return false;
+  if (group.endsAt && new Date(group.endsAt) < now) return false;
+  return true;
+}
+
+/**
+ * Computes the effective visibility of a pack for customer-facing catalogs.
+ * A pack is visible iff:
+ * - pack.active
+ * - pack has no group, OR the group exists AND is live
+ */
+export function isPackVisible(pack: Pack, groups: PackGroup[]): boolean {
+  if (!pack.active) return false;
+  if (!pack.groupId) return true;
+  const group = groups.find((g) => g.id === pack.groupId);
+  if (!group) return true; // orphaned group reference → don't hide
+  return isPackGroupLive(group);
 }

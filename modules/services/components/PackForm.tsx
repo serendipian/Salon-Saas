@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ArrowLeft, AlertTriangle, Plus, Minus } from 'lucide-react';
-import type { Pack, Service, ServiceCategory } from '../../../types';
+import type { Pack, PackGroup, Service, ServiceCategory } from '../../../types';
 import { formatPrice, formatDuration } from '../../../lib/format';
 import { packSchema } from '../packSchemas';
 import { useFormValidation } from '../../../hooks/useFormValidation';
@@ -10,7 +10,8 @@ interface PackFormProps {
   existingPack?: Pack;
   services: Service[];
   categories: ServiceCategory[];
-  onSave: (data: { id?: string; name: string; description: string; price: number; items: Array<{ serviceId: string; serviceVariantId: string }> }) => void;
+  packGroups: PackGroup[];
+  onSave: (data: { id?: string; name: string; description: string; price: number; groupId: string | null; items: Array<{ serviceId: string; serviceVariantId: string }> }) => void;
   onCancel: () => void;
   isSaving?: boolean;
 }
@@ -19,6 +20,7 @@ export const PackForm: React.FC<PackFormProps> = ({
   existingPack,
   services,
   categories,
+  packGroups,
   onSave,
   onCancel,
   isSaving = false,
@@ -26,6 +28,7 @@ export const PackForm: React.FC<PackFormProps> = ({
   const [name, setName] = useState(existingPack?.name ?? '');
   const [description, setDescription] = useState(existingPack?.description ?? '');
   const [price, setPrice] = useState(existingPack?.price?.toString() ?? '');
+  const [groupId, setGroupId] = useState<string | null>(existingPack?.groupId ?? null);
   const [selectedItems, setSelectedItems] = useState<Array<{ serviceId: string; serviceVariantId: string }>>(
     existingPack?.items.map((i) => ({ serviceId: i.serviceId, serviceVariantId: i.serviceVariantId })) ?? []
   );
@@ -93,6 +96,7 @@ export const PackForm: React.FC<PackFormProps> = ({
       name,
       description,
       price: priceNum,
+      groupId,
       items: selectedItems,
     });
   };
@@ -145,6 +149,21 @@ export const PackForm: React.FC<PackFormProps> = ({
             className={`w-full px-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 ${errors.price ? 'border-red-400' : 'border-slate-200'}`}
           />
           {errors.price && <p className="text-xs text-red-500 mt-1">{errors.price}</p>}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Groupe</label>
+          <select
+            value={groupId ?? ''}
+            onChange={(e) => setGroupId(e.target.value || null)}
+            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+          >
+            <option value="">Aucun groupe</option>
+            {packGroups.map((g) => (
+              <option key={g.id} value={g.id}>{g.name}</option>
+            ))}
+          </select>
+          <p className="text-xs text-slate-400 mt-1">Regrouper ce pack dans une collection (ex: Halloween, Été)</p>
         </div>
       </div>
 

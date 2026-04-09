@@ -1,4 +1,4 @@
-import type { Pack, PackItem } from '../../types';
+import type { Pack, PackGroup, PackItem } from '../../types';
 
 // Row shape returned by supabase query with joins
 export interface PackRow {
@@ -11,11 +11,26 @@ export interface PackRow {
   is_favorite: boolean;
   favorite_sort_order: number | null;
   sort_order: number;
+  pack_group_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
   created_by: string | null;
   pack_items: PackItemRow[];
+}
+
+export interface PackGroupRow {
+  id: string;
+  salon_id: string;
+  name: string;
+  description: string | null;
+  color: string | null;
+  active: boolean;
+  starts_at: string | null;
+  ends_at: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PackItemRow {
@@ -60,8 +75,22 @@ export function toPack(row: PackRow): Pack {
     isFavorite: row.is_favorite,
     favoriteSortOrder: row.favorite_sort_order,
     sortOrder: row.sort_order,
+    groupId: row.pack_group_id,
     items: (row.pack_items ?? [])
       .map(toPackItem)
       .sort((a, b) => a.sortOrder - b.sortOrder),
+  };
+}
+
+export function toPackGroup(row: PackGroupRow): PackGroup {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description ?? '',
+    color: row.color,
+    active: row.active,
+    startsAt: row.starts_at,
+    endsAt: row.ends_at,
+    sortOrder: row.sort_order,
   };
 }

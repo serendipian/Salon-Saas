@@ -830,6 +830,70 @@ export type Database = {
           },
         ]
       }
+      pack_groups: {
+        Row: {
+          active: boolean
+          color: string | null
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          id: string
+          name: string
+          salon_id: string
+          sort_order: number
+          starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          name: string
+          salon_id: string
+          sort_order?: number
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          name?: string
+          salon_id?: string
+          sort_order?: number
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_groups_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_groups_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_groups_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pack_items: {
         Row: {
           created_at: string
@@ -917,6 +981,7 @@ export type Database = {
           id: string
           is_favorite: boolean
           name: string
+          pack_group_id: string | null
           price: number
           salon_id: string
           sort_order: number
@@ -932,6 +997,7 @@ export type Database = {
           id?: string
           is_favorite?: boolean
           name: string
+          pack_group_id?: string | null
           price: number
           salon_id: string
           sort_order?: number
@@ -947,12 +1013,20 @@ export type Database = {
           id?: string
           is_favorite?: boolean
           name?: string
+          pack_group_id?: string | null
           price?: number
           salon_id?: string
           sort_order?: number
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "packs_pack_group_id_fkey"
+            columns: ["pack_group_id"]
+            isOneToOne: false
+            referencedRelation: "pack_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "packs_salon_id_fkey"
             columns: ["salon_id"]

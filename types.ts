@@ -110,7 +110,19 @@ export interface Pack {
   isFavorite: boolean;
   favoriteSortOrder: number | null;
   sortOrder: number;
+  groupId: string | null;
   items: PackItem[];
+}
+
+export interface PackGroup {
+  id: string;
+  name: string;
+  description: string;
+  color: string | null;
+  active: boolean;
+  startsAt: string | null;
+  endsAt: string | null;
+  sortOrder: number;
 }
 
 export interface ProductSettings {
