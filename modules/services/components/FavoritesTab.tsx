@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Star, GripVertical, ChevronDown, ChevronRight, Save } from 'lucide-react';
+import { Star, GripVertical, ChevronDown, ChevronRight, Save, Package } from 'lucide-react';
 import { useServices } from '../hooks/useServices';
 import { usePacks } from '../hooks/usePacks';
 import { CategoryIcon } from '../../../lib/categoryIcons';
@@ -118,7 +118,10 @@ export function FavoritesTab() {
                     <span className="text-xs text-slate-400 shrink-0">variante</span>
                   )}
                   {item.type === 'pack' && (
-                    <span className="text-xs text-purple-600 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded shrink-0">pack</span>
+                    <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded shrink-0">
+                      <Package size={10} />
+                      Pack Promo
+                    </span>
                   )}
                   {category && (
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border shrink-0 ${category.color}`}>
