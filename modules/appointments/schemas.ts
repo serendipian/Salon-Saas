@@ -17,9 +17,14 @@ export const newClientSchema = z.object({
   phone: z.string().min(6, 'Le numéro de téléphone est requis'),
 });
 
-export const serviceBlockSchema = z.object({
+export const serviceBlockItemSchema = z.object({
   serviceId: z.string().min(1, 'Le service est requis'),
   variantId: z.string(),
+  priceOverride: z.number().optional(),
+});
+
+export const serviceBlockSchema = z.object({
+  items: z.array(serviceBlockItemSchema).min(1, 'Au moins un service est requis'),
   staffId: z.string().nullable(),
   date: z.string().min(1, 'La date est requise'),
   hour: z.number().min(0, "L'heure est requise").max(23, "L'heure doit être entre 0 et 23"),
