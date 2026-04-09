@@ -14,18 +14,22 @@ export function FavoritesTab() {
     setLocalOrder(favorites);
   }, [favorites]);
 
+  const getFavoriteId = (f: FavoriteItem): string => {
+    if (f.type === 'service') return f.service.id;
+    if (f.type === 'variant') return f.variant.id;
+    return f.pack.id;
+  };
+
   const hasOrderChanged = JSON.stringify(localOrder.map(f => {
-    const id = f.type === 'service' ? f.service.id : f.variant.id;
-    return `${f.type}:${id}`;
+    return `${f.type}:${getFavoriteId(f)}`;
   })) !== JSON.stringify(favorites.map(f => {
-    const id = f.type === 'service' ? f.service.id : f.variant.id;
-    return `${f.type}:${id}`;
+    return `${f.type}:${getFavoriteId(f)}`;
   }));
 
   const handleSaveOrder = () => {
     const items = localOrder.map((item, index) => ({
-      type: item.type,
-      id: item.type === 'service' ? item.service.id : item.variant.id,
+      type: item.type as 'service' | 'variant',
+      id: getFavoriteId(item),
       sortOrder: index,
     }));
     reorderFavorites(items);
@@ -51,12 +55,14 @@ export function FavoritesTab() {
 
   const getFavoriteLabel = (item: FavoriteItem): string => {
     if (item.type === 'service') return item.service.name;
-    return `${item.parentService.name} — ${item.variant.name}`;
+    if (item.type === 'variant') return `${item.parentService.name} — ${item.variant.name}`;
+    return item.pack.name;
   };
 
   const getFavoriteCategory = (item: FavoriteItem) => {
-    const categoryId = item.type === 'service' ? item.service.categoryId : item.parentService.categoryId;
-    return serviceCategories.find(c => c.id === categoryId);
+    if (item.type === 'service') return serviceCategories.find(c => c.id === item.service.categoryId);
+    if (item.type === 'variant') return serviceCategories.find(c => c.id === item.parentService.categoryId);
+    return undefined;
   };
 
   const isServiceFavorited = useCallback((serviceId: string) => {
@@ -83,7 +89,7 @@ export function FavoritesTab() {
               const category = getFavoriteCategory(item);
               return (
                 <div
-                  key={`${item.type}-${item.type === 'service' ? item.service.id : item.variant.id}`}
+                  key={`${item.type}-${getFavoriteId(item)}`}
                   draggable
                   onDragStart={() => handleDragStart(index)}
                   onDragOver={(e) => handleDragOver(e, index)}

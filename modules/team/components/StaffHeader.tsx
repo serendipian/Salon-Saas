@@ -57,13 +57,14 @@ export const StaffHeader: React.FC<StaffHeaderProps> = ({
         <div className="flex flex-col sm:flex-row gap-6">
           {/* Left: Avatar + Info */}
           <div className="flex items-start gap-4 flex-1">
-            <StaffAvatar
-              firstName={staff.firstName}
-              lastName={staff.lastName}
-              photoUrl={staff.photoUrl}
-              size={72}
-              className="shrink-0"
-            />
+            <div className="shrink-0">
+              <StaffAvatar
+                firstName={staff.firstName}
+                lastName={staff.lastName}
+                photoUrl={staff.photoUrl}
+                size={72}
+              />
+            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-xl font-bold text-slate-900">{staff.firstName} {staff.lastName}</h1>

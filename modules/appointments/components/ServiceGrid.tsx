@@ -62,7 +62,7 @@ export default function ServiceGrid({
                   )}
                 </div>
               );
-            } else {
+            } else if (fav.type === 'variant') {
               // Variant-type favorite — standalone card, selects directly
               const { variant, parentService } = fav;
               const isSelected = selectedVariantId === variant.id;

@@ -24,8 +24,10 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
     name: '',
     categoryId: categories[0]?.id || '',
     description: '',
-    variants: [{ id: crypto.randomUUID(), name: serviceSettings.defaultVariantName, durationMinutes: serviceSettings.defaultDuration, price: 0, cost: 0, additionalCost: 0 }],
-    active: true
+    variants: [{ id: crypto.randomUUID(), name: serviceSettings.defaultVariantName, durationMinutes: serviceSettings.defaultDuration, price: 0, cost: 0, additionalCost: 0, isFavorite: false, favoriteSortOrder: 0 }],
+    active: true,
+    isFavorite: false,
+    favoriteSortOrder: 0,
   });
 
   const { errors, validate, clearFieldError } = useFormValidation(serviceSchema);
@@ -43,13 +45,13 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({ existingService, categ
   const handleSave = () => {
     const validated = validate(formData);
     if (!validated) return;
-    onSave({ ...formData, ...validated });
+    onSave({ ...formData, name: validated.name, categoryId: validated.categoryId });
   };
 
   const addVariant = () => {
     setFormData(prev => ({
       ...prev,
-      variants: [...prev.variants, { id: crypto.randomUUID(), name: '', durationMinutes: serviceSettings.defaultDuration, price: 0, cost: 0, additionalCost: 0 }]
+      variants: [...prev.variants, { id: crypto.randomUUID(), name: '', durationMinutes: serviceSettings.defaultDuration, price: 0, cost: 0, additionalCost: 0, isFavorite: false, favoriteSortOrder: 0 }]
     }));
   };
 
