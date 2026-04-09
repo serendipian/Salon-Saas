@@ -82,6 +82,7 @@ export default function AppointmentBuilder({
               isActive={i === form.activeBlockIndex}
               services={hookProps.services}
               categories={hookProps.categories}
+              favorites={hookProps.favorites ?? []}
               team={hookProps.team}
               onActivate={() => form.setActiveBlockIndex(i)}
               onRemove={() => form.removeBlock(i)}

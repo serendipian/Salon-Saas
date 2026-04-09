@@ -20,7 +20,7 @@ export const AppointmentNewPage: React.FC = () => {
   const { isMobile } = useMediaQuery();
   const { allAppointments, addAppointmentGroup } = useAppointments();
   const { allClients: clients } = useClients();
-  const { allServices: services, serviceCategories } = useServices();
+  const { allServices: services, serviceCategories, favorites } = useServices();
   const { allStaff: team } = useTeam();
 
   const handleSave = async (payload: Parameters<typeof addAppointmentGroup>[0] & { newClient: { firstName: string; lastName: string; phone: string } | null }) => {
@@ -51,6 +51,7 @@ export const AppointmentNewPage: React.FC = () => {
   const sharedProps = {
     services,
     categories: serviceCategories,
+    favorites,
     team,
     clients,
     appointments: allAppointments,

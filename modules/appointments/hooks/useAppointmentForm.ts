@@ -7,6 +7,7 @@ import type {
   ServiceCategory,
   StaffMember,
   Client,
+  FavoriteItem,
 } from '../../../types';
 import { appointmentGroupSchema, newClientSchema } from '../schemas';
 import { useFormValidation } from '../../../hooks/useFormValidation';
@@ -16,6 +17,7 @@ import { formatPrice } from '../../../lib/format';
 export interface UseAppointmentFormProps {
   services: Service[];
   categories: ServiceCategory[];
+  favorites?: FavoriteItem[];
   team: StaffMember[];
   clients: Client[];
   appointments: Appointment[];

@@ -21,7 +21,7 @@ export const AppointmentEditPage: React.FC = () => {
   const { isMobile } = useMediaQuery();
   const { allAppointments, isLoading, editAppointmentGroup, deleteAppointment } = useAppointments();
   const { allClients: clients } = useClients();
-  const { allServices: services, serviceCategories } = useServices();
+  const { allServices: services, serviceCategories, favorites } = useServices();
   const { allStaff: team } = useTeam();
 
   const selectedAppt = allAppointments.find(a => a.id === id);
@@ -126,6 +126,7 @@ export const AppointmentEditPage: React.FC = () => {
   const sharedProps = {
     services,
     categories: serviceCategories,
+    favorites,
     team,
     clients,
     appointments: allAppointments,

@@ -1,11 +1,11 @@
-import React, { useMemo } from 'react';
-import type { Service, ServiceCategory, StaffMember } from '../../../types';
+import React, { useMemo, useState } from 'react';
+import type { Service, ServiceCategory, StaffMember, FavoriteItem } from '../../../types';
 import type { ServiceBlockState } from '../../../types';
 import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import ServiceGrid from './ServiceGrid';
 import StaffPills from './StaffPills';
-import { X, Clock, Calendar } from 'lucide-react';
+import { X, Clock, Calendar, Star } from 'lucide-react';
 
 interface ServiceBlockProps {
   block: ServiceBlockState;
@@ -13,6 +13,7 @@ interface ServiceBlockProps {
   isActive: boolean;
   services: Service[];
   categories: ServiceCategory[];
+  favorites: FavoriteItem[];
   team: StaffMember[];
   onActivate: () => void;
   onRemove: () => void;
@@ -26,16 +27,21 @@ export default function ServiceBlock({
   isActive,
   services,
   categories,
+  favorites,
   team,
   onActivate,
   onRemove,
   onChange,
   summaryText,
 }: ServiceBlockProps) {
-  const activeCategoryId = block.categoryId || categories[0]?.id || null;
+  const [activeCategoryId, setActiveCategoryId] = useState<string>(
+    favorites.length > 0 ? 'FAVORITES' : block.categoryId || categories[0]?.id || ''
+  );
 
   const filteredServices = useMemo(
-    () => services.filter((s) => s.categoryId === activeCategoryId && s.active),
+    () => activeCategoryId === 'FAVORITES'
+      ? []
+      : services.filter((s) => s.categoryId === activeCategoryId && s.active),
     [services, activeCategoryId],
   );
 
@@ -45,19 +51,25 @@ export default function ServiceBlock({
   );
 
   const handleCategoryChange = (categoryId: string) => {
-    onChange({ categoryId, serviceId: null, variantId: null });
+    setActiveCategoryId(categoryId);
+    onChange({ categoryId: categoryId === 'FAVORITES' ? null : categoryId, serviceId: null, variantId: null });
   };
 
   const handleServiceSelect = (serviceId: string) => {
+    const svc = services.find(s => s.id === serviceId);
     onChange({
       serviceId,
       variantId: null,
-      categoryId: activeCategoryId,
+      categoryId: svc?.categoryId || activeCategoryId,
     });
   };
 
-  const handleVariantSelect = (variantId: string) => {
-    onChange({ variantId });
+  const handleVariantSelect = (variantId: string, serviceId?: string) => {
+    if (serviceId) {
+      onChange({ variantId, serviceId });
+    } else {
+      onChange({ variantId });
+    }
   };
 
   const handleStaffSelect = (staffId: string | null) => {
@@ -153,6 +165,22 @@ export default function ServiceBlock({
 
       {/* Category tabs */}
       <div className="flex gap-0 border-b border-slate-200 mb-0 overflow-x-auto">
+        {favorites.length > 0 && (
+          <button
+            type="button"
+            onClick={() => handleCategoryChange('FAVORITES')}
+            className={`
+              px-3 py-2 text-xs whitespace-nowrap transition-colors flex items-center gap-1.5
+              ${activeCategoryId === 'FAVORITES'
+                ? 'text-amber-600 border-b-2 border-amber-500 -mb-[1px] font-semibold'
+                : 'text-slate-500 hover:text-slate-700'
+              }
+            `}
+          >
+            <Star size={13} className={activeCategoryId === 'FAVORITES' ? 'fill-amber-400 text-amber-400' : ''} />
+            Favoris
+          </button>
+        )}
         {categories.map((cat) => (
           <button
             key={cat.id}
@@ -175,6 +203,7 @@ export default function ServiceBlock({
       {/* Service grid */}
       <ServiceGrid
         services={filteredServices}
+        favorites={activeCategoryId === 'FAVORITES' ? favorites : []}
         selectedServiceId={block.serviceId}
         selectedVariantId={block.variantId}
         onSelectService={handleServiceSelect}
