@@ -224,17 +224,26 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
               // Same service + same variant → remove
               return { ...b, items: b.items.filter((_, idx) => idx !== existingIdx) };
             }
-            // Same service, different variant → replace variant
+            // Same service, different variant → replace variant (category unchanged by definition)
             const nextItems = b.items.slice();
             nextItems[existingIdx] = { ...existing, variantId };
             return { ...b, items: nextItems };
           }
-          // New service → append
+          // New service → enforce category consistency (defense in depth).
+          // All items in a block must share a single category because the block
+          // is performed by one staff member, and staff competence is category-scoped.
+          if (b.items.length > 0) {
+            const lockedSvc = services.find((s) => s.id === b.items[0].serviceId);
+            const candidateSvc = services.find((s) => s.id === serviceId);
+            if (lockedSvc?.categoryId && candidateSvc?.categoryId && lockedSvc.categoryId !== candidateSvc.categoryId) {
+              return b; // reject: cross-category insert
+            }
+          }
           return { ...b, items: [...b.items, { serviceId, variantId }] };
         }),
       );
     },
-    [],
+    [services],
   );
 
   const clearBlockItems = useCallback((index: number) => {

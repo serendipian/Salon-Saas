@@ -67,12 +67,28 @@ export default function ServiceBlock({
     [services, activeCategoryId],
   );
 
-  // Category lock: when items exist (and not a pack block), pills are locked to the active category
+  // Category lock: when items exist (and not a pack block), pills are locked to the
+  // locked category OR the Favoris tab (so the user can still browse their favorites
+  // of the locked category).
   const isLocked = block.items.length > 0 && !block.packId;
 
+  // The category the block is anchored to (derived from first item's service).
+  const lockedCategoryId = useMemo<string | null>(() => {
+    if (!isLocked) return null;
+    const firstSvc = services.find((s) => s.id === block.items[0].serviceId);
+    return firstSvc?.categoryId ?? null;
+  }, [isLocked, block.items, services]);
+
+  // While locked, only Favoris and the locked category pill are switchable.
+  const isPillAllowedWhenLocked = (pillId: string): boolean => {
+    if (!isLocked) return true;
+    if (pillId === 'FAVORITES') return true;
+    if (pillId === 'PACKS') return false;
+    return pillId === lockedCategoryId;
+  };
+
   const handleCategoryChange = (categoryId: string) => {
-    // Hard-locked when items exist; only the currently active pill is clickable (as a no-op).
-    if (isLocked && categoryId !== activeCategoryId) return;
+    if (!isPillAllowedWhenLocked(categoryId)) return;
     setActiveCategoryId(categoryId);
     onUpdate({ categoryId: categoryId === 'FAVORITES' || categoryId === 'PACKS' ? null : categoryId });
   };
@@ -201,26 +217,29 @@ export default function ServiceBlock({
 
       {/* Category buttons + Vider button when locked */}
       <div className="flex gap-2 flex-wrap mb-3 items-center">
-        {favorites.length > 0 && (
-          <button
-            type="button"
-            onClick={() => handleCategoryChange('FAVORITES')}
-            disabled={isLocked && activeCategoryId !== 'FAVORITES'}
-            aria-disabled={isLocked && activeCategoryId !== 'FAVORITES'}
-            className={`
-              px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
-              ${activeCategoryId === 'FAVORITES'
-                ? 'bg-amber-50 text-amber-700 border-amber-300 shadow-sm'
-                : isLocked
-                  ? 'bg-white text-slate-300 border-slate-100 cursor-not-allowed'
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-amber-300 hover:bg-amber-50/50'
-              }
-            `}
-          >
-            <Star size={14} className={activeCategoryId === 'FAVORITES' ? 'fill-amber-400 text-amber-400' : ''} />
-            Favoris
-          </button>
-        )}
+        {favorites.length > 0 && (() => {
+          const disabled = !isPillAllowedWhenLocked('FAVORITES');
+          return (
+            <button
+              type="button"
+              onClick={() => handleCategoryChange('FAVORITES')}
+              disabled={disabled}
+              aria-disabled={disabled}
+              className={`
+                px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
+                ${activeCategoryId === 'FAVORITES'
+                  ? 'bg-amber-50 text-amber-700 border-amber-300 shadow-sm'
+                  : disabled
+                    ? 'bg-white text-slate-300 border-slate-100 cursor-not-allowed'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-amber-300 hover:bg-amber-50/50'
+                }
+              `}
+            >
+              <Star size={14} className={activeCategoryId === 'FAVORITES' ? 'fill-amber-400 text-amber-400' : ''} />
+              Favoris
+            </button>
+          );
+        })()}
         {packs.length > 0 && !isLocked && (
           <button
             type="button"
@@ -239,7 +258,7 @@ export default function ServiceBlock({
         )}
         {categories.map((cat) => {
           const isActivePill = cat.id === activeCategoryId;
-          const disabled = isLocked && !isActivePill;
+          const disabled = !isPillAllowedWhenLocked(cat.id);
           return (
             <button
               key={cat.id}
@@ -281,6 +300,7 @@ export default function ServiceBlock({
           categories={categories}
           selectedItems={block.items}
           onToggleItem={onToggleItem}
+          lockedCategoryId={lockedCategoryId}
         />
       )}
 

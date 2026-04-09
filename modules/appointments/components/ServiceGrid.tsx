@@ -9,6 +9,12 @@ interface ServiceGridProps {
   categories?: ServiceCategory[];
   selectedItems: ServiceBlockItem[];
   onToggleItem: (serviceId: string, variantId: string) => void;
+  /**
+   * When the parent block is locked to a single category (because it already
+   * contains items), favorites whose category does not match are rendered
+   * disabled. `null` = no lock.
+   */
+  lockedCategoryId?: string | null;
 }
 
 export default function ServiceGrid({
@@ -17,6 +23,7 @@ export default function ServiceGrid({
   categories = [],
   selectedItems,
   onToggleItem,
+  lockedCategoryId = null,
 }: ServiceGridProps) {
   const showFavorites = favorites.length > 0;
 
@@ -45,6 +52,9 @@ export default function ServiceGrid({
               const isSingleVariant = svc.variants.length === 1;
               const variant = svc.variants[0];
               const catName = categoryMap.get(svc.categoryId);
+              const isDisabledByLock = lockedCategoryId !== null && svc.categoryId !== lockedCategoryId;
+              const disabledClass = isDisabledByLock ? 'opacity-40 cursor-not-allowed pointer-events-none' : '';
+              const disabledTitle = isDisabledByLock ? 'Ce favori appartient à une autre catégorie' : undefined;
 
               // Single-variant service: render as flat card matching variant favorite layout
               if (isSingleVariant && variant) {
@@ -52,15 +62,17 @@ export default function ServiceGrid({
                 return (
                   <div
                     key={`fav-svc-${svc.id}`}
+                    title={disabledTitle}
+                    aria-disabled={isDisabledByLock}
                     className={`rounded-xl p-3 transition-all cursor-pointer ${
                       isSelected
                         ? 'bg-white border-2 border-blue-400 shadow-sm'
                         : 'bg-white border border-slate-200 hover:border-blue-300 hover:shadow-sm'
-                    }`}
-                    onClick={() => onToggleItem(svc.id, variant.id)}
+                    } ${disabledClass}`}
+                    onClick={() => { if (!isDisabledByLock) onToggleItem(svc.id, variant.id); }}
                     role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === 'Enter' && onToggleItem(svc.id, variant.id)}
+                    tabIndex={isDisabledByLock ? -1 : 0}
+                    onKeyDown={(e) => { if (!isDisabledByLock && e.key === 'Enter') onToggleItem(svc.id, variant.id); }}
                   >
                     <div className="flex justify-between items-center">
                       <div>
@@ -83,17 +95,20 @@ export default function ServiceGrid({
               return (
                 <div
                   key={`fav-svc-${svc.id}`}
+                  title={disabledTitle}
+                  aria-disabled={isDisabledByLock}
                   className={`rounded-xl p-3 transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-white border-2 border-blue-400 shadow-sm'
                       : 'bg-white border border-slate-200 hover:border-blue-300 hover:shadow-sm'
-                  }`}
+                  } ${disabledClass}`}
                   role="button"
-                  tabIndex={0}
+                  tabIndex={isDisabledByLock ? -1 : 0}
                 >
                   <div
                     className="flex justify-between items-start"
                     onClick={() => {
+                      if (isDisabledByLock) return;
                       if (isSelected && selectedVariantId) {
                         // Click card header of selected multi-variant service → deselect
                         onToggleItem(svc.id, selectedVariantId);
@@ -101,6 +116,7 @@ export default function ServiceGrid({
                       // Otherwise, do nothing on header click — user picks a variant below
                     }}
                     onKeyDown={(e) => {
+                      if (isDisabledByLock) return;
                       if (e.key === 'Enter' && isSelected && selectedVariantId) {
                         onToggleItem(svc.id, selectedVariantId);
                       }
@@ -120,7 +136,7 @@ export default function ServiceGrid({
                   <VariantList
                     variants={svc.variants}
                     selectedVariantId={selectedVariantId}
-                    onSelect={(vid) => onToggleItem(svc.id, vid)}
+                    onSelect={(vid) => { if (!isDisabledByLock) onToggleItem(svc.id, vid); }}
                   />
                 </div>
               );
@@ -130,18 +146,23 @@ export default function ServiceGrid({
               const isSelected = selectedItems.some(
                 (i) => i.serviceId === parentService.id && i.variantId === variant.id,
               );
+              const isDisabledByLock = lockedCategoryId !== null && parentService.categoryId !== lockedCategoryId;
+              const disabledClass = isDisabledByLock ? 'opacity-40 cursor-not-allowed pointer-events-none' : '';
+              const disabledTitle = isDisabledByLock ? 'Ce favori appartient à une autre catégorie' : undefined;
               return (
                 <div
                   key={`fav-var-${variant.id}`}
+                  title={disabledTitle}
+                  aria-disabled={isDisabledByLock}
                   className={`rounded-xl p-3 transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-white border-2 border-blue-400 shadow-sm'
                       : 'bg-white border border-slate-200 hover:border-blue-300 hover:shadow-sm'
-                  }`}
-                  onClick={() => onToggleItem(parentService.id, variant.id)}
+                  } ${disabledClass}`}
+                  onClick={() => { if (!isDisabledByLock) onToggleItem(parentService.id, variant.id); }}
                   role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === 'Enter' && onToggleItem(parentService.id, variant.id)}
+                  tabIndex={isDisabledByLock ? -1 : 0}
+                  onKeyDown={(e) => { if (!isDisabledByLock && e.key === 'Enter') onToggleItem(parentService.id, variant.id); }}
                 >
                   <div className="flex justify-between items-center">
                     <div>

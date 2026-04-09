@@ -188,12 +188,14 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
   };
 
   // Render a service-type favorite card (may contain multiple variants)
-  const renderFavoriteServiceCard = (service: Service) => {
+  const renderFavoriteServiceCard = (service: Service, disabledByLock: boolean) => {
     const isSelected = isServiceSelected(service.id);
     const selectedVariantId = getSelectedVariantId(service.id);
     const showVariantList = service.variants.length > 1;
+    const disabledClass = disabledByLock ? 'opacity-40 pointer-events-none' : '';
 
     const handleHeaderTap = () => {
+      if (disabledByLock) return;
       if (service.variants.length === 1) {
         toggleItem(service.id, service.variants[0].id);
         return;
@@ -204,7 +206,7 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
     };
 
     return (
-      <div key={`fav-svc-${service.id}`}>
+      <div key={`fav-svc-${service.id}`} className={disabledClass} aria-disabled={disabledByLock}>
         <button
           type="button"
           onClick={handleHeaderTap}
@@ -229,7 +231,7 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
                 <button
                   key={variant.id}
                   type="button"
-                  onClick={() => toggleItem(service.id, variant.id)}
+                  onClick={() => { if (!disabledByLock) toggleItem(service.id, variant.id); }}
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-xl min-h-[48px] transition-colors ${
                     variantSelected
                       ? 'bg-blue-50 border-2 border-blue-400'
@@ -254,18 +256,20 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
   };
 
   // Render a variant-type favorite (single-tap to toggle a specific variant)
-  const renderFavoriteVariantCard = (parentService: Service, variant: Service['variants'][number]) => {
+  const renderFavoriteVariantCard = (parentService: Service, variant: Service['variants'][number], disabledByLock: boolean) => {
     const selected = getSelectedVariantId(parentService.id) === variant.id;
+    const disabledClass = disabledByLock ? 'opacity-40 pointer-events-none' : '';
     return (
       <button
         key={`fav-var-${variant.id}`}
         type="button"
-        onClick={() => toggleItem(parentService.id, variant.id)}
+        onClick={() => { if (!disabledByLock) toggleItem(parentService.id, variant.id); }}
+        aria-disabled={disabledByLock}
         className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl min-h-[52px] transition-colors ${
           selected
             ? 'bg-blue-50 border-2 border-blue-400'
             : 'bg-white border border-slate-200 active:bg-slate-50'
-        }`}
+        } ${disabledClass}`}
       >
         <div className="text-left">
           <div className="text-sm font-medium text-slate-900">
@@ -391,7 +395,7 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
           <div className="flex flex-col gap-2">
             {favorites.map((fav) => {
               if (fav.type === 'pack') {
-                if (isLocked) return null; // hide pack favorites while locked
+                if (isLocked) return null; // packs cannot be mixed with locked service items
                 const pack = fav.pack;
                 const discount = getPackDiscount(pack);
                 return (
@@ -418,17 +422,12 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
                 );
               }
               if (fav.type === 'service') {
-                // When locked, only show favorites whose category matches the lock
-                if (isLocked && lockedCategoryId && fav.service.categoryId !== lockedCategoryId) {
-                  return null;
-                }
-                return renderFavoriteServiceCard(fav.service);
+                const disabledByLock = isLocked && lockedCategoryId !== null && fav.service.categoryId !== lockedCategoryId;
+                return renderFavoriteServiceCard(fav.service, disabledByLock);
               }
               // Variant-type favorite
-              if (isLocked && lockedCategoryId && fav.parentService.categoryId !== lockedCategoryId) {
-                return null;
-              }
-              return renderFavoriteVariantCard(fav.parentService, fav.variant);
+              const disabledByLock = isLocked && lockedCategoryId !== null && fav.parentService.categoryId !== lockedCategoryId;
+              return renderFavoriteVariantCard(fav.parentService, fav.variant, disabledByLock);
             })}
           </div>
         )}
