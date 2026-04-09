@@ -5,7 +5,7 @@ import ClientField from './ClientField';
 import ServiceBlock from './ServiceBlock';
 import SchedulingPanel from './SchedulingPanel';
 import AppointmentSummary from './AppointmentSummary';
-import { ArrowLeft, Save, Trash2, Plus } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Plus, User, Scissors, CalendarDays } from 'lucide-react';
 
 interface AppointmentBuilderProps extends UseAppointmentFormProps {
   onCancel: () => void;
@@ -59,49 +59,61 @@ export default function AppointmentBuilder({
           </div>
         </div>
 
-        {/* Client */}
-        <ClientField
-          clients={hookProps.clients}
-          selectedClientId={form.clientId}
-          onSelectClient={(id) => { form.setClientId(id); form.setNewClient(null); form.clearFieldError('clientId'); }}
-          onClearClient={() => form.setClientId(null)}
-          newClientData={form.newClient}
-          onNewClientChange={form.setNewClient}
-          error={form.errors.clientId}
-        />
-
-        <div className="border-t border-slate-100 mb-5" />
-
-        {/* Service blocks */}
-        <div className="space-y-3 mb-4">
-          {form.serviceBlocks.map((block, i) => (
-            <ServiceBlock
-              key={block.id}
-              block={block}
-              index={i}
-              isActive={i === form.activeBlockIndex}
-              services={hookProps.services}
-              categories={hookProps.categories}
-              favorites={hookProps.favorites ?? []}
-              team={hookProps.team}
-              packs={hookProps.packs ?? []}
-              onAddPackBlocks={form.addPackBlocks}
-              onActivate={() => form.setActiveBlockIndex(i)}
-              onRemove={() => form.removeBlock(i)}
-              onChange={(updates) => form.updateBlock(i, updates)}
-              summaryText={form.getBlockSummary(block)}
-            />
-          ))}
+        {/* Step 1 — Client */}
+        <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm mb-4">
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">1</span>
+            <User size={14} className="text-blue-600" />
+            <span className="text-slate-900 text-sm font-semibold">Client</span>
+          </div>
+          <ClientField
+            clients={hookProps.clients}
+            selectedClientId={form.clientId}
+            onSelectClient={(id) => { form.setClientId(id); form.setNewClient(null); form.clearFieldError('clientId'); }}
+            onClearClient={() => form.setClientId(null)}
+            newClientData={form.newClient}
+            onNewClientChange={form.setNewClient}
+            error={form.errors.clientId}
+          />
         </div>
 
-        {/* Add service button */}
-        <button
-          type="button"
-          onClick={form.addBlock}
-          className="w-full border-2 border-dashed border-slate-200 rounded-2xl py-3.5 text-slate-400 text-sm hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-center gap-2 mb-5"
-        >
-          <Plus size={16} /> Ajouter un service
-        </button>
+        {/* Step 2 — Services & Staff */}
+        <div className="mb-4">
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="bg-slate-200 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
+            <Scissors size={14} className="text-slate-500" />
+            <span className="text-slate-700 text-sm font-semibold">Services & Staff</span>
+          </div>
+          <div className="space-y-3">
+            {form.serviceBlocks.map((block, i) => (
+              <ServiceBlock
+                key={block.id}
+                block={block}
+                index={i}
+                isActive={i === form.activeBlockIndex}
+                services={hookProps.services}
+                categories={hookProps.categories}
+                favorites={hookProps.favorites ?? []}
+                team={hookProps.team}
+                packs={hookProps.packs ?? []}
+                onAddPackBlocks={form.addPackBlocks}
+                onActivate={() => form.setActiveBlockIndex(i)}
+                onRemove={() => form.removeBlock(i)}
+                onChange={(updates) => form.updateBlock(i, updates)}
+                summaryText={form.getBlockSummary(block)}
+              />
+            ))}
+          </div>
+
+          {/* Add service button */}
+          <button
+            type="button"
+            onClick={form.addBlock}
+            className="w-full border-2 border-dashed border-slate-200 rounded-2xl py-3.5 text-slate-400 text-sm hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-center gap-2 mt-3"
+          >
+            <Plus size={16} /> Ajouter un service
+          </button>
+        </div>
 
         {/* Notes */}
         <div>
@@ -126,8 +138,13 @@ export default function AppointmentBuilder({
         )}
       </div>
 
-      {/* RIGHT PANEL */}
+      {/* RIGHT PANEL — Step 3: Date & Time */}
       <div className="flex-[0.6]">
+        <div className="flex items-center gap-2.5 mb-3">
+          <span className="bg-slate-200 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
+          <CalendarDays size={14} className="text-slate-500" />
+          <span className="text-slate-700 text-sm font-semibold">Date & Heure</span>
+        </div>
         <SchedulingPanel
           activeDate={form.activeBlock?.date ?? null}
           activeHour={form.activeBlock?.hour ?? null}
@@ -140,6 +157,7 @@ export default function AppointmentBuilder({
           reminderMinutes={form.reminderMinutes}
           onReminderChange={form.setReminderMinutes}
           unavailableHours={form.unavailableHours}
+          hideStatus
         />
       </div>
     </div>

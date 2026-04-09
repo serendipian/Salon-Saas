@@ -16,6 +16,7 @@ interface SchedulingPanelProps {
   reminderMinutes: number | null;
   onReminderChange: (minutes: number | null) => void;
   unavailableHours?: Set<number>;
+  hideStatus?: boolean;
 }
 
 const STATUS_OPTIONS: { value: AppointmentStatus; label: string; color: string }[] = [
@@ -38,31 +39,34 @@ export default function SchedulingPanel({
   reminderMinutes,
   onReminderChange,
   unavailableHours,
+  hideStatus,
 }: SchedulingPanelProps) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
       <div className="p-5 space-y-5">
         {/* Status */}
-        <div>
-          <div className="text-xs font-medium text-slate-500 mb-2">Statut</div>
-          <div className="flex gap-2 flex-wrap">
-            {STATUS_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => onStatusChange(opt.value)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all flex items-center gap-2 ${
-                  status === opt.value
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'
-                }`}
-              >
-                <span className={`w-2 h-2 rounded-full ${opt.color}`} />
-                {opt.label}
-              </button>
-            ))}
+        {!hideStatus && (
+          <div>
+            <div className="text-xs font-medium text-slate-500 mb-2">Statut</div>
+            <div className="flex gap-2 flex-wrap">
+              {STATUS_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => onStatusChange(opt.value)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all flex items-center gap-2 ${
+                    status === opt.value
+                      ? 'bg-slate-900 text-white shadow-sm'
+                      : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${opt.color}`} />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Calendar */}
         <div>
