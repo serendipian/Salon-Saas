@@ -3,6 +3,7 @@ import type {
   Appointment,
   AppointmentStatus,
   ServiceBlockState,
+  ServiceBlockItem,
   Service,
   ServiceCategory,
   StaffMember,
@@ -13,7 +14,7 @@ import type {
 import { appointmentGroupSchema, newClientSchema } from '../schemas';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import { useStaffAvailability } from './useStaffAvailability';
-import { formatPrice } from '../../../lib/format';
+import { formatPrice, formatDuration } from '../../../lib/format';
 
 export interface UseAppointmentFormProps {
   services: Service[];
@@ -63,9 +64,8 @@ export interface AppointmentFormReturn {
   // Derived
   activeBlock: ServiceBlockState | undefined;
   activeStaff: StaffMember | null;
-  activeVariant: { id: string; name: string; price: number; durationMinutes: number } | null;
-  activeService: Service | null;
-  effectiveDuration: number;
+  activeBlockDuration: number;
+  activeBlockPrice: number;
   unavailableHours: Set<number>;
   availabilityAppointments: Appointment[];
   totalDuration: number;
@@ -81,6 +81,8 @@ export interface AppointmentFormReturn {
   setReminderMinutes: (minutes: number | null) => void;
   setActiveBlockIndex: (index: number) => void;
   updateBlock: (index: number, updates: Partial<ServiceBlockState>) => void;
+  toggleBlockItem: (index: number, serviceId: string, variantId: string) => void;
+  clearBlockItems: (index: number) => void;
   removeBlock: (index: number) => void;
   addBlock: () => void;
   addPackBlocks: (pack: Pack) => void;
@@ -98,13 +100,28 @@ export function createEmptyBlock(): ServiceBlockState {
   return {
     id: crypto.randomUUID(),
     categoryId: null,
-    serviceId: null,
-    variantId: null,
+    items: [],
     staffId: null,
     date: null,
     hour: null,
     minute: 0,
   };
+}
+
+export function getBlockDuration(block: ServiceBlockState, services: Service[]): number {
+  return block.items.reduce((sum, item) => {
+    const svc = services.find((s) => s.id === item.serviceId);
+    const variant = svc?.variants.find((v) => v.id === item.variantId);
+    return sum + (variant?.durationMinutes ?? svc?.durationMinutes ?? 0);
+  }, 0);
+}
+
+export function getBlockPrice(block: ServiceBlockState, services: Service[]): number {
+  return block.items.reduce((sum, item) => {
+    const svc = services.find((s) => s.id === item.serviceId);
+    const variant = svc?.variants.find((v) => v.id === item.variantId);
+    return sum + (item.priceOverride ?? variant?.price ?? svc?.price ?? 0);
+  }, 0);
 }
 
 export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentFormReturn {
@@ -144,17 +161,16 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     () => team.find((m) => m.id === activeBlock?.staffId) ?? null,
     [team, activeBlock?.staffId],
   );
-  const activeVariant = useMemo(() => {
-    if (!activeBlock?.serviceId || !activeBlock?.variantId) return null;
-    const svc = services.find((s) => s.id === activeBlock.serviceId);
-    return svc?.variants.find((v) => v.id === activeBlock.variantId) ?? null;
-  }, [services, activeBlock?.serviceId, activeBlock?.variantId]);
 
-  const activeService = useMemo(
-    () => services.find((s) => s.id === activeBlock?.serviceId) ?? null,
-    [services, activeBlock?.serviceId],
+  const activeBlockDuration = useMemo(
+    () => (activeBlock ? getBlockDuration(activeBlock, services) : 0),
+    [activeBlock, services],
   );
-  const effectiveDuration = activeVariant?.durationMinutes ?? activeService?.durationMinutes ?? 30;
+
+  const activeBlockPrice = useMemo(
+    () => (activeBlock ? getBlockPrice(activeBlock, services) : 0),
+    [activeBlock, services],
+  );
 
   // Filter out appointments being edited from availability check
   const availabilityAppointments = useMemo(() => {
@@ -167,35 +183,67 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
   const unavailableHours = useStaffAvailability(
     activeStaff,
     activeBlock?.date ?? null,
-    effectiveDuration,
+    activeBlockDuration || 30,
     availabilityAppointments,
   );
 
   // Totals & completeness
-  const totalDuration = useMemo(() => {
-    return serviceBlocks.reduce((sum, b) => {
-      const svc = services.find(s => s.id === b.serviceId);
-      const variant = svc?.variants.find(v => v.id === b.variantId);
-      return sum + (variant?.durationMinutes ?? svc?.durationMinutes ?? 0);
-    }, 0);
-  }, [serviceBlocks, services]);
+  const totalDuration = useMemo(
+    () => serviceBlocks.reduce((sum, b) => sum + getBlockDuration(b, services), 0),
+    [serviceBlocks, services],
+  );
 
-  const totalPrice = useMemo(() => {
-    return serviceBlocks.reduce((sum, b) => {
-      const svc = services.find(s => s.id === b.serviceId);
-      const variant = svc?.variants.find(v => v.id === b.variantId);
-      return sum + (b.priceOverride ?? variant?.price ?? svc?.price ?? 0);
-    }, 0);
-  }, [serviceBlocks, services]);
+  const totalPrice = useMemo(
+    () => serviceBlocks.reduce((sum, b) => sum + getBlockPrice(b, services), 0),
+    [serviceBlocks, services],
+  );
 
-  const hasCompleteServiceBlock = serviceBlocks.some(b => b.serviceId && b.variantId);
+  const hasCompleteServiceBlock = serviceBlocks.some((b) => b.items.length > 0);
 
-  const allBlocksScheduled = serviceBlocks.every(b => b.serviceId && b.variantId && b.date && b.hour !== null);
+  const allBlocksScheduled = serviceBlocks.every(
+    (b) => b.items.length > 0 && b.date && b.hour !== null,
+  );
 
   // Handlers
   const updateBlock = useCallback((index: number, updates: Partial<ServiceBlockState>) => {
     setServiceBlocks((prev) =>
       prev.map((b, i) => (i === index ? { ...b, ...updates } : b)),
+    );
+  }, []);
+
+  const toggleBlockItem = useCallback(
+    (index: number, serviceId: string, variantId: string) => {
+      setServiceBlocks((prev) =>
+        prev.map((b, i) => {
+          if (i !== index) return b;
+          if (b.packId) return b; // pack blocks are atomic
+          const existingIdx = b.items.findIndex((item) => item.serviceId === serviceId);
+          if (existingIdx >= 0) {
+            const existing = b.items[existingIdx];
+            if (existing.variantId === variantId) {
+              // Same service + same variant → remove
+              return { ...b, items: b.items.filter((_, idx) => idx !== existingIdx) };
+            }
+            // Same service, different variant → replace variant
+            const nextItems = b.items.slice();
+            nextItems[existingIdx] = { ...existing, variantId };
+            return { ...b, items: nextItems };
+          }
+          // New service → append
+          return { ...b, items: [...b.items, { serviceId, variantId }] };
+        }),
+      );
+    },
+    [],
+  );
+
+  const clearBlockItems = useCallback((index: number) => {
+    setServiceBlocks((prev) =>
+      prev.map((b, i) => {
+        if (i !== index) return b;
+        if (b.packId) return b; // pack blocks are atomic
+        return { ...b, items: [] };
+      }),
     );
   }, []);
 
@@ -256,7 +304,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
 
       // Strip any blocks from a previously selected pack (switching packs),
       // and drop a lone empty placeholder block if that's all there is.
-      const base = prev.length === 1 && !prev[0].serviceId
+      const base = prev.length === 1 && prev[0].items.length === 0
         ? []
         : prev.filter((b) => !b.packId);
 
@@ -268,13 +316,17 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
       const newBlocks: ServiceBlockState[] = pack.items.map((item, i) => ({
         id: crypto.randomUUID(),
         categoryId: null,
-        serviceId: item.serviceId,
-        variantId: item.serviceVariantId,
+        items: [
+          {
+            serviceId: item.serviceId,
+            variantId: item.serviceVariantId,
+            priceOverride: proRataPrices[i],
+          },
+        ],
         staffId: null,
         date: lastDate,
         hour: null,
         minute: 0,
-        priceOverride: proRataPrices[i],
         packId: pack.id,
       }));
 
@@ -287,32 +339,44 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
   // Build summary text for collapsed blocks
   const getBlockSummary = useCallback(
     (block: ServiceBlockState): string => {
-      const svc = services.find((s) => s.id === block.serviceId);
-      const variant = svc?.variants.find((v) => v.id === block.variantId);
       const staff = team.find((m) => m.id === block.staffId);
-      const duration = variant?.durationMinutes ?? svc?.durationMinutes;
-      const price = block.priceOverride ?? variant?.price ?? svc?.price;
-      const parts = [
-        svc?.name,
-        variant ? `· ${variant.name}` : null,
-        duration ? `· ${duration}m` : null,
-        price != null ? `· ${formatPrice(price)}` : null,
-        staff ? `· ${staff.firstName}${staff.lastName ? ` ${staff.lastName[0]}.` : ''}` : null,
-      ].filter(Boolean);
+      const staffLabel = staff
+        ? `${staff.firstName}${staff.lastName ? ` ${staff.lastName[0]}.` : ''}`
+        : null;
+
+      const duration = getBlockDuration(block, services);
+      const price = getBlockPrice(block, services);
+
+      const parts: string[] = [];
+      if (block.items.length === 0) {
+        return 'Service';
+      }
+      if (block.items.length === 1) {
+        const item = block.items[0];
+        const svc = services.find((s) => s.id === item.serviceId);
+        const variant = svc?.variants.find((v) => v.id === item.variantId);
+        if (svc?.name) parts.push(svc.name);
+        if (variant?.name) parts.push(`· ${variant.name}`);
+      } else {
+        parts.push(`${block.items.length} prestations`);
+      }
+      if (duration > 0) parts.push(`· ${formatDuration(duration)}`);
+      if (price > 0) parts.push(`· ${formatPrice(price)}`);
+      if (staffLabel) parts.push(`· ${staffLabel}`);
       return parts.join(' ');
     },
     [services, team],
   );
 
-  // Submit
+  // Submit — expand each block's items[] into sequential appointment rows
   const handleSubmit = useCallback(async () => {
     const effectiveClientId = newClient ? 'pending-new-client' : (clientId ?? '');
 
+    // Flatten items for validation (schema expects items array per block)
     const formData = {
       clientId: effectiveClientId,
       serviceBlocks: serviceBlocks.map((b) => ({
-        serviceId: b.serviceId ?? '',
-        variantId: b.variantId ?? '',
+        items: b.items,
         staffId: b.staffId,
         date: b.date ?? '',
         hour: b.hour ?? -1,
@@ -334,33 +398,49 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
       }
     }
 
-    // Build save payload
+    // Build save payload — expand each block's items[] into N sequential rows
+    const flatBlocks: Array<{
+      serviceId: string;
+      variantId: string;
+      staffId: string | null;
+      date: string;
+      durationMinutes: number;
+      price: number;
+    }> = [];
+
+    for (const block of serviceBlocks) {
+      const dateStr = block.date ?? '';
+      const startHour = block.hour ?? 0;
+      const startMin = block.minute;
+      const [year, month, day] = dateStr.split('-').map(Number);
+      let cursor = new Date(year, month - 1, day, startHour, startMin, 0, 0);
+
+      for (const item of block.items) {
+        const svc = services.find((s) => s.id === item.serviceId);
+        const variant = svc?.variants.find((v) => v.id === item.variantId);
+        const durationMinutes = variant?.durationMinutes ?? svc?.durationMinutes ?? 30;
+        const price = item.priceOverride ?? variant?.price ?? svc?.price ?? 0;
+
+        flatBlocks.push({
+          serviceId: item.serviceId,
+          variantId: item.variantId,
+          staffId: block.staffId,
+          date: cursor.toISOString(),
+          durationMinutes,
+          price,
+        });
+
+        cursor = new Date(cursor.getTime() + durationMinutes * 60_000);
+      }
+    }
+
     const payload = {
       clientId: clientId ?? '',
       newClient,
       notes,
       reminderMinutes,
       status,
-      serviceBlocks: serviceBlocks.map((b) => {
-        const svc = services.find((s) => s.id === b.serviceId);
-        const variant = svc?.variants.find((v) => v.id === b.variantId);
-        const dateStr = b.date ?? '';
-        const hour = b.hour ?? 0;
-        const minute = b.minute;
-        // Build a local Date and convert to ISO (UTC) so timezone is preserved
-        const [year, month, day] = dateStr.split('-').map(Number);
-        const localDate = new Date(year, month - 1, day, hour, minute, 0, 0);
-        const isoDate = localDate.toISOString();
-
-        return {
-          serviceId: b.serviceId ?? '',
-          variantId: b.variantId ?? '',
-          staffId: b.staffId,
-          date: isoDate,
-          durationMinutes: variant?.durationMinutes ?? svc?.durationMinutes ?? 30,
-          price: b.priceOverride ?? variant?.price ?? svc?.price ?? 0,
-        };
-      }),
+      serviceBlocks: flatBlocks,
     };
 
     setIsSaving(true);
@@ -388,9 +468,8 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     // Derived
     activeBlock,
     activeStaff,
-    activeVariant,
-    activeService,
-    effectiveDuration,
+    activeBlockDuration,
+    activeBlockPrice,
     unavailableHours,
     availabilityAppointments,
     totalDuration,
@@ -406,6 +485,8 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     setReminderMinutes,
     setActiveBlockIndex,
     updateBlock,
+    toggleBlockItem,
+    clearBlockItems,
     removeBlock,
     addBlock,
     addPackBlocks,
