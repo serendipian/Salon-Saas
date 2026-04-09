@@ -13,8 +13,8 @@ export function PacksTab() {
   const { services, serviceCategories } = useServices();
   const {
     packs,
-    addPack,
-    updatePack,
+    addPackAsync,
+    updatePackAsync,
     deletePack,
     toggleActive,
     toggleFavorite,
@@ -38,13 +38,17 @@ export function PacksTab() {
     setView('edit');
   };
 
-  const handleSave = (data: { id?: string; name: string; description: string; price: number; items: Array<{ serviceId: string; serviceVariantId: string }> }) => {
-    if (data.id) {
-      updatePack({ id: data.id, ...data });
-    } else {
-      addPack(data);
+  const handleSave = async (data: { id?: string; name: string; description: string; price: number; items: Array<{ serviceId: string; serviceVariantId: string }> }) => {
+    try {
+      if (data.id) {
+        await updatePackAsync({ id: data.id, ...data });
+      } else {
+        await addPackAsync(data);
+      }
+      setView('list');
+    } catch {
+      // Toast is shown by the mutation's onError; keep the form open so the user can retry.
     }
-    setView('list');
   };
 
   if (view !== 'list') {

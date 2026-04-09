@@ -70,8 +70,8 @@ export function usePacks() {
 
       if (itemsError) throw itemsError;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
       toastOnSuccess('Pack créé avec succès')();
     },
     onError: toastOnError('Erreur lors de la création du pack'),
@@ -108,8 +108,8 @@ export function usePacks() {
 
       if (rpcError) throw rpcError;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
       toastOnSuccess('Pack mis à jour')();
     },
     onError: toastOnError('Erreur lors de la mise à jour du pack'),
@@ -199,7 +199,9 @@ export function usePacks() {
     validPacks,
     isLoading,
     addPack: addPackMutation.mutate,
+    addPackAsync: addPackMutation.mutateAsync,
     updatePack: updatePackMutation.mutate,
+    updatePackAsync: updatePackMutation.mutateAsync,
     deletePack: deletePackMutation.mutate,
     toggleActive: toggleActiveMutation.mutate,
     toggleFavorite: toggleFavoriteMutation.mutate,
