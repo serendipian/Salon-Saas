@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Check, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, Plus, Minus } from 'lucide-react';
 import type { Pack, Service, ServiceCategory } from '../../../types';
 import { formatPrice, formatDuration } from '../../../lib/format';
 import { packSchema } from '../packSchemas';
@@ -61,18 +61,21 @@ export const PackForm: React.FC<PackFormProps> = ({
   const priceNum = parseFloat(price) || 0;
   const discountPercent = totalOriginal > 0 ? Math.round(((totalOriginal - priceNum) / totalOriginal) * 100) : 0;
 
-  const isVariantSelected = (variantId: string) =>
-    selectedItems.some((i) => i.serviceVariantId === variantId);
+  const getVariantCount = (variantId: string) =>
+    selectedItems.reduce((n, i) => (i.serviceVariantId === variantId ? n + 1 : n), 0);
 
-  const toggleVariant = (serviceId: string, variantId: string) => {
-    setSelectedItems((prev) => {
-      const exists = prev.some((i) => i.serviceVariantId === variantId);
-      if (exists) {
-        return prev.filter((i) => i.serviceVariantId !== variantId);
-      }
-      return [...prev, { serviceId, serviceVariantId: variantId }];
-    });
+  const addVariant = (serviceId: string, variantId: string) => {
+    setSelectedItems((prev) => [...prev, { serviceId, serviceVariantId: variantId }]);
     clearFieldError('items');
+  };
+
+  const removeVariant = (variantId: string) => {
+    setSelectedItems((prev) => {
+      // Remove the LAST occurrence so consecutive clicks peel off in reverse order.
+      const lastIdx = prev.map((i) => i.serviceVariantId).lastIndexOf(variantId);
+      if (lastIdx < 0) return prev;
+      return [...prev.slice(0, lastIdx), ...prev.slice(lastIdx + 1)];
+    });
   };
 
   const handleSubmit = () => {
@@ -213,29 +216,51 @@ export const PackForm: React.FC<PackFormProps> = ({
                         <p className="text-xs font-medium text-slate-600 mb-1.5 px-1">{svc.name}</p>
                         <div className="space-y-1">
                           {svc.variants.map((variant) => {
-                            const selected = isVariantSelected(variant.id);
+                            const count = getVariantCount(variant.id);
+                            const selected = count > 0;
                             return (
-                              <button
+                              <div
                                 key={variant.id}
-                                type="button"
-                                onClick={() => toggleVariant(svc.id, variant.id)}
-                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                                className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
                                   selected
                                     ? 'bg-blue-50 border border-blue-300 text-blue-900'
-                                    : 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-700'
+                                    : 'bg-white border border-slate-200 text-slate-700'
                                 }`}
                               >
-                                <div className="flex items-center gap-2">
-                                  <div className={`w-4 h-4 rounded border flex items-center justify-center ${
-                                    selected ? 'bg-blue-500 border-blue-500' : 'border-slate-300'
-                                  }`}>
-                                    {selected && <Check size={12} className="text-white" />}
-                                  </div>
-                                  <span>{variant.name}</span>
-                                  <span className="text-xs text-slate-400">{formatDuration(variant.durationMinutes)}</span>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="truncate">{variant.name}</span>
+                                  <span className="text-xs text-slate-400 shrink-0">{formatDuration(variant.durationMinutes)}</span>
                                 </div>
-                                <span className="font-medium">{formatPrice(variant.price)}</span>
-                              </button>
+                                <div className="flex items-center gap-3 shrink-0">
+                                  <span className="font-medium">{formatPrice(variant.price)}</span>
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => removeVariant(variant.id)}
+                                      disabled={count === 0}
+                                      aria-label="Retirer"
+                                      className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                                        count === 0
+                                          ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                                          : 'bg-white border border-blue-300 text-blue-700 hover:bg-blue-100'
+                                      }`}
+                                    >
+                                      <Minus size={14} />
+                                    </button>
+                                    <span className={`w-6 text-center font-semibold tabular-nums ${selected ? 'text-blue-900' : 'text-slate-400'}`}>
+                                      {count}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => addVariant(svc.id, variant.id)}
+                                      aria-label="Ajouter"
+                                      className="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                                    >
+                                      <Plus size={14} />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
                             );
                           })}
                         </div>
