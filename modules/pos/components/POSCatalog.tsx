@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Search, Scissors, ShoppingBag, History, Plus, Receipt, Calendar, Eye, Ban, RotateCcw } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Scissors, ShoppingBag, History, Plus, Receipt, Calendar, Eye, Ban, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Service, Product, ServiceCategory, ProductCategory, Transaction, Appointment } from '../../../types';
 import { PendingAppointments } from './PendingAppointments';
 import { POSViewMode } from '../hooks/usePOS';
@@ -51,6 +51,43 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
 }) => {
   const { isMobile } = useMediaQuery();
 
+  // Date navigation for history view
+  const [historyDate, setHistoryDate] = useState(() => new Date());
+
+  const toLocalDate = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  const todayStr = toLocalDate(new Date());
+  const historyDateStr = toLocalDate(historyDate);
+  const isHistoryToday = historyDateStr === todayStr;
+
+  const yesterdayDate = new Date();
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const isHistoryYesterday = historyDateStr === toLocalDate(yesterdayDate);
+
+  const historyDateLabel = isHistoryToday
+    ? "Aujourd'hui"
+    : isHistoryYesterday
+      ? 'Hier'
+      : historyDate.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+
+  const goToPrevDay = () => {
+    setHistoryDate(prev => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() - 1);
+      return d;
+    });
+  };
+
+  const goToNextDay = () => {
+    if (isHistoryToday) return;
+    setHistoryDate(prev => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() + 1);
+      return d;
+    });
+  };
+
   const statusBadge = (status: TransactionStatus, trx: Transaction) => {
     if (trx.type === 'VOID') return <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">Annulation</span>;
     if (trx.type === 'REFUND') return <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Remboursement</span>;
@@ -62,6 +99,11 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
 
   const isToday = (date: string) => new Date(date).toDateString() === new Date().toDateString();
 
+  // Filter transactions to the selected history date, then group
+  const filteredTransactions = React.useMemo(() => {
+    return transactions.filter(trx => toLocalDate(new Date(trx.date)) === historyDateStr);
+  }, [transactions, historyDateStr]);
+
   // Group transactions: SALE transactions as parents, VOID/REFUND as children
   const groupedTransactions = React.useMemo(() => {
     const childMap = new Map<string, Transaction[]>();
@@ -69,7 +111,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
     const parents: Transaction[] = [];
 
     // First pass: identify parents and collect children
-    for (const trx of transactions) {
+    for (const trx of filteredTransactions) {
       if (trx.originalTransactionId) {
         const children = childMap.get(trx.originalTransactionId) || [];
         children.push(trx);
@@ -97,7 +139,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
     orphans.forEach(orphan => grouped.push({ parent: orphan, children: [] }));
 
     return grouped;
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   return (
     <div className={`flex-1 flex flex-col h-full ${isMobile ? '' : 'border-r border-slate-200'}`}>
@@ -242,11 +284,38 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
         {viewMode === 'HISTORY' && (
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
              <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
-                <h3 className="font-bold text-slate-900 text-sm">Transactions du jour</h3>
-                <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">{new Date().toLocaleDateString()}</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={goToPrevDay}
+                    className="p-1.5 rounded-lg hover:bg-slate-200 transition-colors text-slate-500 hover:text-slate-900"
+                    aria-label="Jour précédent"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <h3 className="font-bold text-slate-900 text-sm min-w-[120px] text-center">{historyDateLabel}</h3>
+                  <button
+                    onClick={goToNextDay}
+                    disabled={isHistoryToday}
+                    className={`p-1.5 rounded-lg transition-colors ${isHistoryToday ? 'text-slate-200 cursor-not-allowed' : 'hover:bg-slate-200 text-slate-500 hover:text-slate-900'}`}
+                    aria-label="Jour suivant"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-slate-500 font-medium">{filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}</span>
+                  {!isHistoryToday && (
+                    <button
+                      onClick={() => setHistoryDate(new Date())}
+                      className="text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors"
+                    >
+                      Aujourd'hui
+                    </button>
+                  )}
+                </div>
              </div>
 
-             {transactions.length === 0 ? (
+             {filteredTransactions.length === 0 ? (
                <div className="p-12 text-center text-slate-400">
                   <History size={48} className="mx-auto mb-4 opacity-50" />
                   <p>Aucune transaction enregistrée.</p>
