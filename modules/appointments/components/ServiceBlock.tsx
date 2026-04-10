@@ -1,11 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import type { Service, ServiceCategory, StaffMember, FavoriteItem, Pack } from '../../../types';
+import type { Service, ServiceCategory, FavoriteItem, Pack } from '../../../types';
 import type { ServiceBlockState } from '../../../types';
 import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import { getPackDiscount, formatPackItemCount } from '../../services/utils/packExpansion';
 import ServiceGrid from './ServiceGrid';
-import StaffPills from './StaffPills';
 import { X, Clock, Calendar, Star, Package } from 'lucide-react';
 
 interface ServiceBlockProps {
@@ -15,7 +14,6 @@ interface ServiceBlockProps {
   services: Service[];
   categories: ServiceCategory[];
   favorites: FavoriteItem[];
-  team: StaffMember[];
   onActivate: () => void;
   onRemove: () => void;
   onUpdate: (updates: Partial<ServiceBlockState>) => void;
@@ -34,7 +32,6 @@ export default function ServiceBlock({
   services,
   categories,
   favorites,
-  team,
   onActivate,
   onRemove,
   onUpdate,
@@ -110,10 +107,6 @@ export default function ServiceBlock({
       }
     }
     onClearItems();
-  };
-
-  const handleStaffSelect = (staffId: string | null) => {
-    onUpdate({ staffId });
   };
 
   // Block totals (multi-item aware)
@@ -361,22 +354,6 @@ export default function ServiceBlock({
         </div>
       )}
 
-      {/* Staff pills (show after at least one item is selected) */}
-      {block.items.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-slate-200/60">
-          <div className="flex items-center gap-2.5 mb-3">
-            <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">3</span>
-            <span className="text-slate-900 text-sm font-semibold">Praticien</span>
-          </div>
-          <StaffPills
-            team={team}
-            categoryId={firstItemService?.categoryId ?? null}
-            selectedStaffId={block.staffId}
-            onSelect={handleStaffSelect}
-            hideLabel
-          />
-        </div>
-      )}
     </div>
   );
 }
