@@ -23,6 +23,8 @@ interface TodayCalendarCardProps {
   serviceCategories: ServiceCategory[];
   staff: StaffMember[];
   onUpdateAppointment?: (appt: Appointment) => void;
+  /** The day to display — defaults to today */
+  targetDate?: Date;
 }
 
 function fmt(date: Date): string {
@@ -221,7 +223,18 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   serviceCategories,
   staff,
   onUpdateAppointment,
+  targetDate: targetDateProp,
 }) => {
+  const targetDate = useMemo(() => {
+    if (!targetDateProp) return new Date();
+    const d = new Date(targetDateProp);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, [targetDateProp]);
+  const isToday = useMemo(() => {
+    const now = new Date();
+    return targetDate.getFullYear() === now.getFullYear() && targetDate.getMonth() === now.getMonth() && targetDate.getDate() === now.getDate();
+  }, [targetDate]);
   const navigate = useNavigate();
   const { addToast } = useToast();
   const { salonSettings } = useSettings();
@@ -279,14 +292,13 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   }, [selectedCategory, services]);
 
   const todayAppts = useMemo(() => {
-    const today = new Date();
     return appointments.filter(a => {
-      if (!isSameDay(new Date(a.date), today)) return false;
+      if (!isSameDay(new Date(a.date), targetDate)) return false;
       if (a.status === AppointmentStatus.CANCELLED) return false;
       if (categoryServiceIds && !categoryServiceIds.has(a.serviceId)) return false;
       return true;
     });
-  }, [appointments, categoryServiceIds]);
+  }, [appointments, categoryServiceIds, targetDate]);
 
   // Only show staff who have at least one appointment (after filtering)
   const staffColumns = useMemo(() => {
@@ -309,17 +321,16 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
 
   // Categories that have appointments today (for filter options)
   const availableCategories = useMemo(() => {
-    const today = new Date();
-    const todayAllAppts = appointments.filter(a =>
-      isSameDay(new Date(a.date), today) && a.status !== AppointmentStatus.CANCELLED
+    const dayAppts = appointments.filter(a =>
+      isSameDay(new Date(a.date), targetDate) && a.status !== AppointmentStatus.CANCELLED
     );
     const catIds = new Set<string>();
-    todayAllAppts.forEach(a => {
+    dayAppts.forEach(a => {
       const svc = services.find(s => s.id === a.serviceId);
       if (svc?.categoryId) catIds.add(svc.categoryId);
     });
     return serviceCategories.filter(c => catIds.has(c.id));
-  }, [appointments, services, serviceCategories]);
+  }, [appointments, services, serviceCategories, targetDate]);
 
   // ── Drag & Drop logic ──
 
@@ -414,10 +425,9 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
         if (!canStaffHandleAppt(targetStaff, drag.appointment)) {
           addToast({ type: 'warning', message: `${targetStaff.firstName} ne prend pas en charge cette prestation` });
         } else {
-          const today = new Date();
           const newHour = Math.floor(minutes / 60) + START_HOUR;
           const newMin = minutes % 60;
-          const newDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), newHour, newMin, 0, 0);
+          const newDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), newHour, newMin, 0, 0);
 
           const oldDate = new Date(drag.appointment.date);
           const hasChanged = newDate.getTime() !== oldDate.getTime() || targetStaff.id !== drag.appointment.staffId;
@@ -435,7 +445,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     }
 
     setDrag(null);
-  }, [drag, onUpdateAppointment, calcMinutesFromY, findStaffIndexAtX, staffColumns, canStaffHandleAppt, addToast, START_HOUR]);
+  }, [drag, onUpdateAppointment, calcMinutesFromY, findStaffIndexAtX, staffColumns, canStaffHandleAppt, addToast, START_HOUR, targetDate]);
 
   const handlePointerCancel = useCallback(() => {
     setDrag(null);
@@ -461,7 +471,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white">
         <h3 className="font-bold text-slate-800 capitalize">
-          {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+          {targetDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
         </h3>
         <div className="flex items-center gap-2">
           {/* Category filter */}
@@ -499,8 +509,8 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
       {todayAppts.length === 0 && staffColumns.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-slate-300">
           <CalendarClock size={40} strokeWidth={1.5} className="mb-3" />
-          <p className="text-sm font-medium text-slate-400">Aucun rendez-vous aujourd'hui</p>
-          <p className="text-xs text-slate-300 mt-1">Profitez de la pause !</p>
+          <p className="text-sm font-medium text-slate-400">Aucun rendez-vous {isToday ? "aujourd'hui" : 'ce jour'}</p>
+          {isToday && <p className="text-xs text-slate-300 mt-1">Profitez de la pause !</p>}
         </div>
       ) : (
         <div
@@ -660,8 +670,8 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                 );
               })}
 
-              {/* ── Now indicator ── */}
-              {nowOffset !== null && (
+              {/* ── Now indicator (only when viewing today) ── */}
+              {isToday && nowOffset !== null && (
                 <div
                   className="absolute left-0 right-0 z-10 pointer-events-none"
                   style={{ top: nowOffset }}

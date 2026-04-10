@@ -353,24 +353,80 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
 
   const formatButtonLabel = () => {
     if (dateRange.label && dateRange.label !== 'Personnalisé') return dateRange.label;
+    // Single-day range: show just one date
+    const fromDate = new Date(dateRange.from);
+    const toDate = new Date(dateRange.to);
+    fromDate.setHours(0, 0, 0, 0);
+    toDate.setHours(0, 0, 0, 0);
+    if (fromDate.getTime() === toDate.getTime()) {
+      return fromDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
     return `${formatDateDisplay(dateRange.from)} - ${formatDateDisplay(dateRange.to)}`;
+  };
+
+  const shiftPeriod = (direction: -1 | 1) => {
+    const from = new Date(dateRange.from);
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(dateRange.to);
+    to.setHours(0, 0, 0, 0);
+
+    // Count calendar days in the range (same day = 1)
+    const spanDays = Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+    const newFrom = new Date(from);
+    newFrom.setDate(newFrom.getDate() + direction * spanDays);
+    newFrom.setHours(0, 0, 0, 0);
+    const newTo = new Date(newFrom);
+    newTo.setDate(newTo.getDate() + spanDays - 1);
+    newTo.setHours(23, 59, 59, 999);
+
+    // Label: only "Hier" / "Aujourd'hui" / "Demain" for single-day ranges
+    let label: string | undefined;
+    if (spanDays === 1) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const diffDays = Math.round((newFrom.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays === 0) label = "Aujourd'hui";
+      else if (diffDays === -1) label = 'Hier';
+      else if (diffDays === 1) label = 'Demain';
+    }
+
+    onChange({ from: newFrom, to: newTo, label });
   };
 
   return (
     <div className="relative" ref={containerRef}>
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setIsOpen(!isOpen);
-        }}
-        type="button"
-        className="flex items-center gap-2 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 rounded-lg px-3 py-2 shadow-sm transition-all text-slate-700 group"
-      >
-        <CalendarIcon size={16} className="text-slate-500 group-hover:text-slate-700" />
-        <span className="text-sm font-medium">{formatButtonLabel()}</span>
-        <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
+      <div className="flex items-center rounded-lg border border-slate-300 shadow-sm overflow-hidden bg-white">
+        <button
+          onClick={() => shiftPeriod(-1)}
+          type="button"
+          className="px-2 py-2 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors border-r border-slate-200"
+          aria-label="Période précédente"
+        >
+          <ChevronLeft size={16} />
+        </button>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
+          type="button"
+          className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-50 transition-colors text-slate-700 group"
+        >
+          <CalendarIcon size={15} className="text-slate-400 group-hover:text-slate-600" />
+          <span className="text-sm font-medium">{formatButtonLabel()}</span>
+          <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+        <button
+          onClick={() => shiftPeriod(1)}
+          type="button"
+          className="px-2 py-2 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors border-l border-slate-200"
+          aria-label="Période suivante"
+        >
+          <ChevronRight size={16} />
+        </button>
+      </div>
 
       {/* Desktop dropdown */}
       {isOpen && !isMobile && (

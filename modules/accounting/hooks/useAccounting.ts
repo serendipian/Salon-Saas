@@ -38,14 +38,32 @@ export const useAccounting = () => {
     };
   });
 
-  // Widen query to include previous period for trend comparisons
+  // Chart range: always show at least 7 data points for context
+  const chartRange = useMemo(() => {
+    const from = new Date(dateRange.from);
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(dateRange.to);
+    to.setHours(23, 59, 59, 999);
+    const daysDiff = Math.round((to.getTime() - from.getTime()) / 86_400_000);
+    const MIN_DAYS = 7;
+    if (daysDiff < MIN_DAYS) {
+      const chartFrom = new Date(to);
+      chartFrom.setDate(chartFrom.getDate() - (MIN_DAYS - 1));
+      chartFrom.setHours(0, 0, 0, 0);
+      return { from: chartFrom, to };
+    }
+    return { from, to };
+  }, [dateRange]);
+
+  // Widen query to include previous period + chart range for trend comparisons
   const queryRange = useMemo(() => {
     const from = new Date(dateRange.from).getTime();
     const to = new Date(dateRange.to).getTime();
+    const chartFrom = chartRange.from.getTime();
     const duration = to - from;
-    const prevFrom = new Date(from - duration - 1);
+    const prevFrom = new Date(Math.min(from - duration, chartFrom) - 1);
     return { from: prevFrom.toISOString(), to: new Date(to).toISOString() };
-  }, [dateRange]);
+  }, [dateRange, chartRange]);
 
   const { transactions } = useTransactions(queryRange);
 
@@ -251,9 +269,9 @@ export const useAccounting = () => {
 
   // --- Smart Chart Data ---
   const chartData = useMemo(() => {
-    const from = new Date(dateRange.from);
-    const to = new Date(dateRange.to);
-    const daysDiff = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
+    const from = new Date(chartRange.from);
+    const to = new Date(chartRange.to);
+    const daysDiff = Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
 
     const isMonthly = daysDiff > 60;
     const map = new Map<string, { name: string; sortKey: number; sales: number; expenses: number }>();
@@ -265,6 +283,9 @@ export const useAccounting = () => {
     const toDisplayName = (d: Date) => isMonthly
       ? d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })
       : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+
+    const toLocalDate = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
     const current = new Date(from);
     while (current <= to) {
@@ -281,18 +302,52 @@ export const useAccounting = () => {
       }
     }
 
-    data.current.transactions.forEach((t: Transaction) => {
-      const key = toChartKey(new Date(t.date));
+    // Aggregate from raw arrays to cover chart range
+    const chartFromStr = toLocalDate(from);
+    const chartToStr = toLocalDate(to);
+
+    transactions.forEach((t: Transaction) => {
+      const d = new Date(t.date);
+      const dStr = toLocalDate(d);
+      if (dStr < chartFromStr || dStr > chartToStr) return;
+      const key = toChartKey(d);
       if (map.has(key)) map.get(key)!.sales += t.total;
     });
 
-    data.current.expenses.forEach((e: Expense) => {
-      const key = toChartKey(new Date(e.date));
+    expenses.forEach((e: Expense) => {
+      const d = new Date(e.date);
+      const dStr = toLocalDate(d);
+      if (dStr < chartFromStr || dStr > chartToStr) return;
+      const key = toChartKey(d);
       if (map.has(key)) map.get(key)!.expenses += e.amount;
     });
 
     return Array.from(map.values()).sort((a, b) => a.sortKey - b.sortKey);
-  }, [data.current, dateRange]);
+  }, [transactions, expenses, dateRange, chartRange]);
+
+  // Separate highlight index set — kept out of chart data to avoid confusing Recharts
+  const chartHighlight = useMemo(() => {
+    const selectedFrom = new Date(dateRange.from);
+    selectedFrom.setHours(0, 0, 0, 0);
+    const selectedTo = new Date(dateRange.to);
+    selectedTo.setHours(0, 0, 0, 0);
+    const from = new Date(chartRange.from);
+    const to = new Date(chartRange.to);
+    const daysDiff = Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
+    const isMonthly = daysDiff > 60;
+    const set = new Set<number>();
+    const current = new Date(from);
+    let idx = 0;
+    while (current <= to) {
+      const cn = new Date(current);
+      cn.setHours(0, 0, 0, 0);
+      if (cn >= selectedFrom && cn <= selectedTo) set.add(idx);
+      if (isMonthly) { current.setMonth(current.getMonth() + 1); current.setDate(1); }
+      else { current.setDate(current.getDate() + 1); }
+      idx++;
+    }
+    return set;
+  }, [dateRange, chartRange]);
 
   return {
     dateRange,
@@ -303,6 +358,7 @@ export const useAccounting = () => {
     financials,
     ledgerData,
     chartData,
+    chartHighlight,
     addExpense,
     isAddingExpense: addExpenseMutation.isPending,
     updateExpense: (expense: Expense) => updateExpenseMutation.mutate(expense),

@@ -56,7 +56,7 @@ const RankedList: React.FC<{ title: string; items: { name: string; count: number
 
 export const FinancesOverview: React.FC = () => {
   const {
-    financials, chartData, clientMetrics,
+    financials, chartData, chartHighlight, clientMetrics,
     filteredTransactions, prevFilteredTransactions,
   } = useOutletContext<FinancesOutletContext>();
   const {
@@ -136,7 +136,11 @@ export const FinancesOverview: React.FC = () => {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} dy={10} minTickGap={30} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
                 <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0' }} cursor={{ fill: '#f8fafc' }} formatter={(value: number) => formatPrice(value)} />
-                <Bar dataKey="sales" fill="#0f172a" radius={[4, 4, 0, 0]} barSize={30} />
+                <Bar dataKey="sales" fill="#cbd5e1" radius={[4, 4, 0, 0]} barSize={30}>
+                  {chartData.map((_entry, i) => (
+                    <Cell key={i} fill={chartHighlight.has(i) ? '#0f172a' : '#cbd5e1'} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -173,8 +177,18 @@ export const FinancesOverview: React.FC = () => {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
                 <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0' }} formatter={(value: number) => formatPrice(value)} />
-                <Line type="monotone" dataKey="sales" stroke="#0f172a" strokeWidth={2} dot={false} name="Revenus" />
-                <Line type="monotone" dataKey="expenses" stroke="#ef4444" strokeWidth={2} dot={false} name="D&#233;penses" />
+                <Line type="monotone" dataKey="sales" stroke="#0f172a" strokeWidth={2} name="Revenus"
+                  dot={(props: { cx?: number; cy?: number; index?: number }) => {
+                    if (!chartHighlight.has(props.index ?? -1) || props.cx == null || props.cy == null) return <circle key={props.index} r={0} />;
+                    return <circle key={props.index} cx={props.cx} cy={props.cy} r={4} fill="#0f172a" stroke="#fff" strokeWidth={2} />;
+                  }}
+                />
+                <Line type="monotone" dataKey="expenses" stroke="#ef4444" strokeWidth={2} name="D&#233;penses"
+                  dot={(props: { cx?: number; cy?: number; index?: number }) => {
+                    if (!chartHighlight.has(props.index ?? -1) || props.cx == null || props.cy == null) return <circle key={props.index} r={0} />;
+                    return <circle key={props.index} cx={props.cx} cy={props.cy} r={4} fill="#ef4444" stroke="#fff" strokeWidth={2} />;
+                  }}
+                />
                 <Legend />
               </LineChart>
             </ResponsiveContainer>

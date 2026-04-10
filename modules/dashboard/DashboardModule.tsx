@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -27,7 +28,7 @@ import { DateRange, AppointmentStatus, PaymentEntry, Transaction } from '../../t
 import { toExpense, ExpenseRow } from '../accounting/mappers';
 import { calcBonus, calcCommission } from '../team/utils';
 import { DateRangePicker } from '../../components/DateRangePicker';
-import { StaffAvatar } from '../../components/StaffAvatar';
+
 import { TodayCalendarCard } from './components/TodayCalendarCard';
 
 interface MetricCardProps {
@@ -138,17 +139,35 @@ export const DashboardModule: React.FC = () => {
     };
   });
 
-  // Widen query to include previous period for trend comparisons
+  // Chart range: always show at least 7 data points for context
+  const chartRange = useMemo(() => {
+    const from = new Date(dateRange.from);
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(dateRange.to);
+    to.setHours(23, 59, 59, 999);
+    const daysDiff = Math.round((to.getTime() - from.getTime()) / 86_400_000);
+    const MIN_DAYS = 7;
+    if (daysDiff < MIN_DAYS) {
+      const chartFrom = new Date(to);
+      chartFrom.setDate(chartFrom.getDate() - (MIN_DAYS - 1));
+      chartFrom.setHours(0, 0, 0, 0);
+      return { from: chartFrom, to };
+    }
+    return { from, to };
+  }, [dateRange]);
+
+  // Widen query to include previous period + chart range for trend comparisons
   // Add 1-day buffer on each side to prevent timezone boundary issues
   const queryRange = useMemo(() => {
     const from = new Date(dateRange.from).getTime();
     const to = new Date(dateRange.to).getTime();
+    const chartFrom = chartRange.from.getTime();
     const duration = to - from;
     const DAY_MS = 86_400_000;
-    const prevFrom = new Date(from - duration - DAY_MS);
+    const prevFrom = new Date(Math.min(from - duration, chartFrom) - DAY_MS);
     const bufferedTo = new Date(to + DAY_MS);
     return { from: prevFrom.toISOString(), to: bufferedTo.toISOString() };
-  }, [dateRange]);
+  }, [dateRange, chartRange]);
 
   const { transactions } = useTransactions(queryRange);
 
@@ -373,64 +392,113 @@ export const DashboardModule: React.FC = () => {
 
   // --- 3. Generate Dynamic Chart Data (Smart Granularity) ---
   const chartData = useMemo(() => {
-    const from = new Date(dateRange.from);
-    const to = new Date(dateRange.to);
-    const daysDiff = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
-    
-    const isMonthly = daysDiff > 60; // Switch to monthly view if range > 60 days
-    const map = new Map<string, { name: string, sortKey: number, ventes: number, rdv: number }>();
+    const from = new Date(chartRange.from);
+    const to = new Date(chartRange.to);
+    const daysDiff = Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
 
-    // Initialize Map keys to ensure continuity
+    // Selected period boundaries for highlighting
+    const selectedFrom = new Date(dateRange.from);
+    selectedFrom.setHours(0, 0, 0, 0);
+    const selectedTo = new Date(dateRange.to);
+    selectedTo.setHours(0, 0, 0, 0);
+
+    const isMonthly = daysDiff > 60;
+    const map = new Map<string, { name: string; sortKey: number; ventes: number; rdv: number }>();
+    const highlightSet = new Set<string>();
+
+    const toLocalDate = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    // Initialize Map keys using chart range (may be wider than selected)
     const current = new Date(from);
     while (current <= to) {
         let key, sortKey;
+        const currentNorm = new Date(current);
+        currentNorm.setHours(0, 0, 0, 0);
+        if (currentNorm >= selectedFrom && currentNorm <= selectedTo) {
+          // Will add the key after it's computed
+        }
         if (isMonthly) {
-            key = current.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }); // e.g. "janv. 23"
-            sortKey = current.getFullYear() * 100 + current.getMonth(); // 202300
+            key = current.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
+            sortKey = current.getFullYear() * 100 + current.getMonth();
             current.setMonth(current.getMonth() + 1);
-            current.setDate(1); // Reset to 1st to avoid skipping months
+            current.setDate(1);
         } else {
-            key = current.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }); // e.g. "1 janv."
+            key = current.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
             sortKey = current.getTime();
             current.setDate(current.getDate() + 1);
         }
-        
+
         if (!map.has(key)) {
             map.set(key, { name: key, sortKey, ventes: 0, rdv: 0 });
         }
+        if (currentNorm >= selectedFrom && currentNorm <= selectedTo) {
+          highlightSet.add(key);
+        }
     }
 
-    // Aggregate Data
-    data.current.transactions.forEach(t => {
+    // Aggregate data from raw arrays (not just data.current) to cover chart range
+    const chartFromStr = toLocalDate(from);
+    const chartToStr = toLocalDate(to);
+
+    transactions.forEach(t => {
       const d = new Date(t.date);
-      const key = isMonthly 
+      const dStr = toLocalDate(d);
+      if (dStr < chartFromStr || dStr > chartToStr) return;
+      const key = isMonthly
         ? d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })
         : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-      
-      if(map.has(key)) map.get(key)!.ventes += t.total;
+      if (map.has(key)) map.get(key)!.ventes += t.total;
     });
 
-    data.current.appointments.forEach(a => {
+    appointments.forEach(a => {
       const d = new Date(a.date);
-      const key = isMonthly 
+      const dStr = toLocalDate(d);
+      if (dStr < chartFromStr || dStr > chartToStr) return;
+      const key = isMonthly
         ? d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })
         : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-        
-      if(map.has(key)) map.get(key)!.rdv += 1;
+      if (map.has(key)) map.get(key)!.rdv += 1;
     });
 
-    return Array.from(map.values()).sort((a, b) => a.sortKey - b.sortKey);
-  }, [data.current, dateRange]);
+    const sorted = Array.from(map.values()).sort((a, b) => a.sortKey - b.sortKey);
+    return sorted;
+  }, [transactions, appointments, dateRange, chartRange]);
+
+  // Separate highlight lookup — kept out of chart data to avoid confusing Recharts
+  const chartHighlight = useMemo(() => {
+    const selectedFrom = new Date(dateRange.from);
+    selectedFrom.setHours(0, 0, 0, 0);
+    const selectedTo = new Date(dateRange.to);
+    selectedTo.setHours(0, 0, 0, 0);
+    const from = new Date(chartRange.from);
+    const to = new Date(chartRange.to);
+    const daysDiff = Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
+    const isMonthly = daysDiff > 60;
+    const set = new Set<number>();
+    const current = new Date(from);
+    let idx = 0;
+    while (current <= to) {
+      const cn = new Date(current);
+      cn.setHours(0, 0, 0, 0);
+      if (cn >= selectedFrom && cn <= selectedTo) set.add(idx);
+      if (isMonthly) { current.setMonth(current.getMonth() + 1); current.setDate(1); }
+      else { current.setDate(current.getDate() + 1); }
+      idx++;
+    }
+    return set;
+  }, [dateRange, chartRange]);
 
   // --- 4. Operational Data ---
   const [upcomingExpanded, setUpcomingExpanded] = useState(false);
   const upcomingAppointments = useMemo(() => {
-    const now = new Date();
+    // Show appointments after the selected period's end
+    const after = new Date(dateRange.to);
     return appointments
-      .filter(a => new Date(a.date) > now && a.status !== AppointmentStatus.CANCELLED)
+      .filter(a => new Date(a.date) > after && a.status !== AppointmentStatus.CANCELLED)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(0, 10);
-  }, [appointments]);
+  }, [appointments, dateRange]);
 
   // --- 5. Top Services by Revenue ---
   const topServices = useMemo(() => {
@@ -694,11 +762,18 @@ export const DashboardModule: React.FC = () => {
             {bonusStats.staffBreakdown.length === 0 ? (
               <p className="text-xs text-slate-400 text-center py-2">Aucun bonus sur cette période</p>
             ) : (
-              bonusStats.staffBreakdown.slice(0, 4).map((entry) => {
+              bonusStats.staffBreakdown.slice(0, 4).map((entry, idx) => {
                 const percent = bonusStats.total > 0 ? (entry.bonus / bonusStats.total) * 100 : 0;
+                const blueTones = ['bg-blue-100 text-blue-700', 'bg-blue-50 text-blue-600', 'bg-sky-100 text-sky-700', 'bg-indigo-100 text-indigo-700'];
                 return (
                   <div key={`${entry.firstName}-${entry.lastName}`} className="flex items-center gap-2.5">
-                    <StaffAvatar firstName={entry.firstName} lastName={entry.lastName} photoUrl={entry.photoUrl} color={entry.color} size={28} />
+                    {entry.photoUrl ? (
+                      <img src={entry.photoUrl} alt={`${entry.firstName} ${entry.lastName}`} className="rounded-lg object-cover shrink-0" style={{ width: 28, height: 28 }} />
+                    ) : (
+                      <span className={`rounded-lg flex items-center justify-center shrink-0 font-semibold text-[11px] ${blueTones[idx % blueTones.length]}`} style={{ width: 28, height: 28 }}>
+                        {entry.firstName.charAt(0)}{entry.lastName.charAt(0)}
+                      </span>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-baseline">
                         <span className="text-xs font-medium text-slate-600 truncate">{entry.firstName} {entry.lastName}</span>
@@ -857,6 +932,7 @@ export const DashboardModule: React.FC = () => {
             serviceCategories={serviceCategories}
             staff={allStaff}
             onUpdateAppointment={updateAppointment}
+            targetDate={dateRange.from}
           />
         </div>
 
@@ -974,7 +1050,11 @@ export const DashboardModule: React.FC = () => {
                      formatter={(value: number) => [`${value} rdv`, '']}
                      labelStyle={{fontWeight: 600, color: '#1e293b', marginBottom: 2}}
                    />
-                   <Bar dataKey="rdv" fill="url(#barGradient)" radius={[6, 6, 0, 0]} maxBarSize={24} animationDuration={800} />
+                   <Bar dataKey="rdv" fill="#cbd5e1" radius={[6, 6, 0, 0]} maxBarSize={24} animationDuration={800}>
+                     {chartData.map((_entry, i) => (
+                       <Cell key={`rdv-${i}`} fill={chartHighlight.has(i) ? '#3b82f6' : '#cbd5e1'} />
+                     ))}
+                   </Bar>
                  </BarChart>
                </ResponsiveContainer>
              </div>
@@ -1030,6 +1110,10 @@ export const DashboardModule: React.FC = () => {
                   fillOpacity={1}
                   fill="url(#colorVentes)"
                   animationDuration={800}
+                  dot={(props: { cx?: number; cy?: number; index?: number }) => {
+                    if (!chartHighlight.has(props.index ?? -1) || props.cx == null || props.cy == null) return <circle key={props.index} r={0} />;
+                    return <circle key={props.index} cx={props.cx} cy={props.cy} r={4} fill="#3b82f6" stroke="#fff" strokeWidth={2} />;
+                  }}
                 />
               </AreaChart>
             </ResponsiveContainer>
