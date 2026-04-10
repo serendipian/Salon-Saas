@@ -194,6 +194,27 @@ export const PackList: React.FC<PackListProps> = ({
         </div>
       ) : (
         <div className="space-y-6">
+          {/* Ungrouped packs */}
+          {ungroupedPacks.length > 0 && (
+            <div>
+              {hasAnyGroups && (
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Sans groupe</h3>
+              )}
+              <div className="space-y-3">
+                {ungroupedPacks.map((pack) => (
+                  <PackRow
+                    key={pack.id}
+                    pack={pack}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    onToggleActive={onToggleActive}
+                    onToggleFavorite={onToggleFavorite}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Groups */}
           {packGroups.map((group) => {
             const groupPacks = packsByGroup.get(group.id) ?? [];
@@ -282,27 +303,6 @@ export const PackList: React.FC<PackListProps> = ({
               </div>
             );
           })}
-
-          {/* Ungrouped packs */}
-          {ungroupedPacks.length > 0 && (
-            <div>
-              {hasAnyGroups && (
-                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Sans groupe</h3>
-              )}
-              <div className="space-y-3">
-                {ungroupedPacks.map((pack) => (
-                  <PackRow
-                    key={pack.id}
-                    pack={pack}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                    onToggleActive={onToggleActive}
-                    onToggleFavorite={onToggleFavorite}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>

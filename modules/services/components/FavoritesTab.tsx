@@ -102,12 +102,34 @@ export function FavoritesTab() {
   }, [allServices]);
 
   return (
-    <div className="space-y-6">
-      {/* Ordered favorites list */}
-      {localOrder.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-slate-700 mb-3">Ordre d'affichage</h3>
-          <div className="space-y-1">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Left panel — Select favorites */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5">
+        <h3 className="text-sm font-semibold text-slate-700 mb-3">Sélectionner les favoris</h3>
+        <div className="space-y-3">
+          {serviceCategories.map(cat => {
+            const catServices = allServices.filter(s => s.categoryId === cat.id && s.active);
+            if (catServices.length === 0) return null;
+            return (
+              <CategorySection
+                key={cat.id}
+                category={cat}
+                services={catServices}
+                isServiceFavorited={isServiceFavorited}
+                isVariantFavorited={isVariantFavorited}
+                onToggle={toggleFavorite}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Right panel — Display order */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col">
+        <h3 className="text-sm font-semibold text-slate-700 mb-3">Ordre d'affichage</h3>
+
+        {localOrder.length > 0 ? (
+          <div className="overflow-y-auto space-y-1" style={{ maxHeight: 'calc(10 * 44px)' }}>
             {localOrder.map((item, index) => {
               const category = getFavoriteCategory(item);
               return (
@@ -117,7 +139,7 @@ export function FavoritesTab() {
                   onDragStart={() => handleDragStart(index)}
                   onDragOver={(e) => handleDragOver(e, index)}
                   onDragEnd={handleDragEnd}
-                  className={`flex items-center gap-3 px-3 py-2.5 bg-white rounded-lg border border-slate-200 cursor-grab active:cursor-grabbing transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2.5 bg-slate-50 rounded-lg border border-slate-200 cursor-grab active:cursor-grabbing transition-colors ${
                     dragIndex === index ? 'opacity-50' : ''
                   }`}
                 >
@@ -145,48 +167,25 @@ export function FavoritesTab() {
               );
             })}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-center py-8 text-sm text-slate-400">
+            Aucun favori sélectionné — utilisez les étoiles sur les services, variantes ou packs.
+          </div>
+        )}
 
-      {localOrder.length === 0 && (
-        <div className="text-center py-8 text-sm text-slate-400">
-          Aucun favori sélectionné — utilisez les étoiles sur les services, variantes ou packs.
-        </div>
-      )}
-
-      {/* All services checklist */}
-      <div>
-        <h3 className="text-sm font-semibold text-slate-700 mb-3">Sélectionner les favoris</h3>
-        <div className="space-y-3">
-          {serviceCategories.map(cat => {
-            const catServices = allServices.filter(s => s.categoryId === cat.id && s.active);
-            if (catServices.length === 0) return null;
-            return (
-              <CategorySection
-                key={cat.id}
-                category={cat}
-                services={catServices}
-                isServiceFavorited={isServiceFavorited}
-                isVariantFavorited={isVariantFavorited}
-                onToggle={toggleFavorite}
-              />
-            );
-          })}
-        </div>
+        {/* Save order button */}
+        {hasOrderChanged && (
+          <div className="flex justify-end mt-4">
+            <button
+              onClick={handleSaveOrder}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-slate-900 text-white hover:bg-slate-800 transition-colors"
+            >
+              <Save size={16} />
+              Enregistrer l'ordre
+            </button>
+          </div>
+        )}
       </div>
-
-      {/* Save order button */}
-      {hasOrderChanged && (
-        <div className="flex justify-end">
-          <button
-            onClick={handleSaveOrder}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-slate-900 text-white hover:bg-slate-800 transition-colors"
-          >
-            <Save size={16} />
-            Enregistrer l'ordre
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -222,46 +221,42 @@ function CategorySection({
       </button>
 
       {expanded && (
-        <div className="border-t border-slate-100 px-4 py-3 space-y-2">
-          {services.map(service => (
-            <div key={service.id}>
-              <label className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isServiceFavorited(service.id)}
-                  onChange={() => onToggle({ type: 'service', id: service.id, isFavorite: !isServiceFavorited(service.id) })}
-                  className="rounded border-slate-300 text-amber-500 focus:ring-amber-500"
-                />
-                <Star size={12} className={isServiceFavorited(service.id) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'} />
-                <span className="text-sm font-medium text-slate-700">{service.name}</span>
-                {service.variants.length > 1 && (
-                  <span className="text-xs text-slate-400">({service.variants.length} variantes)</span>
-                )}
-              </label>
+        <div className="border-t border-slate-100 px-4 py-3">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+            {services.map(service => (
+              <div key={service.id}>
+                <label className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isServiceFavorited(service.id)}
+                    onChange={() => onToggle({ type: 'service', id: service.id, isFavorite: !isServiceFavorited(service.id) })}
+                    className="rounded border-slate-300 text-amber-500 focus:ring-amber-500 shrink-0"
+                  />
+                  <Star size={12} className={`shrink-0 ${isServiceFavorited(service.id) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
+                  <span className="text-sm font-medium text-slate-700 truncate">{service.name}</span>
+                </label>
 
-              {service.variants.length > 1 && (
-                <div className="ml-8 space-y-0.5">
-                  {service.variants.map(variant => (
-                    <label key={variant.id} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isVariantFavorited(variant.id)}
-                        disabled={isServiceFavorited(service.id)}
-                        onChange={() => onToggle({ type: 'variant', id: variant.id, isFavorite: !isVariantFavorited(variant.id) })}
-                        className="rounded border-slate-300 text-amber-500 focus:ring-amber-500 disabled:opacity-40"
-                      />
-                      <span className={`text-xs ${isServiceFavorited(service.id) ? 'text-slate-400' : 'text-slate-600'}`}>
-                        {variant.name}
-                      </span>
-                      {isServiceFavorited(service.id) && (
-                        <span className="text-xs text-slate-400 italic">(inclus via service)</span>
-                      )}
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+                {service.variants.length > 1 && (
+                  <div className="ml-8 space-y-0.5">
+                    {service.variants.map(variant => (
+                      <label key={variant.id} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isVariantFavorited(variant.id)}
+                          disabled={isServiceFavorited(service.id)}
+                          onChange={() => onToggle({ type: 'variant', id: variant.id, isFavorite: !isVariantFavorited(variant.id) })}
+                          className="rounded border-slate-300 text-amber-500 focus:ring-amber-500 disabled:opacity-40 shrink-0"
+                        />
+                        <span className={`text-xs truncate ${isServiceFavorited(service.id) ? 'text-slate-400' : 'text-slate-600'}`}>
+                          {variant.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
