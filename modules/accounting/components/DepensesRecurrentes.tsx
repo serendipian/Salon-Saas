@@ -60,7 +60,18 @@ export const DepensesRecurrentes: React.FC<Props> = ({ onCreateExpense }) => {
     addToast({ type: 'success', message: `Dépense « ${rec.name} » enregistrée. Prochaine échéance avancée.` });
   };
 
-  const monthlyTotal = recurringExpenses.filter(r => r.frequency === 'Mensuel').reduce((sum, r) => sum + r.amount, 0);
+  // Average weeks per month — used to normalize weekly recurring expenses
+  // into the monthly KPI. (52 weeks / 12 months = 4.333…)
+  const WEEKS_PER_MONTH = 52 / 12;
+
+  // Monthly KPI includes both true-monthly and weekly-normalized-to-monthly
+  // recurring expenses. Excluding the weekly ones (M-10) was making the
+  // monthly total under-report charges that genuinely repeat every month.
+  const monthlyTotal = recurringExpenses.reduce((sum, r) => {
+    if (r.frequency === 'Mensuel') return sum + r.amount;
+    if (r.frequency === 'Hebdomadaire') return sum + r.amount * WEEKS_PER_MONTH;
+    return sum;
+  }, 0);
   const annualTotal = recurringExpenses.filter(r => r.frequency === 'Annuel').reduce((sum, r) => sum + r.amount, 0);
 
   const now = new Date();

@@ -467,6 +467,8 @@ export interface Expense {
   date: string;
   description: string;
   category: ExpenseCategory; // ID of the category setting
+  categoryName?: string;     // Joined from expense_categories — display only
+  categoryColor?: string;    // Joined from expense_categories — display only
   amount: number;
   supplier?: string;
   supplierId?: string;

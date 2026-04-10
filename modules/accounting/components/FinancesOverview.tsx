@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import { formatPrice } from '../../../lib/format';
 import { MiniKpiRow } from './MiniKpiRow';
+import { useRevenueBreakdown } from '../hooks/useRevenueBreakdown';
 import type { FinancesOutletContext } from '../FinancesLayout';
 
 const CATEGORY_COLORS = ['#0f172a', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1', '#ef4444'];
@@ -54,9 +55,13 @@ const RankedList: React.FC<{ title: string; items: { name: string; count: number
 
 export const FinancesOverview: React.FC = () => {
   const {
-    financials, chartData, revenueByServiceCategory, paymentMethodBreakdown,
-    clientMetrics, topProducts, productRevenue, filteredTransactions,
+    financials, chartData, clientMetrics,
+    filteredTransactions, prevFilteredTransactions,
   } = useOutletContext<FinancesOutletContext>();
+  const {
+    revenueByServiceCategory, paymentMethodBreakdown,
+    topProducts, productRevenue,
+  } = useRevenueBreakdown(filteredTransactions, prevFilteredTransactions);
 
   // Void/refund summary
   const voidCount = filteredTransactions.filter(t => t.type === 'VOID').length;

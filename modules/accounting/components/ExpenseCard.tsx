@@ -2,7 +2,6 @@
 import React from 'react';
 import { Tag, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft } from 'lucide-react';
 import { Expense, PaymentMethod } from '../../../types';
-import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
 
@@ -14,17 +13,9 @@ const PAYMENT_METHOD_LABELS: Record<PaymentMethod, { label: string; icon: React.
   prelevement: { label: 'Prélèvement', icon: <Building2 size={12} /> },
 };
 
+const FALLBACK_CATEGORY_COLOR = 'bg-slate-100 text-slate-700';
+
 export const ExpenseCard: React.FC<{ expenses: Expense[]; onEdit?: (id: string) => void }> = ({ expenses, onEdit }) => {
-  const { expenseCategories } = useSettings();
-
-  const getCategoryDetails = (id: string) => {
-    const category = expenseCategories.find(c => c.id === id);
-    if (category) {
-      return { label: category.name, color: category.color };
-    }
-    return { label: 'Autre', color: 'bg-slate-100 text-slate-700' };
-  };
-
   if (expenses.length === 0) {
     return <EmptyState title="Aucune dépense trouvée" />;
   }
@@ -32,7 +23,8 @@ export const ExpenseCard: React.FC<{ expenses: Expense[]; onEdit?: (id: string) 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3">
       {expenses.map((exp) => {
-        const { label, color } = getCategoryDetails(exp.category);
+        const label = exp.categoryName ?? 'Autre';
+        const color = exp.categoryColor ?? FALLBACK_CATEGORY_COLOR;
         const pm = exp.paymentMethod ? PAYMENT_METHOD_LABELS[exp.paymentMethod] : null;
 
         return (

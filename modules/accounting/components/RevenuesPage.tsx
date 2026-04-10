@@ -4,6 +4,8 @@ import { useOutletContext } from 'react-router-dom';
 import { MiniKpiRow } from './MiniKpiRow';
 import { RevenueCategoryTable } from './RevenueCategoryTable';
 import { formatPrice } from '../../../lib/format';
+import { calcTrend } from '../hooks/useAccounting';
+import { useRevenueBreakdown } from '../hooks/useRevenueBreakdown';
 import type { FinancesOutletContext } from '../FinancesLayout';
 
 type MainTab = 'SERVICES' | 'PRODUCTS';
@@ -11,13 +13,13 @@ type ServiceSubTab = 'PAR_CATEGORIE' | 'PAR_EQUIPE';
 type ProductSubTab = 'PAR_CATEGORIE' | 'TOUS' | 'PAR_EQUIPE';
 
 export const RevenuesPage: React.FC = () => {
+  const { filteredTransactions, prevFilteredTransactions } = useOutletContext<FinancesOutletContext>();
   const {
     serviceRevenue, productRevenue,
     prevServiceRevenue, prevProductRevenue,
     revenueByServiceCategory, revenueByProductCategory,
     revenueByStaffServices, revenueByStaffProducts,
-    calcTrend,
-  } = useOutletContext<FinancesOutletContext>();
+  } = useRevenueBreakdown(filteredTransactions, prevFilteredTransactions);
 
   const [mainTab, setMainTab] = useState<MainTab>('SERVICES');
   const [serviceSubTab, setServiceSubTab] = useState<ServiceSubTab>('PAR_CATEGORIE');

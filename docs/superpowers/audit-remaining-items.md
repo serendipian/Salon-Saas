@@ -17,7 +17,7 @@
 |---|---|---|
 | CRITICAL | 0 | — |
 | HIGH | 0 remaining (11 fixed, 2 invalid) | All HIGH cleared 2026-04-10 |
-| MEDIUM | 21 remaining (7 fixed) | Batch work |
+| MEDIUM | 14 remaining (14 fixed) | Polish queue |
 | LOW | 22 | Polish queue |
 
 **Of the 19 previously-documented MEDIUM items:** 1 RESOLVED (pre-batch), 1 PARTIAL, 17 still apply.
@@ -25,7 +25,8 @@
 **Batch A completed 2026-04-10:** H-2, H-7, H-9, H-10, H-13 fixed. H-6 investigated and marked invalid.
 **Batch B completed 2026-04-10:** H-4, H-8 fixed via new shared `<Modal>` + `<ConfirmModal>` components. M-1, M-2, M-3, M-4, M-17 fixed alongside.
 **Batch C completed 2026-04-10:** H-3, M-21, M-22 fixed via migration `20260410100000_favorites_concurrency_and_pack_groups_check.sql`, applied to remote. H-5 investigated and marked invalid.
-**Batch D completed 2026-04-10:** H-1 fixed by removing the dead custom-supplier UI path; H-11 fixed by adding a timezone mismatch warning to the Profile page.
+**Batch D completed 2026-04-10:** H-1 fixed by removing the dead custom-supplier UI path; H-11 fixed by adding a timezone mismatch warning to the Profile page. H-12 also shipped (60s tolerance window for edit-mode merge), clearing all remaining HIGH items.
+**Batch E completed 2026-04-10:** Accounting cleanup. M-5, M-6, M-7, M-8, M-9, M-10, M-12 all fixed. M-9 extracted `useRevenueBreakdown` into a dedicated hook so the 3 heavy hooks (`useServices`, `useProducts`, `useTeam`) only mount on the Vue d'ensemble and Revenus tabs — Dépenses, Journal, and Annulations no longer pay that cost.
 
 ---
 
@@ -113,45 +114,38 @@ No critical issues found. The codebase has no silent data corruption, no securit
 
 ### Accounting — Expense Flow
 
-#### M-5: ExpenseForm: no double-submit guard between save and delete
-**File:** `modules/accounting/components/DepensesPage.tsx` + `ExpenseForm.tsx:172-180`
-**Issue:** The save button disables on `isPending`, but `isPending` is a combined flag for add/update/delete. A user can click Save, then quickly click Delete before the save completes — both mutations race.
-**Fix:** Disable the delete button explicitly while any mutation is in flight.
+#### ~~M-5: ExpenseForm: no double-submit guard~~ RESOLVED (2026-04-10)
+**File:** `modules/accounting/components/ExpenseForm.tsx:107-115,387-396`
+**Resolved:** Both Save and Delete buttons already disable on `isPending` (the combined add/update/delete flag from `DepensesPage.tsx:49`). Added an early-return guard at the top of `handleSubmit` (`if (isPending) return;`) as a belt-and-braces against rapid double-clicks where a click queued before the next render slips through. The Delete button uses `disabled:pointer-events-none` from Batch B's H-4 fix.
 
-#### M-6: ExpenseForm silently defaults category to `expenseCategories[0]` when missing
-**File:** `modules/accounting/components/ExpenseForm.tsx:109`
-**Issue:** After Zod validation passes, `handleSubmit` uses `(formData.category || expenseCategories[0]?.id)`. The schema requires category, so this fallback should never fire — but if it does, the user's expense is silently categorized without consent. Dead defensive code.
-**Fix:** Remove the `||` fallback; schema already enforces required.
+#### ~~M-6: ExpenseForm dead category fallback~~ RESOLVED (2026-04-10)
+**File:** `modules/accounting/components/ExpenseForm.tsx:118`
+**Resolved:** The `(formData.category || expenseCategories[0]?.id)` fallback was already removed during the H-1 refactor in Batch D — `handleSubmit` now writes `formData.category as ExpenseCategory` directly. Dead defensive code is gone; Zod schema enforces required.
 
-#### M-7: `toExpense` drops joined `category.name` / `category.color`, components re-query [STILL APPLIES from 2026-04-08]
-**File:** `modules/accounting/mappers.ts:25-36`
-**Issue:** Mapper ignores `row.expense_categories` and returns only the ID. `ExpenseTable` / `ExpenseCard` then re-query `useSettings` to look up the name/color per row.
-**Fix:** Map `categoryName` and `categoryColor` from joined data; remove lookup calls from components.
+#### ~~M-7: `toExpense` drops joined category data~~ RESOLVED (2026-04-10)
+**Files:** `modules/accounting/mappers.ts:25-39`, `types.ts:466-477`, `ExpenseTable.tsx`, `ExpenseCard.tsx`
+**Resolved:** Added optional `categoryName` and `categoryColor` to the `Expense` type. `toExpense` now maps both from `row.expense_categories`. `ExpenseTable` and `ExpenseCard` no longer call `useSettings` — they read directly from the expense fields with a `'Autre' / 'bg-slate-100 text-slate-700'` fallback.
 
-#### M-8: ExpenseForm category default empty on first render [STILL APPLIES from 2026-04-08]
-**File:** `modules/accounting/components/ExpenseForm.tsx:66-73`
-**Issue:** `formData.category` initializes as `''`. No `useEffect` sets a default when `expenseCategories` loads. User sees no pre-selection.
-**Fix:** Add `useEffect` to set default category when list first becomes available.
+#### ~~M-8: ExpenseForm category default empty on first render~~ RESOLVED (2026-04-10)
+**File:** `modules/accounting/components/ExpenseForm.tsx:80-89`
+**Resolved:** Added a `useEffect` that pre-selects the first category once `expenseCategories` loads on a brand-new form (skipped on edit and when a category is already set). User no longer sees an empty form with no pre-selection.
 
-#### M-9: `useAccounting` mounts 5 extra hooks unconditionally [STILL APPLIES from 2026-04-08]
-**File:** `modules/accounting/hooks/useAccounting.ts:35-38`
-**Issue:** `useSettings`, `useServices`, `useProducts`, `useTeam` fire on every accounting page even when only the Journal tab is active.
-**Fix:** Move service/product/team data into a dedicated `useRevenueBreakdown()` hook used only by `RevenuesPage`.
+#### ~~M-9: `useAccounting` mounts heavy hooks unconditionally~~ RESOLVED (2026-04-10)
+**File:** `modules/accounting/hooks/useRevenueBreakdown.ts` (new), `useAccounting.ts` (slimmed)
+**Resolved:** Extracted `useRevenueBreakdown(currentTransactions, prevTransactions)` into its own hook. It calls `useServices`, `useProducts`, and `useTeam` internally and returns all the breakdown shapes (`revenueByServiceCategory`, `revenueByProductCategory`, `revenueByStaffServices`, `revenueByStaffProducts`, `serviceRevenue`, `productRevenue`, `prevServiceRevenue`, `prevProductRevenue`, `paymentMethodBreakdown`, `topProducts`). Only `RevenuesPage` and `FinancesOverview` call it. `DepensesPage`, `JournalPage`, and `RefundsPage` no longer mount the 3 heavy hooks. `useAccounting` keeps `useSettings` for `salonSettings.vatRate` (light hook, needed for `financials`).
 
-#### M-10: `DepensesRecurrentes` monthly KPI omits weekly expenses [STILL APPLIES from 2026-04-08]
-**File:** `modules/accounting/components/DepensesRecurrentes.tsx:63`
-**Issue:** `monthlyTotal` filters only `frequency === 'Mensuel'`, silently dropping weekly recurring expenses.
-**Fix:** Normalize weekly to monthly (×4.33) and include in the KPI.
+#### ~~M-10: `DepensesRecurrentes` monthly KPI omits weekly expenses~~ RESOLVED (2026-04-10)
+**File:** `modules/accounting/components/DepensesRecurrentes.tsx:63-74`
+**Resolved:** `monthlyTotal` now folds weekly recurring expenses into the total via `WEEKS_PER_MONTH = 52 / 12` (4.333…). Mensuel rows are added at face value, Hebdomadaire rows are normalized via the multiplier. Annuel rows still excluded from the monthly KPI by design (they have their own KPI tile).
 
 #### M-11: Single VAT rate applied to 100% of revenue [STILL APPLIES from 2026-04-08]
 **File:** `modules/accounting/hooks/useAccounting.ts:195`
 **Issue:** `vatDue = revenue - revenue / (1 + taxRate)` applies one rate to all revenue. Labeled "Estimée" but used for business decisions.
 **Fix:** Add a prominent caveat or allow per-category VAT rates.
 
-#### M-12: `calcTrend` not exported as named export [STILL APPLIES from 2026-04-08]
-**File:** `modules/accounting/hooks/useAccounting.ts:20` (module-level)
-**Issue:** Defined at module level but only consumed through the hook's return value. Awkward.
-**Fix:** Add `export` keyword; import directly in `RevenuesPage`.
+#### ~~M-12: `calcTrend` not exported as named export~~ RESOLVED (2026-04-10)
+**File:** `modules/accounting/hooks/useAccounting.ts:18`, `modules/accounting/components/RevenuesPage.tsx:7`
+**Resolved:** Added `export` keyword to the module-level `calcTrend` definition. `RevenuesPage` now imports it directly: `import { calcTrend } from '../hooks/useAccounting';` and no longer pulls it from outletContext. Removed from the hook's return shape.
 
 ### Appointments — Multi-Item Blocks
 

@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { ArrowLeft, Save, Trash2, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft, Info, Upload, X, Image, FileText, Loader2, CheckCircle2, Home, Users, ShoppingCart, Megaphone, Layers, Zap, Wifi, Shield, Landmark, SprayCan, Wrench, Truck, Calculator, Receipt, Monitor, Armchair, CreditCard as CardIcon, Tag } from 'lucide-react';
 import { Expense, ExpenseCategory, PaymentMethod } from '../../../types';
 import { Section, Input, Select } from '../../../components/FormElements';
@@ -78,6 +78,16 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
     existingExpense?.proofUrl ? 'Justificatif' : null
   );
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // M-8: Pre-select the first category once expenseCategories loads on a
+  // brand-new form. Without this, the form starts with no category selected
+  // and Zod fails on submit with no visual indication of what's wrong.
+  useEffect(() => {
+    if (isEdit) return;
+    if (formData.category) return;
+    if (expenseCategories.length === 0) return;
+    setFormData((prev) => ({ ...prev, category: expenseCategories[0].id }));
+  }, [isEdit, expenseCategories, formData.category]);
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
 
   const { supplierCategories } = useSuppliers();
@@ -95,6 +105,10 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
   }, [formData.amount, formData.date, formData.supplierId, allExpenses, existingExpense?.id]);
 
   const handleSubmit = () => {
+    // M-5: belt-and-braces against rapid double-click. The Save button
+    // is `disabled={isPending}`, but a click queued before the next React
+    // render can still slip through.
+    if (isPending) return;
     const validated = validate(formData);
     if (!validated) return;
 

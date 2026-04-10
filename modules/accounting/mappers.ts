@@ -28,6 +28,8 @@ export function toExpense(row: ExpenseRow): Expense {
     date: row.date,
     description: row.description,
     category: row.category_id,
+    categoryName: row.expense_categories?.name ?? undefined,
+    categoryColor: row.expense_categories?.color ?? undefined,
     amount: row.amount,
     supplier: row.suppliers?.name ?? undefined,
     supplierId: row.supplier_id ?? undefined,
