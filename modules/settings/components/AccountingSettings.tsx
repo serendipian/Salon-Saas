@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calculator, Users, ArrowLeft, Trash2 } from 'lucide-react';
+import { Calculator, Users, ArrowLeft, Trash2, Info } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 import { Input } from '../../../components/FormElements';
 
@@ -91,6 +91,15 @@ export const AccountingSettings: React.FC = () => {
                       onBlur={saveVatRate}
                       onKeyDown={e => { if (e.key === 'Enter') saveVatRate(); }}
                     />
+                 </div>
+                 {/* M-11: Single-rate caveat. The accounting module uses this rate
+                     to estimate "TVA Provisionnée" for owner monitoring; it is
+                     not a filing-grade calculation. */}
+                 <div className="mt-3 max-w-xl flex items-start gap-2 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                   <Info size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                   <p className="text-xs text-blue-700 leading-relaxed">
+                     Ce taux unique est appliqué à l'ensemble du chiffre d'affaires pour estimer la TVA à provisionner sur le tableau de bord. Il ne remplace pas votre déclaration officielle — vérifiez les taux applicables avec votre comptable.
+                   </p>
                  </div>
                </div>
              </div>

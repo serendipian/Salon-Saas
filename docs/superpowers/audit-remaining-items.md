@@ -17,7 +17,7 @@
 |---|---|---|
 | CRITICAL | 0 | — |
 | HIGH | 0 remaining (11 fixed, 2 invalid) | All HIGH cleared 2026-04-10 |
-| MEDIUM | 2 remaining (26 fixed) | Polish queue |
+| MEDIUM | 1 remaining (27 fixed) | Polish queue |
 | LOW | 21 | Polish queue (1 fixed in M-14) |
 
 **Of the 19 previously-documented MEDIUM items:** 1 RESOLVED (pre-batch), 1 PARTIAL, 17 still apply.
@@ -29,6 +29,7 @@
 **Batch E completed 2026-04-10:** Accounting cleanup. M-5, M-6, M-7, M-8, M-9, M-10, M-12 all fixed. M-9 extracted `useRevenueBreakdown` into a dedicated hook so the 3 heavy hooks (`useServices`, `useProducts`, `useTeam`) only mount on the Vue d'ensemble and Revenus tabs — Dépenses, Journal, and Annulations no longer pay that cost.
 **Batch F completed 2026-04-10:** Appointments + packs/favorites polish. M-13 (calendar multi-item grouping via `mergeAppointmentGroups`), M-14, M-15, M-16, M-18, M-19, M-20, M-23 all fixed. Also picked up the L-10 aria-label as a drive-by during M-14.
 **Batch G completed 2026-04-10:** Clients + calendar hours. M-24 (derive calendar hours from `salonSettings.schedule` via new `lib/scheduleHours.ts`), M-26 (ClientForm read-only fields), M-27 (ClientsModule `<ConfirmModal>` swap), M-28 (extended client schema with conditional refines).
+**M-11 completed 2026-04-10:** Single-rate VAT caveat (Option A from the audit). Decision was to keep the single-rate calculation but add a prominent estimation disclaimer rather than building out per-category VAT (a feature, not a fix). Confirmed with the user that all Moroccan/French salon revenue runs at 20% in practice and the number is for owner-monitoring only, not filings.
 
 ---
 
@@ -140,10 +141,9 @@ No critical issues found. The codebase has no silent data corruption, no securit
 **File:** `modules/accounting/components/DepensesRecurrentes.tsx:63-74`
 **Resolved:** `monthlyTotal` now folds weekly recurring expenses into the total via `WEEKS_PER_MONTH = 52 / 12` (4.333…). Mensuel rows are added at face value, Hebdomadaire rows are normalized via the multiplier. Annuel rows still excluded from the monthly KPI by design (they have their own KPI tile).
 
-#### M-11: Single VAT rate applied to 100% of revenue [STILL APPLIES from 2026-04-08]
-**File:** `modules/accounting/hooks/useAccounting.ts:195`
-**Issue:** `vatDue = revenue - revenue / (1 + taxRate)` applies one rate to all revenue. Labeled "Estimée" but used for business decisions.
-**Fix:** Add a prominent caveat or allow per-category VAT rates.
+#### ~~M-11: Single VAT rate caveat~~ RESOLVED (2026-04-10)
+**Files:** `modules/accounting/components/FinancesOverview.tsx:202-220`, `modules/settings/components/AccountingSettings.tsx:80-110`
+**Resolved (Option A):** Confirmed with the user that (1) no salons currently sell at non-20% rates and (2) the VAT figure is owner-monitoring only, never used for actual filings. Picked the caveat fix instead of building out per-category VAT (a ~1-week feature). Renamed the KPI tile from "TVA Estimée" → "TVA Provisionnée" with an `Info` icon (tooltip: "Estimation calculée à partir du taux unique configuré dans les Paramètres comptables. Pour votre déclaration officielle, consultez votre comptable.") and a visible subtitle "Estimation au taux unique — vérifiez auprès de votre comptable". Added a matching info banner under the VAT rate input in `AccountingSettings`. The underlying single-rate calculation in `useAccounting.financials` is unchanged.
 
 #### ~~M-12: `calcTrend` not exported as named export~~ RESOLVED (2026-04-10)
 **File:** `modules/accounting/hooks/useAccounting.ts:18`, `modules/accounting/components/RevenuesPage.tsx:7`

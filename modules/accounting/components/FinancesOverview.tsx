@@ -4,6 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, Legend, PieChart, Pie, Cell,
 } from 'recharts';
+import { Info } from 'lucide-react';
 import { formatPrice } from '../../../lib/format';
 import { MiniKpiRow } from './MiniKpiRow';
 import { useRevenueBreakdown } from '../hooks/useRevenueBreakdown';
@@ -199,10 +200,28 @@ export const FinancesOverview: React.FC = () => {
           </div>
         </div>
 
+        {/* M-11: TVA tile with prominent estimation caveat. The single-rate
+            calculation is acceptable for owner-monitoring purposes (Moroccan
+            and French salons typically operate at a uniform 20% rate), but
+            the audit flagged that the previous "À provisionner" subtitle
+            implied filing-grade accuracy. The new caveat + tooltip make the
+            limitation visible without forcing users into a per-category
+            VAT model. */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-          <h3 className="text-xs font-bold text-slate-400 uppercase mb-2">TVA Estim&#233;e</h3>
+          <div className="flex items-center gap-1.5 mb-2">
+            <h3 className="text-xs font-bold text-slate-400 uppercase">TVA Provisionn&#233;e</h3>
+            <span
+              className="inline-flex"
+              title="Estimation calcul&#233;e &#224; partir du taux unique configur&#233; dans les Param&#232;tres comptables. Pour votre d&#233;claration officielle, consultez votre comptable."
+              aria-label="Informations sur le calcul de la TVA"
+            >
+              <Info size={11} className="text-slate-400 hover:text-slate-600 cursor-help" />
+            </span>
+          </div>
           <div className="text-3xl font-bold text-slate-900 mb-1">{formatPrice(financials.vatDue)}</div>
-          <div className="text-xs text-slate-500">&#192; provisionner</div>
+          <div className="text-[11px] text-slate-400 leading-snug">
+            Estimation au taux unique &mdash; v&#233;rifiez aupr&#232;s de votre comptable
+          </div>
         </div>
       </div>
     </div>
