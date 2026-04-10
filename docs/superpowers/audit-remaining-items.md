@@ -16,14 +16,15 @@
 | Severity | Count | Status |
 |---|---|---|
 | CRITICAL | 0 | — |
-| HIGH | 5 remaining (7 fixed, 1 invalid) | Batches A+B shipped 2026-04-10 |
-| MEDIUM | 23 remaining (5 fixed) | Batch work |
+| HIGH | 3 remaining (8 fixed, 2 invalid) | Batches A+B+C shipped 2026-04-10 |
+| MEDIUM | 21 remaining (7 fixed) | Batch work |
 | LOW | 22 | Polish queue |
 
 **Of the 19 previously-documented MEDIUM items:** 1 RESOLVED (pre-batch), 1 PARTIAL, 17 still apply.
 
 **Batch A completed 2026-04-10:** H-2, H-7, H-9, H-10, H-13 fixed. H-6 investigated and marked invalid.
 **Batch B completed 2026-04-10:** H-4, H-8 fixed via new shared `<Modal>` + `<ConfirmModal>` components. M-1, M-2, M-3, M-4, M-17 fixed alongside.
+**Batch C completed 2026-04-10:** H-3, M-21, M-22 fixed via single migration `20260410100000_favorites_concurrency_and_pack_groups_check.sql` (pending `supabase db push`). H-5 investigated and marked invalid.
 
 ---
 
@@ -44,19 +45,17 @@ No critical issues found. The codebase has no silent data corruption, no securit
 **File:** `modules/appointments/pages/AppointmentEditPage.tsx:40-134`
 **Resolved:** The loop now skips appointments whose service or variant cannot be resolved, increments an `unresolvedCount`, and shows a warning toast once per load. Also breaks the merge chain at a hole so partially-loaded groups don't incorrectly merge appointments across the gap.
 
-### H-3: `toggle_favorite` RPC still races on concurrent toggles
-**File:** `supabase/migrations/20260409200000_toggle_favorite_rpc.sql:53-66`
-**Issue:** The RPC was added to fix sort-order collisions between services/variants/packs, but it still computes `MAX(favorite_sort_order) + 1` in a SELECT and then UPDATEs the target row. Nothing locks the three tables between SELECT and UPDATE. Two concurrent transactions (e.g., owner + manager rapid-click) can both see the same MAX, compute the same `v_next`, and both write it — reintroducing the exact collision the RPC was meant to prevent. No unique constraint enforces uniqueness.
-**Fix:** Take a per-salon advisory lock at function entry: `PERFORM pg_advisory_xact_lock(hashtext('fav_order_' || p_salon_id::text));`. Alternative: add a `favorite_sort_order_seq` sequence per salon.
+### ~~H-3: `toggle_favorite` RPC races on concurrent toggles~~ RESOLVED (2026-04-10)
+**File:** `supabase/migrations/20260410100000_favorites_concurrency_and_pack_groups_check.sql:36-110`
+**Resolved:** New migration recreates `toggle_favorite` with `pg_advisory_xact_lock(729346, hashtext(p_salon_id::text))` at function entry. Lock namespace is shared with `reorder_favorites` (M-21) so toggles and reorders serialize within a salon but not across salons. Transaction-scoped so it auto-releases — no explicit unlock needed. **Pending `npx supabase db push`.**
 
 ### ~~H-4: Expense delete confirmation uses `window.confirm`~~ RESOLVED (2026-04-10)
 **File:** `modules/accounting/components/ExpenseForm.tsx:82,400-415`
 **Resolved:** Replaced `window.confirm` with the new shared `<ConfirmModal>` component. Delete button is now disabled during any pending mutation. Same-design-system modal, accessible, dismissible only when not loading.
 
-### H-5: Pack hard-delete orphans `appointments.pack_id` references silently
-**File:** `modules/services/hooks/usePacks.ts` (delete mutation) + migration `20260409190000_cleanup_soft_deleted_packs.sql`
-**Issue:** Commit `c898f3a` switched pack deletion from soft to hard delete with confirmation. Appointments that reference the deleted pack retain a dangling `pack_id`, breaking historical "Pack Promo" tag rendering and appointment audit trails. The delete confirmation does not check or warn about active references.
-**Fix:** Pre-query `appointments` for live `pack_id` references and warn in the confirmation: `"Ce pack est utilisé dans N rendez-vous. La suppression est définitive."` Consider reverting to soft-delete with `deleted_at` to preserve referential integrity, or add `ON DELETE SET NULL` to the FK.
+### ~~H-5: Pack hard-delete orphans `appointments.pack_id`~~ INVALID (2026-04-10)
+**File:** `modules/services/hooks/usePacks.ts:125-143`
+**Investigated and dismissed:** The `appointments` table has **no `pack_id` column** — confirmed against `lib/database.types.ts` (only `pack_items.pack_id` exists, which cascades on pack delete). `ServiceBlockState.packId` in `modules/appointments/hooks/useAppointmentForm.ts` is a UI-only field used during appointment construction and is NOT persisted; the save flattening at line 430-448 drops it. The hard-delete design is safe by construction: `pack_items` cascades, no live references exist elsewhere, and the audit trigger captures the row on delete. The audit agent incorrectly assumed a schema that doesn't exist.
 
 ### ~~H-6: Expense delete — ledger/charts stale~~ INVALID (2026-04-10)
 **File:** `modules/accounting/hooks/useAccounting.ts:125-140,461-489`
@@ -199,15 +198,13 @@ No critical issues found. The codebase has no silent data corruption, no securit
 **Issue:** On drag, `localOrder` updates optimistically. If the RPC fails (permission denied, network error), `toastOnError` fires but `localOrder` stays in its reordered state. Refresh shows the old server order — confusing.
 **Fix:** `useMutation({ onError: () => setLocalOrder(allFavorites) })` to rollback.
 
-#### M-21: `reorder_favorites` RPC has no optimistic-concurrency check
-**File:** `supabase/migrations/20260409180000_reorder_favorites_packs.sql:22-43`
-**Issue:** Loops through JSONB items and UPDATEs each without transaction isolation override. Two concurrent reorders interleave, producing a final state matching neither user's intent.
-**Fix:** Either wrap in `SET LOCAL TRANSACTION ISOLATION LEVEL REPEATABLE READ` or take an advisory lock per salon.
+#### ~~M-21: `reorder_favorites` RPC interleaves on concurrent reorders~~ RESOLVED (2026-04-10)
+**File:** `supabase/migrations/20260410100000_favorites_concurrency_and_pack_groups_check.sql:116-157`
+**Resolved:** Same advisory lock as H-3 — `pg_advisory_xact_lock(729346, hashtext(p_salon_id::text))` at function entry. Sharing the namespace with `toggle_favorite` means a reorder in progress blocks concurrent toggles and vice versa, so no interleaving can occur within a salon. **Pending `npx supabase db push`.**
 
-#### M-22: `PackGroupForm` validates date range client-side only; DB lacks CHECK constraint
-**File:** `modules/services/components/PackGroupForm.tsx:51-54` + `20260409210000_pack_groups.sql` (if exists)
-**Issue:** Client validates `startsAt <= endsAt`, but the DB schema has no CHECK constraint. Bypassing the UI (direct API / SQL) can insert inverted dates, causing `isPackGroupLive()` to return undefined behavior.
-**Fix:** Add `CHECK (starts_at IS NULL OR ends_at IS NULL OR starts_at <= ends_at)` to the migration.
+#### ~~M-22: `pack_groups` missing date-range CHECK constraint~~ RESOLVED (2026-04-10)
+**File:** `supabase/migrations/20260410100000_favorites_concurrency_and_pack_groups_check.sql:163-181`
+**Resolved:** Migration adds `CONSTRAINT pack_groups_dates_chk CHECK (starts_at IS NULL OR ends_at IS NULL OR starts_at <= ends_at)`. A pre-ALTER `UPDATE` swaps any existing inverted rows (should be none in practice since the UI validates, but the belt-and-braces fix avoids aborting the migration on dirty data). **Pending `npx supabase db push`.**
 
 #### M-23: `PackForm` over-cost warning is informational only; submit still proceeds
 **File:** `modules/services/components/PackForm.tsx:189-194`
@@ -330,3 +327,5 @@ A few findings surfaced by parallel audit agents were investigated and **determi
 - ~~"Missing supplier update in update mutation"~~ — the DB has no supplier text column, so there is no text to update. The real bug is that the form maintains a text state that never persists (captured as H-1).
 - ~~"Stale closure in `activeBlock` derivation"~~ — the derivation `serviceBlocks[activeBlockIndex]` is computed inline in render, not inside a `useCallback`/`useMemo` closure; the concern was speculative.
 - ~~"Form category silently defaults to first category"~~ — Zod schema enforces `min(1)` on category; the fallback in `handleSubmit` is unreachable dead code (captured as M-6 for cleanup, not a bug).
+- ~~"Expense delete invalidates only `['expenses']`, leaving ledger/charts stale"~~ (H-6) — `ledgerData` and `chartData` are `useMemo` derivatives of the base expenses query, not separate cache entries. Invalidating the base query already propagates via re-derivation.
+- ~~"Pack hard-delete orphans `appointments.pack_id`"~~ (H-5) — `appointments` has no `pack_id` column. `ServiceBlockState.packId` is a UI-only field dropped at save time. No orphan possible.
