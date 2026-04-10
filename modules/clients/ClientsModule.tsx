@@ -9,6 +9,7 @@ import { usePermissions } from '../../hooks/usePermissions';
 import { ClientList } from './components/ClientList';
 import { ClientDetails } from './components/ClientDetails';
 import { ClientForm } from './components/ClientForm';
+import { ConfirmModal } from '../../components/ConfirmModal';
 
 export const ClientsModule: React.FC = () => {
   const { clients, isLoading, addClient, updateClient, deleteClient } = useClients();
@@ -18,6 +19,9 @@ export const ClientsModule: React.FC = () => {
   const canDelete = permissions.can('delete', 'clients');
   const [view, setView] = useState<ViewState>('LIST');
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  // M-27: in-app confirmation modal instead of window.confirm
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleAdd = () => {
     setSelectedClientId(null);
@@ -38,16 +42,28 @@ export const ClientsModule: React.FC = () => {
     navigate(`/calendar/new?clientId=${id}`);
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce client ? Cette action est irréversible.')) {
-      try {
-        await deleteClient(id);
-        setView('LIST');
-      } catch {
-        // Error toast handled by mutation's onError
-      }
+  const handleDelete = (id: string) => {
+    setPendingDeleteId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDeleteId) return;
+    setIsDeleting(true);
+    try {
+      await deleteClient(pendingDeleteId);
+      setPendingDeleteId(null);
+      setView('LIST');
+    } catch {
+      // Error toast handled by mutation's onError — keep the modal open so
+      // the user can retry or cancel.
+    } finally {
+      setIsDeleting(false);
     }
   };
+
+  const pendingDeleteClient = pendingDeleteId
+    ? clients.find((c) => c.id === pendingDeleteId)
+    : null;
 
   const handleSave = async (client: Client) => {
     try {
@@ -103,6 +119,21 @@ export const ClientsModule: React.FC = () => {
           onDelete={view === 'EDIT' && selectedClient && canDelete ? () => handleDelete(selectedClient.id) : undefined}
         />
       )}
+
+      <ConfirmModal
+        isOpen={pendingDeleteId !== null}
+        title="Supprimer ce client"
+        tone="danger"
+        confirmLabel="Supprimer"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onClose={() => { if (!isDeleting) setPendingDeleteId(null); }}
+        message={
+          pendingDeleteClient
+            ? <>Cette action est irréversible. <strong>{pendingDeleteClient.firstName} {pendingDeleteClient.lastName}</strong> et tout son historique seront définitivement supprimés.</>
+            : 'Cette action est irréversible.'
+        }
+      />
     </div>
   );
 };

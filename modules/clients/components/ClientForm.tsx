@@ -25,6 +25,12 @@ interface ClientFormProps {
 export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, onCancel, onDelete }) => {
   const { allStaff: team } = useTeam();
   
+  // M-26: Don't seed totalVisits / totalSpent / createdAt into form state —
+  // they're server-computed and treating them as form fields invites bugs
+  // (e.g., a "new" form would default to today as createdAt and 0 visits;
+  // an edit would carry stale snapshots back through onSave). Instead the
+  // form only owns the user-editable fields, and the parent merges with the
+  // existing record at save time.
   const [formData, setFormData] = useState<Partial<Client>>(existingClient || {
     firstName: '',
     lastName: '',
@@ -34,9 +40,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, 
     profession: '',
     company: '',
     notes: '',
-    
+
     allergies: '',
-    
+
     status: undefined,
     preferredStaffId: undefined,
 
@@ -59,10 +65,6 @@ export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, 
       marketing: false,
       other: false
     },
-    
-    totalVisits: 0,
-    totalSpent: 0,
-    createdAt: new Date().toISOString()
   });
 
   const { errors, validate, clearFieldError } = useFormValidation(clientSchema);
@@ -70,9 +72,22 @@ export const ClientForm: React.FC<ClientFormProps> = ({ existingClient, onSave, 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const validated = validate(formData);
-    if (validated) {
-      onSave({ ...formData, ...validated } as Client);
-    }
+    if (!validated) return;
+    // M-26: Merge server-computed fields back from existingClient on edit so
+    // updates don't reset visits/spend; on create, hand the parent zeros and
+    // let the DB default fill in createdAt.
+    const serverFields: Pick<Client, 'totalVisits' | 'totalSpent' | 'createdAt'> = existingClient
+      ? {
+          totalVisits: existingClient.totalVisits,
+          totalSpent: existingClient.totalSpent,
+          createdAt: existingClient.createdAt,
+        }
+      : {
+          totalVisits: 0,
+          totalSpent: 0,
+          createdAt: new Date().toISOString(),
+        };
+    onSave({ ...formData, ...validated, ...serverFields } as Client);
   };
 
   const handlePermissionChange = (key: keyof ClientPermissions) => {

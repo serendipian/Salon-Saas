@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 import type { Appointment, StaffMember, WorkSchedule } from '../../../types';
+import { useSettings } from '../../settings/hooks/useSettings';
+import { getSalonHourRange } from '../../../lib/scheduleHours';
 
 const DAY_KEYS: (keyof WorkSchedule)[] = [
   'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
@@ -13,6 +15,10 @@ function parseTime(time: string): number {
 /**
  * Computes which hours are unavailable for a given staff member on a given date,
  * accounting for the staff's weekly schedule and existing appointments.
+ *
+ * The hour iteration range comes from the SALON's opening hours (M-24) — not
+ * a hardcoded 9-20 — so salons that open earlier or close later see the right
+ * window. Falls back to 9-20 if no schedule is configured.
  */
 export function useStaffAvailability(
   staffMember: StaffMember | null,
@@ -20,6 +26,9 @@ export function useStaffAvailability(
   durationMinutes: number,
   existingAppointments: Appointment[],
 ): Set<number> {
+  const { salonSettings } = useSettings();
+  const { minHour, maxHour } = getSalonHourRange(salonSettings.schedule);
+
   return useMemo(() => {
     const unavailable = new Set<number>();
 
@@ -33,9 +42,9 @@ export function useStaffAvailability(
     const dayKey = DAY_KEYS[dayOfWeek];
     const schedule = staffMember.schedule?.[dayKey];
 
-    // If staff doesn't work this day, all hours unavailable
+    // If staff doesn't work this day, all hours in the salon range are unavailable
     if (!schedule || !schedule.isOpen) {
-      for (let h = 9; h <= 20; h++) unavailable.add(h);
+      for (let h = minHour; h <= maxHour; h++) unavailable.add(h);
       return unavailable;
     }
 
@@ -59,7 +68,7 @@ export function useStaffAvailability(
       .sort((a, b) => a.start - b.start);
 
     // Check each hour slot — only mark unavailable if ALL 15-min slots are blocked
-    for (let h = 9; h <= 20; h++) {
+    for (let h = minHour; h <= maxHour; h++) {
       let allBlocked = true;
       for (const minute of [0, 15, 30, 45]) {
         const slotStart = h * 60 + minute;
@@ -81,5 +90,5 @@ export function useStaffAvailability(
     }
 
     return unavailable;
-  }, [staffMember, date, durationMinutes, existingAppointments]);
+  }, [staffMember, date, durationMinutes, existingAppointments, minHour, maxHour]);
 }

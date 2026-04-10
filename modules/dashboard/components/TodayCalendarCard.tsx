@@ -8,12 +8,12 @@ import { StatusBadge } from '../../appointments/components/StatusBadge';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { formatPrice } from '../../../lib/format';
 import { useToast } from '../../../context/ToastContext';
+import { useSettings } from '../../settings/hooks/useSettings';
+import { getSalonHourRange } from '../../../lib/scheduleHours';
 
 // --- Constants ---
-const CALENDAR_HOURS = Array.from({ length: 15 }, (_, i) => i + 9); // 9h to 23h
 const ROW_H = 48;
 const HALF_HOUR_H = ROW_H / 2;
-const START_HOUR = 9;
 const SNAP_MINUTES = 15;
 const DRAG_THRESHOLD = 5; // px before drag starts
 
@@ -29,18 +29,18 @@ function fmt(date: Date): string {
   return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-function fmtMinutes(totalMinutes: number): string {
-  const h = Math.floor(totalMinutes / 60) + START_HOUR;
+function fmtMinutes(totalMinutes: number, startHour: number): string {
+  const h = Math.floor(totalMinutes / 60) + startHour;
   const m = totalMinutes % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
-function getNowOffset(): number | null {
+function getNowOffset(startHour: number, endHour: number): number | null {
   const now = new Date();
   const h = now.getHours();
   const m = now.getMinutes();
-  if (h < 9 || h >= 23) return null;
-  return ((h - 9) * 60 + m) / 60 * ROW_H;
+  if (h < startHour || h >= endHour) return null;
+  return ((h - startHour) * 60 + m) / 60 * ROW_H;
 }
 
 function snapToGrid(minutes: number): number {
@@ -224,7 +224,20 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const { addToast } = useToast();
-  const [nowOffset, setNowOffset] = useState<number | null>(getNowOffset);
+  const { salonSettings } = useSettings();
+
+  // M-24: Derive the calendar's hour range from the salon's opening hours
+  // instead of hardcoding 9-23. Falls back to 9-20 if no schedule is set.
+  const { minHour: START_HOUR, maxHour: END_HOUR } = useMemo(
+    () => getSalonHourRange(salonSettings.schedule),
+    [salonSettings.schedule],
+  );
+  const CALENDAR_HOURS = useMemo(
+    () => Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => i + START_HOUR),
+    [START_HOUR, END_HOUR],
+  );
+
+  const [nowOffset, setNowOffset] = useState<number | null>(() => getNowOffset(START_HOUR, END_HOUR));
   const [popover, setPopover] = useState<PopoverState | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [drag, setDrag] = useState<DragState | null>(null);
@@ -235,9 +248,14 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
 
   // Tick every minute
   useEffect(() => {
-    const id = setInterval(() => setNowOffset(getNowOffset()), 60_000);
+    const id = setInterval(() => setNowOffset(getNowOffset(START_HOUR, END_HOUR)), 60_000);
     return () => clearInterval(id);
-  }, []);
+  }, [START_HOUR, END_HOUR]);
+
+  // Also recompute now when the hour range changes (e.g., settings update)
+  useEffect(() => {
+    setNowOffset(getNowOffset(START_HOUR, END_HOUR));
+  }, [START_HOUR, END_HOUR]);
 
   // Auto-scroll to current time on first render
   const scrollToCurrent = useCallback(() => {
@@ -338,7 +356,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     const relY = clientY - gridRect.top + (scrollRef.current?.scrollTop ?? 0);
     const rawMinutes = (relY / ROW_H) * 60;
     return snapToGrid(Math.max(0, Math.min(rawMinutes, CALENDAR_HOURS.length * 60 - SNAP_MINUTES)));
-  }, []);
+  }, [CALENDAR_HOURS]);
 
   const handlePointerDown = useCallback((appt: Appointment, e: React.PointerEvent<HTMLDivElement>) => {
     if (!onUpdateAppointment) return;
@@ -364,7 +382,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     });
 
     e.currentTarget.setPointerCapture(e.pointerId);
-  }, [onUpdateAppointment, staffColumns]);
+  }, [onUpdateAppointment, staffColumns, START_HOUR]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (!drag) return;
@@ -417,7 +435,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     }
 
     setDrag(null);
-  }, [drag, onUpdateAppointment, calcMinutesFromY, findStaffIndexAtX, staffColumns, canStaffHandleAppt, addToast]);
+  }, [drag, onUpdateAppointment, calcMinutesFromY, findStaffIndexAtX, staffColumns, canStaffHandleAppt, addToast, START_HOUR]);
 
   const handlePointerCancel = useCallback(() => {
     setDrag(null);
@@ -429,11 +447,11 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     const topPx = drag.ghostTop;
     const minutes = (topPx / ROW_H) * 60;
     const snapped = snapToGrid(minutes);
-    const timeLabel = fmtMinutes(snapped);
-    const endLabel = fmtMinutes(snapped + drag.appointment.durationMinutes);
+    const timeLabel = fmtMinutes(snapped, START_HOUR);
+    const endLabel = fmtMinutes(snapped + drag.appointment.durationMinutes, START_HOUR);
     const targetStaff = staffColumns[drag.ghostStaffIdx];
     return { topPx, timeLabel, endLabel, targetStaff, snappedMinutes: snapped, isValid: drag.isValidDrop };
-  }, [drag, staffColumns]);
+  }, [drag, staffColumns, START_HOUR]);
 
   const totalHeight = CALENDAR_HOURS.length * ROW_H;
   const nowLabel = nowOffset !== null ? fmt(new Date()) : null;

@@ -17,7 +17,7 @@
 |---|---|---|
 | CRITICAL | 0 | — |
 | HIGH | 0 remaining (11 fixed, 2 invalid) | All HIGH cleared 2026-04-10 |
-| MEDIUM | 6 remaining (22 fixed) | Polish queue |
+| MEDIUM | 2 remaining (26 fixed) | Polish queue |
 | LOW | 21 | Polish queue (1 fixed in M-14) |
 
 **Of the 19 previously-documented MEDIUM items:** 1 RESOLVED (pre-batch), 1 PARTIAL, 17 still apply.
@@ -28,6 +28,7 @@
 **Batch D completed 2026-04-10:** H-1 fixed by removing the dead custom-supplier UI path; H-11 fixed by adding a timezone mismatch warning to the Profile page. H-12 also shipped (60s tolerance window for edit-mode merge), clearing all remaining HIGH items.
 **Batch E completed 2026-04-10:** Accounting cleanup. M-5, M-6, M-7, M-8, M-9, M-10, M-12 all fixed. M-9 extracted `useRevenueBreakdown` into a dedicated hook so the 3 heavy hooks (`useServices`, `useProducts`, `useTeam`) only mount on the Vue d'ensemble and Revenus tabs — Dépenses, Journal, and Annulations no longer pay that cost.
 **Batch F completed 2026-04-10:** Appointments + packs/favorites polish. M-13 (calendar multi-item grouping via `mergeAppointmentGroups`), M-14, M-15, M-16, M-18, M-19, M-20, M-23 all fixed. Also picked up the L-10 aria-label as a drive-by during M-14.
+**Batch G completed 2026-04-10:** Clients + calendar hours. M-24 (derive calendar hours from `salonSettings.schedule` via new `lib/scheduleHours.ts`), M-26 (ClientForm read-only fields), M-27 (ClientsModule `<ConfirmModal>` swap), M-28 (extended client schema with conditional refines).
 
 ---
 
@@ -198,26 +199,25 @@ No critical issues found. The codebase has no silent data corruption, no securit
 
 ### Team / Clients / Shared (carried from 2026-04-08)
 
-#### M-24: Hardcoded calendar hours 9-20 / 9-23 [STILL APPLIES]
-**Files:** `modules/appointments/hooks/useStaffAvailability.ts:38,62` (9-20), `modules/dashboard/components/TodayCalendarCard.tsx:13` (9-23)
-**Fix:** Derive from `salonSettings.schedule` min/max.
+#### ~~M-24: Hardcoded calendar hours~~ RESOLVED (2026-04-10)
+**Files:** `lib/scheduleHours.ts` (new helper), `modules/appointments/hooks/useStaffAvailability.ts:1-30,67`, `modules/dashboard/components/TodayCalendarCard.tsx:11-44,228-258`
+**Resolved:** Added shared `getSalonHourRange(schedule)` helper that derives `{ minHour, maxHour }` from the salon's `WorkSchedule` (earliest open across all days as min; latest close, ceiled if non-zero minutes, as max). Falls back to 9-20 when no schedule is set. `useStaffAvailability` calls `useSettings()` and threads the range through its iteration loops. `TodayCalendarCard` does the same and rebuilds `CALENDAR_HOURS` reactively from the derived range; `fmtMinutes` and `getNowOffset` were parameterized so the module-level helpers no longer hardcode the start/end hours.
 
 #### M-25: Duplicated category management (Services vs Products) [STILL APPLIES]
 **Files:** `modules/services/components/CategoriesTab.tsx` (258 LOC) vs `modules/products/components/ProductCategoriesTab.tsx` (251 LOC). Also `GeneralTab` vs `ProductGeneralTab`, `useServiceSettings` vs `useProductSettings`, `ServiceSettingsPage` vs `ProductSettingsPage`.
 **Fix:** Extract `<CategoriesManager<T>>` generic.
 
-#### M-26: `ClientForm` initializes server-computed fields in form state [STILL APPLIES]
-**File:** `modules/clients/components/ClientForm.tsx:63-65`
-**Issue:** `totalVisits: 0, totalSpent: 0, createdAt: new Date().toISOString()` are server-computed but included in form state.
-**Fix:** Remove from initial state; merge from `existingClient` in onSave for edit.
+#### ~~M-26: ClientForm initializes server-computed fields~~ RESOLVED (2026-04-10)
+**File:** `modules/clients/components/ClientForm.tsx:28-91`
+**Resolved:** Removed `totalVisits`, `totalSpent`, `createdAt` from the initial form state. `handleSubmit` now merges these server-computed fields back from `existingClient` on edit (preserving real values) or supplies defaults on create (zeros + current ISO). The form no longer carries stale snapshots through `onSave`.
 
-#### M-27: `ClientsModule` delete uses `window.confirm` [STILL APPLIES]
-**File:** `modules/clients/ClientsModule.tsx:42`
-**Fix:** Replace with in-app modal.
+#### ~~M-27: ClientsModule delete uses window.confirm~~ RESOLVED (2026-04-10)
+**File:** `modules/clients/ClientsModule.tsx:12-72,109-122`
+**Resolved:** Replaced `window.confirm` with the shared `<ConfirmModal>` from Batch B. Added `pendingDeleteId` + `isDeleting` state. The modal shows the client's name in the message and stays open on error so the user can retry. Backdrop click is disabled while the mutation is in flight.
 
-#### M-28: `clients/schemas.ts` validates 4 of 25+ fields [STILL APPLIES]
-**File:** `modules/clients/schemas.ts`
-**Fix:** Extend schema to cover all fields.
+#### ~~M-28: clients/schemas.ts validates only 4 fields~~ RESOLVED (2026-04-10)
+**File:** `modules/clients/schemas.ts:1-90`
+**Resolved:** Extended the schema to cover all 25+ Client fields with appropriate optionality. Added 5 conditional `.refine()` rules: (1) firstName OR lastName required, (2) `preferredChannel === 'Autre'` requires `otherChannelDetail`, (3) `contactMethod === 'Message'` requires `messageChannel`, (4) `acquisitionSource === 'Influenceur'` requires `acquisitionDetail`, (5) `acquisitionSource === 'Autre'` requires `acquisitionDetail`, (6) `permissions.other` requires `permissions.otherDetail`. Each rule has a French error message and a precise `path` for inline display.
 
 ---
 
