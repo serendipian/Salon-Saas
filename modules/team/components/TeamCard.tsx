@@ -2,6 +2,8 @@ import React from 'react';
 import { Calendar, Clock, Users } from 'lucide-react';
 import { StaffMember, Appointment, ServiceCategory } from '../../../types';
 import { EmptyState } from '../../../components/EmptyState';
+// L-22: shared contract chip labels + colors (was duplicated here).
+import { CONTRACT_LABELS, CONTRACT_COLORS } from './profile-shared';
 
 interface TeamCardProps {
   team: StaffMember[];
@@ -9,22 +11,6 @@ interface TeamCardProps {
   serviceCategories: ServiceCategory[];
   onSelect: (id: string) => void;
 }
-
-const CONTRACT_LABELS: Record<string, string> = {
-  CDI: 'CDI',
-  CDD: 'CDD',
-  Freelance: 'Freelance',
-  Apprentissage: 'Apprenti',
-  Stage: 'Stage',
-};
-
-const CONTRACT_COLORS: Record<string, string> = {
-  CDI: 'bg-blue-100 text-blue-700',
-  CDD: 'bg-amber-100 text-amber-700',
-  Freelance: 'bg-purple-100 text-purple-700',
-  Apprentissage: 'bg-teal-100 text-teal-700',
-  Stage: 'bg-slate-100 text-slate-600',
-};
 
 function formatStartDate(dateStr?: string): string {
   if (!dateStr) return '';

@@ -2,31 +2,55 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
-const RESOURCE_COPY = {
-  staff: {
-    headline: 'Débloquez une équipe illimitée',
-    description: 'Passez en Premium pour inviter jusqu\'à 10 membres et gérer votre salon en équipe.',
-  },
-  clients: {
-    headline: 'Débloquez des clients illimités',
-    description: 'Passez en Premium pour gérer un nombre illimité de clients.',
-  },
-  products: {
-    headline: 'Débloquez des produits illimités',
-    description: 'Passez en Premium pour ajouter autant de produits que vous le souhaitez.',
-  },
+// L-low (UpgradeModal staff hardcode): The Premium staff cap is now read
+// from plan data via the optional `maxStaff` prop instead of hardcoding "10
+// membres". Falls back to "10" if the plan limit isn't supplied (matches
+// previous behaviour) so the modal still shows reasonable copy.
+const formatStaffCount = (maxStaff: number | null | undefined): string => {
+  if (maxStaff === null) return 'illimités';
+  if (maxStaff === undefined) return '10';
+  return String(maxStaff);
+};
+
+interface ResourceCopy {
+  headline: string;
+  description: string;
+}
+
+const buildCopy = (maxStaff: number | null | undefined): Record<'staff' | 'clients' | 'products', ResourceCopy> => {
+  const staffCountLabel = formatStaffCount(maxStaff);
+  const staffPhrase = maxStaff === null
+    ? 'inviter une équipe illimitée'
+    : `inviter jusqu'à ${staffCountLabel} membres`;
+  return {
+    staff: {
+      headline: 'Débloquez une équipe illimitée',
+      description: `Passez en Premium pour ${staffPhrase} et gérer votre salon en équipe.`,
+    },
+    clients: {
+      headline: 'Débloquez des clients illimités',
+      description: 'Passez en Premium pour gérer un nombre illimité de clients.',
+    },
+    products: {
+      headline: 'Débloquez des produits illimités',
+      description: 'Passez en Premium pour ajouter autant de produits que vous le souhaitez.',
+    },
+  };
 };
 
 interface UpgradeModalProps {
   resource: 'staff' | 'clients' | 'products';
   priceMonthly: number;
+  /** Premium plan's max_staff. Null means unlimited; undefined means "use fallback". */
+  maxStaff?: number | null;
   onUpgrade: () => void;
   onClose: () => void;
   isLoading?: boolean;
 }
 
-export const UpgradeModal: React.FC<UpgradeModalProps> = ({ resource, priceMonthly, onUpgrade, onClose, isLoading }) => {
-  const copy = RESOURCE_COPY[resource];
+export const UpgradeModal: React.FC<UpgradeModalProps> = ({ resource, priceMonthly, maxStaff, onUpgrade, onClose, isLoading }) => {
+  const copy = buildCopy(maxStaff)[resource];
+  const staffCountLabel = formatStaffCount(maxStaff);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -62,7 +86,10 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ resource, priceMonth
           </div>
           <ul className="space-y-2 text-sm text-slate-800">
             <li className="flex items-center gap-2">
-              <span className="text-brand-500 font-bold">✓</span> Jusqu'à 10 membres d'équipe
+              <span className="text-brand-500 font-bold">✓</span>
+              {maxStaff === null
+                ? "Membres d'équipe illimités"
+                : `Jusqu'à ${staffCountLabel} membres d'équipe`}
             </li>
             <li className="flex items-center gap-2">
               <span className="text-brand-500 font-bold">✓</span> Clients illimités

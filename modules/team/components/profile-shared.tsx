@@ -77,6 +77,16 @@ export const CONTRACT_LABELS: Record<string, string> = {
   Stage: 'Stage',
 };
 
+// L-22: Centralizes contract chip colors so TeamCard / TeamTable / future
+// staff displays don't drift apart. Previously duplicated in TeamCard.tsx.
+export const CONTRACT_COLORS: Record<string, string> = {
+  CDI: 'bg-blue-100 text-blue-700',
+  CDD: 'bg-amber-100 text-amber-700',
+  Freelance: 'bg-purple-100 text-purple-700',
+  Apprentissage: 'bg-teal-100 text-teal-700',
+  Stage: 'bg-slate-100 text-slate-600',
+};
+
 // --- Helpers ---
 export const formatDate = (d?: string) => {
   if (!d) return '—';

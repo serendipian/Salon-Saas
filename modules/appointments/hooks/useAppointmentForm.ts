@@ -432,7 +432,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
 
       const parts: string[] = [];
       if (block.items.length === 0) {
-        return 'Service';
+        return 'Prestation';
       }
       if (block.items.length === 1) {
         const item = block.items[0];

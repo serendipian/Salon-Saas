@@ -3,26 +3,37 @@ import React from 'react';
 import { Sparkles } from 'lucide-react';
 
 interface TrialBannerProps {
-  daysLeft: number;
+  // L-low (TrialBanner silent failure): allow `null` so the parent can render
+  // the banner even when the subscription query is still loading or has
+  // errored. The trial flag itself comes from `activeSalon.subscription_tier`,
+  // which is independent of the subscription row, so the user always knows
+  // they're on a trial even if we can't compute the exact countdown.
+  daysLeft: number | null;
   onUpgradeClick: () => void;
 }
 
-export const TrialBanner: React.FC<TrialBannerProps> = ({ daysLeft, onUpgradeClick }) => (
-  <div className="bg-gradient-to-r from-brand-500 to-rose-500 text-white px-6 py-3 flex items-center justify-between gap-4">
-    <div className="flex items-center gap-3">
-      <Sparkles size={16} className="shrink-0" />
-      <div>
-        <span className="font-semibold text-sm">Essai Premium — {daysLeft} jour{daysLeft > 1 ? 's' : ''} restant{daysLeft > 1 ? 's' : ''}</span>
-        <span className="text-white/80 text-sm ml-2 hidden sm:inline">
-          Toutes les fonctionnalités Premium gratuitement.
-        </span>
+export const TrialBanner: React.FC<TrialBannerProps> = ({ daysLeft, onUpgradeClick }) => {
+  const headline = daysLeft === null
+    ? 'Essai Premium en cours'
+    : `Essai Premium — ${daysLeft} jour${daysLeft > 1 ? 's' : ''} restant${daysLeft > 1 ? 's' : ''}`;
+
+  return (
+    <div className="bg-gradient-to-r from-brand-500 to-rose-500 text-white px-6 py-3 flex items-center justify-between gap-4">
+      <div className="flex items-center gap-3">
+        <Sparkles size={16} className="shrink-0" />
+        <div>
+          <span className="font-semibold text-sm">{headline}</span>
+          <span className="text-white/80 text-sm ml-2 hidden sm:inline">
+            Toutes les fonctionnalités Premium gratuitement.
+          </span>
+        </div>
       </div>
+      <button
+        onClick={onUpgradeClick}
+        className="shrink-0 bg-white text-brand-500 text-xs font-bold px-4 py-1.5 rounded-lg hover:bg-white/90 transition-colors"
+      >
+        Choisir un plan →
+      </button>
     </div>
-    <button
-      onClick={onUpgradeClick}
-      className="shrink-0 bg-white text-brand-500 text-xs font-bold px-4 py-1.5 rounded-lg hover:bg-white/90 transition-colors"
-    >
-      Choisir un plan →
-    </button>
-  </div>
-);
+  );
+};

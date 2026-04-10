@@ -45,7 +45,12 @@ export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSele
         const planTier = TIER_FROM_NAME[plan.name] ?? 'free';
         const isCurrent = planTier === currentTier || (currentTier === 'trial' && planTier === 'premium');
         const isUpgrade = plan.price_monthly > 0 && !isCurrent;
-        const isDowngrade = planTier === 'free' && currentTier !== 'free' && currentTier !== 'trial';
+        // L-low (PlanCards trial→Free button confusing): treat the Free
+        // option as a downgrade for trial users too. Without this flag the
+        // button used to read "Choisir Free →" which sounded like a positive
+        // action even though Free has lower limits than Premium (the trial).
+        const isDowngrade = planTier === 'free' && currentTier !== 'free';
+        const isTrialToFree = planTier === 'free' && currentTier === 'trial';
 
         return (
           <div
@@ -92,9 +97,10 @@ export const PlanCards: React.FC<PlanCardsProps> = ({ plans, currentTier, onSele
               <button
                 onClick={onDowngrade}
                 disabled={isLoading}
+                title={isTrialToFree ? 'Le plan Free a moins de fonctionnalités que votre essai Premium' : undefined}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
               >
-                Rétrograder
+                {isTrialToFree ? 'Passer en Free (limité)' : 'Rétrograder'}
               </button>
             ) : (
               <button

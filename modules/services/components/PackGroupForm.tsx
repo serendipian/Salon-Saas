@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import type { PackGroup } from '../../../types';
+import { packGroupSchema } from '../packSchemas';
+import { useFormValidation } from '../../../hooks/useFormValidation';
 
 interface PackGroupFormProps {
   existingGroup?: PackGroup;
@@ -39,28 +41,33 @@ export const PackGroupForm: React.FC<PackGroupFormProps> = ({ existingGroup, onS
   const [color, setColor] = useState<string | null>(existingGroup?.color ?? null);
   const [startsAt, setStartsAt] = useState(toDateInput(existingGroup?.startsAt ?? null));
   const [endsAt, setEndsAt] = useState(toDateInput(existingGroup?.endsAt ?? null));
-  const [nameError, setNameError] = useState<string | null>(null);
-  const [dateError, setDateError] = useState<string | null>(null);
+
+  // L-17: Zod-based validation via useFormValidation, replacing the inline
+  // if/then checks. Date comparison happens against ISO strings so the refine
+  // matches what gets saved.
+  const { errors, validate, clearFieldError } = useFormValidation(packGroupSchema);
+  const nameError = errors.name;
+  const dateError = errors.endsAt;
 
   const handleSubmit = () => {
-    let hasError = false;
-    if (!name.trim()) {
-      setNameError('Le nom est requis');
-      hasError = true;
-    }
-    if (startsAt && endsAt && new Date(startsAt) > new Date(endsAt)) {
-      setDateError('La date de fin doit être après la date de début');
-      hasError = true;
-    }
-    if (hasError) return;
+    const startsAtIso = fromDateInput(startsAt, 'start');
+    const endsAtIso = fromDateInput(endsAt, 'end');
+    const validated = validate({
+      name: name.trim(),
+      description,
+      color,
+      startsAt: startsAtIso,
+      endsAt: endsAtIso,
+    });
+    if (!validated) return;
 
     onSave({
       id: existingGroup?.id,
       name: name.trim(),
       description,
       color,
-      startsAt: fromDateInput(startsAt, 'start'),
-      endsAt: fromDateInput(endsAt, 'end'),
+      startsAt: startsAtIso,
+      endsAt: endsAtIso,
     });
   };
 
@@ -81,7 +88,7 @@ export const PackGroupForm: React.FC<PackGroupFormProps> = ({ existingGroup, onS
           <input
             type="text"
             value={name}
-            onChange={(e) => { setName(e.target.value); setNameError(null); }}
+            onChange={(e) => { setName(e.target.value); clearFieldError('name'); }}
             placeholder="Ex: Halloween 2026"
             className={`w-full px-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 ${nameError ? 'border-red-400' : 'border-slate-200'}`}
           />
@@ -133,7 +140,7 @@ export const PackGroupForm: React.FC<PackGroupFormProps> = ({ existingGroup, onS
               <input
                 type="date"
                 value={startsAt}
-                onChange={(e) => { setStartsAt(e.target.value); setDateError(null); }}
+                onChange={(e) => { setStartsAt(e.target.value); clearFieldError('endsAt'); }}
                 className={`w-full px-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 ${dateError ? 'border-red-400' : 'border-slate-200'}`}
               />
             </div>
@@ -142,7 +149,7 @@ export const PackGroupForm: React.FC<PackGroupFormProps> = ({ existingGroup, onS
               <input
                 type="date"
                 value={endsAt}
-                onChange={(e) => { setEndsAt(e.target.value); setDateError(null); }}
+                onChange={(e) => { setEndsAt(e.target.value); clearFieldError('endsAt'); }}
                 className={`w-full px-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 ${dateError ? 'border-red-400' : 'border-slate-200'}`}
               />
             </div>

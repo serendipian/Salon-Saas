@@ -86,7 +86,9 @@ export default function ServiceBlock({
   const isPillAllowedWhenLocked = (pillId: string): boolean => {
     if (isPackLocked) return pillId === 'PACKS';
     if (!isCategoryLocked) return true;
-    if (pillId === 'FAVORITES') return true;
+    // L-11: only enable Favoris when there's actually something to show.
+    // Otherwise tapping it lands on an empty grid which is confusing.
+    if (pillId === 'FAVORITES') return favorites.length > 0;
     if (pillId === 'PACKS') return false;
     return pillId === lockedCategoryId;
   };
@@ -228,8 +230,12 @@ export default function ServiceBlock({
         </button>
       </div>
 
-      {/* Category buttons + Vider button when locked */}
-      <div className="flex gap-2 flex-wrap mb-3 items-center">
+      {/* L-13: Category buttons + Vider button when locked.
+          The pills live in their own wrap-flex container so the Vider button
+          can't interleave between wrapped category lines on narrow screens.
+          On desktop the Vider sits to the right; on mobile it stacks below. */}
+      <div className="flex flex-col sm:flex-row sm:items-start gap-2 mb-3">
+        <div className="flex gap-2 flex-wrap items-center flex-1 min-w-0">
         {favorites.length > 0 && (() => {
           const disabled = !isPillAllowedWhenLocked('FAVORITES');
           return (
@@ -302,11 +308,12 @@ export default function ServiceBlock({
             </button>
           );
         })}
+        </div>
         {isLocked && (
           <button
             type="button"
             onClick={handleClear}
-            className="px-3 py-2 rounded-xl text-xs font-medium text-slate-500 border border-slate-200 bg-white hover:bg-slate-50 hover:text-slate-700 transition-colors"
+            className="px-3 py-2 rounded-xl text-xs font-medium text-slate-500 border border-slate-200 bg-white hover:bg-slate-50 hover:text-slate-700 transition-colors self-start whitespace-nowrap"
           >
             Vider
           </button>

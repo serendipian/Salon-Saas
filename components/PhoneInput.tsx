@@ -54,6 +54,8 @@ function splitPhone(value: string): { country: CountryCode; local: string } {
   return { country: DEFAULT_COUNTRY, local: value };
 }
 
+// L-21: numpad keys are digits + del. The middle blank slot is a layout
+// spacer rendered as `invisible` below — never produces input.
 const NUMPAD_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '0', 'del'] as const;
 
 interface PhoneInputProps {
@@ -112,7 +114,10 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
   }, [search]);
 
   const handleLocalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/[^0-9\s]/g, '');
+    // L-21: Strip spaces (and any other non-digit) so keyboard input matches
+    // numpad input. Previously the keyboard path allowed spaces while the
+    // numpad path did not, producing inconsistent values in the database.
+    const raw = e.target.value.replace(/[^0-9]/g, '');
     onChange(raw ? `${country.dial}${raw}` : '');
   };
 

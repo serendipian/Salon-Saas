@@ -116,17 +116,23 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointm
               {groupedAppointments.map((appt, i) => (
                 <div
                   key={appt.id}
-                  className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 flex justify-between items-center"
+                  className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 flex items-center gap-3"
                 >
-                  <div>
-                    <span className="text-slate-800 text-sm font-medium">
-                      {'\u2460\u2461\u2462\u2463\u2464'[i]} {appt.serviceName}
-                    </span>
+                  {/* L-15: Numbered badge instead of hardcoded 5-digit unicode
+                      string. Previously rendered nothing for the 6th+ row. */}
+                  <span
+                    aria-label={`Prestation ${i + 1}`}
+                    className="w-5 h-5 shrink-0 rounded-full bg-slate-200 text-slate-600 inline-flex items-center justify-center text-[10px] font-bold tabular-nums"
+                  >
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-slate-800 text-sm font-medium">{appt.serviceName}</span>
                     <span className="text-slate-500 text-xs ml-2">
                       {appt.staffName} · {appt.durationMinutes} min
                     </span>
                   </div>
-                  <span className="text-blue-600 text-sm font-semibold">
+                  <span className="text-blue-600 text-sm font-semibold shrink-0">
                     {formatPrice(appt.price)}
                   </span>
                 </div>

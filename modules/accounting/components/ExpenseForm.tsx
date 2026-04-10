@@ -58,7 +58,7 @@ interface ExpenseFormProps {
 
 export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allExpenses = [], onSave, onUpdate, onDelete, onCancel, isPending }) => {
   const { expenseCategories, salonSettings } = useSettings();
-  const { allSuppliers: suppliers } = useSuppliers();
+  const { allSuppliers: suppliers, isLoading: isLoadingSuppliers } = useSuppliers();
   const { activeSalon } = useAuth();
   const { addToast } = useToast();
   const { errors, validate, clearFieldError } = useFormValidation(expenseSchema);
@@ -209,6 +209,8 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
                  <Input
                     label="Montant"
                     type="number"
+                    min="0"
+                    step="0.01"
                     prefix={currencySymbol}
                     value={formData.amount}
                     onChange={(e) => { clearFieldError('amount'); setFormData({...formData, amount: parseFloat(e.target.value)}); }}
@@ -286,7 +288,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
                     )}
                     <input
                        type="file"
-                       accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+                       accept="image/jpeg,image/png,image/webp,application/pdf"
                        className="hidden"
                        onChange={handleReceiptUpload}
                        disabled={isUploading}
@@ -330,19 +332,23 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
                  value={formData.supplierId ?? ''}
                  onChange={(val) => setFormData({ ...formData, supplierId: val ? (val as string) : undefined })}
                  searchable
-                 placeholder="Rechercher un bénéficiaire..."
-                 options={[
-                    { value: '', label: 'Non spécifié' },
-                    ...suppliers.map(s => {
-                       const cat = supplierCategories.find(c => c.id === s.categoryId);
-                       return {
-                          value: s.id,
-                          label: s.name,
-                          subtitle: cat?.name,
-                          initials: s.name.substring(0, 2).toUpperCase()
-                       };
-                    }),
-                 ]}
+                 placeholder={isLoadingSuppliers ? 'Chargement des fournisseurs…' : 'Rechercher un bénéficiaire...'}
+                 options={
+                   isLoadingSuppliers
+                     ? [{ value: '', label: 'Chargement…' }]
+                     : [
+                         { value: '', label: 'Non spécifié' },
+                         ...suppliers.map(s => {
+                           const cat = supplierCategories.find(c => c.id === s.categoryId);
+                           return {
+                             value: s.id,
+                             label: s.name,
+                             subtitle: cat?.name,
+                             initials: s.name.substring(0, 2).toUpperCase(),
+                           };
+                         }),
+                       ]
+                 }
               />
               <p className="text-xs text-slate-500 mt-1.5">
                 Le bénéficiaire doit exister dans la liste des fournisseurs. Pour ajouter un nouveau bénéficiaire, créez-le d'abord depuis le module Fournisseurs.

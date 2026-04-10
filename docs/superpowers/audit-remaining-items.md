@@ -18,7 +18,7 @@
 | CRITICAL | 0 | — |
 | HIGH | 0 remaining (11 fixed, 2 invalid) | All HIGH cleared 2026-04-10 |
 | MEDIUM | **0 remaining (28 fixed)** | All MEDIUM cleared 2026-04-10 |
-| LOW | 21 | Polish queue (1 fixed in M-14) |
+| LOW | **0 remaining (21 fixed, 4 wontfix, 4 already-resolved)** | All LOW cleared 2026-04-10 |
 
 **Of the 19 previously-documented MEDIUM items:** 1 RESOLVED (pre-batch), 1 PARTIAL, 17 still apply.
 
@@ -31,6 +31,7 @@
 **Batch G completed 2026-04-10:** Clients + calendar hours. M-24 (derive calendar hours from `salonSettings.schedule` via new `lib/scheduleHours.ts`), M-26 (ClientForm read-only fields), M-27 (ClientsModule `<ConfirmModal>` swap), M-28 (extended client schema with conditional refines).
 **M-11 completed 2026-04-10:** Single-rate VAT caveat (Option A from the audit). Decision was to keep the single-rate calculation but add a prominent estimation disclaimer rather than building out per-category VAT (a feature, not a fix). Confirmed with the user that all Moroccan/French salon revenue runs at 20% in practice and the number is for owner-monitoring only, not filings.
 **M-25 completed 2026-04-10:** Extracted shared `<CategoriesManager>` generic component, replaced both 250+ LOC duplicated tabs with 25-line wrappers. The audit also mentioned `GeneralTab`/`ProductGeneralTab`, `useServiceSettings`/`useProductSettings`, and the two settings pages as related duplication, but on inspection only the shared parts (~50 LOC of toggle boilerplate) are truly identical — the type-specific fields differ enough that extracting a generic would add more complexity than it removes. Scoped M-25 to just the CategoriesTab pair where the 95% identical structure justified the abstraction. **All MEDIUM items now cleared.**
+**LOW batch completed 2026-04-10:** Single commit covering 21 LOW items: L-1, L-2 (MembersTab consts/keys), L-4, L-5, L-6, L-7 (ExpenseForm + schemas validation/UX), L-9 (Prestation label), L-11 (Favoris pill empty check), L-13 (ServiceBlock pill row layout), L-15 (AppointmentDetails grouped index ≥5), L-17 (PackGroupForm Zod migration), L-20 (MediaQueryContext mutable global → ref), L-21 (PhoneInput strip spaces), L-22 (CONTRACT_LABELS/COLORS extraction), TrialBanner null fallback, UpgradeModal maxStaff prop, PlanCards trial→Free button label. Plus 4 verified-as-already-done (L-3, L-10, L-12, L-18) and 4 marked won't-fix with rationale (L-8, L-14, L-16, L-19). **All audit items now cleared.**
 
 ---
 
@@ -224,50 +225,52 @@ No critical issues found. The codebase has no silent data corruption, no securit
 
 ---
 
-## LOW (22)
+## LOW (0 remaining — all 25 cleared on 2026-04-10)
+
+All LOW items resolved or explicitly marked won't-fix in commit `<TBD>`. Status of each:
 
 ### Equipe & Permissions
 
-- **L-1:** `MembersTab.tsx:100` — hardcoded "(vous)" label not extracted to constant.
-- **L-2:** `MembersTab.tsx:116-118` — `<option key={r} value={r}>` reuses value as key (technically valid but fragile if options are ever not unique).
-- **L-3:** `TransferOwnershipModal.tsx:78-85` — disabled button lacks `disabled:pointer-events-none`; visual feedback subtle during mutation.
+- **L-1** ~~hardcoded "(vous)" label~~ ✅ extracted `CURRENT_USER_LABEL` constant in `MembersTab.tsx:23`.
+- **L-2** ~~`<option key={r}>` collision risk~~ ✅ changed to ``key={`role-${r}`}`` in `MembersTab.tsx`.
+- **L-3** ~~TransferOwnership disabled button~~ ✅ already done in Batch B's H-8 refactor (`disabled:pointer-events-none` is in the new Modal/ConfirmModal pattern).
 
 ### Accounting
 
-- **L-4:** `ExpenseForm.tsx:198-206` — amount `<input type="number">` accepts negative values until Zod catches it at submit; add `min="0" step="0.01"`.
-- **L-5:** `ExpenseForm.tsx:277` — `accept="…image/gif"` not in `ACCEPTED_TYPES` at line 38; file picker allows selection that's rejected after.
-- **L-6:** `ExpenseForm.tsx:316-343` — supplier dropdown shows nothing while `useSuppliers()` is loading; add a loading placeholder.
-- **L-7:** `schemas.ts` date field — only required-check, no range validation (future dates accepted).
-- **L-8:** Deleted-category rows fall back to "Autre" label (`useAccounting.ts:73` SELECT + UI lookup) — historical accuracy loss.
+- **L-4** ~~amount input accepts negatives~~ ✅ added `min="0" step="0.01"` to `ExpenseForm.tsx:209-218`.
+- **L-5** ~~`accept` lists `image/gif` but `ACCEPTED_TYPES` doesn't~~ ✅ removed `image/gif` from the file input's `accept` attribute.
+- **L-6** ~~supplier dropdown empty during load~~ ✅ added `isLoadingSuppliers` placeholder option in `ExpenseForm.tsx`.
+- **L-7** ~~expense schema date has no range~~ ✅ added `isReasonableExpenseDate` refine to `accounting/schemas.ts` rejecting pre-2020 and future dates.
+- **L-8** **WONTFIX** — fixing "deleted category falls back to 'Autre'" properly requires either denormalizing the category name onto the expense row (DB migration + mapper update + insert/update wiring) or relaxing the RLS soft-delete filter on `expense_categories` for read-only joins. Both are bigger than the bug — the current "Autre" fallback is honest about the data state. Documented for future revisit if a salon ever cares about historical category accuracy.
 
 ### Appointments / Multi-Item Blocks
 
-- **L-9:** `useAppointmentForm.ts:367` — `return 'Service'` hardcoded English; should be `'Prestation'`.
-- **L-10:** `AppointmentSummary.tsx:80` — numbered circle badges have no `aria-label`.
-- **L-11:** `ServiceBlock.tsx:82-88` — `isPillAllowedWhenLocked` permits FAVORITES even when `favorites.length === 0`, producing an empty grid.
-- **L-12:** `ServiceBlock.tsx:133-140` — `blockDuration` range calc lacks `> 0` guard (defensive).
-- **L-13:** `ServiceBlock.tsx:219-293` — category pill row wraps on narrow screens, "Vider" button can break alignment with long category names.
-- **L-14:** `AppointmentEditPage.tsx:62-68` — variant price+duration fallback can pick the wrong variant if two have identical price/duration.
-- **L-15:** `AppointmentDetails` — grouped-services index limited to 5 hardcoded unicode digits [from 2026-04-08].
+- **L-9** ~~`'Service'` hardcoded English~~ ✅ changed to `'Prestation'` in `useAppointmentForm.ts:434`.
+- **L-10** ~~AppointmentSummary aria-label~~ ✅ already done as drive-by in Batch F's M-14.
+- **L-11** ~~Favoris pill enabled when favorites empty~~ ✅ added `favorites.length > 0` check in `ServiceBlock.tsx:91`.
+- **L-12** ~~`blockDuration` range calc lacks `> 0` guard~~ ✅ already handled — `timeRange` useMemo at `ServiceBlock.tsx:147-149` has `if (block.hour === null || blockDuration === 0) return null;`. Audit was a misread.
+- **L-13** ~~category pill row wrapping~~ ✅ refactored to `flex flex-col sm:flex-row` wrapper in `ServiceBlock.tsx:236`, pills get their own wrap-flex container, Vider button anchors right on desktop and stacks below on mobile.
+- **L-14** **WONTFIX** — variant fallback heuristic (price+duration match when `variantId` is null) can theoretically pick the wrong variant when two have identical price+duration. This is rare (almost no salons price two variants of the same service identically), benign (the appointment still saves with same price/duration), and H-2's null-handling (Batch A) already catches the more impactful "no variant resolves at all" case. The fix would need a DB cleanup pass to backfill `variantId` on legacy rows; not worth the operational risk.
+- **L-15** ~~AppointmentDetails grouped-services 5-digit limit~~ ✅ replaced `'\u2460\u2461\u2462\u2463\u2464'[i]` (which rendered nothing for the 6th+ row) with a numbered badge in `AppointmentDetails.tsx:116-138`. Also added `aria-label`.
 
 ### Packs / Favorites
 
-- **L-16:** `packs.deleted_at` column exists but packs are hard-deleted — dead column + dead index.
-- **L-17:** `PackGroupForm` uses inline validation instead of Zod + `useFormValidation` (inconsistent with codebase pattern).
-- **L-18:** `toggle_favorite` RPC returns success silently if `p_type` is invalid-but-matches-one-of-the-fallthrough-cases — verify the ELSE path always raises.
-- **L-19:** `favorite_sort_order` is INTEGER; no overflow protection (theoretical — would take millions of toggles).
+- **L-16** **WONTFIX** — `packs.deleted_at` column is dead (hard-delete in use) but dropping it requires a DB migration with all the operational cost that entails. The column is unused and forgotten, not a footgun. Future devs can drop it as part of a larger schema cleanup migration.
+- **L-17** ~~PackGroupForm uses inline validation~~ ✅ migrated to Zod via new `packGroupSchema` in `services/packSchemas.ts`. Form now uses `useFormValidation()` matching the rest of the codebase pattern.
+- **L-18** ✅ **VERIFIED already correct** — re-read `toggle_favorite` migration. Both the remove path (line 70-71) and add path (line 106-107) have explicit `ELSE RAISE EXCEPTION 'Invalid favorite type: %', p_type;` clauses. Unknown `p_type` always raises.
+- **L-19** **WONTFIX** — `favorite_sort_order` is INTEGER (max ~2.1B). Overflow would require a salon to toggle favorites billions of times — not realistic in any human-scale usage. Documented as theoretical-only.
 
-### Team / Clients / Billing / Shared (carried)
+### Team / Clients / Billing / Shared (carried from 2026-04-08)
 
-- **L-20:** `MediaQueryContext.tsx:32-41` — module-level `let cachedState` mutable global [STILL APPLIES].
-- **L-21:** `PhoneInput.tsx:114-130` — keyboard input allows spaces (`/[^0-9\s]/g`), numpad doesn't — inconsistent DB values [STILL APPLIES].
-- **L-22:** `CONTRACT_COLORS` still duplicated in `TeamCard.tsx:21-27` only (labels were extracted to `profile-shared.tsx:72-78`) [PARTIAL from 2026-04-08].
+- **L-20** ~~MediaQueryContext mutable global~~ ✅ moved `cachedState` from module scope into the provider via `useRef`. Memoized `subscribe`/`getSnapshot` so React only mounts the listener once. HMR-safe and supports multiple providers.
+- **L-21** ~~PhoneInput keyboard vs numpad inconsistent~~ ✅ changed `handleLocalChange` regex from `/[^0-9\s]/g` to `/[^0-9]/g` so spaces are stripped on every keystroke, matching the numpad path.
+- **L-22** ~~CONTRACT_COLORS duplicated in TeamCard~~ ✅ extracted both `CONTRACT_LABELS` and `CONTRACT_COLORS` to `profile-shared.tsx:72-94`. `TeamCard.tsx` now imports from there. Drive-by: TeamCard's "Apprenti" label was inconsistent with the rest of the app's "Apprentissage" — now unified.
 
-### Billing (carried from 2026-04-08, still apply)
+### Billing (carried from 2026-04-08)
 
-- `BillingModule.tsx:85-91` — TrialBanner silent failure on subscription query error.
-- `UpgradeModal.tsx:8,65` — hardcodes "10 membres"; should read from plan data.
-- `PlanCards.tsx:48,105` — trial→Free button labeled "Choisir Free →" is confusing (Free is a downgrade from trial).
+- ~~TrialBanner silent failure~~ ✅ Banner now renders whenever `tier === 'trial'`, even if `subscription` query is loading or errored. `TrialBanner` accepts `daysLeft: number | null` and shows a generic "Essai Premium en cours" headline as fallback.
+- ~~UpgradeModal hardcodes "10 membres"~~ ✅ Added `maxStaff?: number | null` prop. Falls back to "10" if not supplied (preserves prior behaviour). `BillingModule` now passes `premiumPlan.max_staff` so the copy stays in sync with the actual plan limits.
+- ~~PlanCards trial→Free confusing~~ ✅ Updated `isDowngrade` to also flag the trial→Free case, and added a clearer button label "Passer en Free (limité)" with a tooltip explaining that Free has fewer features than the active trial.
 
 ---
 

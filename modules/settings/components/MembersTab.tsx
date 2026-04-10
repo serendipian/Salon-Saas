@@ -13,6 +13,9 @@ const ROLE_LABELS: Record<string, string> = {
   receptionist: 'Réceptionniste',
 };
 
+// L-1: extracted so the "(vous)" string has a single source of truth.
+const CURRENT_USER_LABEL = '(vous)';
+
 const ROLE_COLORS: Record<string, string> = {
   owner: 'bg-blue-100 text-blue-700',
   manager: 'bg-purple-100 text-purple-700',
@@ -97,7 +100,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
               <p className="text-sm font-medium text-slate-900 truncate">
                 {memberName(member)}
                 {member.profile_id === currentUserId && (
-                  <span className="text-xs text-slate-400 ml-2">(vous)</span>
+                  <span className="text-xs text-slate-400 ml-2">{CURRENT_USER_LABEL}</span>
                 )}
               </p>
               <p className="text-xs text-slate-500 truncate">{member.profile.email}</p>
@@ -114,7 +117,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                 {getRoleOptions()
                   .filter(r => r !== member.role)
                   .map(r => (
-                    <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+                    <option key={`role-${r}`} value={r}>{ROLE_LABELS[r]}</option>
                   ))}
               </select>
             ) : (

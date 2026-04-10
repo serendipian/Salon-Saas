@@ -81,8 +81,10 @@ export const BillingModule: React.FC = () => {
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 pb-10">
-      {/* Trial banner */}
-      {tier === 'trial' && trialDaysLeft !== null && (
+      {/* Trial banner — render whenever the active salon is on a trial,
+          even if the subscription query is still loading or has errored.
+          TrialBanner handles `daysLeft === null` with a generic headline. */}
+      {tier === 'trial' && (
         <div className="-mx-6 -mt-6 mb-6">
           <TrialBanner
             daysLeft={trialDaysLeft}
@@ -134,6 +136,7 @@ export const BillingModule: React.FC = () => {
         <UpgradeModal
           resource="staff"
           priceMonthly={premiumPlan?.price_monthly ?? 0}
+          maxStaff={premiumPlan?.max_staff ?? null}
           onUpgrade={handleUpgradeFromModal}
           onClose={() => setShowUpgradeModal(false)}
           isLoading={isLoadingCheckout}
