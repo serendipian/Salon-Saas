@@ -152,7 +152,8 @@ export default function ClientField({
 
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="space-y-3">
+        {/* Row 1: Phone (full width) */}
         <div className="relative">
           <PhoneInput
             label="Téléphone"
@@ -197,27 +198,30 @@ export default function ClientField({
           )}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">Prénom *</label>
-          <input
-            type="text"
-            value={clientData.firstName}
-            onChange={(e) => handleFieldChange({ firstName: e.target.value })}
-            onFocus={() => setIsPhoneDropdownOpen(false)}
-            className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none min-h-[44px] transition-all"
-            placeholder="Prénom"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">Nom</label>
-          <input
-            type="text"
-            value={clientData.lastName}
-            onChange={(e) => handleFieldChange({ lastName: e.target.value })}
-            onFocus={() => setIsPhoneDropdownOpen(false)}
-            className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none min-h-[44px] transition-all"
-            placeholder="Optionnel"
-          />
+        {/* Row 2: First name + Last name (2 columns) */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Prénom *</label>
+            <input
+              type="text"
+              value={clientData.firstName}
+              onChange={(e) => handleFieldChange({ firstName: e.target.value })}
+              onFocus={() => setIsPhoneDropdownOpen(false)}
+              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none min-h-[44px] transition-all"
+              placeholder="Prénom"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Nom</label>
+            <input
+              type="text"
+              value={clientData.lastName}
+              onChange={(e) => handleFieldChange({ lastName: e.target.value })}
+              onFocus={() => setIsPhoneDropdownOpen(false)}
+              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none min-h-[44px] transition-all"
+              placeholder="Optionnel"
+            />
+          </div>
         </div>
       </div>
 
