@@ -20,11 +20,54 @@ type AuthWithLock = NonNullable<_SupabaseAuth> & {
 
 const _authLocks = new Map<string, Promise<unknown>>();
 
+// Global fetch wrapper with 30s timeout to prevent indefinite hangs
+// (network stalls, auth lock deadlocks, browser connection limits).
+const FETCH_TIMEOUT_MS = 30_000;
+
+const fetchWithTimeout: typeof fetch = (input, init) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  // Merge with any existing signal from the caller
+  const existingSignal = init?.signal;
+  if (existingSignal) {
+    existingSignal.addEventListener('abort', () => controller.abort());
+  }
+
+  return fetch(input, { ...init, signal: controller.signal })
+    .catch((err) => {
+      if (err.name === 'AbortError' && !existingSignal?.aborted) {
+        throw new Error('La requête a expiré (30s). Vérifiez votre connexion et réessayez.');
+      }
+      throw err;
+    })
+    .finally(() => clearTimeout(timeoutId));
+};
+
+// Auth lock with deadlock recovery: if a lock holder stalls >10s, the chain
+// resets so subsequent operations are not blocked indefinitely.
+const AUTH_LOCK_TIMEOUT_MS = 10_000;
+
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  global: {
+    fetch: fetchWithTimeout,
+  },
   auth: {
     lock: (_name, _acquireTimeout, fn) => {
       const pending = _authLocks.get(_name);
-      const next = (pending ?? Promise.resolve()).catch(() => {}).then(fn);
+
+      const withTimeout = (p: Promise<unknown>) =>
+        Promise.race([
+          p,
+          new Promise<unknown>((_, reject) =>
+            setTimeout(() => reject(new Error('Auth lock timeout')), AUTH_LOCK_TIMEOUT_MS)
+          ),
+        ]);
+
+      const next = pending
+        ? withTimeout(pending).catch(() => {}).then(fn)
+        : Promise.resolve().then(fn);
+
       _authLocks.set(_name, next);
       next.finally(() => { if (_authLocks.get(_name) === next) _authLocks.delete(_name); });
       return next;

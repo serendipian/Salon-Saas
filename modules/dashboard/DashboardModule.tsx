@@ -16,6 +16,7 @@ import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, Shopp
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useTransactions } from '../../hooks/useTransactions';
+import { useRealtimeSync } from '../../hooks/useRealtimeSync';
 import { useClients } from '../clients/hooks/useClients';
 import { useAppointments } from '../appointments/hooks/useAppointments';
 import { useServices } from '../services/hooks/useServices';
@@ -125,6 +126,7 @@ export const DashboardModule: React.FC = () => {
   const { allClients: clients } = useClients();
   const { services, serviceCategories } = useServices();
   const { allStaff } = useTeam();
+  useRealtimeSync('expenses');
 
   // State for Date Range (Default: Today)
   const [dateRange, setDateRange] = useState<DateRange>(() => {
