@@ -1,7 +1,7 @@
 import React from 'react';
 import { Appointment, ServiceCategory } from '../../../types';
 import { CalendarEventBlock } from './CalendarEventBlock';
-import { isSameDay, isToday, formatHourLabel, layoutDayEvents, HOURS, ROW_HEIGHT } from './calendarUtils';
+import { isSameDay, isToday, formatHourLabel, layoutDayEvents, mergeAppointmentGroups, HOURS, ROW_HEIGHT } from './calendarUtils';
 
 interface CalendarWeekViewProps {
   currentDate: Date;
@@ -81,7 +81,9 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
         {/* Day columns */}
         {weekDays.map((day, dayIndex) => {
           const dayAppts = appointments.filter(a => isSameDay(new Date(a.date), day));
-          const positioned = layoutDayEvents(dayAppts);
+          // M-13: merge multi-item service blocks into single visual events
+          const mergedAppts = mergeAppointmentGroups(dayAppts);
+          const positioned = layoutDayEvents(mergedAppts);
 
           return (
             <div key={dayIndex} className="flex-1 border-l border-slate-100 relative">

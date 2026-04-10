@@ -1,7 +1,7 @@
 import React from 'react';
 import { Appointment, ServiceCategory } from '../../../types';
 import { CalendarEventBlock } from './CalendarEventBlock';
-import { isSameDay, isToday, formatHourLabel, layoutDayEvents, HOURS, ROW_HEIGHT } from './calendarUtils';
+import { isSameDay, isToday, formatHourLabel, layoutDayEvents, mergeAppointmentGroups, HOURS, ROW_HEIGHT } from './calendarUtils';
 
 interface CalendarDayViewProps {
   currentDate: Date;
@@ -21,7 +21,11 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
   onEventClick,
 }) => {
   const dayAppointments = appointments.filter(appt => isSameDay(new Date(appt.date), currentDate));
-  const positioned = layoutDayEvents(dayAppointments);
+  // M-13: collapse multi-item service blocks into a single visual event so the
+  // calendar matches the list-view grouping. Each merged event keeps the first
+  // sub-appointment's id, so click → edit/details still routes correctly.
+  const mergedAppointments = mergeAppointmentGroups(dayAppointments);
+  const positioned = layoutDayEvents(mergedAppointments);
 
   const categoryMap = new Map(serviceCategories.map(c => [c.id, c]));
   const serviceCatMap = new Map(services.map(s => [s.id, s.categoryId]));

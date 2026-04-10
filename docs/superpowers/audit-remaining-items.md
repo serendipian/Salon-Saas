@@ -17,8 +17,8 @@
 |---|---|---|
 | CRITICAL | 0 | — |
 | HIGH | 0 remaining (11 fixed, 2 invalid) | All HIGH cleared 2026-04-10 |
-| MEDIUM | 14 remaining (14 fixed) | Polish queue |
-| LOW | 22 | Polish queue |
+| MEDIUM | 6 remaining (22 fixed) | Polish queue |
+| LOW | 21 | Polish queue (1 fixed in M-14) |
 
 **Of the 19 previously-documented MEDIUM items:** 1 RESOLVED (pre-batch), 1 PARTIAL, 17 still apply.
 
@@ -27,6 +27,7 @@
 **Batch C completed 2026-04-10:** H-3, M-21, M-22 fixed via migration `20260410100000_favorites_concurrency_and_pack_groups_check.sql`, applied to remote. H-5 investigated and marked invalid.
 **Batch D completed 2026-04-10:** H-1 fixed by removing the dead custom-supplier UI path; H-11 fixed by adding a timezone mismatch warning to the Profile page. H-12 also shipped (60s tolerance window for edit-mode merge), clearing all remaining HIGH items.
 **Batch E completed 2026-04-10:** Accounting cleanup. M-5, M-6, M-7, M-8, M-9, M-10, M-12 all fixed. M-9 extracted `useRevenueBreakdown` into a dedicated hook so the 3 heavy hooks (`useServices`, `useProducts`, `useTeam`) only mount on the Vue d'ensemble and Revenus tabs — Dépenses, Journal, and Annulations no longer pay that cost.
+**Batch F completed 2026-04-10:** Appointments + packs/favorites polish. M-13 (calendar multi-item grouping via `mergeAppointmentGroups`), M-14, M-15, M-16, M-18, M-19, M-20, M-23 all fixed. Also picked up the L-10 aria-label as a drive-by during M-14.
 
 ---
 
@@ -149,46 +150,39 @@ No critical issues found. The codebase has no silent data corruption, no securit
 
 ### Appointments — Multi-Item Blocks
 
-#### M-13: `CalendarEventBlock` renders each appointment row separately, not as a multi-item block
-**File:** `modules/appointments/components/CalendarEventBlock.tsx:28-30`
-**Issue:** A multi-item block is persisted as N separate `appointments` rows. The calendar view renders each row individually, so the block's visual grouping is lost on the calendar (only list view groups them). Duration, popover, click handler all operate per-row, not per-block.
-**Fix:** Group consecutive same-client same-staff appointments in the calendar day/week view; show total duration and a combined popover.
+#### ~~M-13: Calendar renders multi-item blocks as separate rows~~ RESOLVED (2026-04-10)
+**Files:** `modules/appointments/components/calendarUtils.ts:9-79` (new `mergeAppointmentGroups`), `CalendarDayView.tsx:25-29`, `CalendarWeekView.tsx:84-87`, `CalendarMonthView.tsx:60-65,84`
+**Resolved:** Added `mergeAppointmentGroups()` helper that folds same-`groupId` appointments into a single synthetic `Appointment` per group with summed `durationMinutes`/`price`, an "N prestations · A, B, C" service label, and a derived status (COMPLETED if all are; CANCELLED if any is; etc.). The merged event keeps the first sub-appointment's `id` so the existing click → edit/details routing still works (the edit page already resolves the full group from any member id via `groupId`). Applied in all three calendar views (Day, Week, Month) before the layout/sort step. The popover still shows only the first sub-appointment's metadata, but the new `serviceName` label includes all the sibling services so the user immediately sees "3 prestations · Coupe, Brushing, Coloration".
 
-#### M-14: `AppointmentSummary` can render blocks containing zero items
-**File:** `modules/appointments/components/AppointmentSummary.tsx:70`
-**Issue:** Return condition is `serviceBlocks.length <= 1`, not `serviceBlocks.filter(b => b.items.length > 0).length <= 1`. An empty placeholder block slips through.
-**Fix:** Filter by `items.length > 0` in the early-return check.
+#### ~~M-14: AppointmentSummary can render empty blocks~~ RESOLVED (2026-04-10)
+**File:** `modules/appointments/components/AppointmentSummary.tsx:39-46,72`
+**Resolved:** Pre-filters `serviceBlocks` into `populatedBlocks` (items.length > 0) and uses that for both the early-return check and the rendering loop. Also added `aria-label={`Prestation ${i + 1}`}` to the numbered circle badges (drive-by pickup of L-10).
 
-#### M-15: Pack-block ID is regenerated on every edit-mode load
-**File:** `modules/appointments/pages/AppointmentEditPage.tsx:85`
-**Issue:** Each merged block gets a fresh `crypto.randomUUID()` on load. Not a correctness bug (DB save uses appointment IDs, not block IDs), but makes state reconciliation harder and loses any debugger breadcrumb trail across navigations.
-**Fix:** Derive block ID from `appts[0].id` or a stable hash of participating appointment IDs.
+#### ~~M-15: Pack-block ID regenerated on every edit-mode load~~ RESOLVED (2026-04-10)
+**File:** `modules/appointments/pages/AppointmentEditPage.tsx:90-97`
+**Resolved:** Replaced `crypto.randomUUID()` with `\`block-${appt.id}\`` (where `appt` is the first appointment in the merge group). Reloading the edit page now yields stable block IDs. Cleaner debugger breadcrumbs and any future state-reconciliation logic that compares blocks by id will work correctly.
 
-#### M-16: Mobile service picker over-disables category pills when locked
-**File:** `modules/appointments/components/MobileServicePicker.tsx:56-62`
-**Issue:** When items are selected, all category pills except the active tab are disabled — even though the desktop `ServiceBlock` allows switching to both the locked category and Favorites.
-**Fix:** Mirror desktop logic in `isCategoryPillDisabled`: allow switch to locked category OR Favorites.
+#### ~~M-16: Mobile picker over-disables pills when locked~~ RESOLVED (2026-04-10)
+**File:** `modules/appointments/components/MobileServicePicker.tsx:56-69`
+**Resolved:** `isCategoryPillDisabled` now mirrors desktop `ServiceBlock` behavior — when locked, the user can still tap the locked category itself OR the Favoris pill (favorites disable cross-category items individually via `disabledByLock`, so the tab is safe to enter). All other category pills and the Packs pill stay disabled.
 
 #### ~~M-17: Cross-category swap silently rejected~~ RESOLVED (2026-04-10)
 **File:** `modules/appointments/hooks/useAppointmentForm.ts:18,218-244`
 **Resolved:** `toggleBlockItem` now pre-computes the cross-category rejection outside the state updater (keeping the reducer pure) and emits `addToast({ type: 'warning', message: 'Impossible de mélanger les catégories dans un même créneau.' })` before returning. The in-reducer check is kept as a belt-and-braces defensive guard.
 
-#### M-18: `getBlockPrice` silently returns 0 when service/variant missing
-**File:** `modules/appointments/hooks/useAppointmentForm.ts:119-125`
-**Issue:** If an item references a deleted service/variant, the fallback chain drops to 0 without distinguishing legitimate free services from data loss.
-**Fix:** Return `{ price, isMissing: boolean }` and validate in `handleSubmit` before save.
+#### ~~M-18: `getBlockPrice` silently returns 0 on missing data~~ RESOLVED (2026-04-10)
+**File:** `modules/appointments/hooks/useAppointmentForm.ts:128-144,477-489`
+**Resolved:** Added `blockHasMissingItems(block, services)` helper that returns true if any item references a deleted service or variant. `handleSubmit` now calls it across all blocks before flattening; if any are missing it shows an error toast (`"Une prestation référence un service ou une variante supprimé. Retirez-la avant de sauvegarder."`) and aborts. Took the less-invasive path — kept `getBlockPrice` returning a number so the existing UI sums work unchanged, and added the validation as a separate save-time guard.
 
-#### M-19: Pack toggle-off loses scheduling context of surviving blocks
-**File:** `modules/appointments/hooks/useAppointmentForm.ts:308-317`
-**Issue:** When a user removes a pack and `remaining.length === 0`, the code returns `[createEmptyBlock()]`. Any date/hour the user had set on a now-removed pack block is lost; the fresh empty block has no date carry-over.
-**Fix:** Before clearing, capture the first pack block's date/hour and pre-populate the new empty block.
+#### ~~M-19: Pack toggle-off loses date~~ RESOLVED (2026-04-10)
+**File:** `modules/appointments/hooks/useAppointmentForm.ts:343-373`
+**Resolved:** When toggling a pack off, the cleared first-pack-block now keeps its `date` field (`carryDate`) instead of being wiped to null. Hour is still dropped because the next service the user picks will have a different duration, so the prior end-time slot is no longer meaningful.
 
 ### Packs / Favorites
 
-#### M-20: FavoritesTab doesn't revert `localOrder` if `reorderFavorites` RPC fails
-**File:** `modules/services/components/FavoritesTab.tsx:21-47`
-**Issue:** On drag, `localOrder` updates optimistically. If the RPC fails (permission denied, network error), `toastOnError` fires but `localOrder` stays in its reordered state. Refresh shows the old server order — confusing.
-**Fix:** `useMutation({ onError: () => setLocalOrder(allFavorites) })` to rollback.
+#### ~~M-20: FavoritesTab doesn't revert `localOrder` on RPC error~~ RESOLVED (2026-04-10)
+**Files:** `modules/services/hooks/useServices.ts:292-293`, `modules/services/components/FavoritesTab.tsx:40-58`
+**Resolved:** Switched the `reorderFavorites` wrapper from `mutate` to `mutateAsync` so the consumer can await the result. `handleSaveOrder` is now async and wraps the call in try/catch — on success the existing query invalidation + the `useEffect` at line 24 sync `localOrder` back to canonical state; on failure the catch block resets `localOrder` to `allFavorites` (the last-known server order). The mutation's `onError` still toasts via `useMutationToast`.
 
 #### ~~M-21: `reorder_favorites` RPC interleaves on concurrent reorders~~ RESOLVED (2026-04-10)
 **File:** `supabase/migrations/20260410100000_favorites_concurrency_and_pack_groups_check.sql:116-157`
@@ -198,10 +192,9 @@ No critical issues found. The codebase has no silent data corruption, no securit
 **File:** `supabase/migrations/20260410100000_favorites_concurrency_and_pack_groups_check.sql:163-181`
 **Resolved:** Migration adds `CONSTRAINT pack_groups_dates_chk CHECK (starts_at IS NULL OR ends_at IS NULL OR starts_at <= ends_at)`. A pre-ALTER `UPDATE` swaps any existing inverted rows (should be none in practice since the UI validates, but the belt-and-braces fix avoids aborting the migration on dirty data). **Pending `npx supabase db push`.**
 
-#### M-23: `PackForm` over-cost warning is informational only; submit still proceeds
-**File:** `modules/services/components/PackForm.tsx:189-194`
-**Issue:** Shows yellow warning when `priceNum >= totalOriginal` but does not block save. User can accidentally create packs priced above their content — negative discount.
-**Fix:** Disable Save unless user checks an "I know this is above cost" acknowledgment, or hard-reject.
+#### ~~M-23: PackForm over-cost warning is informational only~~ RESOLVED (2026-04-10)
+**File:** `modules/services/components/PackForm.tsx:64-72,84-103,189-194,304-312`
+**Resolved:** Added `isOverCost` computed flag (`priceNum > 0 && totalOriginal > 0 && priceNum >= totalOriginal`). The Save button is now `disabled` when `isOverCost`, with a tooltip explaining why. `handleSubmit` also early-returns on `isOverCost` as a belt-and-braces. The warning text is now red instead of amber and reads "Le prix du pack doit être inférieur au prix total des services" — making the constraint clear instead of just suggestive.
 
 ### Team / Clients / Shared (carried from 2026-04-08)
 

@@ -37,13 +37,25 @@ export function FavoritesTab() {
     return `${f.type}:${getFavoriteId(f)}`;
   }));
 
-  const handleSaveOrder = () => {
+  const handleSaveOrder = async () => {
     const items = localOrder.map((item, index) => ({
       type: item.type,
       id: getFavoriteId(item),
       sortOrder: index,
     }));
-    reorderFavorites(items);
+    try {
+      await reorderFavorites(items);
+      // On success the mutation invalidates ['services'] and ['packs'], the
+      // base lists refetch, allFavorites recomputes, and the useEffect at
+      // line 24 syncs localOrder back to the canonical server order.
+    } catch {
+      // M-20: RPC failed (permission denied, network blip, advisory lock
+      // contention). The mutation's onError already toasts via
+      // useMutationToast — roll the optimistic UI back so the user doesn't
+      // keep staring at an order that's not on the server. allFavorites is
+      // still the last-known server state because no invalidation fired.
+      setLocalOrder(allFavorites);
+    }
   };
 
   const handleDragStart = (index: number) => {

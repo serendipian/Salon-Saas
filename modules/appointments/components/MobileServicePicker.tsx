@@ -53,12 +53,16 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
       ? []
       : services.filter((s) => s.active && s.categoryId === activeCategoryId);
 
+  // M-16: Mirror desktop ServiceBlock behaviour. When the block is locked
+  // to a specific category, allow the user to switch between:
+  //   • the locked category itself (so they can browse more services in it)
+  //   • the Favoris pill (favorites already disable cross-category items
+  //     individually via `disabledByLock`, so the tab is safe to enter)
+  // All other category pills and the Packs pill stay disabled.
   const isCategoryPillDisabled = (pillId: string): boolean => {
     if (!isLocked) return false;
-    // Favorites stays available as a browsing view only if it matches the locked category scope;
-    // for simplicity we keep Favorites enabled only when it was the active tab at lock time.
-    if (pillId === activeCategoryId) return false;
-    // All other pills (categories + Favorites + Packs) become disabled while locked.
+    if (pillId === 'FAVORITES') return favorites.length === 0;
+    if (lockedCategoryId && pillId === lockedCategoryId) return false;
     return true;
   };
 

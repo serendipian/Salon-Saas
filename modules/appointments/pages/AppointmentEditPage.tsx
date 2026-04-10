@@ -98,8 +98,12 @@ export const AppointmentEditPage: React.FC = () => {
         current.items.push(item);
         currentCursorEnd = apptEnd;
       } else {
+        // M-15: Derive a deterministic block ID from the first appointment in
+        // the merge group. Reloading the edit page yields the same block IDs
+        // instead of fresh UUIDs, which keeps debugger breadcrumbs and any
+        // future state-reconciliation logic stable.
         current = {
-          id: crypto.randomUUID(),
+          id: `block-${appt.id}`,
           categoryId: svc.categoryId ?? null,
           items: [item],
           staffId: appt.staffId ?? null,

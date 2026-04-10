@@ -63,6 +63,11 @@ export const PackForm: React.FC<PackFormProps> = ({
 
   const priceNum = parseFloat(price) || 0;
   const discountPercent = totalOriginal > 0 ? Math.round(((totalOriginal - priceNum) / totalOriginal) * 100) : 0;
+  // M-23: Block save when the pack costs more than (or equal to) the sum of
+  // its items' original prices — that's a negative-discount pack and almost
+  // always a typo. The price summary card already warns visually; this just
+  // makes the warning load-bearing.
+  const isOverCost = priceNum > 0 && totalOriginal > 0 && priceNum >= totalOriginal;
 
   const getVariantCount = (variantId: string) =>
     selectedItems.reduce((n, i) => (i.serviceVariantId === variantId ? n + 1 : n), 0);
@@ -82,6 +87,7 @@ export const PackForm: React.FC<PackFormProps> = ({
   };
 
   const handleSubmit = () => {
+    if (isOverCost) return; // M-23 belt-and-braces — button is also disabled
     const formData = {
       name,
       description,
@@ -186,10 +192,10 @@ export const PackForm: React.FC<PackFormProps> = ({
               </span>
             </div>
           )}
-          {priceNum >= totalOriginal && priceNum > 0 && (
-            <div className="flex items-center gap-1.5 mt-2 text-xs text-amber-600">
+          {isOverCost && (
+            <div className="flex items-center gap-1.5 mt-2 text-xs text-red-600">
               <AlertTriangle size={12} />
-              Le prix du pack est supérieur ou égal au prix total des services
+              Le prix du pack doit être inférieur au prix total des services
             </div>
           )}
         </div>
@@ -303,8 +309,9 @@ export const PackForm: React.FC<PackFormProps> = ({
         </button>
         <button
           onClick={handleSubmit}
-          disabled={isSaving}
-          className="flex-1 px-4 py-3 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition-colors disabled:opacity-50"
+          disabled={isSaving || isOverCost}
+          title={isOverCost ? 'Le prix du pack doit être inférieur au prix total des services' : undefined}
+          className="flex-1 px-4 py-3 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSaving ? 'Enregistrement...' : existingPack ? 'Mettre à jour' : 'Créer le pack'}
         </button>

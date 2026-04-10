@@ -290,6 +290,6 @@ export const useServices = () => {
     toggleFavorite: (params: { type: 'service' | 'variant'; id: string; isFavorite: boolean }) =>
       toggleFavoriteMutation.mutate(params),
     reorderFavorites: (items: { type: 'service' | 'variant' | 'pack'; id: string; sortOrder: number }[]) =>
-      reorderFavoritesMutation.mutate(items),
+      reorderFavoritesMutation.mutateAsync(items),
   };
 };

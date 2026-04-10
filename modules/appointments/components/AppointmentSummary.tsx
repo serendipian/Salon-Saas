@@ -36,8 +36,13 @@ export default function AppointmentSummary({
   serviceBlocks,
   services,
 }: AppointmentSummaryProps) {
+  // M-14: Only blocks with at least one item count toward the summary —
+  // an empty placeholder block was previously slipping past the early-return
+  // and rendering as a row with no label.
+  const populatedBlocks = serviceBlocks.filter((b) => b.items.length > 0);
+
   // Build one display row per block; multi-item blocks show concatenated service names
-  const blockDetails = serviceBlocks.map((block) => {
+  const blockDetails = populatedBlocks.map((block) => {
     const itemDetails = block.items.map((item) => {
       const svc = services.find((s) => s.id === item.serviceId);
       const variant = svc?.variants.find((v) => v.id === item.variantId);
@@ -67,7 +72,7 @@ export default function AppointmentSummary({
   const totalDuration = blockDetails.reduce((sum, b) => sum + b.duration, 0);
   const totalPrice = blockDetails.reduce((sum, b) => sum + b.price, 0);
 
-  if (serviceBlocks.length <= 1) return null;
+  if (populatedBlocks.length <= 1) return null;
 
   return (
     <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
@@ -77,7 +82,12 @@ export default function AppointmentSummary({
           <div key={i}>
             <div className="flex justify-between text-sm">
               <span className="text-slate-600">
-                <span className="w-5 h-5 bg-slate-200 text-slate-600 rounded-full inline-flex items-center justify-center text-[10px] font-bold mr-2">{i + 1}</span>
+                <span
+                  aria-label={`Prestation ${i + 1}`}
+                  className="w-5 h-5 bg-slate-200 text-slate-600 rounded-full inline-flex items-center justify-center text-[10px] font-bold mr-2"
+                >
+                  {i + 1}
+                </span>
                 {b.label}
               </span>
               <span className="text-slate-800 font-medium">{formatPrice(b.price)}</span>

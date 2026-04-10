@@ -1,7 +1,7 @@
 import React from 'react';
 import { Appointment, ServiceCategory } from '../../../types';
 import { CalendarEventBlock } from './CalendarEventBlock';
-import { isSameDay, isToday } from './calendarUtils';
+import { isSameDay, isToday, mergeAppointmentGroups } from './calendarUtils';
 
 interface CalendarMonthViewProps {
   currentDate: Date;
@@ -57,6 +57,11 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
   const cells = getMonthGrid(currentDate.getFullYear(), currentDate.getMonth());
   const categoryMap = new Map(serviceCategories.map(c => [c.id, c]));
   const serviceCatMap = new Map(services.map(s => [s.id, s.categoryId]));
+  // M-13: merge multi-item service blocks into single visual events before
+  // splitting into per-day cells. Done once at the top instead of per-cell so
+  // groups crossing midnight (rare but possible for late appointments) still
+  // collapse correctly inside whichever day contains the first sub-row.
+  const mergedAppointments = mergeAppointmentGroups(appointments);
 
   return (
     <div className="flex-1 overflow-auto bg-white">
@@ -78,7 +83,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
       <div className="grid grid-cols-7">
         {cells.map((cell, i) => {
           const today = isToday(cell.date);
-          const dayAppts = appointments
+          const dayAppts = mergedAppointments
             .filter(a => isSameDay(new Date(a.date), cell.date))
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 

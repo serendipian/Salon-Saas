@@ -125,6 +125,23 @@ export function getBlockPrice(block: ServiceBlockState, services: Service[]): nu
   }, 0);
 }
 
+/**
+ * M-18: Returns true if any item in the block references a service or variant
+ * that no longer exists. Used at save time to abort with a clear error rather
+ * than silently writing a 0-price appointment from a deleted reference.
+ *
+ * `priceOverride` does NOT make an item valid — the variant must still exist
+ * because the appointment row needs `variant_id` to point at a real row.
+ */
+export function blockHasMissingItems(block: ServiceBlockState, services: Service[]): boolean {
+  return block.items.some((item) => {
+    const svc = services.find((s) => s.id === item.serviceId);
+    if (!svc) return true;
+    const variant = svc.variants.find((v) => v.id === item.variantId);
+    return !variant;
+  });
+}
+
 export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentFormReturn {
   const { services, team, appointments, onSave, excludeAppointmentIds, initialData } = props;
   const { addToast } = useToast();
@@ -339,6 +356,10 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
       const hasPack = prev.some((b) => b.packId === pack.id);
       if (hasPack) {
         const firstPackIdx = prev.findIndex((b) => b.packId === pack.id);
+        // M-19: Preserve the first pack block's date so the user doesn't lose
+        // the day they had picked. Hour is dropped because the duration will
+        // change once a different service is chosen.
+        const carryDate = prev[firstPackIdx]?.date ?? null;
         const next: ServiceBlockState[] = [];
         let newActiveIdx = 0;
         for (let i = 0; i < prev.length; i++) {
@@ -350,7 +371,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
               categoryId: null,
               items: [],
               staffId: null,
-              date: null,
+              date: carryDate,
               hour: null,
               minute: 0,
               packId: null,
@@ -458,6 +479,19 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
       if (!clientResult.success) {
         return;
       }
+    }
+
+    // M-18: Reject save if any item references a deleted service/variant.
+    // The flatten loop below would otherwise write a row with `price: 0`
+    // and a stale `variant_id`, surfacing as a confusing FK error from
+    // Supabase or a silent zero-price appointment.
+    const hasMissing = serviceBlocks.some((b) => blockHasMissingItems(b, services));
+    if (hasMissing) {
+      addToast({
+        type: 'error',
+        message: 'Une prestation référence un service ou une variante supprimé. Retirez-la avant de sauvegarder.',
+      });
+      return;
     }
 
     // Build save payload — expand each block's items[] into N sequential rows
