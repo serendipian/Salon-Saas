@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import type { Client } from '../../../types';
 import { PhoneInput } from '../../../components/PhoneInput';
-import { Search, UserPlus, X, UserCheck, Users } from 'lucide-react';
+import { Search, UserPlus, X, UserCheck } from 'lucide-react';
 
 interface ClientFieldProps {
   clients: Client[];
@@ -11,6 +11,8 @@ interface ClientFieldProps {
   newClientData: { firstName: string; lastName: string; phone: string } | null;
   onNewClientChange: (data: { firstName: string; lastName: string; phone: string } | null) => void;
   error?: string;
+  showExistingSearch: boolean;
+  onShowExistingSearchChange: (show: boolean) => void;
 }
 
 export default function ClientField({
@@ -21,10 +23,11 @@ export default function ClientField({
   newClientData,
   onNewClientChange,
   error,
+  showExistingSearch,
+  onShowExistingSearchChange,
 }: ClientFieldProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [showExistingSearch, setShowExistingSearch] = useState(false);
   const [isPhoneDropdownOpen, setIsPhoneDropdownOpen] = useState(false);
 
   const selectedClient = useMemo(
@@ -107,7 +110,7 @@ export default function ClientField({
                       onSelectClient(client.id);
                       setSearchTerm('');
                       setIsSearchOpen(false);
-                      setShowExistingSearch(false);
+                      onShowExistingSearchChange(false);
                     }}
                     className="w-full px-3.5 py-2.5 text-left hover:bg-blue-50 flex items-center gap-3 text-sm transition-colors first:rounded-t-xl last:rounded-b-xl"
                   >
@@ -126,7 +129,7 @@ export default function ClientField({
           <button
             type="button"
             onClick={() => {
-              setShowExistingSearch(false);
+              onShowExistingSearchChange(false);
               setSearchTerm('');
               onNewClientChange({ firstName: '', lastName: '', phone: '' });
             }}
@@ -149,20 +152,6 @@ export default function ClientField({
 
   return (
     <div>
-      <div className="flex items-center justify-end mb-2">
-        <button
-          type="button"
-          onClick={() => {
-            setShowExistingSearch(true);
-            onNewClientChange(null);
-          }}
-          className="text-[11px] font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
-        >
-          <Users size={12} />
-          Client existant
-        </button>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="relative">
           <PhoneInput

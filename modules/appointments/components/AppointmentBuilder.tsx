@@ -7,7 +7,7 @@ import InlineCalendar from './InlineCalendar';
 import TimePicker from './TimePicker';
 import ReminderToggle from './ReminderToggle';
 import AppointmentSummary from './AppointmentSummary';
-import { ArrowLeft, Save, Trash2, Plus, User, CalendarDays, StickyNote } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Plus, Users, StickyNote } from 'lucide-react';
 
 interface AppointmentBuilderProps extends UseAppointmentFormProps {
   onCancel: () => void;
@@ -21,6 +21,7 @@ export default function AppointmentBuilder({
 }: AppointmentBuilderProps) {
   const form = useAppointmentForm(hookProps);
   const [showNotes, setShowNotes] = useState(() => Boolean(form.notes));
+  const [showExistingClientSearch, setShowExistingClientSearch] = useState(false);
 
   return (
     <div>
@@ -65,10 +66,24 @@ export default function AppointmentBuilder({
         <div className="flex-[1.3] bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
           {/* Step 1 — Client */}
           <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm mb-4">
-            <div className="flex items-center gap-2.5 mb-3">
-              <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">1</span>
-              <User size={14} className="text-blue-600" />
-              <span className="text-slate-900 text-sm font-semibold">Client</span>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">1</span>
+                <span className="text-slate-900 text-sm font-semibold">Client</span>
+              </div>
+              {!form.clientId && !showExistingClientSearch && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowExistingClientSearch(true);
+                    form.setNewClient(null);
+                  }}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-sm"
+                >
+                  <Users size={12} />
+                  Client existant
+                </button>
+              )}
             </div>
             <ClientField
               clients={hookProps.clients}
@@ -78,6 +93,8 @@ export default function AppointmentBuilder({
               newClientData={form.newClient}
               onNewClientChange={form.setNewClient}
               error={form.errors.clientId}
+              showExistingSearch={showExistingClientSearch}
+              onShowExistingSearchChange={setShowExistingClientSearch}
             />
           </div>
 
@@ -133,7 +150,6 @@ export default function AppointmentBuilder({
             <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
               <div className="flex items-center gap-2.5 mb-3">
                 <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">4</span>
-                <CalendarDays size={14} className="text-blue-600" />
                 <span className="text-slate-900 text-sm font-semibold">Date & Heure</span>
               </div>
               <div className="space-y-4">
