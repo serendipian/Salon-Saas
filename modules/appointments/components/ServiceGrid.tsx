@@ -49,6 +49,10 @@ export default function ServiceGrid({
     return selectedItems.some((i) => i.serviceId === serviceId);
   };
 
+  const isPackItem = (serviceId: string): boolean => {
+    return selectedItems.some((i) => i.serviceId === serviceId && i.priceOverride != null);
+  };
+
   return (
     <div className="grid grid-cols-3 max-md:grid-cols-2 gap-2">
       {/* Favorites */}
@@ -58,7 +62,9 @@ export default function ServiceGrid({
           const isSingleVariant = svc.variants.length === 1;
           const variant = svc.variants[0];
           const cat = categoryMap.get(svc.categoryId);
+          const isLocked = isPackItem(svc.id);
           const isDisabledByLock = lockedCategoryId !== null && svc.categoryId !== lockedCategoryId;
+          const isDisabled = isDisabledByLock || isLocked;
           const disabledClass = isDisabledByLock ? 'opacity-40 cursor-not-allowed pointer-events-none' : '';
 
           if (isSingleVariant && variant) {
@@ -66,16 +72,18 @@ export default function ServiceGrid({
             return (
               <div
                 key={`fav-svc-${svc.id}`}
-                aria-disabled={isDisabledByLock}
-                className={`rounded-lg p-3 transition-all cursor-pointer ${
+                aria-disabled={isDisabled}
+                className={`rounded-lg p-3 transition-all ${isLocked ? 'cursor-default' : 'cursor-pointer'} ${
                   isSelected
-                    ? 'bg-blue-50 border-2 border-blue-400 shadow-sm'
+                    ? isLocked
+                      ? 'bg-blue-50/60 border-2 border-blue-300 opacity-60'
+                      : 'bg-blue-50 border-2 border-blue-400 shadow-sm'
                     : 'bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50'
                 } ${disabledClass}`}
-                onClick={() => { if (!isDisabledByLock) onToggleItem(svc.id, variant.id); }}
+                onClick={() => { if (!isDisabled) onToggleItem(svc.id, variant.id); }}
                 role="button"
-                tabIndex={isDisabledByLock ? -1 : 0}
-                onKeyDown={(e) => { if (!isDisabledByLock && e.key === 'Enter') onToggleItem(svc.id, variant.id); }}
+                tabIndex={isDisabled ? -1 : 0}
+                onKeyDown={(e) => { if (!isDisabled && e.key === 'Enter') onToggleItem(svc.id, variant.id); }}
               >
                 <div className="flex items-center gap-1.5 mb-1">
                   {cat && <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={12} className="text-slate-400 shrink-0" />}
@@ -102,16 +110,18 @@ export default function ServiceGrid({
           return (
             <div
               key={`fav-svc-${svc.id}`}
-              aria-disabled={isDisabledByLock}
-              className={`rounded-lg p-3 transition-all cursor-pointer ${
+              aria-disabled={isDisabled}
+              className={`rounded-lg p-3 transition-all ${isLocked ? 'cursor-default' : 'cursor-pointer'} ${
                 isSelected
-                  ? 'bg-blue-50 border-2 border-blue-400 shadow-sm'
+                  ? isLocked
+                    ? 'bg-blue-50/60 border-2 border-blue-300 opacity-60'
+                    : 'bg-blue-50 border-2 border-blue-400 shadow-sm'
                   : 'bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50'
               } ${disabledClass}`}
               role="button"
-              tabIndex={isDisabledByLock ? -1 : 0}
+              tabIndex={isDisabled ? -1 : 0}
               onClick={() => {
-                if (isDisabledByLock) return;
+                if (isDisabled) return;
                 if (isSelected && selectedVariantId) {
                   onToggleItem(svc.id, selectedVariantId);
                   setExpandedServiceId(null);
@@ -120,7 +130,7 @@ export default function ServiceGrid({
                 }
               }}
               onKeyDown={(e) => {
-                if (isDisabledByLock || e.key !== 'Enter') return;
+                if (isDisabled || e.key !== 'Enter') return;
                 if (isSelected && selectedVariantId) {
                   onToggleItem(svc.id, selectedVariantId);
                   setExpandedServiceId(null);
@@ -144,7 +154,7 @@ export default function ServiceGrid({
                   variants={svc.variants}
                   selectedVariantId={selectedVariantId}
                   onSelect={(vid) => {
-                    if (!isDisabledByLock) {
+                    if (!isDisabled) {
                       onToggleItem(svc.id, vid);
                       setExpandedServiceId(null);
                     }
@@ -157,7 +167,9 @@ export default function ServiceGrid({
           const { pack } = fav;
           const discount = getPackDiscount(pack);
           const isSelected = activePackId === pack.id;
-          const isDisabledByLock = lockedCategoryId !== null;
+          // Pack favorites stay clickable when their own pack is selected (to toggle off)
+          // but are disabled when non-pack services are already in the block.
+          const isDisabledByLock = lockedCategoryId !== null && !isSelected;
           const disabledClass = isDisabledByLock ? 'opacity-40 cursor-not-allowed pointer-events-none' : '';
           return (
             <div
@@ -193,21 +205,25 @@ export default function ServiceGrid({
           const isSelected = selectedItems.some(
             (i) => i.serviceId === parentService.id && i.variantId === variant.id,
           );
+          const isLockedByPack = isPackItem(parentService.id);
           const isDisabledByLock = lockedCategoryId !== null && parentService.categoryId !== lockedCategoryId;
+          const isDisabled = isDisabledByLock || isLockedByPack;
           const disabledClass = isDisabledByLock ? 'opacity-40 cursor-not-allowed pointer-events-none' : '';
           return (
             <div
               key={`fav-var-${variant.id}`}
-              aria-disabled={isDisabledByLock}
-              className={`rounded-lg p-3 transition-all cursor-pointer ${
+              aria-disabled={isDisabled}
+              className={`rounded-lg p-3 transition-all ${isLockedByPack ? 'cursor-default' : 'cursor-pointer'} ${
                 isSelected
-                  ? 'bg-blue-50 border-2 border-blue-400 shadow-sm'
+                  ? isLockedByPack
+                    ? 'bg-blue-50/60 border-2 border-blue-300 opacity-60'
+                    : 'bg-blue-50 border-2 border-blue-400 shadow-sm'
                   : 'bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50'
               } ${disabledClass}`}
-              onClick={() => { if (!isDisabledByLock) onToggleItem(parentService.id, variant.id); }}
+              onClick={() => { if (!isDisabled) onToggleItem(parentService.id, variant.id); }}
               role="button"
-              tabIndex={isDisabledByLock ? -1 : 0}
-              onKeyDown={(e) => { if (!isDisabledByLock && e.key === 'Enter') onToggleItem(parentService.id, variant.id); }}
+              tabIndex={isDisabled ? -1 : 0}
+              onKeyDown={(e) => { if (!isDisabled && e.key === 'Enter') onToggleItem(parentService.id, variant.id); }}
             >
               <div className="flex items-center gap-1.5 mb-1">
                 {cat && <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={12} className="text-slate-400 shrink-0" />}
@@ -235,20 +251,23 @@ export default function ServiceGrid({
         const selectedVariantId = getSelectedVariantIdForService(svc.id);
         const isSingleVariant = svc.variants.length === 1;
         const singleVariant = svc.variants[0];
+        const isLocked = isPackItem(svc.id);
 
         if (isSingleVariant && singleVariant) {
           return (
             <div
               key={svc.id}
-              className={`rounded-lg p-3 transition-all cursor-pointer ${
+              className={`rounded-lg p-3 transition-all ${isLocked ? 'cursor-default' : 'cursor-pointer'} ${
                 isSelected
-                  ? 'bg-blue-50 border-2 border-blue-400 shadow-sm'
+                  ? isLocked
+                    ? 'bg-blue-50/60 border-2 border-blue-300 opacity-60'
+                    : 'bg-blue-50 border-2 border-blue-400 shadow-sm'
                   : 'bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50'
               }`}
-              onClick={() => onToggleItem(svc.id, singleVariant.id)}
+              onClick={() => { if (!isLocked) onToggleItem(svc.id, singleVariant.id); }}
               role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter') onToggleItem(svc.id, singleVariant.id); }}
+              tabIndex={isLocked ? -1 : 0}
+              onKeyDown={(e) => { if (!isLocked && e.key === 'Enter') onToggleItem(svc.id, singleVariant.id); }}
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-sm font-medium text-slate-900 truncate flex-1">{svc.name}</span>
@@ -272,14 +291,17 @@ export default function ServiceGrid({
         return (
           <div
             key={svc.id}
-            className={`rounded-lg p-3 transition-all cursor-pointer ${
+            className={`rounded-lg p-3 transition-all ${isLocked ? 'cursor-default' : 'cursor-pointer'} ${
               isSelected
-                ? 'bg-blue-50 border-2 border-blue-400 shadow-sm'
+                ? isLocked
+                  ? 'bg-blue-50/60 border-2 border-blue-300 opacity-60'
+                  : 'bg-blue-50 border-2 border-blue-400 shadow-sm'
                 : 'bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50'
             }`}
             role="button"
-            tabIndex={0}
+            tabIndex={isLocked ? -1 : 0}
             onClick={() => {
+              if (isLocked) return;
               if (isSelected && selectedVariantId) {
                 onToggleItem(svc.id, selectedVariantId);
                 setExpandedServiceId(null);
@@ -288,7 +310,7 @@ export default function ServiceGrid({
               }
             }}
             onKeyDown={(e) => {
-              if (e.key !== 'Enter') return;
+              if (isLocked || e.key !== 'Enter') return;
               if (isSelected && selectedVariantId) {
                 onToggleItem(svc.id, selectedVariantId);
                 setExpandedServiceId(null);

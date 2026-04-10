@@ -80,6 +80,7 @@ export default function AppointmentSummary({
         variantName: variant?.name ?? '',
         duration: variant?.durationMinutes ?? svc?.durationMinutes ?? 0,
         price: item.priceOverride ?? variant?.price ?? svc?.price ?? 0,
+        isPackItem: item.priceOverride != null,
       };
     });
     const totalDuration = itemDetails.reduce((sum, i) => sum + i.duration, 0);
@@ -157,14 +158,26 @@ export default function AppointmentSummary({
           {blockDetails.map((block, i) => (
             <div key={i} className="border-l-2 border-slate-200 pl-3 space-y-1">
               {/* Service / Pack names */}
-              {block.packName ? (
-                <div className="text-sm text-slate-800 font-medium">
-                  {block.packName}
-                  {block.itemDetails.length > 0 && (
-                    <span className="text-slate-400 font-normal"> · {block.itemDetails.map((i) => i.name).join(', ')}</span>
-                  )}
-                </div>
-              ) : block.itemDetails.length === 1 ? (
+              {block.packName ? (() => {
+                const packItems = block.itemDetails.filter((i) => i.isPackItem);
+                const extraItems = block.itemDetails.filter((i) => !i.isPackItem);
+                return (
+                  <>
+                    <div className="text-sm text-slate-800 font-medium">
+                      {block.packName}
+                      {packItems.length > 0 && (
+                        <span className="text-slate-400 font-normal"> · {packItems.map((i) => i.name).join(', ')}</span>
+                      )}
+                    </div>
+                    {extraItems.map((item, j) => (
+                      <div key={j} className="text-sm text-slate-800 font-medium">
+                        {item.name}
+                        {item.variantName && <span className="text-slate-400 font-normal"> · {item.variantName}</span>}
+                      </div>
+                    ))}
+                  </>
+                );
+              })() : block.itemDetails.length === 1 ? (
                 <div className="text-sm text-slate-800 font-medium">
                   {block.itemDetails[0].name}
                   {block.itemDetails[0].variantName && (
