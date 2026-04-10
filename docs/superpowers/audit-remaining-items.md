@@ -17,7 +17,7 @@
 |---|---|---|
 | CRITICAL | 0 | — |
 | HIGH | 0 remaining (11 fixed, 2 invalid) | All HIGH cleared 2026-04-10 |
-| MEDIUM | 1 remaining (27 fixed) | Polish queue |
+| MEDIUM | **0 remaining (28 fixed)** | All MEDIUM cleared 2026-04-10 |
 | LOW | 21 | Polish queue (1 fixed in M-14) |
 
 **Of the 19 previously-documented MEDIUM items:** 1 RESOLVED (pre-batch), 1 PARTIAL, 17 still apply.
@@ -30,6 +30,7 @@
 **Batch F completed 2026-04-10:** Appointments + packs/favorites polish. M-13 (calendar multi-item grouping via `mergeAppointmentGroups`), M-14, M-15, M-16, M-18, M-19, M-20, M-23 all fixed. Also picked up the L-10 aria-label as a drive-by during M-14.
 **Batch G completed 2026-04-10:** Clients + calendar hours. M-24 (derive calendar hours from `salonSettings.schedule` via new `lib/scheduleHours.ts`), M-26 (ClientForm read-only fields), M-27 (ClientsModule `<ConfirmModal>` swap), M-28 (extended client schema with conditional refines).
 **M-11 completed 2026-04-10:** Single-rate VAT caveat (Option A from the audit). Decision was to keep the single-rate calculation but add a prominent estimation disclaimer rather than building out per-category VAT (a feature, not a fix). Confirmed with the user that all Moroccan/French salon revenue runs at 20% in practice and the number is for owner-monitoring only, not filings.
+**M-25 completed 2026-04-10:** Extracted shared `<CategoriesManager>` generic component, replaced both 250+ LOC duplicated tabs with 25-line wrappers. The audit also mentioned `GeneralTab`/`ProductGeneralTab`, `useServiceSettings`/`useProductSettings`, and the two settings pages as related duplication, but on inspection only the shared parts (~50 LOC of toggle boilerplate) are truly identical — the type-specific fields differ enough that extracting a generic would add more complexity than it removes. Scoped M-25 to just the CategoriesTab pair where the 95% identical structure justified the abstraction. **All MEDIUM items now cleared.**
 
 ---
 
@@ -203,9 +204,11 @@ No critical issues found. The codebase has no silent data corruption, no securit
 **Files:** `lib/scheduleHours.ts` (new helper), `modules/appointments/hooks/useStaffAvailability.ts:1-30,67`, `modules/dashboard/components/TodayCalendarCard.tsx:11-44,228-258`
 **Resolved:** Added shared `getSalonHourRange(schedule)` helper that derives `{ minHour, maxHour }` from the salon's `WorkSchedule` (earliest open across all days as min; latest close, ceiled if non-zero minutes, as max). Falls back to 9-20 when no schedule is set. `useStaffAvailability` calls `useSettings()` and threads the range through its iteration loops. `TodayCalendarCard` does the same and rebuilds `CALENDAR_HOURS` reactively from the derived range; `fmtMinutes` and `getNowOffset` were parameterized so the module-level helpers no longer hardcode the start/end hours.
 
-#### M-25: Duplicated category management (Services vs Products) [STILL APPLIES]
-**Files:** `modules/services/components/CategoriesTab.tsx` (258 LOC) vs `modules/products/components/ProductCategoriesTab.tsx` (251 LOC). Also `GeneralTab` vs `ProductGeneralTab`, `useServiceSettings` vs `useProductSettings`, `ServiceSettingsPage` vs `ProductSettingsPage`.
-**Fix:** Extract `<CategoriesManager<T>>` generic.
+#### ~~M-25: Duplicated category management~~ RESOLVED (2026-04-10)
+**Files:** `components/CategoriesManager.tsx` (new, 285 LOC), `modules/services/components/CategoriesTab.tsx` (258 → 31 LOC), `modules/products/components/ProductCategoriesTab.tsx` (251 → 30 LOC)
+**Resolved:** Extracted a fully type-parameterized `<CategoriesManager<TCategory, TItem>>` generic component into `components/CategoriesManager.tsx`. Both consumers reduced to thin wrappers (~25 lines each) that provide the type-specific bits via props: `items`, `categories`, `onSave`, a `createCategory` factory, an optional `supportsIcons` flag (services have icons, products don't), and the singular/plural item label + French strings for the search/empty/unassigned UI. Generic constraints are minimal — `ManagedCategory = { id, name, color, icon? }` and `ManagedItem = { id, name, categoryId }` — so any future entity (suppliers, brands, …) can plug in. Build dropped ~4 KB from de-duplication.
+
+**Out of scope (deliberate):** The audit also mentioned `GeneralTab`/`ProductGeneralTab` (130/120 LOC), `useServiceSettings`/`useProductSettings` (61/59 LOC), and the two settings pages (86/60 LOC) as related duplication. On inspection, only the toggle boilerplate (`showCostsInList` + `defaultView`) is truly identical — the entity-specific fields differ enough (services: `defaultDuration`/`defaultVariantName`; products: `lowStockThreshold`) that extracting a generic would add more complexity than it removes. The hooks and pages have the same shape pattern but different field semantics. Scoping M-25 to the CategoriesTab pair where the dedup math actually wins.
 
 #### ~~M-26: ClientForm initializes server-computed fields~~ RESOLVED (2026-04-10)
 **File:** `modules/clients/components/ClientForm.tsx:28-91`
