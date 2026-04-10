@@ -72,7 +72,16 @@ export default function AppointmentSummary({
   const totalDuration = blockDetails.reduce((sum, b) => sum + b.duration, 0);
   const totalPrice = blockDetails.reduce((sum, b) => sum + b.price, 0);
 
-  if (populatedBlocks.length <= 1) return null;
+  // Empty state — always visible per spec
+  if (populatedBlocks.length === 0) {
+    return (
+      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+        <div className="text-xs text-slate-400 font-medium text-center py-2">
+          Commencez par choisir un service
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
