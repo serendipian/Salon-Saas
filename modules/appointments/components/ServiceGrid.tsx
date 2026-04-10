@@ -1,7 +1,10 @@
-import React, { useMemo } from 'react';
-import type { Service, ServiceCategory, FavoriteItem, ServiceBlockItem } from '../../../types';
+import React, { useMemo, useState } from 'react';
+import type { Service, ServiceCategory, FavoriteItem, ServiceBlockItem, Pack } from '../../../types';
+import { formatPrice, formatDuration } from '../../../lib/format';
+import { getPackDiscount, formatPackItemCount } from '../../services/utils/packExpansion';
+import { CategoryIcon } from '../../../lib/categoryIcons';
 import VariantList from './VariantList';
-import { Check } from 'lucide-react';
+import { Check, Gift } from 'lucide-react';
 
 interface ServiceGridProps {
   services: Service[];
@@ -9,6 +12,8 @@ interface ServiceGridProps {
   categories?: ServiceCategory[];
   selectedItems: ServiceBlockItem[];
   onToggleItem: (serviceId: string, variantId: string) => void;
+  onAddPackBlocks?: (pack: Pack) => void;
+  activePackId?: string | null;
   /**
    * When the parent block is locked to a single category (because it already
    * contains items), favorites whose category does not match are rendered
@@ -23,13 +28,16 @@ export default function ServiceGrid({
   categories = [],
   selectedItems,
   onToggleItem,
+  onAddPackBlocks,
+  activePackId = null,
   lockedCategoryId = null,
 }: ServiceGridProps) {
   const showFavorites = favorites.length > 0;
+  const [expandedServiceId, setExpandedServiceId] = useState<string | null>(null);
 
   const categoryMap = useMemo(() => {
-    const map = new Map<string, string>();
-    categories.forEach((c) => map.set(c.id, c.name));
+    const map = new Map<string, ServiceCategory>();
+    categories.forEach((c) => map.set(c.id, c));
     return map;
   }, [categories]);
 
@@ -42,203 +50,275 @@ export default function ServiceGrid({
   };
 
   return (
-    <div className="bg-white/60 border border-slate-200 rounded-xl p-2">
-      {/* Favorites grid */}
-      {showFavorites && (
-        <div className="grid grid-cols-3 max-md:grid-cols-2 gap-2 mb-2">
-          {favorites.map((fav) => {
-            if (fav.type === 'service') {
-              const svc = fav.service;
-              const isSingleVariant = svc.variants.length === 1;
-              const variant = svc.variants[0];
-              const catName = categoryMap.get(svc.categoryId);
-              const isDisabledByLock = lockedCategoryId !== null && svc.categoryId !== lockedCategoryId;
-              const disabledClass = isDisabledByLock ? 'opacity-40 cursor-not-allowed pointer-events-none' : '';
-              const disabledTitle = isDisabledByLock ? 'Ce favori appartient à une autre catégorie' : undefined;
+    <div className="grid grid-cols-3 max-md:grid-cols-2 gap-2">
+      {/* Favorites */}
+      {showFavorites && favorites.map((fav) => {
+        if (fav.type === 'service') {
+          const svc = fav.service;
+          const isSingleVariant = svc.variants.length === 1;
+          const variant = svc.variants[0];
+          const cat = categoryMap.get(svc.categoryId);
+          const isDisabledByLock = lockedCategoryId !== null && svc.categoryId !== lockedCategoryId;
+          const disabledClass = isDisabledByLock ? 'opacity-40 cursor-not-allowed pointer-events-none' : '';
 
-              // Single-variant service: render as flat card matching variant favorite layout
-              if (isSingleVariant && variant) {
-                const isSelected = isServiceSelected(svc.id) && getSelectedVariantIdForService(svc.id) === variant.id;
-                return (
-                  <div
-                    key={`fav-svc-${svc.id}`}
-                    title={disabledTitle}
-                    aria-disabled={isDisabledByLock}
-                    className={`rounded-xl p-3 transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-white border-2 border-blue-400 shadow-sm'
-                        : 'bg-white border border-slate-200 hover:border-blue-300 hover:shadow-sm'
-                    } ${disabledClass}`}
-                    onClick={() => { if (!isDisabledByLock) onToggleItem(svc.id, variant.id); }}
-                    role="button"
-                    tabIndex={isDisabledByLock ? -1 : 0}
-                    onKeyDown={(e) => { if (!isDisabledByLock && e.key === 'Enter') onToggleItem(svc.id, variant.id); }}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        {catName && <><span className={`text-xs font-medium ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>{catName}</span><span className="text-xs text-slate-500"> — </span></>}
-                        <span className={`text-xs ${catName ? 'text-slate-500' : `font-medium ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}`}>{svc.name}</span>
-                      </div>
-                      {isSelected && (
-                        <span className="w-5 h-5 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm">
-                          <Check size={12} strokeWidth={2.5} />
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              }
-
-              // Multi-variant service: expandable card with always-visible variant list
-              const isSelected = isServiceSelected(svc.id);
-              const selectedVariantId = getSelectedVariantIdForService(svc.id);
-              return (
-                <div
-                  key={`fav-svc-${svc.id}`}
-                  title={disabledTitle}
-                  aria-disabled={isDisabledByLock}
-                  className={`rounded-xl p-3 transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-white border-2 border-blue-400 shadow-sm'
-                      : 'bg-white border border-slate-200 hover:border-blue-300 hover:shadow-sm'
-                  } ${disabledClass}`}
-                  role="button"
-                  tabIndex={isDisabledByLock ? -1 : 0}
-                >
-                  <div
-                    className="flex justify-between items-start"
-                    onClick={() => {
-                      if (isDisabledByLock) return;
-                      if (isSelected && selectedVariantId) {
-                        // Click card header of selected multi-variant service → deselect
-                        onToggleItem(svc.id, selectedVariantId);
-                      }
-                      // Otherwise, do nothing on header click — user picks a variant below
-                    }}
-                    onKeyDown={(e) => {
-                      if (isDisabledByLock) return;
-                      if (e.key === 'Enter' && isSelected && selectedVariantId) {
-                        onToggleItem(svc.id, selectedVariantId);
-                      }
-                    }}
-                  >
-                    <div className="min-w-0 flex-1">
-                      {catName && <span className="text-[11px] text-slate-400">{catName}</span>}
-                      <div className={`text-xs font-medium ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>{svc.name}</div>
-                    </div>
-                    {isSelected && (
-                      <span className="w-5 h-5 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0 ml-1">
-                        <Check size={12} strokeWidth={2.5} />
-                      </span>
-                    )}
-                  </div>
-                  {/* Variant list always shown for multi-variant services */}
-                  <VariantList
-                    variants={svc.variants}
-                    selectedVariantId={selectedVariantId}
-                    onSelect={(vid) => { if (!isDisabledByLock) onToggleItem(svc.id, vid); }}
-                  />
-                </div>
-              );
-            } else if (fav.type === 'variant') {
-              // Variant-type favorite — standalone card, selects directly
-              const { variant, parentService } = fav;
-              const isSelected = selectedItems.some(
-                (i) => i.serviceId === parentService.id && i.variantId === variant.id,
-              );
-              const isDisabledByLock = lockedCategoryId !== null && parentService.categoryId !== lockedCategoryId;
-              const disabledClass = isDisabledByLock ? 'opacity-40 cursor-not-allowed pointer-events-none' : '';
-              const disabledTitle = isDisabledByLock ? 'Ce favori appartient à une autre catégorie' : undefined;
-              return (
-                <div
-                  key={`fav-var-${variant.id}`}
-                  title={disabledTitle}
-                  aria-disabled={isDisabledByLock}
-                  className={`rounded-xl p-3 transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-white border-2 border-blue-400 shadow-sm'
-                      : 'bg-white border border-slate-200 hover:border-blue-300 hover:shadow-sm'
-                  } ${disabledClass}`}
-                  onClick={() => { if (!isDisabledByLock) onToggleItem(parentService.id, variant.id); }}
-                  role="button"
-                  tabIndex={isDisabledByLock ? -1 : 0}
-                  onKeyDown={(e) => { if (!isDisabledByLock && e.key === 'Enter') onToggleItem(parentService.id, variant.id); }}
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <span className={`text-xs font-medium ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>{parentService.name}</span>
-                      <span className="text-xs text-slate-500"> — {variant.name}</span>
-                    </div>
-                    {isSelected && (
-                      <span className="w-5 h-5 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm">
-                        <Check size={12} strokeWidth={2.5} />
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            }
-          })}
-        </div>
-      )}
-
-      {/* Regular services grid */}
-      {services.length > 0 && (
-        <div className="grid grid-cols-3 max-md:grid-cols-2 gap-2">
-          {services.map((svc) => {
-            const isSelected = isServiceSelected(svc.id);
-            const selectedVariantId = getSelectedVariantIdForService(svc.id);
-            const isSingleVariant = svc.variants.length === 1;
-            const singleVariant = svc.variants[0];
-
+          if (isSingleVariant && variant) {
+            const isSelected = isServiceSelected(svc.id) && getSelectedVariantIdForService(svc.id) === variant.id;
             return (
               <div
-                key={svc.id}
-                className={`rounded-xl p-3 transition-all cursor-pointer ${
+                key={`fav-svc-${svc.id}`}
+                aria-disabled={isDisabledByLock}
+                className={`rounded-lg p-3 transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-white border-2 border-blue-400 shadow-sm'
-                    : 'bg-white border border-slate-200 hover:border-blue-300 hover:shadow-sm'
-                }`}
-                onClick={() => {
-                  if (isSingleVariant && singleVariant) {
-                    onToggleItem(svc.id, singleVariant.id);
-                  } else if (isSelected && selectedVariantId) {
-                    // Header click on selected multi-variant → deselect
-                    onToggleItem(svc.id, selectedVariantId);
-                  }
-                  // Otherwise do nothing; user picks a variant below
-                }}
+                    ? 'bg-blue-50 border-2 border-blue-400 shadow-sm'
+                    : 'bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50'
+                } ${disabledClass}`}
+                onClick={() => { if (!isDisabledByLock) onToggleItem(svc.id, variant.id); }}
                 role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key !== 'Enter') return;
-                  if (isSingleVariant && singleVariant) {
-                    onToggleItem(svc.id, singleVariant.id);
-                  } else if (isSelected && selectedVariantId) {
-                    onToggleItem(svc.id, selectedVariantId);
-                  }
-                }}
+                tabIndex={isDisabledByLock ? -1 : 0}
+                onKeyDown={(e) => { if (!isDisabledByLock && e.key === 'Enter') onToggleItem(svc.id, variant.id); }}
               >
-                <div className="flex justify-between items-center mb-1">
-                  <span className={`text-xs font-medium ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>{svc.name}</span>
+                <div className="flex items-center gap-1.5 mb-1">
+                  {cat && <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={12} className="text-slate-400 shrink-0" />}
+                  <span className="text-sm font-medium text-slate-900 truncate flex-1">{svc.name}</span>
                   {isSelected && (
-                    <span className="w-5 h-5 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm">
-                      <Check size={12} strokeWidth={2.5} />
+                    <span className="w-4 h-4 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0">
+                      <Check size={10} strokeWidth={2.5} />
                     </span>
                   )}
                 </div>
-                {!isSingleVariant && (
-                  <VariantList
-                    variants={svc.variants}
-                    selectedVariantId={selectedVariantId}
-                    onSelect={(vid) => onToggleItem(svc.id, vid)}
-                  />
-                )}
+                <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                  {variant.durationMinutes > 0 && <span>{formatDuration(variant.durationMinutes)}</span>}
+                  {variant.durationMinutes > 0 && <span className="text-slate-300">·</span>}
+                  <span className="font-semibold text-slate-700">{formatPrice(variant.price)}</span>
+                </div>
               </div>
             );
-          })}
-        </div>
-      )}
+          }
+
+          // Multi-variant service
+          const isSelected = isServiceSelected(svc.id);
+          const selectedVariantId = getSelectedVariantIdForService(svc.id);
+          const isExpanded = expandedServiceId === svc.id;
+          return (
+            <div
+              key={`fav-svc-${svc.id}`}
+              aria-disabled={isDisabledByLock}
+              className={`rounded-lg p-3 transition-all cursor-pointer ${
+                isSelected
+                  ? 'bg-blue-50 border-2 border-blue-400 shadow-sm'
+                  : 'bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50'
+              } ${disabledClass}`}
+              role="button"
+              tabIndex={isDisabledByLock ? -1 : 0}
+              onClick={() => {
+                if (isDisabledByLock) return;
+                if (isSelected && selectedVariantId) {
+                  onToggleItem(svc.id, selectedVariantId);
+                  setExpandedServiceId(null);
+                } else {
+                  setExpandedServiceId(isExpanded ? null : svc.id);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (isDisabledByLock || e.key !== 'Enter') return;
+                if (isSelected && selectedVariantId) {
+                  onToggleItem(svc.id, selectedVariantId);
+                  setExpandedServiceId(null);
+                } else {
+                  setExpandedServiceId(isExpanded ? null : svc.id);
+                }
+              }}
+            >
+              <div className="flex items-center gap-1.5">
+                {cat && <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={12} className="text-slate-400 shrink-0" />}
+                <span className="text-sm font-medium text-slate-900 truncate flex-1">{svc.name}</span>
+                <span className="text-xs text-slate-400">{svc.variants.length} var.</span>
+                {isSelected && (
+                  <span className="w-4 h-4 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0">
+                    <Check size={10} strokeWidth={2.5} />
+                  </span>
+                )}
+              </div>
+              {isExpanded && (
+                <VariantList
+                  variants={svc.variants}
+                  selectedVariantId={selectedVariantId}
+                  onSelect={(vid) => {
+                    if (!isDisabledByLock) {
+                      onToggleItem(svc.id, vid);
+                      setExpandedServiceId(null);
+                    }
+                  }}
+                />
+              )}
+            </div>
+          );
+        } else if (fav.type === 'pack') {
+          const { pack } = fav;
+          const discount = getPackDiscount(pack);
+          const isSelected = activePackId === pack.id;
+          const isDisabledByLock = lockedCategoryId !== null;
+          const disabledClass = isDisabledByLock ? 'opacity-40 cursor-not-allowed pointer-events-none' : '';
+          return (
+            <div
+              key={`fav-pack-${pack.id}`}
+              aria-disabled={isDisabledByLock}
+              className={`rounded-lg p-3 transition-all cursor-pointer ${
+                isSelected
+                  ? 'bg-emerald-50 border-2 border-emerald-400 shadow-sm'
+                  : 'bg-white border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50'
+              } ${disabledClass}`}
+              onClick={() => { if (!isDisabledByLock) onAddPackBlocks?.(pack); }}
+              role="button"
+              tabIndex={isDisabledByLock ? -1 : 0}
+              onKeyDown={(e) => { if (!isDisabledByLock && e.key === 'Enter') onAddPackBlocks?.(pack); }}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Gift size={12} className="text-emerald-600" />
+                <span className="text-sm font-medium text-slate-900 truncate">{pack.name}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                <span>{formatPackItemCount(pack)}</span>
+                <span className="text-slate-300">·</span>
+                <span className="font-semibold text-slate-700">{formatPrice(pack.price)}</span>
+                {discount > 0 && (
+                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px] font-medium">-{discount}%</span>
+                )}
+              </div>
+            </div>
+          );
+        } else if (fav.type === 'variant') {
+          const { variant, parentService } = fav;
+          const cat = categoryMap.get(parentService.categoryId);
+          const isSelected = selectedItems.some(
+            (i) => i.serviceId === parentService.id && i.variantId === variant.id,
+          );
+          const isDisabledByLock = lockedCategoryId !== null && parentService.categoryId !== lockedCategoryId;
+          const disabledClass = isDisabledByLock ? 'opacity-40 cursor-not-allowed pointer-events-none' : '';
+          return (
+            <div
+              key={`fav-var-${variant.id}`}
+              aria-disabled={isDisabledByLock}
+              className={`rounded-lg p-3 transition-all cursor-pointer ${
+                isSelected
+                  ? 'bg-blue-50 border-2 border-blue-400 shadow-sm'
+                  : 'bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50'
+              } ${disabledClass}`}
+              onClick={() => { if (!isDisabledByLock) onToggleItem(parentService.id, variant.id); }}
+              role="button"
+              tabIndex={isDisabledByLock ? -1 : 0}
+              onKeyDown={(e) => { if (!isDisabledByLock && e.key === 'Enter') onToggleItem(parentService.id, variant.id); }}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                {cat && <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={12} className="text-slate-400 shrink-0" />}
+                <span className="text-sm font-medium text-slate-900 truncate">{parentService.name}</span>
+                <span className="text-sm text-slate-400 truncate">— {variant.name}</span>
+                {isSelected && (
+                  <span className="w-4 h-4 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0 ml-auto">
+                    <Check size={10} strokeWidth={2.5} />
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                {variant.durationMinutes > 0 && <span>{formatDuration(variant.durationMinutes)}</span>}
+                {variant.durationMinutes > 0 && <span className="text-slate-300">·</span>}
+                <span className="font-semibold text-slate-700">{formatPrice(variant.price)}</span>
+              </div>
+            </div>
+          );
+        }
+      })}
+
+      {/* Regular services */}
+      {services.map((svc) => {
+        const isSelected = isServiceSelected(svc.id);
+        const selectedVariantId = getSelectedVariantIdForService(svc.id);
+        const isSingleVariant = svc.variants.length === 1;
+        const singleVariant = svc.variants[0];
+
+        if (isSingleVariant && singleVariant) {
+          return (
+            <div
+              key={svc.id}
+              className={`rounded-lg p-3 transition-all cursor-pointer ${
+                isSelected
+                  ? 'bg-blue-50 border-2 border-blue-400 shadow-sm'
+                  : 'bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50'
+              }`}
+              onClick={() => onToggleItem(svc.id, singleVariant.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter') onToggleItem(svc.id, singleVariant.id); }}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-sm font-medium text-slate-900 truncate flex-1">{svc.name}</span>
+                {isSelected && (
+                  <span className="w-4 h-4 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0">
+                    <Check size={10} strokeWidth={2.5} />
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                {singleVariant.durationMinutes > 0 && <span>{formatDuration(singleVariant.durationMinutes)}</span>}
+                {singleVariant.durationMinutes > 0 && <span className="text-slate-300">·</span>}
+                <span className="font-semibold text-slate-700">{formatPrice(singleVariant.price)}</span>
+              </div>
+            </div>
+          );
+        }
+
+        // Multi-variant
+        const isExpanded = expandedServiceId === svc.id;
+        return (
+          <div
+            key={svc.id}
+            className={`rounded-lg p-3 transition-all cursor-pointer ${
+              isSelected
+                ? 'bg-blue-50 border-2 border-blue-400 shadow-sm'
+                : 'bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50'
+            }`}
+            role="button"
+            tabIndex={0}
+            onClick={() => {
+              if (isSelected && selectedVariantId) {
+                onToggleItem(svc.id, selectedVariantId);
+                setExpandedServiceId(null);
+              } else {
+                setExpandedServiceId(isExpanded ? null : svc.id);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter') return;
+              if (isSelected && selectedVariantId) {
+                onToggleItem(svc.id, selectedVariantId);
+                setExpandedServiceId(null);
+              } else {
+                setExpandedServiceId(isExpanded ? null : svc.id);
+              }
+            }}
+          >
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-medium text-slate-900 truncate flex-1">{svc.name}</span>
+              <span className="text-xs text-slate-400">{svc.variants.length} var.</span>
+              {isSelected && (
+                <span className="w-4 h-4 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0">
+                  <Check size={10} strokeWidth={2.5} />
+                </span>
+              )}
+            </div>
+            {isExpanded && (
+              <VariantList
+                variants={svc.variants}
+                selectedVariantId={selectedVariantId}
+                onSelect={(vid) => {
+                  onToggleItem(svc.id, vid);
+                  setExpandedServiceId(null);
+                }}
+              />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -392,6 +392,7 @@ export interface ServiceBlockState {
   categoryId: string | null;
   items: ServiceBlockItem[];
   staffId: string | null;
+  staffConfirmed?: boolean;
   date: string | null;
   hour: number | null;
   minute: number;

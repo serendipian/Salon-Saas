@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { UseAppointmentFormProps } from '../hooks/useAppointmentForm';
 import { useAppointmentForm } from '../hooks/useAppointmentForm';
+import type { FavoriteItem } from '../../../types';
 import ClientField from './ClientField';
 import ServiceBlock from './ServiceBlock';
 import StaffCalendarPanel from './StaffCalendarPanel';
-import ReminderToggle from './ReminderToggle';
 import AppointmentSummary from './AppointmentSummary';
-import { ArrowLeft, Save, Trash2, Plus, Users, StickyNote } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Plus, Users } from 'lucide-react';
 
 interface AppointmentBuilderProps extends UseAppointmentFormProps {
   onCancel: () => void;
@@ -22,33 +22,17 @@ export default function AppointmentBuilder({
   const [showNotes, setShowNotes] = useState(() => Boolean(form.notes));
   const [showExistingClientSearch, setShowExistingClientSearch] = useState(false);
 
-  // Connector: track vertical position of active service block
-  const serviceBlockRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  const rightSubpanelRef = useRef<HTMLDivElement>(null);
-  const [connectorTop, setConnectorTop] = useState<number | null>(null);
-
-  const setBlockRef = useCallback((index: number, el: HTMLDivElement | null) => {
-    if (el) {
-      serviceBlockRefs.current.set(index, el);
-    } else {
-      serviceBlockRefs.current.delete(index);
-    }
-  }, []);
-
-  // Recalculate connector position when active block changes
-  useEffect(() => {
-    const activeEl = serviceBlockRefs.current.get(form.activeBlockIndex);
-    if (!activeEl) {
-      setConnectorTop(null);
-      return;
-    }
-    const parentEl = activeEl.parentElement?.parentElement; // the right panel wrapper
-    if (!parentEl) return;
-    const parentRect = parentEl.getBoundingClientRect();
-    const activeRect = activeEl.getBoundingClientRect();
-    // Center of the active block relative to the right panel wrapper
-    setConnectorTop(activeRect.top - parentRect.top + activeRect.height / 2);
-  }, [form.activeBlockIndex, form.serviceBlocks.length]);
+  // Merge pack favorites into the favorites array (packs live in a separate
+  // data source so they aren't included in useServices().favorites).
+  const allFavorites = useMemo<FavoriteItem[]>(() => {
+    const baseFavs = hookProps.favorites ?? [];
+    const packs = hookProps.packs ?? [];
+    const packFavs: FavoriteItem[] = packs
+      .filter((p) => p.isFavorite)
+      .map((p) => ({ type: 'pack', pack: p, sortOrder: p.favoriteSortOrder ?? 9999 }));
+    if (packFavs.length === 0) return baseFavs;
+    return [...baseFavs, ...packFavs].sort((a, b) => a.sortOrder - b.sortOrder);
+  }, [hookProps.favorites, hookProps.packs]);
 
   return (
     <div>
@@ -88,43 +72,52 @@ export default function AppointmentBuilder({
         </div>
       </div>
 
-      <div className="flex gap-5 max-md:flex-col">
+      <div className="flex gap-5 max-md:flex-col relative">
+        {/* Horizontal connector: Step 1 → Step 2 — spans the gap between left sidebar and right area */}
+        <div
+          className="absolute h-0.5 bg-blue-400 max-md:hidden max-[1200px]:hidden"
+          style={{
+            top: 28,
+            left: 'calc((100% - 20px) / 4)',
+            width: 20,
+          }}
+        />
+
         {/* LEFT SIDEBAR — 1/4 */}
         <div className="flex-[1] space-y-4 max-md:order-first">
           {/* Step 1 — Client */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-            <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">1</span>
-                  <span className="text-slate-900 text-sm font-semibold">Client</span>
-                </div>
-                {!form.clientId && !showExistingClientSearch && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowExistingClientSearch(true);
-                      form.setNewClient(null);
-                    }}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-sm"
-                  >
-                    <Users size={12} />
-                    Client existant
-                  </button>
-                )}
+          <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">1</span>
+                <span className="text-slate-900 text-base font-semibold">Client</span>
               </div>
-              <ClientField
-                clients={hookProps.clients}
-                selectedClientId={form.clientId}
-                onSelectClient={(id) => { form.setClientId(id); form.setNewClient(null); form.clearFieldError('clientId'); }}
-                onClearClient={() => form.setClientId(null)}
-                newClientData={form.newClient}
-                onNewClientChange={form.setNewClient}
-                error={form.errors.clientId}
-                showExistingSearch={showExistingClientSearch}
-                onShowExistingSearchChange={setShowExistingClientSearch}
-              />
+              {!form.clientId && !showExistingClientSearch && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowExistingClientSearch(true);
+                    form.setNewClient(null);
+                  }}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-sm"
+                >
+                  <Users size={12} />
+                  Existant
+                </button>
+              )}
             </div>
+            <div className="border-b border-slate-200 mb-3" />
+            <ClientField
+              clients={hookProps.clients}
+              selectedClientId={form.clientId}
+              onSelectClient={(id) => { form.setClientId(id); form.setNewClient(null); form.clearFieldError('clientId'); }}
+              onClearClient={() => form.setClientId(null)}
+              newClientData={form.newClient}
+              onNewClientChange={form.setNewClient}
+              error={form.errors.clientId}
+              showExistingSearch={showExistingClientSearch}
+              onShowExistingSearchChange={setShowExistingClientSearch}
+            />
           </div>
 
           {/* Total Summary — always visible */}
@@ -132,42 +125,20 @@ export default function AppointmentBuilder({
             <AppointmentSummary
               serviceBlocks={form.serviceBlocks}
               services={hookProps.services}
+              team={hookProps.team}
+              clients={hookProps.clients}
+              clientId={form.clientId}
+              newClient={form.newClient}
+              packs={hookProps.packs ?? []}
+              showNotes={showNotes}
+              onToggleNotes={() => {
+                const next = !showNotes;
+                setShowNotes(next);
+                if (!next) form.setNotes('');
+              }}
+              notes={form.notes}
+              onNotesChange={form.setNotes}
             />
-          </div>
-
-          {/* Rappel + Notes */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
-            <ReminderToggle value={form.reminderMinutes} onChange={form.setReminderMinutes} />
-
-            {/* Notes — toggleable */}
-            <div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <StickyNote size={14} className="text-slate-400" />
-                  <span className="text-xs font-medium text-slate-500">Notes</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const next = !showNotes;
-                    setShowNotes(next);
-                    if (!next) form.setNotes('');
-                  }}
-                  className={`w-10 h-[22px] rounded-full relative transition-colors ${showNotes ? 'bg-blue-500' : 'bg-slate-300'}`}
-                >
-                  <div className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all shadow-sm ${showNotes ? 'right-[2px]' : 'left-[2px]'}`} />
-                </button>
-              </div>
-              {showNotes && (
-                <textarea
-                  value={form.notes}
-                  onChange={(e) => form.setNotes(e.target.value)}
-                  placeholder="Ajouter des notes..."
-                  rows={3}
-                  className="mt-3 w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none resize-none min-h-[44px] transition-all"
-                />
-              )}
-            </div>
           </div>
         </div>
 
@@ -177,14 +148,14 @@ export default function AppointmentBuilder({
             {/* Services subpanel — 2/3 */}
             <div className="flex-[2] space-y-3">
               {form.serviceBlocks.map((block, i) => (
-                <div key={block.id} ref={(el) => setBlockRef(i, el)}>
+                <div key={block.id}>
                   <ServiceBlock
                     block={block}
                     index={i}
                     isActive={i === form.activeBlockIndex}
                     services={hookProps.services}
                     categories={hookProps.categories}
-                    favorites={hookProps.favorites ?? []}
+                    favorites={allFavorites}
                     packs={hookProps.packs ?? []}
                     onAddPackBlocks={form.addPackBlocks}
                     onActivate={() => form.setActiveBlockIndex(i)}
@@ -208,20 +179,18 @@ export default function AppointmentBuilder({
               </button>
             </div>
 
-            {/* Connector line — hidden on stacked layout */}
-            {connectorTop !== null && (
-              <div
-                className="absolute w-5 border-t-2 border-blue-400 max-[1200px]:hidden"
-                style={{
-                  top: connectorTop,
-                  left: 'calc(66.666% - 10px)',
-                  transition: 'top 200ms ease',
-                }}
-              />
-            )}
+            {/* Connector line: Step 2 → Step 3 — spans the gap between services and staff panel */}
+            <div
+              className="absolute border-t-2 border-blue-400 max-[1200px]:hidden"
+              style={{
+                top: 28,
+                left: 'calc((100% - 20px) * 2 / 3)',
+                width: 20,
+              }}
+            />
 
             {/* Staff + Calendar subpanel — 1/3 */}
-            <div className="flex-[1]" ref={rightSubpanelRef}>
+            <div className="flex-[1]">
               <div className="sticky top-4">
                 <StaffCalendarPanel
                   activeBlock={form.activeBlock}
@@ -230,6 +199,8 @@ export default function AppointmentBuilder({
                   services={hookProps.services}
                   unavailableHours={form.unavailableHours}
                   onUpdateBlock={form.updateBlock}
+                  reminderMinutes={form.reminderMinutes}
+                  onReminderChange={form.setReminderMinutes}
                 />
               </div>
             </div>

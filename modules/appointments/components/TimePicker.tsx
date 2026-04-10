@@ -67,9 +67,6 @@ export default function TimePicker({
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-3">
-      {!dateSelected && (
-        <div className="text-[11px] text-slate-400 text-center mb-2">Sélectionnez une date pour choisir l'heure</div>
-      )}
       <div className="grid grid-cols-6 gap-1.5 mb-1.5">
         {MORNING_HOURS.map(renderHourButton)}
       </div>

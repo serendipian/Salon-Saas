@@ -1,18 +1,30 @@
 import React from 'react';
 import { formatPrice, formatDuration } from '../../../lib/format';
-import type { Service, ServiceBlockItem } from '../../../types';
+import type { Service, ServiceBlockItem, StaffMember, Client, Pack } from '../../../types';
+import { Play, User, Clock, Calendar, UserCircle, StickyNote } from 'lucide-react';
 
 interface ServiceBlockSummary {
   items: ServiceBlockItem[];
   staffId: string | null;
+  staffConfirmed?: boolean;
   date: string | null;
   hour: number | null;
   minute: number;
+  packId?: string | null;
 }
 
 interface AppointmentSummaryProps {
   serviceBlocks: ServiceBlockSummary[];
   services: Service[];
+  team: StaffMember[];
+  clients: Client[];
+  clientId: string | null;
+  newClient: { firstName: string; lastName: string; phone: string } | null;
+  packs?: Pack[];
+  showNotes?: boolean;
+  onToggleNotes?: () => void;
+  notes?: string;
+  onNotesChange?: (notes: string) => void;
 }
 
 function formatTime(hour: number | null, minute: number, durationMinutes: number): string {
@@ -35,13 +47,30 @@ function formatBlockDate(dateStr: string): string {
 export default function AppointmentSummary({
   serviceBlocks,
   services,
+  team,
+  clients,
+  clientId,
+  newClient,
+  packs = [],
+  showNotes = false,
+  onToggleNotes,
+  notes = '',
+  onNotesChange,
 }: AppointmentSummaryProps) {
-  // M-14: Only blocks with at least one item count toward the summary —
-  // an empty placeholder block was previously slipping past the early-return
-  // and rendering as a row with no label.
+  // Resolve client name
+  const clientName = (() => {
+    if (clientId) {
+      const c = clients.find((cl) => cl.id === clientId);
+      return c ? [c.firstName, c.lastName].filter(Boolean).join(' ') : null;
+    }
+    if (newClient && (newClient.firstName || newClient.lastName)) {
+      return [newClient.firstName, newClient.lastName].filter(Boolean).join(' ') || null;
+    }
+    return null;
+  })();
+
   const populatedBlocks = serviceBlocks.filter((b) => b.items.length > 0);
 
-  // Build one display row per block; multi-item blocks show concatenated service names
   const blockDetails = populatedBlocks.map((block) => {
     const itemDetails = block.items.map((item) => {
       const svc = services.find((s) => s.id === item.serviceId);
@@ -55,64 +84,151 @@ export default function AppointmentSummary({
     });
     const totalDuration = itemDetails.reduce((sum, i) => sum + i.duration, 0);
     const totalPrice = itemDetails.reduce((sum, i) => sum + i.price, 0);
-    const label =
-      itemDetails.length === 1
-        ? `${itemDetails[0].name}${itemDetails[0].variantName ? ` · ${itemDetails[0].variantName}` : ''}`
-        : `${itemDetails.length} prestations : ${itemDetails.map((i) => i.name).join(', ')}`;
+
+    // Staff name
+    const staffMember = block.staffId ? team.find((m) => m.id === block.staffId) : null;
+    const staffLabel = block.staffConfirmed
+      ? staffMember
+        ? staffMember.lastName ? `${staffMember.firstName} ${staffMember.lastName[0]}.` : staffMember.firstName
+        : 'Aucune préférence'
+      : null;
+
+    // Pack name (if this block belongs to a pack)
+    const packName = block.packId ? packs.find((p) => p.id === block.packId)?.name ?? null : null;
+
     return {
-      label,
-      duration: totalDuration,
-      price: totalPrice,
+      itemDetails,
+      totalDuration,
+      totalPrice,
+      staffLabel,
+      packName,
       date: block.date,
       hour: block.hour,
       minute: block.minute,
     };
   });
 
-  const totalDuration = blockDetails.reduce((sum, b) => sum + b.duration, 0);
-  const totalPrice = blockDetails.reduce((sum, b) => sum + b.price, 0);
+  const totalDuration = blockDetails.reduce((sum, b) => sum + b.totalDuration, 0);
+  const totalPrice = blockDetails.reduce((sum, b) => sum + b.totalPrice, 0);
 
-  // Empty state — always visible per spec
-  if (populatedBlocks.length === 0) {
-    return (
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
-        <div className="text-xs text-slate-400 font-medium text-center py-2">
-          Commencez par choisir un service
-        </div>
-      </div>
-    );
-  }
+  const isEmpty = !clientName && populatedBlocks.length === 0;
 
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
-      <div className="text-xs text-blue-600 font-semibold mb-3">Total rendez-vous</div>
-      <div className="space-y-2">
-        {blockDetails.map((b, i) => (
-          <div key={i}>
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-600">
-                <span
-                  aria-label={`Prestation ${i + 1}`}
-                  className="w-5 h-5 bg-slate-200 text-slate-600 rounded-full inline-flex items-center justify-center text-[10px] font-bold mr-2"
-                >
-                  {i + 1}
-                </span>
-                {b.label}
-              </span>
-              <span className="text-slate-800 font-medium">{formatPrice(b.price)}</span>
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2.5">
+          <span className="bg-slate-900 text-white w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+            <Play size={13} fill="white" />
+          </span>
+          <span className="text-slate-900 text-base font-semibold">Résumé</span>
+        </div>
+        {onToggleNotes && (
+          <button
+            type="button"
+            onClick={onToggleNotes}
+            className={`px-3.5 py-2 rounded-xl text-xs transition-all flex items-center gap-2 ${
+              showNotes
+                ? 'bg-blue-500 text-white font-medium shadow-sm'
+                : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'
+            }`}
+          >
+            <StickyNote size={14} />
+            Notes
+          </button>
+        )}
+      </div>
+
+      {isEmpty ? (
+        <div className="text-xs text-slate-400 text-center py-3">
+          Les détails apparaîtront ici
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {/* Client row */}
+          {clientName && (
+            <div className="flex items-center gap-2.5">
+              <User size={13} className="text-slate-400 shrink-0" />
+              <span className="text-sm text-slate-700 font-medium">{clientName}</span>
             </div>
-            {b.date && b.hour !== null && (
-              <div className="text-[11px] text-slate-400 mt-0.5 ml-7">
-                {formatBlockDate(b.date)} · {formatTime(b.hour, b.minute, b.duration)}
+          )}
+
+          {/* Service blocks */}
+          {blockDetails.map((block, i) => (
+            <div key={i} className="border-l-2 border-slate-200 pl-3 space-y-1">
+              {/* Service / Pack names */}
+              {block.packName ? (
+                <div className="text-sm text-slate-800 font-medium">
+                  {block.packName}
+                  {block.itemDetails.length > 0 && (
+                    <span className="text-slate-400 font-normal"> · {block.itemDetails.map((i) => i.name).join(', ')}</span>
+                  )}
+                </div>
+              ) : block.itemDetails.length === 1 ? (
+                <div className="text-sm text-slate-800 font-medium">
+                  {block.itemDetails[0].name}
+                  {block.itemDetails[0].variantName && (
+                    <span className="text-slate-400 font-normal"> · {block.itemDetails[0].variantName}</span>
+                  )}
+                </div>
+              ) : (
+                <div className="text-sm text-slate-800 font-medium">
+                  {block.itemDetails.map((item, j) => (
+                    <span key={j}>
+                      {j > 0 && <span className="text-slate-300"> + </span>}
+                      {item.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Meta row: duration + price + staff + time */}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                {block.totalDuration > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Clock size={11} className="text-slate-400" />
+                    {formatDuration(block.totalDuration)}
+                  </span>
+                )}
+                {block.staffLabel && (
+                  <span className="flex items-center gap-1">
+                    <UserCircle size={11} className="text-slate-400" />
+                    {block.staffLabel}
+                  </span>
+                )}
+                {block.date && (
+                  <span className="flex items-center gap-1">
+                    <Calendar size={11} className="text-slate-400" />
+                    {formatBlockDate(block.date)}
+                    {block.hour !== null && ` · ${formatTime(block.hour, block.minute, block.totalDuration)}`}
+                  </span>
+                )}
               </div>
-            )}
-          </div>
-        ))}
-      </div>
-      <div className="border-t border-slate-200 pt-3 mt-3 flex justify-between items-center">
-        <span className="text-sm text-slate-500">Durée : <strong className="text-slate-800">{formatDuration(totalDuration)}</strong></span>
-        <strong className="text-blue-600 text-base">{formatPrice(totalPrice)}</strong>
-      </div>
+            </div>
+          ))}
+
+          {/* Total footer */}
+          {populatedBlocks.length > 0 && (
+            <div className="border-t border-slate-100 pt-3 flex justify-between items-center">
+              <span className="text-xs text-slate-500">
+                {formatDuration(totalDuration)}
+              </span>
+              <span className="text-sm font-semibold text-slate-900">{formatPrice(totalPrice)}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Notes textarea */}
+      {showNotes && onNotesChange && (
+        <textarea
+          value={notes}
+          onChange={(e) => onNotesChange(e.target.value)}
+          placeholder="Ajouter des notes..."
+          rows={3}
+          className="mt-3 w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none resize-none min-h-[44px] transition-all"
+        />
+      )}
     </div>
   );
 }

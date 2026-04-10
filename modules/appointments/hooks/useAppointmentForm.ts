@@ -156,10 +156,11 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     phone: string;
   } | null>(null);
 
-  // Service blocks
-  const [serviceBlocks, setServiceBlocks] = useState<ServiceBlockState[]>(
-    initialData?.serviceBlocks ?? [createEmptyBlock()],
-  );
+  // Service blocks — mark existing blocks with items as staff-confirmed for edit mode
+  const [serviceBlocks, setServiceBlocks] = useState<ServiceBlockState[]>(() => {
+    const blocks = initialData?.serviceBlocks ?? [createEmptyBlock()];
+    return blocks.map((b) => b.items.length > 0 ? { ...b, staffConfirmed: true } : b);
+  });
   const [activeBlockIndex, setActiveBlockIndex] = useState(0);
 
   // Scheduling
@@ -226,7 +227,14 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
   // Handlers
   const updateBlock = useCallback((index: number, updates: Partial<ServiceBlockState>) => {
     setServiceBlocks((prev) =>
-      prev.map((b, i) => (i === index ? { ...b, ...updates } : b)),
+      prev.map((b, i) => {
+        if (i !== index) return b;
+        // When staff changes, reset date & time (availability depends on staff)
+        if ('staffId' in updates && updates.staffId !== b.staffId) {
+          return { ...b, ...updates, date: null, hour: null, minute: 0 };
+        }
+        return { ...b, ...updates };
+      }),
     );
   }, []);
 
@@ -238,7 +246,6 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
       const currentBlock = serviceBlocks[index];
       if (
         currentBlock &&
-        !currentBlock.packId &&
         currentBlock.items.length > 0 &&
         !currentBlock.items.some((item) => item.serviceId === serviceId)
       ) {
@@ -257,21 +264,23 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
         }
       }
 
+      // Reset downstream selections when services change
+      const resetDownstream = { staffId: null, staffConfirmed: false, date: null, hour: null, minute: 0 };
+
       setServiceBlocks((prev) =>
         prev.map((b, i) => {
           if (i !== index) return b;
-          if (b.packId) return b; // pack blocks are atomic
           const existingIdx = b.items.findIndex((item) => item.serviceId === serviceId);
           if (existingIdx >= 0) {
             const existing = b.items[existingIdx];
             if (existing.variantId === variantId) {
               // Same service + same variant → remove
-              return { ...b, items: b.items.filter((_, idx) => idx !== existingIdx) };
+              return { ...b, ...resetDownstream, items: b.items.filter((_, idx) => idx !== existingIdx) };
             }
             // Same service, different variant → replace variant (category unchanged by definition)
             const nextItems = b.items.slice();
             nextItems[existingIdx] = { ...existing, variantId };
-            return { ...b, items: nextItems };
+            return { ...b, ...resetDownstream, items: nextItems };
           }
           // New service → defensive same-category check (should be unreachable
           // now that the pre-check above rejects with a toast; kept as a
@@ -283,7 +292,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
               return b;
             }
           }
-          return { ...b, items: [...b.items, { serviceId, variantId }] };
+          return { ...b, ...resetDownstream, items: [...b.items, { serviceId, variantId }] };
         }),
       );
     },
@@ -294,8 +303,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     setServiceBlocks((prev) =>
       prev.map((b, i) => {
         if (i !== index) return b;
-        if (b.packId) return b; // pack blocks are atomic
-        return { ...b, items: [] };
+        return { ...b, items: [], staffId: null, staffConfirmed: false, date: null, hour: null, minute: 0, packId: null };
       }),
     );
   }, []);
@@ -385,35 +393,57 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
         return next;
       }
 
-      // Strip any blocks from a previously selected pack (switching packs),
-      // and drop a lone empty placeholder block if that's all there is.
-      const base = prev.length === 1 && prev[0].items.length === 0
+      // Strip any blocks from a previously selected pack (switching packs).
+      const hasLoneEmpty = prev.length === 1 && prev[0].items.length === 0;
+      // Capture existing pack block's ID before filtering, so we can reuse it
+      // (prevents remount → preserves user's active tab, e.g. Favoris).
+      const existingPackBlock = prev.find((b) => !!b.packId);
+      const base = hasLoneEmpty
         ? []
         : prev.filter((b) => !b.packId);
 
-      const lastBlock = base[base.length - 1];
+      const lastBlock = hasLoneEmpty ? prev[0] : base[base.length - 1];
       const lastDate = lastBlock?.date ?? null;
+
+      const packItems = pack.items.map((item, i) => ({
+        serviceId: item.serviceId,
+        variantId: item.serviceVariantId,
+        priceOverride: proRataPrices[i],
+      }));
+
+      // If the current block is an empty placeholder or has a pack, update in
+      // place (preserves React key so ServiceBlock doesn't remount — keeps
+      // the user on whichever tab they were on, e.g. Favoris).
+      const reuseBlock = hasLoneEmpty ? prev[0] : existingPackBlock;
+      if (reuseBlock) {
+        firstNewBlockIndex = hasLoneEmpty ? 0 : base.length;
+        const updated: ServiceBlockState = {
+          ...reuseBlock,
+          categoryId: null,
+          items: packItems,
+          staffId: null,
+          date: lastDate,
+          hour: null,
+          minute: 0,
+          packId: pack.id,
+        };
+        return hasLoneEmpty ? [updated] : [...base, updated];
+      }
 
       firstNewBlockIndex = base.length;
 
-      const newBlocks: ServiceBlockState[] = pack.items.map((item, i) => ({
+      const packBlock: ServiceBlockState = {
         id: crypto.randomUUID(),
         categoryId: null,
-        items: [
-          {
-            serviceId: item.serviceId,
-            variantId: item.serviceVariantId,
-            priceOverride: proRataPrices[i],
-          },
-        ],
+        items: packItems,
         staffId: null,
         date: lastDate,
         hour: null,
         minute: 0,
         packId: pack.id,
-      }));
+      };
 
-      return [...base, ...newBlocks];
+      return [...base, packBlock];
     });
     // Separate setState call — don't nest setState inside another updater
     setActiveBlockIndex(firstNewBlockIndex);

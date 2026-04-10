@@ -5,7 +5,7 @@ import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import { getPackDiscount, formatPackItemCount } from '../../services/utils/packExpansion';
 import ServiceGrid from './ServiceGrid';
-import { X, Clock, Calendar, Star, Package } from 'lucide-react';
+import { X, Clock, Calendar, Star, Gift } from 'lucide-react';
 
 interface ServiceBlockProps {
   block: ServiceBlockState;
@@ -43,10 +43,10 @@ export default function ServiceBlock({
   stepOffset = 0,
 }: ServiceBlockProps) {
   const [activeCategoryId, setActiveCategoryId] = useState<string>(() => {
-    // Pack-derived block → keep the user on the Packs tab so the selected pack is visible.
-    if (block.packId) return 'PACKS';
     // Otherwise, if the block already has items, open the tab matching the first item's category.
     if (block.items.length > 0) {
+      // Pack-derived block in edit mode → show Packs tab
+      if (block.packId) return 'PACKS';
       const firstItem = block.items[0];
       const svc = services.find((s) => s.id === firstItem.serviceId);
       if (svc?.categoryId) return svc.categoryId;
@@ -64,27 +64,22 @@ export default function ServiceBlock({
     [services, activeCategoryId],
   );
 
-  // Two kinds of lock:
-  //  - Pack lock: block is part of a pack → only the Packs tab is usable.
-  //  - Category lock: block has services from one category → only that category
-  //    (and Favoris for browsing) is usable.
-  const isPackLocked = !!block.packId;
-  const isCategoryLocked = block.items.length > 0 && !block.packId;
-  const isLocked = isPackLocked || isCategoryLocked;
+  // Category lock: block has services → only that category (and Favoris) is usable.
+  // Pack blocks are also category-locked (based on the pack's services' category),
+  // allowing the user to add more same-category services on top of the pack.
+  const isLocked = block.items.length > 0;
 
   // The category the block is anchored to (derived from first item's service).
   const lockedCategoryId = useMemo<string | null>(() => {
-    if (!isCategoryLocked) return null;
+    if (!isLocked) return null;
     const firstSvc = services.find((s) => s.id === block.items[0].serviceId);
     return firstSvc?.categoryId ?? null;
-  }, [isCategoryLocked, block.items, services]);
+  }, [isLocked, block.items, services]);
 
   // Which pills are still clickable while a lock is active.
   const isPillAllowedWhenLocked = (pillId: string): boolean => {
-    if (isPackLocked) return pillId === 'PACKS';
-    if (!isCategoryLocked) return true;
+    if (!isLocked) return true;
     // L-11: only enable Favoris when there's actually something to show.
-    // Otherwise tapping it lands on an empty grid which is confusing.
     if (pillId === 'FAVORITES') return favorites.length > 0;
     if (pillId === 'PACKS') return false;
     return pillId === lockedCategoryId;
@@ -97,9 +92,8 @@ export default function ServiceBlock({
   };
 
   const handleClear = () => {
-    // Pack-locked: toggle the current pack off. addPackBlocks preserves this
-    // block's ID on toggle-off so the user stays on the Packs tab.
-    if (isPackLocked && block.packId && onAddPackBlocks) {
+    // If pack items are present, toggle the pack off first.
+    if (block.packId && onAddPackBlocks) {
       const currentPack = packs.find((p) => p.id === block.packId);
       if (currentPack) {
         onAddPackBlocks(currentPack);
@@ -183,10 +177,10 @@ export default function ServiceBlock({
       >
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
-            <span className="bg-slate-200 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+            <span className="bg-slate-200 text-slate-600 w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0">
               {index + 1 + stepOffset}
             </span>
-            <span className="text-slate-700 text-sm font-medium">{headerTitle}</span>
+            <span className="text-slate-700 text-base font-medium">{headerTitle}</span>
             {serviceInfoBadge}
           </div>
           <button
@@ -207,21 +201,34 @@ export default function ServiceBlock({
     <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
+          <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
             {index + 1 + stepOffset}
           </span>
-          <span className="text-slate-900 text-sm font-semibold">{headerTitle}</span>
+          <span className="text-slate-900 text-base font-semibold">{headerTitle}</span>
           {serviceInfoBadge}
         </div>
-        <button
-          type="button"
-          onClick={onRemove}
-          className="w-7 h-7 rounded-full hover:bg-white/80 flex items-center justify-center flex-shrink-0 transition-colors"
-          aria-label="Supprimer ce bloc"
-        >
-          <X size={14} className="text-slate-400" />
-        </button>
+        <div className="flex items-center gap-1.5">
+          {isLocked && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="px-3 py-1.5 rounded-xl text-xs font-medium text-slate-500 border border-slate-200 bg-white hover:bg-slate-50 hover:text-slate-700 transition-colors whitespace-nowrap"
+            >
+              Vider
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onRemove}
+            className="w-7 h-7 rounded-full hover:bg-white/80 flex items-center justify-center flex-shrink-0 transition-colors"
+            aria-label="Supprimer ce bloc"
+          >
+            <X size={14} className="text-slate-400" />
+          </button>
+        </div>
       </div>
+
+      <div className="border-b border-slate-200 mb-3" />
 
       {/* L-13: Category buttons + Vider button when locked.
           The pills live in their own wrap-flex container so the Vider button
@@ -238,7 +245,7 @@ export default function ServiceBlock({
               disabled={disabled}
               aria-disabled={disabled}
               className={`
-                px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
+                px-3 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
                 ${activeCategoryId === 'FAVORITES'
                   ? 'bg-amber-50 text-amber-700 border-amber-300 shadow-sm'
                   : disabled
@@ -262,7 +269,7 @@ export default function ServiceBlock({
               disabled={disabled}
               aria-disabled={disabled}
               className={`
-                px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
+                px-3 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
                 ${activePill
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm'
                   : disabled
@@ -271,7 +278,7 @@ export default function ServiceBlock({
                 }
               `}
             >
-              <Package size={14} />
+              <Gift size={14} />
               Packs
             </button>
           );
@@ -287,7 +294,7 @@ export default function ServiceBlock({
               disabled={disabled}
               aria-disabled={disabled}
               className={`
-                px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
+                px-3 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
                 ${isActivePill
                   ? 'bg-blue-50 text-blue-700 border-blue-300 shadow-sm'
                   : disabled
@@ -302,15 +309,6 @@ export default function ServiceBlock({
           );
         })}
         </div>
-        {isLocked && (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="px-3 py-2 rounded-xl text-xs font-medium text-slate-500 border border-slate-200 bg-white hover:bg-slate-50 hover:text-slate-700 transition-colors self-start whitespace-nowrap"
-          >
-            Vider
-          </button>
-        )}
       </div>
 
       {/* Service grid */}
@@ -321,6 +319,8 @@ export default function ServiceBlock({
           categories={categories}
           selectedItems={block.items}
           onToggleItem={onToggleItem}
+          onAddPackBlocks={onAddPackBlocks}
+          activePackId={block.packId}
           lockedCategoryId={lockedCategoryId}
         />
       )}
@@ -342,12 +342,18 @@ export default function ServiceBlock({
                     : 'bg-white border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50'
                 }`}
               >
-                <div className="text-xs text-emerald-600 font-medium mb-1">
-                  {formatPackItemCount(pack)}
-                  {discount > 0 && ` · -${discount}%`}
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Gift size={12} className="text-emerald-600" />
+                  <span className="text-sm font-medium text-slate-900 truncate">{pack.name}</span>
                 </div>
-                <div className="text-sm font-medium text-slate-900 truncate">{pack.name}</div>
-                <div className="text-sm font-semibold text-slate-700 mt-1">{formatPrice(pack.price)}</div>
+                <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span>{formatPackItemCount(pack)}</span>
+                  <span className="text-slate-300">·</span>
+                  <span className="font-semibold text-slate-700">{formatPrice(pack.price)}</span>
+                  {discount > 0 && (
+                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px] font-medium">-{discount}%</span>
+                  )}
+                </div>
               </button>
             );
           })}

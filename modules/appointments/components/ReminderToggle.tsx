@@ -4,6 +4,8 @@ import { Bell } from 'lucide-react';
 interface ReminderToggleProps {
   value: number | null;
   onChange: (minutes: number | null) => void;
+  /** Compact mode: just the Bell icon + toggle, no label. Used in card headers. */
+  compact?: boolean;
 }
 
 const REMINDER_OPTIONS = [
@@ -14,9 +16,24 @@ const REMINDER_OPTIONS = [
   { label: '2 jours', value: 2880 },
 ];
 
-export default function ReminderToggle({ value, onChange }: ReminderToggleProps) {
+export default function ReminderToggle({ value, onChange, compact = false }: ReminderToggleProps) {
   const isOn = value !== null;
   const toggle = () => onChange(isOn ? null : 60);
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-2">
+        <Bell size={14} className={isOn ? 'text-blue-500' : 'text-slate-400'} />
+        <button
+          type="button"
+          onClick={toggle}
+          className={`w-10 h-[22px] rounded-full relative transition-colors ${isOn ? 'bg-blue-500' : 'bg-slate-300'}`}
+        >
+          <div className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all shadow-sm ${isOn ? 'right-[2px]' : 'left-[2px]'}`} />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>

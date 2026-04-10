@@ -10,7 +10,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
 import { supabase } from '../../../lib/supabase';
-import { ServiceBlockState } from '../../../types';
+import type { ServiceBlockState } from '../../../types';
 import AppointmentBuilder from '../components/AppointmentBuilder';
 import AppointmentBuilderMobile from '../components/AppointmentBuilderMobile';
 

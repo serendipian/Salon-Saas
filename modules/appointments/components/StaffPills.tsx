@@ -18,19 +18,8 @@ export default function StaffPills({ team, categoryId, selectedStaffId, onSelect
 
   return (
     <div>
-      {!hideLabel && <div className="text-xs font-medium text-slate-500 mb-2">Praticien</div>}
+      {!hideLabel && <div className="text-xs font-medium text-slate-500 mb-2">Équipe</div>}
       <div className="flex gap-2 flex-wrap">
-        <button
-          type="button"
-          onClick={() => onSelect(null)}
-          className={`px-3.5 py-2 rounded-xl text-xs transition-all ${
-            selectedStaffId === null
-              ? 'bg-blue-500 text-white font-medium shadow-sm'
-              : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'
-          }`}
-        >
-          N'importe qui
-        </button>
         {eligibleStaff.map((member) => {
           const isSelected = member.id === selectedStaffId;
           const label = member.lastName ? `${member.firstName} ${member.lastName[0]}.` : member.firstName;
@@ -49,7 +38,7 @@ export default function StaffPills({ team, categoryId, selectedStaffId, onSelect
                 firstName={member.firstName}
                 lastName={member.lastName}
                 photoUrl={member.photoUrl}
-                color={isSelected ? 'rgba(255,255,255,0.3)' : member.color}
+                color={isSelected ? 'rgba(255,255,255,0.3)' : 'bg-blue-100 text-blue-700'}
                 size={20}
               />
               {label}
