@@ -1,10 +1,11 @@
 
 import React, { useState, useMemo } from 'react';
 import { User, ShoppingBag, Trash2, Minus, Plus, Edit3, CreditCard, X, ChevronDown, Tag } from 'lucide-react';
-import { CartItem, Client } from '../../../types';
+import { CartItem, Client, Service } from '../../../types';
 import type { StaffMember } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { StaffSelector } from './StaffSelector';
+import { resolveCartItemCategoryId } from '../utils/resolveCartItemCategoryId';
 
 interface POSCartProps {
   cart: CartItem[];
@@ -16,6 +17,7 @@ interface POSCartProps {
   onEditItem: (item: CartItem) => void;
   onUpdateCartItem: (id: string, updates: Partial<CartItem>) => void;
   allStaff: StaffMember[];
+  services: Service[];
   totals: { subtotal: number; tax: number; total: number; vatRate: number };
   onCheckout: () => void;
 }
@@ -24,11 +26,12 @@ interface POSCartProps {
 const CartItemRow: React.FC<{
   item: CartItem;
   allStaff: StaffMember[];
+  services: Service[];
   onEditItem: (item: CartItem) => void;
   onUpdateQuantity: (id: string, delta: number) => void;
   onRemoveItem: (id: string) => void;
   onUpdateCartItem: (id: string, updates: Partial<CartItem>) => void;
-}> = ({ item, allStaff, onEditItem, onUpdateQuantity, onRemoveItem, onUpdateCartItem }) => (
+}> = ({ item, allStaff, services, onEditItem, onUpdateQuantity, onRemoveItem, onUpdateCartItem }) => (
   <div
     key={item.id}
     onClick={() => onEditItem(item)}
@@ -52,7 +55,7 @@ const CartItemRow: React.FC<{
           staffName={item.staffName}
           staffMembers={allStaff}
           onChange={(staffId, staffName) => onUpdateCartItem(item.id, { staffId, staffName })}
-          expanded={item.type === 'SERVICE'}
+          categoryId={resolveCartItemCategoryId(item, services)}
         />
       </div>
       <div className="text-right">
@@ -96,11 +99,12 @@ const CartItemRow: React.FC<{
 const CartItems: React.FC<{
   cart: CartItem[];
   allStaff: StaffMember[];
+  services: Service[];
   onEditItem: (item: CartItem) => void;
   onUpdateQuantity: (id: string, delta: number) => void;
   onRemoveItem: (id: string) => void;
   onUpdateCartItem: (id: string, updates: Partial<CartItem>) => void;
-}> = ({ cart, allStaff, onEditItem, onUpdateQuantity, onRemoveItem, onUpdateCartItem }) => {
+}> = ({ cart, allStaff, services, onEditItem, onUpdateQuantity, onRemoveItem, onUpdateCartItem }) => {
   const cartWithGroups = useMemo(() => {
     const groups: Array<{ packId?: string; packName?: string; items: CartItem[] }> = [];
     const packMap = new Map<string, CartItem[]>();
@@ -163,6 +167,7 @@ const CartItems: React.FC<{
               key={item.id}
               item={item}
               allStaff={allStaff}
+              services={services}
               onEditItem={onEditItem}
               onUpdateQuantity={onUpdateQuantity}
               onRemoveItem={onRemoveItem}
@@ -185,6 +190,7 @@ export const POSCart: React.FC<POSCartProps> = ({
   onEditItem,
   onUpdateCartItem,
   allStaff,
+  services,
   totals,
   onCheckout
 }) => {
@@ -273,6 +279,7 @@ export const POSCart: React.FC<POSCartProps> = ({
        <CartItems
          cart={cart}
          allStaff={allStaff}
+         services={services}
          onEditItem={onEditItem}
          onUpdateQuantity={onUpdateQuantity}
          onRemoveItem={onRemoveItem}

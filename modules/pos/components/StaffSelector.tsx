@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { User, ChevronDown, X } from 'lucide-react';
 import type { StaffMember } from '../../../types';
 
@@ -7,7 +7,11 @@ interface StaffSelectorProps {
   staffName?: string;
   staffMembers: StaffMember[];
   onChange: (staffId: string | undefined, staffName: string | undefined) => void;
-  expanded?: boolean;
+  /**
+   * When set, only staff members whose `skills` include this category ID
+   * are shown. Pass `null` (or omit) to show all active staff.
+   */
+  categoryId?: string | null;
 }
 
 export const StaffSelector: React.FC<StaffSelectorProps> = ({
@@ -15,7 +19,7 @@ export const StaffSelector: React.FC<StaffSelectorProps> = ({
   staffName,
   staffMembers,
   onChange,
-  expanded = false,
+  categoryId = null,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -28,20 +32,11 @@ export const StaffSelector: React.FC<StaffSelectorProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  const activeStaff = staffMembers.filter(s => s.active);
-
-  // Compact "assign" link for products with no staff
-  if (!expanded && !staffId && !isOpen) {
-    return (
-      <button
-        onClick={(e) => { e.stopPropagation(); setIsOpen(true); }}
-        className="text-[10px] text-slate-400 hover:text-slate-600 flex items-center gap-1 mt-1 transition-colors"
-      >
-        <User size={10} />
-        <span>Attribuer</span>
-      </button>
-    );
-  }
+  const eligibleStaff = useMemo(() => {
+    const active = staffMembers.filter(s => s.active);
+    if (!categoryId) return active;
+    return active.filter(s => s.skills.includes(categoryId));
+  }, [staffMembers, categoryId]);
 
   return (
     <div ref={ref} className="relative mt-1" onClick={(e) => e.stopPropagation()}>
@@ -83,7 +78,7 @@ export const StaffSelector: React.FC<StaffSelectorProps> = ({
             </div>
             Non attribué
           </button>
-          {activeStaff.map(member => (
+          {eligibleStaff.map(member => (
             <button
               key={member.id}
               role="option"
@@ -108,8 +103,10 @@ export const StaffSelector: React.FC<StaffSelectorProps> = ({
               {member.firstName} {member.lastName}
             </button>
           ))}
-          {activeStaff.length === 0 && (
-            <div className="px-3 py-2 text-xs text-slate-400">Aucun membre actif</div>
+          {eligibleStaff.length === 0 && (
+            <div className="px-3 py-2 text-xs text-slate-400">
+              {categoryId ? 'Aucun membre qualifié' : 'Aucun membre actif'}
+            </div>
           )}
         </div>
       )}

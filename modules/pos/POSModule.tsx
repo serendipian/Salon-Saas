@@ -206,6 +206,7 @@ export const POSModule: React.FC = () => {
           onEditItem={setEditingItem}
           onUpdateCartItem={updateCartItem}
           allStaff={allStaff}
+          services={services}
           totals={totals}
           onCheckout={() => setShowPaymentModal(true)}
         />
@@ -231,6 +232,7 @@ export const POSModule: React.FC = () => {
             onEditItem={(item) => { setEditingItem(item); setIsCartOpen(false); }}
             onUpdateCartItem={updateCartItem}
             allStaff={allStaff}
+            services={services}
             totals={totals}
             onCheckout={() => setShowPaymentModal(true)}
           />

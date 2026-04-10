@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ShoppingBag, Minus, Plus, Trash2, Edit3, Tag, CreditCard, User } from 'lucide-react';
-import { CartItem, Client } from '../../../types';
+import { CartItem, Client, Service } from '../../../types';
 import type { StaffMember } from '../../../types';
 import { formatPrice } from '../../../lib/format';
 import { StaffSelector } from './StaffSelector';
+import { resolveCartItemCategoryId } from '../utils/resolveCartItemCategoryId';
 
 interface CartBottomSheetProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ interface CartBottomSheetProps {
   onEditItem: (item: CartItem) => void;
   onUpdateCartItem: (id: string, updates: Partial<CartItem>) => void;
   allStaff: StaffMember[];
+  services: Service[];
   totals: { subtotal: number; tax: number; total: number; vatRate: number };
   onCheckout: () => void;
 }
@@ -34,6 +36,7 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
   onEditItem,
   onUpdateCartItem,
   allStaff,
+  services,
   totals,
   onCheckout,
 }) => {
@@ -249,7 +252,7 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
                         staffName={item.staffName}
                         staffMembers={allStaff}
                         onChange={(staffId, staffName) => onUpdateCartItem(item.id, { staffId, staffName })}
-                        expanded={item.type === 'SERVICE'}
+                        categoryId={resolveCartItemCategoryId(item, services)}
                       />
                     </div>
                     <div className="text-right">
