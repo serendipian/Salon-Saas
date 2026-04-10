@@ -16,7 +16,7 @@
 | Severity | Count | Status |
 |---|---|---|
 | CRITICAL | 0 | — |
-| HIGH | 3 remaining (8 fixed, 2 invalid) | Batches A+B+C shipped 2026-04-10 |
+| HIGH | 1 remaining (10 fixed, 2 invalid) | Batches A+B+C+D shipped 2026-04-10 |
 | MEDIUM | 21 remaining (7 fixed) | Batch work |
 | LOW | 22 | Polish queue |
 
@@ -24,7 +24,8 @@
 
 **Batch A completed 2026-04-10:** H-2, H-7, H-9, H-10, H-13 fixed. H-6 investigated and marked invalid.
 **Batch B completed 2026-04-10:** H-4, H-8 fixed via new shared `<Modal>` + `<ConfirmModal>` components. M-1, M-2, M-3, M-4, M-17 fixed alongside.
-**Batch C completed 2026-04-10:** H-3, M-21, M-22 fixed via single migration `20260410100000_favorites_concurrency_and_pack_groups_check.sql` (pending `supabase db push`). H-5 investigated and marked invalid.
+**Batch C completed 2026-04-10:** H-3, M-21, M-22 fixed via migration `20260410100000_favorites_concurrency_and_pack_groups_check.sql`, applied to remote. H-5 investigated and marked invalid.
+**Batch D completed 2026-04-10:** H-1 fixed by removing the dead custom-supplier UI path; H-11 fixed by adding a timezone mismatch warning to the Profile page.
 
 ---
 
@@ -36,10 +37,9 @@ No critical issues found. The codebase has no silent data corruption, no securit
 
 ## HIGH (13)
 
-### H-1: ExpenseForm custom-supplier text path is dead code — custom names never persist
-**Files:** `modules/accounting/components/ExpenseForm.tsx:75-77,102-111`; `modules/accounting/mappers.ts:6-52`
-**Issue:** The `expenses` table schema only has `supplier_id` (FK) — there is no `supplier` text column. `toExpense` reads `suppliers?.name` from the join, `toExpenseInsert` only writes `supplier_id`, and `updateExpenseMutation` (`useAccounting.ts:101-123`) only updates `supplier_id`. Meanwhile the form maintains `isCustomSupplier` state and a `formData.supplier` text field as if ad-hoc supplier names were stored. When a user types a custom supplier name, nothing is persisted — on reload the field is empty. This has been latent for at least one release.
-**Fix:** Either add a `supplier_text` nullable column and wire it through mapper/insert/update, or remove the entire custom-supplier UI path and require selection from the pre-defined suppliers list.
+### ~~H-1: ExpenseForm custom-supplier text path is dead code~~ RESOLVED (2026-04-10)
+**Files:** `modules/accounting/components/ExpenseForm.tsx:66-78,86-128,313-336`
+**Resolved:** Removed the entire custom-supplier UI path (Option B from the audit recommendation). `isCustomSupplier` state is gone, the `__OTHER__` Select option and the conditional text input are gone, and `formData.supplierId` is now the single source of truth (was previously `formData.supplier` storing either an ID or a name depending on mode — also fixed a latent bug where the Select would show no selection on edit because the supplier name didn't match the option's ID value). `handleSubmit` now looks up the supplier by ID and passes both `supplier` (name, for optimistic UI) and `supplierId` to the mutation. Added a helper-text line under the Bénéficiaire field directing users to create new suppliers in the Fournisseurs module.
 
 ### ~~H-2: Edit-mode variant fallback produces empty `variantId` when no match~~ RESOLVED (2026-04-10)
 **File:** `modules/appointments/pages/AppointmentEditPage.tsx:40-134`
@@ -77,10 +77,9 @@ No critical issues found. The codebase has no silent data corruption, no securit
 **File:** `modules/settings/hooks/useTeamSettings.ts:7`, `modules/settings/components/InvitationsTab.tsx:3,112`
 **Resolved:** Exported `INVITATION_EXPIRY_DAYS = 7` from `useTeamSettings`. Both the create mutation (line 144) and the UI copy (`InvitationsTab.tsx`) now import and use the constant.
 
-### H-11: `useAppointmentForm` save-flattening uses local-timezone Date construction before UTC serialization
-**File:** `modules/appointments/hooks/useAppointmentForm.ts:430-448`
-**Issue:** `new Date(year, month-1, day, hour, min, 0, 0).toISOString()` creates a Date in the browser's local timezone then serializes to UTC. For salons with staff/owners in a different timezone than the salon's physical location (e.g., owner traveling abroad), this shifts appointment times by the offset delta. Staff availability checks use browser local, so double-booking detection can silently miss overlaps.
-**Fix:** Either require all clients to be in the salon's timezone (document + enforce), or store times in minutes-since-midnight + date, and only compose the full UTC timestamp at save time using an explicit salon timezone offset.
+### ~~H-11: Save-flattening uses local timezone before UTC serialization~~ MITIGATED (2026-04-10)
+**File:** `pages/profile/ProfileSalonRole.tsx:42-60,81-94`
+**Mitigated (Option A from audit recommendation):** Picked the documentation-and-warning path rather than reworking the time storage model (which would have been a week of work for a hypothetical use case — single-location salons today). Added a timezone-mismatch detection in `ProfileSalonRole`: compares `Intl.DateTimeFormat().resolvedOptions().timeZone` against `activeSalon.timezone` and shows an amber warning card with both zones + their offsets when they differ. Catches the real failure mode (owner traveling abroad) without invasive code changes. The underlying flatten-then-serialize behavior in `useAppointmentForm.ts:430-448` is unchanged — if you ever need true multi-timezone support, that's the place to revisit.
 
 ### H-12: Edit-mode merge requires exact millisecond contiguity, fragile across daylight savings / manual time edits
 **File:** `modules/appointments/pages/AppointmentEditPage.tsx:71-78`

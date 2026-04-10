@@ -69,13 +69,10 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
     amount: 0,
     date: new Date().toISOString().slice(0,10),
     category: '',
-    supplier: '',
+    supplierId: undefined,
     paymentMethod: undefined,
   });
 
-  const [isCustomSupplier, setIsCustomSupplier] = useState(
-    isEdit && existingExpense.supplier && !existingExpense.supplierId
-  );
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(
     existingExpense?.proofUrl ? 'Justificatif' : null
@@ -93,23 +90,23 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
       e.id !== existingExpense?.id &&
       e.amount === amt &&
       e.date === formData.date &&
-      (e.supplier === formData.supplier || (!e.supplier && !formData.supplier))
+      (e.supplierId ?? null) === (formData.supplierId ?? null)
     ) ?? null;
-  }, [formData.amount, formData.date, formData.supplier, allExpenses, existingExpense?.id]);
+  }, [formData.amount, formData.date, formData.supplierId, allExpenses, existingExpense?.id]);
 
   const handleSubmit = () => {
     const validated = validate(formData);
     if (!validated) return;
 
-    const selectedSupplier = !isCustomSupplier
-      ? suppliers.find(s => s.id === formData.supplier)
+    const selectedSupplier = formData.supplierId
+      ? suppliers.find(s => s.id === formData.supplierId)
       : undefined;
     const expenseData = {
       description: formData.description!,
       amount: Number(formData.amount),
       date: formData.date || new Date().toISOString(),
-      category: (formData.category || expenseCategories[0]?.id) as ExpenseCategory,
-      supplier: selectedSupplier?.name ?? formData.supplier,
+      category: formData.category as ExpenseCategory,
+      supplier: selectedSupplier?.name,
       supplierId: selectedSupplier?.id,
       paymentMethod: formData.paymentMethod,
       proofUrl: formData.proofUrl,
@@ -124,8 +121,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
 
   const handleCategoryChange = (val: string) => {
     clearFieldError('category');
-    setFormData({ ...formData, category: val, supplier: '', supplierId: undefined });
-    setIsCustomSupplier(false);
+    setFormData({ ...formData, category: val, supplierId: undefined });
   };
 
   const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -317,16 +313,8 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
 
               <Select
                  label="Bénéficiaire"
-                 value={isCustomSupplier ? '__OTHER__' : formData.supplier || ''}
-                 onChange={(val) => {
-                    if (val === '__OTHER__') {
-                       setIsCustomSupplier(true);
-                       setFormData({...formData, supplier: ''});
-                    } else {
-                       setIsCustomSupplier(false);
-                       setFormData({...formData, supplier: val as string});
-                    }
-                 }}
+                 value={formData.supplierId ?? ''}
+                 onChange={(val) => setFormData({ ...formData, supplierId: val ? (val as string) : undefined })}
                  searchable
                  placeholder="Rechercher un bénéficiaire..."
                  options={[
@@ -340,21 +328,11 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ existingExpense, allEx
                           initials: s.name.substring(0, 2).toUpperCase()
                        };
                     }),
-                    { value: '__OTHER__', label: 'Autre / Saisir manuellement...', initials: '+' }
                  ]}
               />
-
-              {isCustomSupplier && (
-                 <div className="animate-in slide-in-from-top-2">
-                    <Input
-                       label="Nom du bénéficiaire"
-                       autoFocus
-                       value={formData.supplier}
-                       onChange={(e) => setFormData({...formData, supplier: e.target.value})}
-                       placeholder="Saisir le nom..."
-                    />
-                 </div>
-              )}
+              <p className="text-xs text-slate-500 mt-1.5">
+                Le bénéficiaire doit exister dans la liste des fournisseurs. Pour ajouter un nouveau bénéficiaire, créez-le d'abord depuis le module Fournisseurs.
+              </p>
            </Section>
 
            {/* Payment Method */}
