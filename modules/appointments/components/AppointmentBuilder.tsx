@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { UseAppointmentFormProps } from '../hooks/useAppointmentForm';
 import { useAppointmentForm } from '../hooks/useAppointmentForm';
 import ClientField from './ClientField';
 import ServiceBlock from './ServiceBlock';
-import InlineCalendar from './InlineCalendar';
-import TimePicker from './TimePicker';
+import StaffCalendarPanel from './StaffCalendarPanel';
 import ReminderToggle from './ReminderToggle';
 import AppointmentSummary from './AppointmentSummary';
 import { ArrowLeft, Save, Trash2, Plus, Users, StickyNote } from 'lucide-react';
@@ -22,6 +21,34 @@ export default function AppointmentBuilder({
   const form = useAppointmentForm(hookProps);
   const [showNotes, setShowNotes] = useState(() => Boolean(form.notes));
   const [showExistingClientSearch, setShowExistingClientSearch] = useState(false);
+
+  // Connector: track vertical position of active service block
+  const serviceBlockRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const rightSubpanelRef = useRef<HTMLDivElement>(null);
+  const [connectorTop, setConnectorTop] = useState<number | null>(null);
+
+  const setBlockRef = useCallback((index: number, el: HTMLDivElement | null) => {
+    if (el) {
+      serviceBlockRefs.current.set(index, el);
+    } else {
+      serviceBlockRefs.current.delete(index);
+    }
+  }, []);
+
+  // Recalculate connector position when active block changes
+  useEffect(() => {
+    const activeEl = serviceBlockRefs.current.get(form.activeBlockIndex);
+    if (!activeEl) {
+      setConnectorTop(null);
+      return;
+    }
+    const parentEl = activeEl.parentElement?.parentElement; // the right panel wrapper
+    if (!parentEl) return;
+    const parentRect = parentEl.getBoundingClientRect();
+    const activeRect = activeEl.getBoundingClientRect();
+    // Center of the active block relative to the right panel wrapper
+    setConnectorTop(activeRect.top - parentRect.top + activeRect.height / 2);
+  }, [form.activeBlockIndex, form.serviceBlocks.length]);
 
   return (
     <div>
@@ -62,115 +89,55 @@ export default function AppointmentBuilder({
       </div>
 
       <div className="flex gap-5 max-md:flex-col">
-        {/* LEFT PANEL */}
-        <div className="flex-[1.3] bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        {/* LEFT SIDEBAR — 1/4 */}
+        <div className="flex-[1] space-y-4 max-md:order-first">
           {/* Step 1 — Client */}
-          <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2.5">
-                <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">1</span>
-                <span className="text-slate-900 text-sm font-semibold">Client</span>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+            <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">1</span>
+                  <span className="text-slate-900 text-sm font-semibold">Client</span>
+                </div>
+                {!form.clientId && !showExistingClientSearch && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowExistingClientSearch(true);
+                      form.setNewClient(null);
+                    }}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-sm"
+                  >
+                    <Users size={12} />
+                    Client existant
+                  </button>
+                )}
               </div>
-              {!form.clientId && !showExistingClientSearch && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowExistingClientSearch(true);
-                    form.setNewClient(null);
-                  }}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-sm"
-                >
-                  <Users size={12} />
-                  Client existant
-                </button>
-              )}
+              <ClientField
+                clients={hookProps.clients}
+                selectedClientId={form.clientId}
+                onSelectClient={(id) => { form.setClientId(id); form.setNewClient(null); form.clearFieldError('clientId'); }}
+                onClearClient={() => form.setClientId(null)}
+                newClientData={form.newClient}
+                onNewClientChange={form.setNewClient}
+                error={form.errors.clientId}
+                showExistingSearch={showExistingClientSearch}
+                onShowExistingSearchChange={setShowExistingClientSearch}
+              />
             </div>
-            <ClientField
-              clients={hookProps.clients}
-              selectedClientId={form.clientId}
-              onSelectClient={(id) => { form.setClientId(id); form.setNewClient(null); form.clearFieldError('clientId'); }}
-              onClearClient={() => form.setClientId(null)}
-              newClientData={form.newClient}
-              onNewClientChange={form.setNewClient}
-              error={form.errors.clientId}
-              showExistingSearch={showExistingClientSearch}
-              onShowExistingSearchChange={setShowExistingClientSearch}
+          </div>
+
+          {/* Total Summary — always visible */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+            <AppointmentSummary
+              serviceBlocks={form.serviceBlocks}
+              services={hookProps.services}
             />
           </div>
 
-          {/* Service blocks */}
-          <div className="space-y-3 mb-4">
-            {form.serviceBlocks.map((block, i) => (
-              <ServiceBlock
-                key={block.id}
-                block={block}
-                index={i}
-                isActive={i === form.activeBlockIndex}
-                services={hookProps.services}
-                categories={hookProps.categories}
-                favorites={hookProps.favorites ?? []}
-                packs={hookProps.packs ?? []}
-                onAddPackBlocks={form.addPackBlocks}
-                onActivate={() => form.setActiveBlockIndex(i)}
-                onRemove={() => form.removeBlock(i)}
-                onUpdate={(updates) => form.updateBlock(i, updates)}
-                onToggleItem={(serviceId, variantId) => form.toggleBlockItem(i, serviceId, variantId)}
-                onClearItems={() => form.clearBlockItems(i)}
-                summaryText={form.getBlockSummary(block)}
-                stepOffset={1}
-              />
-            ))}
-          </div>
-
-          {/* Add service button */}
-          <button
-            type="button"
-            onClick={form.addBlock}
-            className="w-full border-2 border-dashed border-slate-200 rounded-2xl py-3.5 text-slate-400 text-sm hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-center gap-2 mb-5"
-          >
-            <Plus size={16} /> Ajouter un service
-          </button>
-
-          {/* Total Summary */}
-          {form.serviceBlocks.length > 0 && (
-            <div className="mt-4">
-              <AppointmentSummary
-                serviceBlocks={form.serviceBlocks}
-                services={hookProps.services}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* RIGHT PANEL — single card containing step 4 + Rappel + Notes */}
-        <div className="flex-[0.6]">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-5">
-            {/* Step 4 — Date & Heure (blue section containing only date + time pickers) */}
-            <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
-              <div className="flex items-center gap-2.5 mb-3">
-                <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">4</span>
-                <span className="text-slate-900 text-sm font-semibold">Date & Heure</span>
-              </div>
-              <div className="space-y-4">
-                <InlineCalendar
-                  value={form.activeBlock?.date ?? null}
-                  onChange={(date) => form.updateBlock(form.activeBlockIndex, { date })}
-                />
-                <TimePicker
-                  hour={form.activeBlock?.hour ?? null}
-                  minute={form.activeBlock?.minute ?? 0}
-                  onHourChange={(hour) => form.updateBlock(form.activeBlockIndex, { hour })}
-                  onMinuteChange={(minute) => form.updateBlock(form.activeBlockIndex, { minute })}
-                  unavailableHours={form.unavailableHours}
-                  dateSelected={(form.activeBlock?.date ?? null) !== null}
-                />
-              </div>
-            </div>
-
-            {/* Rappel */}
-            <div className="pt-1">
-              <ReminderToggle value={form.reminderMinutes} onChange={form.setReminderMinutes} />
-            </div>
+          {/* Rappel + Notes */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
+            <ReminderToggle value={form.reminderMinutes} onChange={form.setReminderMinutes} />
 
             {/* Notes — toggleable */}
             <div>
@@ -200,6 +167,71 @@ export default function AppointmentBuilder({
                   className="mt-3 w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none resize-none min-h-[44px] transition-all"
                 />
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT AREA — 3/4 */}
+        <div className="flex-[3] relative">
+          <div className="flex gap-5 max-[1200px]:flex-col">
+            {/* Services subpanel — 2/3 */}
+            <div className="flex-[2] space-y-3">
+              {form.serviceBlocks.map((block, i) => (
+                <div key={block.id} ref={(el) => setBlockRef(i, el)}>
+                  <ServiceBlock
+                    block={block}
+                    index={i}
+                    isActive={i === form.activeBlockIndex}
+                    services={hookProps.services}
+                    categories={hookProps.categories}
+                    favorites={hookProps.favorites ?? []}
+                    packs={hookProps.packs ?? []}
+                    onAddPackBlocks={form.addPackBlocks}
+                    onActivate={() => form.setActiveBlockIndex(i)}
+                    onRemove={() => form.removeBlock(i)}
+                    onUpdate={(updates) => form.updateBlock(i, updates)}
+                    onToggleItem={(serviceId, variantId) => form.toggleBlockItem(i, serviceId, variantId)}
+                    onClearItems={() => form.clearBlockItems(i)}
+                    summaryText={form.getBlockSummary(block)}
+                    stepOffset={1}
+                  />
+                </div>
+              ))}
+
+              {/* Add service button */}
+              <button
+                type="button"
+                onClick={form.addBlock}
+                className="w-full border-2 border-dashed border-slate-200 rounded-2xl py-3.5 text-slate-400 text-sm hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-center gap-2"
+              >
+                <Plus size={16} /> Ajouter un service
+              </button>
+            </div>
+
+            {/* Connector line — hidden on stacked layout */}
+            {connectorTop !== null && (
+              <div
+                className="absolute w-5 border-t-2 border-blue-400 max-[1200px]:hidden"
+                style={{
+                  top: connectorTop,
+                  left: 'calc(66.666% - 10px)',
+                  transition: 'top 200ms ease',
+                }}
+              />
+            )}
+
+            {/* Staff + Calendar subpanel — 1/3 */}
+            <div className="flex-[1]" ref={rightSubpanelRef}>
+              <div className="sticky top-4">
+                <StaffCalendarPanel
+                  activeBlock={form.activeBlock}
+                  activeBlockIndex={form.activeBlockIndex}
+                  team={hookProps.team}
+                  services={hookProps.services}
+                  unavailableHours={form.unavailableHours}
+                  onUpdateBlock={form.updateBlock}
+                />
+              </div>
             </div>
           </div>
         </div>
