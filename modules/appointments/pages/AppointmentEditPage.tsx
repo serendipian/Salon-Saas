@@ -53,6 +53,11 @@ export const AppointmentEditPage: React.FC = () => {
     let current: ServiceBlockState | null = null;
     let currentCursorEnd: Date | null = null;
     let unresolved = 0;
+    // H-12: Tolerance window for back-to-back appointments. Strict equality
+    // (== getTime()) breaks on DST crossings, manual DB time edits, or any
+    // sub-minute drift. 60s is well below the smallest realistic appointment
+    // duration so it can't accidentally bridge a real gap.
+    const MERGE_TOLERANCE_MS = 60_000;
 
     for (const appt of sorted) {
       const apptStart = new Date(appt.date);
@@ -87,7 +92,7 @@ export const AppointmentEditPage: React.FC = () => {
         current.categoryId === (svc.categoryId ?? null) &&
         current.date === dateStr &&
         currentCursorEnd != null &&
-        currentCursorEnd.getTime() === apptStart.getTime();
+        Math.abs(currentCursorEnd.getTime() - apptStart.getTime()) <= MERGE_TOLERANCE_MS;
 
       if (canMerge && current) {
         current.items.push(item);

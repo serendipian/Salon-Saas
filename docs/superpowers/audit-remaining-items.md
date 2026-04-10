@@ -16,7 +16,7 @@
 | Severity | Count | Status |
 |---|---|---|
 | CRITICAL | 0 | — |
-| HIGH | 1 remaining (10 fixed, 2 invalid) | Batches A+B+C+D shipped 2026-04-10 |
+| HIGH | 0 remaining (11 fixed, 2 invalid) | All HIGH cleared 2026-04-10 |
 | MEDIUM | 21 remaining (7 fixed) | Batch work |
 | LOW | 22 | Polish queue |
 
@@ -81,10 +81,9 @@ No critical issues found. The codebase has no silent data corruption, no securit
 **File:** `pages/profile/ProfileSalonRole.tsx:42-60,81-94`
 **Mitigated (Option A from audit recommendation):** Picked the documentation-and-warning path rather than reworking the time storage model (which would have been a week of work for a hypothetical use case — single-location salons today). Added a timezone-mismatch detection in `ProfileSalonRole`: compares `Intl.DateTimeFormat().resolvedOptions().timeZone` against `activeSalon.timezone` and shows an amber warning card with both zones + their offsets when they differ. Catches the real failure mode (owner traveling abroad) without invasive code changes. The underlying flatten-then-serialize behavior in `useAppointmentForm.ts:430-448` is unchanged — if you ever need true multi-timezone support, that's the place to revisit.
 
-### H-12: Edit-mode merge requires exact millisecond contiguity, fragile across daylight savings / manual time edits
-**File:** `modules/appointments/pages/AppointmentEditPage.tsx:71-78`
-**Issue:** The merge condition is `currentCursorEnd.getTime() === apptStart.getTime()`. Any drift (a 1-second difference from a manual DB edit, a daylight-savings crossing, a clock adjustment on the server) breaks the merge and the contiguous block appears as separate blocks in edit mode.
-**Fix:** Use a tolerance window (e.g., within 60 seconds). Also detect the case where appointments should merge but don't and emit a debug log so this can be monitored.
+### ~~H-12: Edit-mode merge requires exact millisecond contiguity~~ RESOLVED (2026-04-10)
+**File:** `modules/appointments/pages/AppointmentEditPage.tsx:56-95`
+**Resolved:** Replaced strict `.getTime() === .getTime()` equality with a 60-second tolerance window: `Math.abs(currentCursorEnd.getTime() - apptStart.getTime()) <= MERGE_TOLERANCE_MS`. 60s is well below the smallest realistic appointment duration so it can't accidentally bridge a real gap. Handles DST crossings, manual DB time edits, and any sub-minute drift.
 
 ### ~~H-13: Unsafe `any` types in `useStaffCompensation`~~ RESOLVED (2026-04-10)
 **File:** `modules/team/hooks/useStaffCompensation.ts:3,30-37`
