@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import type { Session, User, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { setSalonCurrency } from '../lib/format';
+import { useRealtimeEpoch } from '../lib/realtimeReset';
 import type {
   Role,
   Profile,
@@ -58,6 +59,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const roleRef = useRef(role);
   activeSalonRef.current = activeSalon;
   roleRef.current = role;
+
+  const epoch = useRealtimeEpoch();
 
   // Sync global currency for formatPrice()
   useEffect(() => {
@@ -266,7 +269,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activeSalon?.id]);
+  }, [activeSalon?.id, epoch]);
 
   // Real-time membership tracking (detect revocation / role changes)
   useEffect(() => {
@@ -317,7 +320,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, fetchMemberships]);
+  }, [user, fetchMemberships, epoch]);
 
   // --- Auth Actions ---
 
