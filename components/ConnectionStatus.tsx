@@ -6,14 +6,18 @@ import type { ConnectionState } from '../hooks/useConnectionStatus';
 
 const DOT_STYLES: Record<ConnectionState, string> = {
   connected: 'bg-emerald-500',
+  recovering: 'bg-amber-500 animate-pulse',
   reconnecting: 'bg-amber-500 animate-pulse',
   disconnected: 'bg-red-500',
+  offline: 'bg-red-500',
 };
 
 const TOOLTIP: Record<ConnectionState, string> = {
   connected: 'Connecté',
+  recovering: 'Synchronisation en cours...',
   reconnecting: 'Reconnexion en cours...',
   disconnected: 'Connexion perdue',
+  offline: 'Hors ligne',
 };
 
 export const ConnectionStatusDot: React.FC = () => {
@@ -34,7 +38,7 @@ export const ConnectionBanner: React.FC = () => {
     if (status === 'connected') setRetrying(false);
   }, [status]);
 
-  if (status !== 'disconnected') return null;
+  if (status !== 'disconnected' && status !== 'offline') return null;
 
   const handleRetry = () => {
     setRetrying(true);
