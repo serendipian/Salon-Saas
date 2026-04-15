@@ -29,7 +29,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: string | null }>;
   signInWithMagicLink: (email: string) => Promise<{ error: string | null }>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
-  updatePassword: (newPassword: string) => Promise<{ error: string | null }>;
+  updatePassword: (newPassword: string, currentPassword?: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 
   // Profile actions
@@ -335,7 +335,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (lower.includes('rate limit') || lower.includes('too many requests'))
       return 'Trop de tentatives. Veuillez réessayer dans quelques minutes.';
     if (lower.includes('password') && lower.includes('least'))
-      return 'Le mot de passe doit contenir au moins 6 caractères.';
+      return 'Le mot de passe doit contenir au moins 8 caractères.';
     if (lower.includes('network') || lower.includes('fetch'))
       return 'Erreur de connexion. Vérifiez votre connexion internet.';
     return 'Une erreur est survenue. Veuillez réessayer.';
@@ -369,7 +369,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error: error ? sanitizeAuthError(error.message) : null };
   }, []);
 
-  const updatePassword = useCallback(async (newPassword: string) => {
+  const updatePassword = useCallback(async (newPassword: string, currentPassword?: string) => {
     // Raw fetch — supabase.auth.updateUser() can hang indefinitely after
     // background-tab throttling (same SDK lock issue as getUser/signOut).
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
@@ -401,7 +401,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ password: newPassword }),
+        body: JSON.stringify(
+          currentPassword
+            ? { password: newPassword, current_password: currentPassword }
+            : { password: newPassword },
+        ),
         signal: controller.signal,
       });
       if (!response.ok) {

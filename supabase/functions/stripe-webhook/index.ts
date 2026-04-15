@@ -2,16 +2,19 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@17';
 
+class PermanentError extends Error {
+  constructor(msg: string) { super(msg); this.name = 'PermanentError'; }
+}
+
 Deno.serve(async (req) => {
   const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
   const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
 
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
-  // Verify Stripe signature — MUST be first
   const signature = req.headers.get('stripe-signature');
   const body = await req.text();
 
@@ -23,6 +26,20 @@ Deno.serve(async (req) => {
     return new Response('Invalid signature', { status: 400 });
   }
 
+  // Idempotency short-circuit: already processed?
+  const { data: already } = await supabase
+    .from('processed_stripe_events')
+    .select('event_id')
+    .eq('event_id', event.id)
+    .maybeSingle();
+
+  if (already) {
+    console.log('Duplicate Stripe event, skipping:', event.id, event.type);
+    return new Response(JSON.stringify({ received: true, duplicate: true }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     switch (event.type) {
 
@@ -32,7 +49,7 @@ Deno.serve(async (req) => {
         if (!salonId || session.mode !== 'subscription') break;
 
         const stripeSubscription = await stripe.subscriptions.retrieve(
-          session.subscription as string
+          session.subscription as string,
         );
 
         const { data: plans } = await supabase
@@ -41,18 +58,21 @@ Deno.serve(async (req) => {
           .eq('stripe_price_id_monthly', stripeSubscription.items.data[0].price.id)
           .single();
 
-        // 'Premium' plan → 'premium' tier, 'Pro' plan → 'pro' tier
+        if (!plans) throw new PermanentError('Plan not found for price id');
+
         const PLAN_TIER: Record<string, string> = { premium: 'premium', pro: 'pro' };
-        const tier = PLAN_TIER[plans?.name?.toLowerCase() ?? ''] ?? 'premium';
+        const tier = PLAN_TIER[plans.name.toLowerCase()] ?? 'premium';
 
         await supabase.from('subscriptions').upsert({
           salon_id: salonId,
-          plan_id: plans?.id,
+          plan_id: plans.id,
           status: 'active',
           stripe_customer_id: session.customer as string,
           stripe_subscription_id: session.subscription as string,
           stripe_price_id: stripeSubscription.items.data[0].price.id,
-          current_period_end: new Date(stripeSubscription.current_period_end * 1000).toISOString(),
+          current_period_end: new Date(
+            stripeSubscription.current_period_end * 1000,
+          ).toISOString(),
         }, { onConflict: 'salon_id' });
 
         await supabase.from('salons')
@@ -77,13 +97,15 @@ Deno.serve(async (req) => {
           .eq('stripe_price_id_monthly', sub.items.data[0].price.id)
           .single();
 
+        if (!plan) throw new PermanentError('Plan not found for price id (subscription.updated)');
+
         const PLAN_TIER: Record<string, string> = { premium: 'premium', pro: 'pro' };
-        const tier = PLAN_TIER[plan?.name?.toLowerCase() ?? ''] ?? 'premium';
+        const tier = PLAN_TIER[plan.name.toLowerCase()] ?? 'premium';
 
         await supabase.from('subscriptions').update({
           status: sub.status === 'past_due' ? 'past_due' : 'active',
           stripe_price_id: sub.items.data[0].price.id,
-          plan_id: plan?.id,
+          plan_id: plan.id,
           current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
         }).eq('stripe_subscription_id', sub.id);
 
@@ -99,15 +121,6 @@ Deno.serve(async (req) => {
       case 'invoice.paid': {
         const invoice = event.data.object as Stripe.Invoice;
 
-        // Idempotency: skip if already processed
-        const { data: existing } = await supabase
-          .from('invoices')
-          .select('id')
-          .eq('stripe_event_id', event.id)
-          .single();
-
-        if (existing) break;
-
         const { data: subscription } = await supabase
           .from('subscriptions')
           .select('id, salon_id')
@@ -116,7 +129,7 @@ Deno.serve(async (req) => {
 
         if (!subscription) break;
 
-        await supabase.from('invoices').insert({
+        await supabase.from('invoices').upsert({
           salon_id: subscription.salon_id,
           subscription_id: subscription.id,
           stripe_invoice_id: invoice.id,
@@ -127,10 +140,12 @@ Deno.serve(async (req) => {
           hosted_invoice_url: invoice.hosted_invoice_url,
           invoice_pdf_url: invoice.invoice_pdf,
           paid_at: new Date(invoice.status_transitions.paid_at! * 1000).toISOString(),
-        });
+        }, { onConflict: 'stripe_invoice_id', ignoreDuplicates: true });
 
         await supabase.from('subscriptions').update({
-          current_period_end: new Date((invoice.lines.data[0]?.period.end ?? 0) * 1000).toISOString(),
+          current_period_end: new Date(
+            (invoice.lines.data[0]?.period.end ?? 0) * 1000,
+          ).toISOString(),
           status: 'active',
         }).eq('id', subscription.id);
         break;
@@ -168,8 +183,6 @@ Deno.serve(async (req) => {
 
         if (!subscription) break;
 
-        // Stripe Customer Portal cancels at period end — deletion event fires at period end
-        // So setting free immediately is correct
         await supabase.from('subscriptions').update({
           status: 'cancelled',
           cancelled_at: new Date().toISOString(),
@@ -182,16 +195,33 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Mark event as processed. This is idempotent — if a concurrent worker
+    // already inserted, the UNIQUE on event_id raises, which we ignore.
+    await supabase
+      .from('processed_stripe_events')
+      .insert({ event_id: event.id, event_type: event.type });
+
     return new Response(JSON.stringify({ received: true }), {
       headers: { 'Content-Type': 'application/json' },
     });
 
   } catch (err) {
-    console.error('Webhook handler error:', err);
-    // Return 500 so Stripe retries on transient failures (network, DB errors)
-    return new Response(JSON.stringify({ error: 'Internal handler error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // Permanent errors: log, mark processed, return 200 so Stripe stops retrying.
+    if (err instanceof PermanentError) {
+      console.error('Permanent webhook error, not retrying:', event.id, err.message);
+      await supabase
+        .from('processed_stripe_events')
+        .insert({ event_id: event.id, event_type: event.type });
+      return new Response(
+        JSON.stringify({ received: true, permanent_error: err.message }),
+        { headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+    // Transient: 500 triggers Stripe retry.
+    console.error('Webhook handler error, will retry:', event.id, err);
+    return new Response(
+      JSON.stringify({ error: 'Internal handler error' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } },
+    );
   }
 });
