@@ -335,7 +335,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (lower.includes('rate limit') || lower.includes('too many requests'))
       return 'Trop de tentatives. Veuillez réessayer dans quelques minutes.';
     if (lower.includes('password') && lower.includes('least'))
-      return 'Le mot de passe doit contenir au moins 6 caractères.';
+      return 'Le mot de passe doit contenir au moins 8 caractères.';
     if (lower.includes('network') || lower.includes('fetch'))
       return 'Erreur de connexion. Vérifiez votre connexion internet.';
     return 'Une erreur est survenue. Veuillez réessayer.';
