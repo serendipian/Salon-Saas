@@ -1,0 +1,111 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.12/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/.worktrees",
+      "!**/.playwright-mcp",
+      "!**/.superpowers",
+      "!**/.claude",
+      "!**/.vscode",
+      "!**/lib/database.types.ts",
+      "!**/supabase/migrations",
+      "!**/supabase/functions/**/*.ts",
+      "!**/package-lock.json",
+      "!**/*.css"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "trailingCommas": "all",
+      "semicolons": "always"
+    }
+  },
+  "css": {
+    "linter": {
+      "enabled": false
+    },
+    "formatter": {
+      "enabled": false
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        // organizeImports runs as safe-fix only; don't fail CI on unsorted imports.
+        "organizeImports": "off"
+      }
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      // Audit items tracked at `warn` — visible but don't block CI. Follow-up
+      // PRs drive these down. Hard-fix rules at `error` must stay clean.
+      "suspicious": {
+        "noAlert": "warn",
+        "noExplicitAny": "warn",
+        "noConsole": { "level": "warn", "options": { "allow": ["error", "warn"] } },
+        "noArrayIndexKey": "warn",
+        "useIterableCallbackReturn": "warn",
+        "noGlobalIsNan": "warn",
+        "noImplicitAnyLet": "warn",
+        "noShadowRestrictedNames": "warn"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "warn",
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error",
+        "noUnusedFunctionParameters": "warn",
+        "useParseIntRadix": "warn"
+      },
+      "style": {
+        "noNonNullAssertion": "warn",
+        "useTemplate": "warn"
+      },
+      "complexity": {
+        "useOptionalChain": "warn",
+        "useLiteralKeys": "warn"
+      },
+      "a11y": {
+        // All a11y findings tracked at `warn` — address in Plan B (audit H-a11y).
+        "useButtonType": "warn",
+        "noLabelWithoutControl": "warn",
+        "useKeyWithClickEvents": "warn",
+        "noStaticElementInteractions": "warn",
+        "noSvgWithoutTitle": "warn",
+        "noAriaUnsupportedElements": "warn",
+        "useAltText": "warn",
+        "useValidAriaValues": "warn",
+        "useValidAriaRole": "warn",
+        "useSemanticElements": "warn",
+        "useValidAriaProps": "warn",
+        "useAriaPropsSupportedByRole": "warn",
+        "noNoninteractiveTabindex": "warn",
+        "noRedundantAlt": "warn",
+        "noAutofocus": "warn"
+      },
+      "nursery": {
+        "noFloatingPromises": "warn"
+      }
+    }
+  }
+}

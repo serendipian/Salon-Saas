@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
 import { Shield, UserMinus } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { useAuth } from '../../../context/AuthContext';
 import type { Role } from '../../../lib/auth.types';
 import type { MemberRow } from '../hooks/useTeamSettings';
 import { RevokeAccessModal } from './RevokeAccessModal';
 import { TransferOwnershipModal } from './TransferOwnershipModal';
-import { useAuth } from '../../../context/AuthContext';
 
 const ROLE_LABELS: Record<string, string> = {
   owner: 'Propriétaire',
@@ -36,10 +37,15 @@ interface MembersTabProps {
 }
 
 export const MembersTab: React.FC<MembersTabProps> = ({
-  members, currentUserRole, currentUserId,
-  onChangeRole, isChangingRole,
-  onRevoke, isRevoking,
-  onTransfer, isTransferring,
+  members,
+  currentUserRole,
+  currentUserId,
+  onChangeRole,
+  isChangingRole,
+  onRevoke,
+  isRevoking,
+  onTransfer,
+  isTransferring,
 }) => {
   const { activeSalon } = useAuth();
   const [revokeTarget, setRevokeTarget] = useState<MemberRow | null>(null);
@@ -82,7 +88,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
   return (
     <div className="space-y-6">
       <div className="border border-slate-200 rounded-xl bg-white divide-y divide-slate-100">
-        {members.map(member => (
+        {members.map((member) => (
           <div key={member.id} className="flex items-center gap-4 p-4">
             {member.profile.avatar_url ? (
               <img
@@ -109,19 +115,23 @@ export const MembersTab: React.FC<MembersTabProps> = ({
             {canEditRole(member) ? (
               <select
                 value={member.role}
-                onChange={e => onChangeRole(member.id, e.target.value as Role)}
+                onChange={(e) => onChangeRole(member.id, e.target.value as Role)}
                 disabled={isChangingRole}
                 className="text-xs font-medium px-3 py-1.5 border border-slate-200 rounded-lg bg-white"
               >
                 <option value={member.role}>{ROLE_LABELS[member.role]}</option>
                 {getRoleOptions()
-                  .filter(r => r !== member.role)
-                  .map(r => (
-                    <option key={`role-${r}`} value={r}>{ROLE_LABELS[r]}</option>
+                  .filter((r) => r !== member.role)
+                  .map((r) => (
+                    <option key={`role-${r}`} value={r}>
+                      {ROLE_LABELS[r]}
+                    </option>
                   ))}
               </select>
             ) : (
-              <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${ROLE_COLORS[member.role] || 'bg-slate-100 text-slate-600'}`}>
+              <span
+                className={`text-xs font-medium px-3 py-1.5 rounded-full ${ROLE_COLORS[member.role] || 'bg-slate-100 text-slate-600'}`}
+              >
                 {ROLE_LABELS[member.role] || member.role}
               </span>
             )}

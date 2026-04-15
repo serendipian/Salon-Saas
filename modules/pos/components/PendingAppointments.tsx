@@ -1,8 +1,8 @@
-import React from 'react';
-import { Calendar, Clock, User, AlertTriangle } from 'lucide-react';
-import type { Appointment } from '../../../types';
-import { formatPrice } from '../../../lib/format';
+import { AlertTriangle, Calendar, Clock, User } from 'lucide-react';
+import type React from 'react';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { formatPrice } from '../../../lib/format';
+import type { Appointment } from '../../../types';
 
 interface PendingAppointmentsProps {
   appointments: Appointment[];
@@ -32,10 +32,10 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
 
   // Group by groupId (null = standalone appointment)
   const grouped = new Map<string, Appointment[]>();
-  appointments.forEach(appt => {
+  appointments.forEach((appt) => {
     const key = appt.groupId ?? appt.id;
     if (!grouped.has(key)) grouped.set(key, []);
-    grouped.get(key)!.push(appt);
+    grouped.get(key)?.push(appt);
   });
 
   return (
@@ -43,7 +43,7 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
       {Array.from(grouped.entries()).map(([groupKey, groupAppts]) => {
         const primary = groupAppts[0];
         const isOverdue = new Date(primary.date) < todayStart;
-        const isLinked = groupAppts.some(a => a.id === linkedAppointmentId);
+        const isLinked = groupAppts.some((a) => a.id === linkedAppointmentId);
         const totalPrice = groupAppts.reduce((sum, a) => sum + a.price, 0);
 
         return (
@@ -69,35 +69,40 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
 
             {/* Linked badge */}
             {isLinked && (
-              <div className="text-xs font-semibold text-green-600 mb-2">
-                Dans le panier
-              </div>
+              <div className="text-xs font-semibold text-green-600 mb-2">Dans le panier</div>
             )}
 
             {/* Client name */}
             <div className="font-semibold text-slate-900 text-sm mb-1">
-              {primary.clientName || <span className="text-slate-400 italic">Client de passage</span>}
+              {primary.clientName || (
+                <span className="text-slate-400 italic">Client de passage</span>
+              )}
             </div>
 
             {/* Time */}
             <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3">
               <Clock size={12} />
               <span>
-                {new Date(primary.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {new Date(primary.date).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
               </span>
             </div>
 
             {/* Services list */}
             <div className="space-y-1.5 mb-3">
-              {groupAppts.map(appt => (
+              {groupAppts.map((appt) => (
                 <div key={appt.id} className="flex justify-between items-center text-xs">
                   <div className="flex-1 min-w-0">
-                    <span className="text-slate-700 font-medium truncate block">{appt.serviceName}</span>
-                    {appt.variantName && (
-                      <span className="text-slate-400">{appt.variantName}</span>
-                    )}
+                    <span className="text-slate-700 font-medium truncate block">
+                      {appt.serviceName}
+                    </span>
+                    {appt.variantName && <span className="text-slate-400">{appt.variantName}</span>}
                   </div>
-                  <span className="text-slate-600 font-medium ml-2 shrink-0">{formatPrice(appt.price)}</span>
+                  <span className="text-slate-600 font-medium ml-2 shrink-0">
+                    {formatPrice(appt.price)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -108,7 +113,7 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
                 <User size={12} />
                 <span className="truncate max-w-[120px]">
                   {(() => {
-                    const names = [...new Set(groupAppts.map(a => a.staffName).filter(Boolean))];
+                    const names = [...new Set(groupAppts.map((a) => a.staffName).filter(Boolean))];
                     return names.length > 0 ? names.join(', ') : 'Non attribué';
                   })()}
                 </span>

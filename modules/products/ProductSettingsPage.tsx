@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { ArrowLeft, Layers, Settings, Tag } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Layers, Tag, Settings } from 'lucide-react';
-import { ProductCategoriesTab } from './components/ProductCategoriesTab';
 import { BrandsTab } from './components/BrandsTab';
+import { ProductCategoriesTab } from './components/ProductCategoriesTab';
 import { ProductGeneralTab } from './components/ProductGeneralTab';
 
 type Tab = 'categories' | 'brands' | 'general';

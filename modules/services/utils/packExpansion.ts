@@ -1,4 +1,4 @@
-import type { Pack, PackGroup, CartItem } from '../../../types';
+import type { CartItem, Pack, PackGroup } from '../../../types';
 
 /**
  * Expands a pack into individual CartItems with pro-rata discounted prices.
@@ -49,8 +49,11 @@ export function expandPack(pack: Pack): CartItem[] {
  * Checks if a pack is valid (all items reference active, non-deleted services/variants).
  */
 export function isPackValid(pack: Pack): boolean {
-  return pack.items.length > 0 && pack.items.every(
-    (item) => item.serviceName !== '' && item.variantName !== '' && !item.isDeleted
+  return (
+    pack.items.length > 0 &&
+    pack.items.every(
+      (item) => item.serviceName !== '' && item.variantName !== '' && !item.isDeleted,
+    )
   );
 }
 

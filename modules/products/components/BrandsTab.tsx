@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, ArrowUp, ArrowDown, Save } from 'lucide-react';
-import { ColorPicker } from '../../services/components/ColorPicker';
-import { useProducts } from '../hooks/useProducts';
-import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
+import { ArrowDown, ArrowUp, Plus, Save, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import type { Brand } from '../../../types';
+import { ColorPicker } from '../../services/components/ColorPicker';
+import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
+import { useProducts } from '../hooks/useProducts';
 
 export function BrandsTab() {
   const { brands, updateBrands } = useProducts();
@@ -41,7 +41,7 @@ export function BrandsTab() {
   };
 
   const hasChanges = JSON.stringify(localBrands) !== JSON.stringify(brands);
-  const hasEmptyNames = localBrands.some(b => !b.name.trim());
+  const hasEmptyNames = localBrands.some((b) => !b.name.trim());
 
   const handleSave = () => {
     if (hasEmptyNames) return;
@@ -87,12 +87,16 @@ export function BrandsTab() {
 
             <select
               value={brand.supplierId ?? ''}
-              onChange={(e) => handleUpdateBrand(brand.id, { supplierId: e.target.value || undefined })}
+              onChange={(e) =>
+                handleUpdateBrand(brand.id, { supplierId: e.target.value || undefined })
+              }
               className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none bg-white max-w-[180px]"
             >
               <option value="">Aucun fournisseur</option>
               {allSuppliers.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
               ))}
             </select>
 

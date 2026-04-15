@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
 import { useMediaQuery } from '../context/MediaQueryContext';
 
 interface DatePickerProps {
@@ -43,13 +44,21 @@ const CalendarGrid: React.FC<{
     <>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <button type="button" onClick={() => onChangeMonth(-1)} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
+        <button
+          type="button"
+          onClick={() => onChangeMonth(-1)}
+          className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"
+        >
           <ChevronLeft size={18} />
         </button>
         <span className="font-bold text-slate-800 capitalize text-sm">
           {viewDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
         </span>
-        <button type="button" onClick={() => onChangeMonth(1)} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
+        <button
+          type="button"
+          onClick={() => onChangeMonth(1)}
+          className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"
+        >
           <ChevronRight size={18} />
         </button>
       </div>
@@ -57,7 +66,9 @@ const CalendarGrid: React.FC<{
       {/* Day labels */}
       <div className="grid grid-cols-7 gap-1 text-center mb-2">
         {DAY_LABELS.map((d, i) => (
-          <div key={`${d}-${i}`} className="text-[10px] font-bold text-slate-400 uppercase">{d}</div>
+          <div key={`${d}-${i}`} className="text-[10px] font-bold text-slate-400 uppercase">
+            {d}
+          </div>
         ))}
       </div>
 
@@ -77,15 +88,18 @@ const CalendarGrid: React.FC<{
               onClick={() => onDayClick(day)}
               className={`
                 h-10 w-10 sm:h-8 sm:w-8 rounded-lg text-sm sm:text-xs flex items-center justify-center transition-all relative
-                ${isSelected
-                  ? 'bg-slate-900 text-white font-bold shadow-md scale-105 z-10'
-                  : 'hover:bg-slate-100 text-slate-700 hover:text-slate-900'
+                ${
+                  isSelected
+                    ? 'bg-slate-900 text-white font-bold shadow-md scale-105 z-10'
+                    : 'hover:bg-slate-100 text-slate-700 hover:text-slate-900'
                 }
                 ${isToday && !isSelected ? 'text-slate-900 font-bold ring-1 ring-slate-200 bg-slate-50' : ''}
               `}
             >
               {day}
-              {isToday && !isSelected && <div className="absolute bottom-1 w-1 h-1 rounded-full bg-slate-400"></div>}
+              {isToday && !isSelected && (
+                <div className="absolute bottom-1 w-1 h-1 rounded-full bg-slate-400"></div>
+              )}
             </button>
           );
         })}
@@ -94,7 +108,13 @@ const CalendarGrid: React.FC<{
   );
 };
 
-export const DatePicker: React.FC<DatePickerProps> = ({ label, value, onChange, error, placeholder = "Sélectionner date" }) => {
+export const DatePicker: React.FC<DatePickerProps> = ({
+  label,
+  value,
+  onChange,
+  error,
+  placeholder = 'Sélectionner date',
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { isMobile } = useMediaQuery();
@@ -134,7 +154,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({ label, value, onChange, 
   useEffect(() => {
     if (!isMobile || !isOpen) return;
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isMobile, isOpen]);
 
   const handleDayClick = (day: number) => {
@@ -156,7 +178,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({ label, value, onChange, 
   const formatDateDisplay = (dateStr?: string) => {
     if (!dateStr) return placeholder;
     const date = parseDate(dateStr);
-    if (isNaN(date.getTime())) return 'Date invalide';
+    if (Number.isNaN(date.getTime())) return 'Date invalide';
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
@@ -176,12 +198,18 @@ export const DatePicker: React.FC<DatePickerProps> = ({ label, value, onChange, 
           `}
         >
           <div className="flex items-center gap-2.5">
-            <CalendarIcon size={16} className="text-slate-400 group-hover:text-slate-600 transition-colors" />
+            <CalendarIcon
+              size={16}
+              className="text-slate-400 group-hover:text-slate-600 transition-colors"
+            />
             <span className={`truncate ${value ? 'text-slate-900' : 'text-slate-400'}`}>
               {formatDateDisplay(value)}
             </span>
           </div>
-          <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown
+            size={16}
+            className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          />
         </button>
 
         {/* Desktop dropdown */}
@@ -190,32 +218,51 @@ export const DatePicker: React.FC<DatePickerProps> = ({ label, value, onChange, 
             className="absolute top-[calc(100%+4px)] left-0 bg-white border border-slate-200 rounded-xl shadow-2xl p-4 w-[300px] animate-in fade-in slide-in-from-top-2 duration-200 origin-top-left"
             style={{ zIndex: 'var(--z-drawer-panel)' }}
           >
-            <CalendarGrid viewDate={viewDate} value={value} onDayClick={handleDayClick} onChangeMonth={changeMonth} />
+            <CalendarGrid
+              viewDate={viewDate}
+              value={value}
+              onDayClick={handleDayClick}
+              onChangeMonth={changeMonth}
+            />
           </div>
         )}
       </div>
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
 
       {/* Mobile fullscreen modal */}
-      {isOpen && isMobile && createPortal(
-        <div className="fixed inset-0 bg-black/40 flex items-end justify-center" style={{ zIndex: 'var(--z-modal)' }}>
+      {isOpen &&
+        isMobile &&
+        createPortal(
           <div
-            className="bg-white w-full rounded-t-2xl p-5 pb-8 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Sélectionner une date"
+            className="fixed inset-0 bg-black/40 flex items-end justify-center"
+            style={{ zIndex: 'var(--z-modal)' }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-slate-900">{label || 'Date'}</h2>
-              <button type="button" onClick={() => setIsOpen(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-900 transition-colors">
-                <X size={20} />
-              </button>
+            <div
+              className="bg-white w-full rounded-t-2xl p-5 pb-8 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Sélectionner une date"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-bold text-slate-900">{label || 'Date'}</h2>
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 -mr-2 text-slate-400 hover:text-slate-900 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <CalendarGrid
+                viewDate={viewDate}
+                value={value}
+                onDayClick={handleDayClick}
+                onChangeMonth={changeMonth}
+              />
             </div>
-            <CalendarGrid viewDate={viewDate} value={value} onDayClick={handleDayClick} onChangeMonth={changeMonth} />
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

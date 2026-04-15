@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { StaffClient } from '../../../types';
+import { supabase } from '../../../lib/supabase';
+import type { StaffClient } from '../../../types';
 
 export const useStaffClients = (staffId: string) => {
   const { activeSalon } = useAuth();
@@ -15,14 +15,16 @@ export const useStaffClients = (staffId: string) => {
         p_limit: 10,
       });
       if (error) throw error;
-      return (data || []).map((row: any): StaffClient => ({
-        clientId: row.client_id,
-        clientFirstName: row.client_first_name,
-        clientLastName: row.client_last_name,
-        visitCount: row.visit_count,
-        totalRevenue: parseFloat(row.total_revenue),
-        lastVisit: row.last_visit,
-      }));
+      return (data || []).map(
+        (row: any): StaffClient => ({
+          clientId: row.client_id,
+          clientFirstName: row.client_first_name,
+          clientLastName: row.client_last_name,
+          visitCount: row.visit_count,
+          totalRevenue: parseFloat(row.total_revenue),
+          lastVisit: row.last_visit,
+        }),
+      );
     },
     enabled: !!salonId && !!staffId,
   });

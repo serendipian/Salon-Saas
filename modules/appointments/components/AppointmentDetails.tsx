@@ -1,8 +1,8 @@
-
-import React, { useState } from 'react';
-import { ArrowLeft, Calendar, User, Scissors, Trash2 } from 'lucide-react';
-import { Appointment, AppointmentStatus } from '../../../types';
+import { ArrowLeft, Calendar, Scissors, Trash2, User } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { formatPrice } from '../../../lib/format';
+import type { Appointment } from '../../../types';
 import { StatusBadge } from './StatusBadge';
 
 interface AppointmentDetailsProps {
@@ -13,7 +13,13 @@ interface AppointmentDetailsProps {
   onDelete?: (id: string) => void;
 }
 
-export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, allAppointments = [], onBack, onEdit, onDelete }) => {
+export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
+  appointment,
+  allAppointments = [],
+  onBack,
+  onEdit,
+  onDelete,
+}) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const date = new Date(appointment.date);
 
@@ -24,21 +30,24 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointm
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4">
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
+        <button
+          onClick={onBack}
+          className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
+        >
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-xl font-bold text-slate-900">Détails du Rendez-vous</h1>
         <div className="ml-auto flex gap-3">
-           {onDelete && (
-             <button
-               onClick={() => setShowConfirm(true)}
-               className="px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg font-medium text-sm hover:bg-red-50 shadow-sm transition-all flex items-center gap-2"
-             >
-               <Trash2 size={16} />
-               Supprimer
-             </button>
-           )}
-           <button
+          {onDelete && (
+            <button
+              onClick={() => setShowConfirm(true)}
+              className="px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg font-medium text-sm hover:bg-red-50 shadow-sm transition-all flex items-center gap-2"
+            >
+              <Trash2 size={16} />
+              Supprimer
+            </button>
+          )}
+          <button
             onClick={onEdit}
             className="px-4 py-2 bg-slate-900 text-white rounded-lg font-medium text-sm hover:bg-slate-800 shadow-sm transition-all"
           >
@@ -49,60 +58,71 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointm
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-200 bg-slate-50/50 flex justify-between items-start">
-           <div>
-             <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">Référence # {appointment.id.toUpperCase()}</div>
-             <h2 className="text-xl font-bold text-slate-900 mb-2">{appointment.serviceName}</h2>
-             <StatusBadge status={appointment.status} />
-           </div>
-           <div className="text-right">
-             <div className="text-2xl font-bold text-slate-900">{formatPrice(appointment.price)}</div>
-             <div className="text-sm text-slate-500">{appointment.durationMinutes} min</div>
-           </div>
+          <div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">
+              Référence # {appointment.id.toUpperCase()}
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 mb-2">{appointment.serviceName}</h2>
+            <StatusBadge status={appointment.status} />
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-bold text-slate-900">
+              {formatPrice(appointment.price)}
+            </div>
+            <div className="text-sm text-slate-500">{appointment.durationMinutes} min</div>
+          </div>
         </div>
 
         <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-6">
-             <div className="flex gap-4 items-start">
-               <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 border border-slate-200">
-                 <Calendar size={20} />
-               </div>
-               <div>
-                 <div className="text-sm font-medium text-slate-500">Date & Heure</div>
-                 <div className="font-semibold text-slate-900">
-                    {date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                 </div>
-                 <div className="text-slate-600">
-                    {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                 </div>
-               </div>
-             </div>
+            <div className="flex gap-4 items-start">
+              <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 border border-slate-200">
+                <Calendar size={20} />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-slate-500">Date & Heure</div>
+                <div className="font-semibold text-slate-900">
+                  {date.toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </div>
+                <div className="text-slate-600">
+                  {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+            </div>
 
-             <div className="flex gap-4 items-start">
-               <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 border border-slate-200">
-                 <User size={20} />
-               </div>
-               <div>
-                 <div className="text-sm font-medium text-slate-500">Client</div>
-                 <div className="font-semibold text-slate-900">{appointment.clientName}</div>
-               </div>
-             </div>
+            <div className="flex gap-4 items-start">
+              <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 border border-slate-200">
+                <User size={20} />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-slate-500">Client</div>
+                <div className="font-semibold text-slate-900">{appointment.clientName}</div>
+              </div>
+            </div>
 
-             <div className="flex gap-4 items-start">
-               <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 border border-slate-200">
-                 <Scissors size={20} />
-               </div>
-               <div>
-                 <div className="text-sm font-medium text-slate-500">Réalisé par</div>
-                 <div className="font-semibold text-slate-900">{appointment.staffName}</div>
-               </div>
-             </div>
+            <div className="flex gap-4 items-start">
+              <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 border border-slate-200">
+                <Scissors size={20} />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-slate-500">Réalisé par</div>
+                <div className="font-semibold text-slate-900">{appointment.staffName}</div>
+              </div>
+            </div>
           </div>
 
           <div className="bg-slate-50 rounded-xl p-6 border border-slate-200/60">
-             <h3 className="font-bold text-slate-900 text-sm mb-3 uppercase tracking-wide">Notes internes</h3>
-             <p className="text-sm text-slate-600 italic leading-relaxed">
-               {appointment.notes || "Aucune note pour ce rendez-vous."}
-             </p>
+            <h3 className="font-bold text-slate-900 text-sm mb-3 uppercase tracking-wide">
+              Notes internes
+            </h3>
+            <p className="text-sm text-slate-600 italic leading-relaxed">
+              {appointment.notes || 'Aucune note pour ce rendez-vous.'}
+            </p>
           </div>
         </div>
 
@@ -144,9 +164,17 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointm
 
       {/* Delete confirmation */}
       {showConfirm && onDelete && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowConfirm(false)}>
-          <div className="bg-white rounded-xl p-6 max-w-sm mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">Supprimer ce rendez-vous ?</h3>
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          onClick={() => setShowConfirm(false)}
+        >
+          <div
+            className="bg-white rounded-xl p-6 max-w-sm mx-4 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              Supprimer ce rendez-vous ?
+            </h3>
             <p className="text-sm text-slate-600 mb-5">
               {groupedAppointments.length > 1
                 ? `Ce rendez-vous contient ${groupedAppointments.length} services. Tous seront supprimés.`
@@ -160,7 +188,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointm
                 Annuler
               </button>
               <button
-                onClick={() => { onDelete(appointment.id); setShowConfirm(false); }}
+                onClick={() => {
+                  onDelete(appointment.id);
+                  setShowConfirm(false);
+                }}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
               >
                 Supprimer

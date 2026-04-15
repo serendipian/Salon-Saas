@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
-import { Appointment, ServiceCategory, StaffMember } from '../../../types';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { Appointment, ServiceCategory, StaffMember } from '../../../types';
 
 export type CalendarViewMode = 'day' | 'week' | 'month';
 
@@ -22,21 +22,21 @@ export function useCalendar(
   allAppointments: Appointment[],
   serviceCategories: ServiceCategory[],
   services: { id: string; categoryId: string }[],
-  allStaff: StaffMember[]
+  allStaff: StaffMember[],
 ): UseCalendarReturn {
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [viewMode, setViewMode] = useState<CalendarViewMode>('week');
 
   const [categoryFilters, setCategoryFilters] = useState<Set<string>>(
-    () => new Set(serviceCategories.map(c => c.id))
+    () => new Set(serviceCategories.map((c) => c.id)),
   );
   const [staffFilters, setStaffFilters] = useState<Set<string>>(
-    () => new Set(allStaff.map(s => s.id))
+    () => new Set(allStaff.map((s) => s.id)),
   );
 
   // Sync filters when data arrives asynchronously
   useEffect(() => {
-    setCategoryFilters(prev => {
+    setCategoryFilters((prev) => {
       const next = new Set(prev);
       for (const c of serviceCategories) next.add(c.id);
       return next.size !== prev.size ? next : prev;
@@ -44,7 +44,7 @@ export function useCalendar(
   }, [serviceCategories]);
 
   useEffect(() => {
-    setStaffFilters(prev => {
+    setStaffFilters((prev) => {
       const next = new Set(prev);
       for (const s of allStaff) next.add(s.id);
       return next.size !== prev.size ? next : prev;
@@ -54,7 +54,7 @@ export function useCalendar(
   const goToday = useCallback(() => setCurrentDate(new Date()), []);
 
   const goPrev = useCallback(() => {
-    setCurrentDate(prev => {
+    setCurrentDate((prev) => {
       const d = new Date(prev);
       if (viewMode === 'day') d.setDate(d.getDate() - 1);
       else if (viewMode === 'week') d.setDate(d.getDate() - 7);
@@ -64,7 +64,7 @@ export function useCalendar(
   }, [viewMode]);
 
   const goNext = useCallback(() => {
-    setCurrentDate(prev => {
+    setCurrentDate((prev) => {
       const d = new Date(prev);
       if (viewMode === 'day') d.setDate(d.getDate() + 1);
       else if (viewMode === 'week') d.setDate(d.getDate() + 7);
@@ -79,7 +79,7 @@ export function useCalendar(
   }, []);
 
   const toggleCategory = useCallback((id: string) => {
-    setCategoryFilters(prev => {
+    setCategoryFilters((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -88,7 +88,7 @@ export function useCalendar(
   }, []);
 
   const toggleStaff = useCallback((id: string) => {
-    setStaffFilters(prev => {
+    setStaffFilters((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -103,7 +103,7 @@ export function useCalendar(
   }, [services]);
 
   const filteredAppointments = useMemo(() => {
-    return allAppointments.filter(appt => {
+    return allAppointments.filter((appt) => {
       const catId = serviceCategoryMap.get(appt.serviceId);
       if (catId && !categoryFilters.has(catId)) return false;
       if (!staffFilters.has(appt.staffId)) return false;

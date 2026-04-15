@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
-import { toStaffMember, toStaffMemberInsert } from '../mappers';
-import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { supabase } from '../../../lib/supabase';
 import type { StaffMember } from '../../../types';
+import { toStaffMember, toStaffMemberInsert } from '../mappers';
 
 export const useStaffDetail = (slug: string) => {
   const { activeSalon } = useAuth();
@@ -53,9 +53,9 @@ export const useStaffDetail = (slug: string) => {
   const savePiiFields = async (id: string, member: Partial<StaffMember>) => {
     const { error } = await supabase.rpc('update_staff_pii', {
       p_staff_id: id,
-      p_base_salary: member.baseSalary != null ? String(member.baseSalary) : null,
-      p_iban: member.iban || null,
-      p_social_security_number: member.socialSecurityNumber || null,
+      p_base_salary: member.baseSalary != null ? String(member.baseSalary) : undefined,
+      p_iban: member.iban || undefined,
+      p_social_security_number: member.socialSecurityNumber || undefined,
       p_clear_base_salary: member.baseSalary == null,
       p_clear_iban: !member.iban,
       p_clear_ssn: !member.socialSecurityNumber,
@@ -66,7 +66,8 @@ export const useStaffDetail = (slug: string) => {
   const updateSectionMutation = useMutation({
     mutationFn: async (updates: Partial<StaffMember>) => {
       if (!staff) throw new Error('Staff data not loaded');
-      const hasPii = 'baseSalary' in updates || 'iban' in updates || 'socialSecurityNumber' in updates;
+      const hasPii =
+        'baseSalary' in updates || 'iban' in updates || 'socialSecurityNumber' in updates;
 
       // Separate PII from non-PII fields
       const { baseSalary, iban, socialSecurityNumber, ...rest } = updates;

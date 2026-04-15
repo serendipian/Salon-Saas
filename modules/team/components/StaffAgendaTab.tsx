@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
 import { Calendar, Clock, TrendingUp, User } from 'lucide-react';
-import { StaffMember, WorkSchedule } from '../../../types';
+import type React from 'react';
+import { useMemo } from 'react';
+import type { StaffMember, WorkSchedule } from '../../../types';
 import { useStaffAppointments } from '../hooks/useStaffAppointments';
 
 const DAY_LABELS: Record<keyof WorkSchedule, string> = {
@@ -14,7 +15,13 @@ const DAY_LABELS: Record<keyof WorkSchedule, string> = {
 };
 
 const DAY_ORDER: (keyof WorkSchedule)[] = [
-  'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
 ];
 
 function formatTime(dateStr: string): string {
@@ -31,7 +38,10 @@ interface StaffAgendaTabProps {
 }
 
 export const StaffAgendaTab: React.FC<StaffAgendaTabProps> = ({ staff }) => {
-  const { upcoming, today, bookingRate, isLoading } = useStaffAppointments(staff.id, staff.schedule);
+  const { upcoming, today, bookingRate, isLoading } = useStaffAppointments(
+    staff.id,
+    staff.schedule,
+  );
 
   // Group upcoming appointments by day (excluding today)
   const todayStr = new Date().toDateString();
@@ -43,15 +53,13 @@ export const StaffAgendaTab: React.FC<StaffAgendaTabProps> = ({ staff }) => {
       if (!groups[d]) groups[d] = [];
       groups[d].push(apt);
     }
-    return Object.entries(groups).sort(
-      ([a], [b]) => new Date(a).getTime() - new Date(b).getTime()
-    );
+    return Object.entries(groups).sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime());
   }, [upcoming, todayStr]);
 
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {[1, 2, 3].map(i => (
+        {[1, 2, 3].map((i) => (
           <div key={i} className="bg-white rounded-xl border border-slate-200 p-6 animate-pulse">
             <div className="h-4 bg-slate-200 rounded w-1/3 mb-4" />
             <div className="h-3 bg-slate-100 rounded w-2/3" />
@@ -130,7 +138,7 @@ export const StaffAgendaTab: React.FC<StaffAgendaTabProps> = ({ staff }) => {
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <h3 className="text-sm font-semibold text-slate-900 mb-4">Horaires de travail</h3>
         <div className="space-y-2">
-          {DAY_ORDER.map(day => {
+          {DAY_ORDER.map((day) => {
             const slot = staff.schedule?.[day];
             return (
               <div key={day} className="flex items-center justify-between py-1.5">
@@ -158,7 +166,10 @@ function AppointmentRow({ appointment }: { appointment: any }) {
     NO_SHOW: { color: 'bg-red-50 text-red-700 border-red-200', label: 'Absent' },
     CANCELLED: { color: 'bg-slate-50 text-slate-500 border-slate-200', label: 'Annulé' },
   };
-  const status = statusMap[appointment.status] || { color: 'bg-blue-50 text-blue-700 border-blue-200', label: 'Planifié' };
+  const status = statusMap[appointment.status] || {
+    color: 'bg-blue-50 text-blue-700 border-blue-200',
+    label: 'Planifié',
+  };
   const statusColor = status.color;
   const statusLabel = status.label;
 
@@ -178,7 +189,9 @@ function AppointmentRow({ appointment }: { appointment: any }) {
           <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
           {clientName}
         </div>
-        <p className="text-xs text-slate-500 truncate">{serviceName} · {appointment.duration_minutes || '—'} min</p>
+        <p className="text-xs text-slate-500 truncate">
+          {serviceName} · {appointment.duration_minutes || '—'} min
+        </p>
       </div>
       <span className={`text-xs px-2 py-0.5 rounded-full border shrink-0 ${statusColor}`}>
         {statusLabel}

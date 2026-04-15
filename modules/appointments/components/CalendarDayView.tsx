@@ -1,7 +1,15 @@
-import React from 'react';
-import { Appointment, ServiceCategory } from '../../../types';
+import type React from 'react';
+import type { Appointment, ServiceCategory } from '../../../types';
 import { CalendarEventBlock } from './CalendarEventBlock';
-import { isSameDay, isToday, formatHourLabel, layoutDayEvents, mergeAppointmentGroups, HOURS, ROW_HEIGHT } from './calendarUtils';
+import {
+  formatHourLabel,
+  HOURS,
+  isSameDay,
+  isToday,
+  layoutDayEvents,
+  mergeAppointmentGroups,
+  ROW_HEIGHT,
+} from './calendarUtils';
 
 interface CalendarDayViewProps {
   currentDate: Date;
@@ -20,15 +28,17 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
   services,
   onEventClick,
 }) => {
-  const dayAppointments = appointments.filter(appt => isSameDay(new Date(appt.date), currentDate));
+  const dayAppointments = appointments.filter((appt) =>
+    isSameDay(new Date(appt.date), currentDate),
+  );
   // M-13: collapse multi-item service blocks into a single visual event so the
   // calendar matches the list-view grouping. Each merged event keeps the first
   // sub-appointment's id, so click → edit/details still routes correctly.
   const mergedAppointments = mergeAppointmentGroups(dayAppointments);
   const positioned = layoutDayEvents(mergedAppointments);
 
-  const categoryMap = new Map(serviceCategories.map(c => [c.id, c]));
-  const serviceCatMap = new Map(services.map(s => [s.id, s.categoryId]));
+  const categoryMap = new Map(serviceCategories.map((c) => [c.id, c]));
+  const serviceCatMap = new Map(services.map((s) => [s.id, s.categoryId]));
 
   const todayFlag = isToday(currentDate);
 
@@ -37,7 +47,9 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
       {/* Day header */}
       <div className="px-4 py-3 border-b border-slate-200 flex items-center gap-3">
         <span className="text-3xl font-bold text-slate-900">{currentDate.getDate()}</span>
-        <span className="text-sm font-medium text-slate-500 uppercase">{DAYS_FR_SHORT[currentDate.getDay()]}</span>
+        <span className="text-sm font-medium text-slate-500 uppercase">
+          {DAYS_FR_SHORT[currentDate.getDay()]}
+        </span>
         {todayFlag && (
           <span className="px-2.5 py-0.5 bg-blue-500 text-white text-xs font-semibold rounded-full">
             Aujourd'hui
@@ -47,7 +59,7 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
 
       {/* Time grid */}
       <div className="relative">
-        {HOURS.map(hour => (
+        {HOURS.map((hour) => (
           <div key={hour} className="flex" style={{ height: ROW_HEIGHT }}>
             <div className="w-16 flex-shrink-0 text-right pr-3 pt-0 text-xs text-slate-400 font-medium -mt-2">
               {formatHourLabel(hour)}

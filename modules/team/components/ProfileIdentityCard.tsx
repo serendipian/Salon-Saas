@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
-import { Camera, User, Loader2, Pencil, Save, X } from 'lucide-react';
-import type { StaffMember } from '../../../types';
+import { Camera, Loader2, Pencil, Save, User, X } from 'lucide-react';
+import type React from 'react';
+import { useRef, useState } from 'react';
 import { Input, Select, TextArea } from '../../../components/FormElements';
-import { useStaffPhotoUpload } from '../hooks/useStaffPhotoUpload';
-import { useToast } from '../../../context/ToastContext';
 import { StaffAvatar } from '../../../components/StaffAvatar';
+import { useToast } from '../../../context/ToastContext';
+import type { StaffMember } from '../../../types';
+import { useStaffPhotoUpload } from '../hooks/useStaffPhotoUpload';
 
 interface ProfileIdentityCardProps {
   staff: StaffMember;
@@ -12,7 +13,11 @@ interface ProfileIdentityCardProps {
   isSaving: boolean;
 }
 
-export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({ staff, onSave, isSaving }) => {
+export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({
+  staff,
+  onSave,
+  isSaving,
+}) => {
   const { addToast } = useToast();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<StaffMember>>({});
@@ -70,15 +75,26 @@ export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({ staff,
         <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide">Identité</h3>
         {editing ? (
           <div className="flex items-center gap-1.5">
-            <button onClick={cancelEdit} disabled={isSaving} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+            <button
+              onClick={cancelEdit}
+              disabled={isSaving}
+              className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            >
               <X size={14} />
             </button>
-            <button onClick={saveSection} disabled={isSaving} className="p-1.5 text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50">
+            <button
+              onClick={saveSection}
+              disabled={isSaving}
+              className="p-1.5 text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50"
+            >
               {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
             </button>
           </div>
         ) : (
-          <button onClick={startEdit} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+          <button
+            onClick={startEdit}
+            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+          >
             <Pencil size={14} />
           </button>
         )}
@@ -98,17 +114,35 @@ export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({ staff,
                 <User size={28} className="text-slate-400" />
               )}
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                {isUploadingPhoto ? <Loader2 className="text-white animate-spin" size={18} /> : <Camera className="text-white" size={18} />}
+                {isUploadingPhoto ? (
+                  <Loader2 className="text-white animate-spin" size={18} />
+                ) : (
+                  <Camera className="text-white" size={18} />
+                )}
               </div>
             </div>
           </div>
-          <input ref={photoInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePhotoChange} />
-          <Input label="Prénom" value={draft.firstName ?? ''} onChange={e => setDraft({ ...draft, firstName: e.target.value })} />
-          <Input label="Nom" value={draft.lastName ?? ''} onChange={e => setDraft({ ...draft, lastName: e.target.value })} />
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handlePhotoChange}
+          />
+          <Input
+            label="Prénom"
+            value={draft.firstName ?? ''}
+            onChange={(e) => setDraft({ ...draft, firstName: e.target.value })}
+          />
+          <Input
+            label="Nom"
+            value={draft.lastName ?? ''}
+            onChange={(e) => setDraft({ ...draft, lastName: e.target.value })}
+          />
           <Select
             label="Rôle"
             value={draft.role ?? ''}
-            onChange={val => setDraft({ ...draft, role: val as StaffMember['role'] })}
+            onChange={(val) => setDraft({ ...draft, role: val as StaffMember['role'] })}
             options={[
               { value: 'Manager', label: 'Manager' },
               { value: 'Stylist', label: 'Styliste' },
@@ -117,16 +151,28 @@ export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({ staff,
             ]}
           />
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Date de naissance</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              Date de naissance
+            </label>
             <input
               type="date"
               className="w-full bg-white border border-slate-300 rounded-lg text-sm shadow-sm px-3 py-2.5 min-h-[44px] focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none"
               value={draft.birthDate ?? ''}
-              onChange={e => setDraft({ ...draft, birthDate: e.target.value })}
+              onChange={(e) => setDraft({ ...draft, birthDate: e.target.value })}
             />
           </div>
-          <Input label="Adresse" value={draft.address ?? ''} onChange={e => setDraft({ ...draft, address: e.target.value })} />
-          <TextArea label="Biographie" rows={3} value={draft.bio ?? ''} onChange={e => setDraft({ ...draft, bio: e.target.value })} placeholder="Expérience, spécialités..." />
+          <Input
+            label="Adresse"
+            value={draft.address ?? ''}
+            onChange={(e) => setDraft({ ...draft, address: e.target.value })}
+          />
+          <TextArea
+            label="Biographie"
+            rows={3}
+            value={draft.bio ?? ''}
+            onChange={(e) => setDraft({ ...draft, bio: e.target.value })}
+            placeholder="Expérience, spécialités..."
+          />
         </div>
       ) : (
         <>
@@ -142,18 +188,37 @@ export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({ staff,
                 <StaffAvatar firstName={staff.firstName} lastName={staff.lastName} size={80} />
               )}
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                {isUploadingPhoto ? <Loader2 className="text-white animate-spin" size={18} /> : <Camera className="text-white" size={18} />}
+                {isUploadingPhoto ? (
+                  <Loader2 className="text-white animate-spin" size={18} />
+                ) : (
+                  <Camera className="text-white" size={18} />
+                )}
               </div>
             </div>
-            <input ref={photoInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePhotoChange} />
-            <h2 className="text-lg font-bold text-slate-900">{staff.firstName} {staff.lastName}</h2>
-            <span className={`mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${roleColors[staff.role] || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handlePhotoChange}
+            />
+            <h2 className="text-lg font-bold text-slate-900">
+              {staff.firstName} {staff.lastName}
+            </h2>
+            <span
+              className={`mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${roleColors[staff.role] || 'bg-slate-100 text-slate-700 border-slate-200'}`}
+            >
               {staff.role}
             </span>
           </div>
 
           <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
-            <InfoRow label="Date de naissance" value={staff.birthDate ? new Date(staff.birthDate).toLocaleDateString('fr-FR') : undefined} />
+            <InfoRow
+              label="Date de naissance"
+              value={
+                staff.birthDate ? new Date(staff.birthDate).toLocaleDateString('fr-FR') : undefined
+              }
+            />
             <InfoRow label="Adresse" value={staff.address} />
             {staff.bio && (
               <div>

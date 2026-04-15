@@ -1,16 +1,16 @@
-
-import React, { useState } from 'react';
 import { Plus, Search, Settings } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Service, ServiceCategory } from '../../../types';
+import { ViewToggle } from '../../../components/ViewToggle';
 import { useAuth } from '../../../context/AuthContext';
 import { usePermissions } from '../../../hooks/usePermissions';
 import { useViewMode } from '../../../hooks/useViewMode';
-import { useServiceSettings } from '../hooks/useServiceSettings';
-import { ViewToggle } from '../../../components/ViewToggle';
 import { CategoryIcon } from '../../../lib/categoryIcons';
-import { ServiceTable } from './ServiceTable';
+import type { Service, ServiceCategory } from '../../../types';
+import { useServiceSettings } from '../hooks/useServiceSettings';
 import { ServiceCard } from './ServiceCard';
+import { ServiceTable } from './ServiceTable';
 
 interface ServiceListProps {
   services: Service[];
@@ -40,7 +40,7 @@ export const ServiceList: React.FC<ServiceListProps> = ({
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
   const displayedServices = selectedCategoryId
-    ? services.filter(s => s.categoryId === selectedCategoryId)
+    ? services.filter((s) => s.categoryId === selectedCategoryId)
     : services;
 
   const groupByCategory = selectedCategoryId === null;
@@ -97,8 +97,8 @@ export const ServiceList: React.FC<ServiceListProps> = ({
           >
             Tous ({services.length})
           </button>
-          {categories.map(cat => {
-            const count = services.filter(s => s.categoryId === cat.id).length;
+          {categories.map((cat) => {
+            const count = services.filter((s) => s.categoryId === cat.id).length;
             if (count === 0) return null;
             const isActive = selectedCategoryId === cat.id;
             return (

@@ -1,7 +1,16 @@
 // components/AdminLayout.tsx
-import React from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Clock, CreditCard, UserPlus, TrendingDown, LogOut } from 'lucide-react';
+
+import {
+  Clock,
+  CreditCard,
+  LayoutDashboard,
+  LogOut,
+  TrendingDown,
+  UserPlus,
+  Users,
+} from 'lucide-react';
+import type React from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const NAV_ITEMS = [
@@ -19,22 +28,28 @@ export const AdminLayout: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/login');
+    await navigate('/login');
   };
 
   const displayName = profile?.first_name
     ? `${profile.first_name} ${profile.last_name ?? ''}`.trim()
-    : profile?.email ?? '';
+    : (profile?.email ?? '');
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div
+      className="flex h-screen overflow-hidden"
+      style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}
+    >
       {/* Sidebar — WHITE like Stripe */}
       <aside
         className="w-[220px] shrink-0 flex flex-col"
         style={{ backgroundColor: '#fff', borderRight: '1px solid #e3e8ef' }}
       >
         {/* Logo */}
-        <div className="h-[52px] flex items-center gap-2.5 px-4" style={{ borderBottom: '1px solid #e3e8ef' }}>
+        <div
+          className="h-[52px] flex items-center gap-2.5 px-4"
+          style={{ borderBottom: '1px solid #e3e8ef' }}
+        >
           <div
             className="w-7 h-7 rounded-[6px] flex items-center justify-center text-white text-[13px] font-bold shrink-0"
             style={{ backgroundColor: '#635bff' }}
@@ -85,7 +100,9 @@ export const AdminLayout: React.FC = () => {
             >
               {displayName[0]?.toUpperCase() ?? 'A'}
             </div>
-            <span className="text-[12px] truncate flex-1" style={{ color: '#697386' }}>{displayName}</span>
+            <span className="text-[12px] truncate flex-1" style={{ color: '#697386' }}>
+              {displayName}
+            </span>
             <button
               onClick={handleSignOut}
               title="Se déconnecter"

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
-import { ServiceCategory, StaffMember } from '../../../types';
-import InlineCalendar from './InlineCalendar';
-import { getCategoryCalendarColors } from './calendarColors';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { CategoryIcon } from '../../../lib/categoryIcons';
+import type { ServiceCategory, StaffMember } from '../../../types';
+import { getCategoryCalendarColors } from './calendarColors';
+import InlineCalendar from './InlineCalendar';
 
 interface CalendarSidebarProps {
   currentDate: Date;
@@ -52,14 +53,11 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         {filtersOpen && (
           <div className="space-y-4">
             <div className="space-y-2">
-              {serviceCategories.map(cat => {
+              {serviceCategories.map((cat) => {
                 const colors = getCategoryCalendarColors(cat.color);
                 const checked = categoryFilters.has(cat.id);
                 return (
-                  <label
-                    key={cat.id}
-                    className="flex items-center gap-2.5 cursor-pointer group"
-                  >
+                  <label key={cat.id} className="flex items-center gap-2.5 cursor-pointer group">
                     <input
                       type="checkbox"
                       checked={checked}
@@ -68,19 +66,28 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                     />
                     <span
                       className={`w-4 h-4 rounded flex items-center justify-center border-2 transition-colors ${
-                        checked
-                          ? `${colors.dot} border-transparent`
-                          : 'border-slate-300 bg-white'
+                        checked ? `${colors.dot} border-transparent` : 'border-slate-300 bg-white'
                       }`}
                     >
                       {checked && (
-                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <svg
+                          className="w-2.5 h-2.5 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={3}
+                        >
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                       )}
                     </span>
                     <span className="text-sm text-slate-700 group-hover:text-slate-900 flex items-center gap-1.5">
-                      <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={14} className="text-slate-400" />
+                      <CategoryIcon
+                        categoryName={cat.name}
+                        iconName={cat.icon}
+                        size={14}
+                        className="text-slate-400"
+                      />
                       {cat.name}
                     </span>
                   </label>
@@ -91,20 +98,19 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
             <div className="border-t border-slate-100" />
 
             <div className="space-y-2">
-              {allStaff.map(staff => {
+              {allStaff.map((staff) => {
                 const checked = staffFilters.has(staff.id);
                 return (
-                  <label
-                    key={staff.id}
-                    className="flex items-center gap-2.5 cursor-pointer group"
-                  >
+                  <label key={staff.id} className="flex items-center gap-2.5 cursor-pointer group">
                     <input
                       type="checkbox"
                       checked={checked}
                       onChange={() => onToggleStaff(staff.id)}
                       className="sr-only"
                     />
-                    <span className={`relative shrink-0 ${!checked ? 'opacity-40 grayscale' : ''} transition-all`}>
+                    <span
+                      className={`relative shrink-0 ${!checked ? 'opacity-40 grayscale' : ''} transition-all`}
+                    >
                       <StaffAvatar
                         firstName={staff.firstName}
                         lastName={staff.lastName}
@@ -116,7 +122,9 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                         <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
                       )}
                     </span>
-                    <span className={`text-sm group-hover:text-slate-900 transition-colors ${checked ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>
+                    <span
+                      className={`text-sm group-hover:text-slate-900 transition-colors ${checked ? 'text-slate-700 font-medium' : 'text-slate-400'}`}
+                    >
                       {staff.firstName} {staff.lastName}
                     </span>
                   </label>

@@ -1,14 +1,11 @@
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import {
-  toService, toServiceInsert, toVariantInsert,
-  toServiceCategory,
-} from '../mappers';
-import type { Service, ServiceCategory, FavoriteItem } from '../../../types';
-import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { supabase } from '../../../lib/supabase';
+import type { FavoriteItem, Service, ServiceCategory } from '../../../types';
+import { toService, toServiceCategory, toServiceInsert, toVariantInsert } from '../mappers';
 
 export interface CategoryUpdatePayload {
   categories: ServiceCategory[];
@@ -36,7 +33,8 @@ export const useServices = () => {
         .is('deleted_at', null)
         .order('name');
       if (error) throw error;
-      return (data ?? []).map(toService);
+      // biome-ignore lint/suspicious/noExplicitAny: hand-written Row alias narrower than generated types
+      return (data ?? []).map((row: any) => toService(row));
     },
     enabled: !!salonId,
   });
@@ -52,7 +50,8 @@ export const useServices = () => {
         .is('deleted_at', null)
         .order('sort_order', { ascending: true, nullsFirst: false });
       if (error) throw error;
-      return (data ?? []).map(toServiceCategory);
+      // biome-ignore lint/suspicious/noExplicitAny: hand-written Row alias narrower than generated types
+      return (data ?? []).map((row: any) => toServiceCategory(row));
     },
     enabled: !!salonId,
   });
@@ -70,11 +69,9 @@ export const useServices = () => {
 
       if (service.variants.length > 0) {
         const variantRows = service.variants.map((v, i) =>
-          toVariantInsert(v, inserted.id, salonId, i)
+          toVariantInsert(v, inserted.id, salonId, i),
         );
-        const { error: varErr } = await supabase
-          .from('service_variants')
-          .insert(variantRows);
+        const { error: varErr } = await supabase.from('service_variants').insert(variantRows);
         if (varErr) throw varErr;
       }
     },
@@ -104,11 +101,11 @@ export const useServices = () => {
         .is('deleted_at', null);
       if (fetchErr) throw fetchErr;
 
-      const existingIds = new Set((existingVariants ?? []).map(v => v.id));
-      const newIds = new Set(service.variants.filter(v => v.id).map(v => v.id));
+      const existingIds = new Set((existingVariants ?? []).map((v) => v.id));
+      const newIds = new Set(service.variants.filter((v) => v.id).map((v) => v.id));
 
       // Soft-delete removed variants
-      const toDelete = [...existingIds].filter(id => !newIds.has(id));
+      const toDelete = [...existingIds].filter((id) => !newIds.has(id));
       if (toDelete.length > 0) {
         const { error } = await supabase
           .from('service_variants')
@@ -144,12 +141,20 @@ export const useServices = () => {
           })
           .eq('id', id)
           .eq('salon_id', salonId)
-          .then(({ error }) => { if (error) throw error; })
+          .then(({ error }) => {
+            if (error) throw error;
+          }),
       );
 
-      const insertPromise = toInsert.length > 0
-        ? supabase.from('service_variants').insert(toInsert).then(({ error }) => { if (error) throw error; })
-        : Promise.resolve();
+      const insertPromise =
+        toInsert.length > 0
+          ? supabase
+              .from('service_variants')
+              .insert(toInsert)
+              .then(({ error }) => {
+                if (error) throw error;
+              })
+          : Promise.resolve();
 
       await Promise.all([...updatePromises, insertPromise]);
     },
@@ -157,7 +162,7 @@ export const useServices = () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
       toastOnSuccess('Service enregistré')();
     },
-    onError: toastOnError("Impossible de modifier le service"),
+    onError: toastOnError('Impossible de modifier le service'),
   });
 
   // Delete Service (soft-delete via RPC)
@@ -172,7 +177,7 @@ export const useServices = () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
       toastOnSuccess('Service supprimé')();
     },
-    onError: toastOnError("Impossible de supprimer le service"),
+    onError: toastOnError('Impossible de supprimer le service'),
   });
 
   // Update Service Categories (via RPC for atomic operation)
@@ -198,13 +203,21 @@ export const useServices = () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
       toastOnSuccess('Catégories enregistrées')();
     },
-    onError: toastOnError("Impossible de modifier les catégories de services"),
+    onError: toastOnError('Impossible de modifier les catégories de services'),
   });
 
   // Toggle Favorite — delegates to the toggle_favorite RPC so the next sort
   // order is computed atomically across services, variants, and packs.
   const toggleFavoriteMutation = useMutation({
-    mutationFn: async ({ type, id, isFavorite }: { type: 'service' | 'variant'; id: string; isFavorite: boolean }) => {
+    mutationFn: async ({
+      type,
+      id,
+      isFavorite,
+    }: {
+      type: 'service' | 'variant';
+      id: string;
+      isFavorite: boolean;
+    }) => {
       const { error } = await supabase.rpc('toggle_favorite', {
         p_salon_id: salonId,
         p_type: type,
@@ -222,8 +235,10 @@ export const useServices = () => {
 
   // Reorder Favorites (via RPC for atomic operation)
   const reorderFavoritesMutation = useMutation({
-    mutationFn: async (items: { type: 'service' | 'variant' | 'pack'; id: string; sortOrder: number }[]) => {
-      const p_items = items.map(item => ({
+    mutationFn: async (
+      items: { type: 'service' | 'variant' | 'pack'; id: string; sortOrder: number }[],
+    ) => {
+      const p_items = items.map((item) => ({
         type: item.type,
         id: item.id,
         sort_order: item.sortOrder,
@@ -239,14 +254,14 @@ export const useServices = () => {
       queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
       toastOnSuccess('Ordre des favoris enregistré')();
     },
-    onError: toastOnError("Impossible de réordonner les favoris"),
+    onError: toastOnError('Impossible de réordonner les favoris'),
   });
 
   // Filtering
   const filteredServices = useMemo(() => {
     if (!searchTerm) return services;
     const term = searchTerm.toLowerCase();
-    return services.filter(s => s.name.toLowerCase().includes(term));
+    return services.filter((s) => s.name.toLowerCase().includes(term));
   }, [services, searchTerm]);
 
   // Favorites derived data
@@ -265,7 +280,12 @@ export const useServices = () => {
       if (favoritedServiceIds.has(service.id)) continue;
       for (const variant of service.variants) {
         if (variant.isFavorite) {
-          items.push({ type: 'variant', variant, parentService: service, sortOrder: variant.favoriteSortOrder });
+          items.push({
+            type: 'variant',
+            variant,
+            parentService: service,
+            sortOrder: variant.favoriteSortOrder,
+          });
         }
       }
     }
@@ -289,7 +309,8 @@ export const useServices = () => {
       updateServiceCategoriesMutation.mutate(payload),
     toggleFavorite: (params: { type: 'service' | 'variant'; id: string; isFavorite: boolean }) =>
       toggleFavoriteMutation.mutate(params),
-    reorderFavorites: (items: { type: 'service' | 'variant' | 'pack'; id: string; sortOrder: number }[]) =>
-      reorderFavoritesMutation.mutateAsync(items),
+    reorderFavorites: (
+      items: { type: 'service' | 'variant' | 'pack'; id: string; sortOrder: number }[],
+    ) => reorderFavoritesMutation.mutateAsync(items),
   };
 };

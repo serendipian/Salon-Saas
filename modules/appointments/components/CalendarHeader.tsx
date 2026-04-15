@@ -1,6 +1,6 @@
-import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { CalendarViewMode } from './useCalendar';
+import type React from 'react';
+import type { CalendarViewMode } from './useCalendar';
 
 interface CalendarHeaderProps {
   currentDate: Date;
@@ -12,8 +12,18 @@ interface CalendarHeaderProps {
 }
 
 const MONTHS_FR = [
-  'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+  'Janvier',
+  'Février',
+  'Mars',
+  'Avril',
+  'Mai',
+  'Juin',
+  'Juillet',
+  'Août',
+  'Septembre',
+  'Octobre',
+  'Novembre',
+  'Décembre',
 ];
 
 function getWeekRange(date: Date): { start: Date; end: Date } {
@@ -81,9 +91,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         </div>
       </div>
 
-      <h2 className="text-lg font-semibold text-slate-900">
-        {formatTitle(currentDate, viewMode)}
-      </h2>
+      <h2 className="text-lg font-semibold text-slate-900">{formatTitle(currentDate, viewMode)}</h2>
 
       <div className="flex rounded-lg border border-slate-300 overflow-hidden">
         {VIEW_MODES.map(({ key, label }) => (

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Supplier, ViewState } from '../../types';
-import { useSuppliers } from './hooks/useSuppliers';
-import { SupplierList } from './components/SupplierList';
+import type React from 'react';
+import { useState } from 'react';
+import type { Supplier, ViewState } from '../../types';
 import { SupplierForm } from './components/SupplierForm';
+import { SupplierList } from './components/SupplierList';
+import { useSuppliers } from './hooks/useSuppliers';
 
 export const SuppliersModule: React.FC = () => {
   const {
@@ -60,11 +61,18 @@ export const SuppliersModule: React.FC = () => {
       )}
       {(view === 'ADD' || view === 'EDIT') && (
         <SupplierForm
-          existingSupplier={suppliers.find(s => s.id === selectedSupplierId)}
+          existingSupplier={suppliers.find((s) => s.id === selectedSupplierId)}
           categories={supplierCategories}
           onSave={handleSave}
           onCancel={() => setView('LIST')}
-          onDelete={selectedSupplierId ? (id) => { deleteSupplier(id); setView('LIST'); } : undefined}
+          onDelete={
+            selectedSupplierId
+              ? (id) => {
+                  deleteSupplier(id);
+                  setView('LIST');
+                }
+              : undefined
+          }
         />
       )}
     </div>

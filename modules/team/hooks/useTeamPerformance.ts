@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
-import { useTransactions } from '../../../hooks/useTransactions';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import type { StaffMember, DateRange, Transaction, CartItem } from '../../../types';
-import { countWorkingDays, calcBonus } from '../utils';
+import { useTransactions } from '../../../hooks/useTransactions';
+import { supabase } from '../../../lib/supabase';
+import type { CartItem, DateRange, StaffMember, Transaction } from '../../../types';
+import { calcBonus, countWorkingDays } from '../utils';
 
 export interface StaffPerformance {
   staff: StaffMember;
@@ -16,7 +16,9 @@ export interface StaffPerformance {
   ratio: number | null;
 }
 
-export const useTeamPerformance = (staff: StaffMember[]): {
+export const useTeamPerformance = (
+  staff: StaffMember[],
+): {
   performances: StaffPerformance[];
   dateRange: DateRange;
   setDateRange: (range: DateRange) => void;
@@ -35,10 +37,13 @@ export const useTeamPerformance = (staff: StaffMember[]): {
     };
   });
 
-  const teamRange = useMemo(() => ({
-    from: new Date(dateRange.from).toISOString(),
-    to: new Date(dateRange.to).toISOString(),
-  }), [dateRange]);
+  const teamRange = useMemo(
+    () => ({
+      from: new Date(dateRange.from).toISOString(),
+      to: new Date(dateRange.to).toISOString(),
+    }),
+    [dateRange],
+  );
 
   const { transactions } = useTransactions(teamRange);
 
@@ -53,7 +58,7 @@ export const useTeamPerformance = (staff: StaffMember[]): {
     return map;
   }, [transactions]);
 
-  const staffIds = useMemo(() => staff.map(m => m.id), [staff]);
+  const staffIds = useMemo(() => staff.map((m) => m.id), [staff]);
 
   const { data: piiMap = {} as Record<string, number | null>, isLoading: isLoadingPii } = useQuery({
     queryKey: ['staff_pii_batch', salonId, staffIds],
@@ -82,11 +87,22 @@ export const useTeamPerformance = (staff: StaffMember[]): {
       const baseSalary = piiMap[member.id] ?? null;
       const ratio = baseSalary && baseSalary > 0 ? revenue / baseSalary : null;
 
-      return { staff: member, revenue, revenuePerDay, workingDays, bonusAttribue, baseSalary, ratio };
+      return {
+        staff: member,
+        revenue,
+        revenuePerDay,
+        workingDays,
+        bonusAttribue,
+        baseSalary,
+        ratio,
+      };
     });
   }, [staff, revenueByStaff, piiMap, dateRange]);
 
-  const totalRevenue = useMemo(() => performances.reduce((s, p) => s + p.revenue, 0), [performances]);
+  const totalRevenue = useMemo(
+    () => performances.reduce((s, p) => s + p.revenue, 0),
+    [performances],
+  );
 
   return { performances, dateRange, setDateRange, totalRevenue, isLoadingPii };
 };

@@ -1,8 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, ChevronDown, ChevronRight, ArrowUp, ArrowDown, Save, Search } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  ChevronRight,
+  Plus,
+  Save,
+  Search,
+  Trash2,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import type { Supplier, SupplierCategory } from '../../../types';
 import { ColorPicker } from '../../services/components/ColorPicker';
 import { useSuppliers } from '../hooks/useSuppliers';
-import type { SupplierCategory, Supplier } from '../../../types';
 
 export function SupplierCategoriesTab() {
   const { allSuppliers, supplierCategories, updateSupplierCategories } = useSuppliers();
@@ -51,7 +60,9 @@ export function SupplierCategoriesTab() {
   const handleDeleteCategory = (id: string) => {
     const affected = allSuppliers.filter((s) => getEffectiveCategoryId(s) === id);
     const newAssignments = { ...localAssignments };
-    affected.forEach((s) => { newAssignments[s.id] = null; });
+    affected.forEach((s) => {
+      newAssignments[s.id] = null;
+    });
     setLocalAssignments(newAssignments);
     setLocalCategories(localCategories.filter((c) => c.id !== id));
     if (expandedId === id) setExpandedId(null);
@@ -137,9 +148,11 @@ export function SupplierCategoriesTab() {
 
             {(() => {
               const count = suppliersForCategory(cat.id).length;
-              return <span className="text-xs text-slate-500 whitespace-nowrap">
-                {count} fournisseur{count !== 1 ? 's' : ''}
-              </span>;
+              return (
+                <span className="text-xs text-slate-500 whitespace-nowrap">
+                  {count} fournisseur{count !== 1 ? 's' : ''}
+                </span>
+              );
             })()}
 
             <button
@@ -164,7 +177,10 @@ export function SupplierCategoriesTab() {
           {expandedId === cat.id && (
             <div className="border-t border-slate-100 px-4 py-3 bg-slate-50">
               <div className="relative mb-3">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search
+                  size={14}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
                 <input
                   type="text"
                   value={searchTerm}
@@ -196,7 +212,9 @@ export function SupplierCategoriesTab() {
                   );
                 })}
                 {filteredSuppliers(allSuppliers).length === 0 && (
-                  <p className="text-sm text-slate-400 py-2 text-center">Aucun fournisseur trouvé</p>
+                  <p className="text-sm text-slate-400 py-2 text-center">
+                    Aucun fournisseur trouvé
+                  </p>
                 )}
               </div>
             </div>
@@ -212,7 +230,10 @@ export function SupplierCategoriesTab() {
           </p>
           <div className="flex flex-wrap gap-2">
             {unassignedSuppliers.map((s) => (
-              <span key={s.id} className="text-xs bg-white px-2 py-1 rounded border border-amber-200 text-amber-700">
+              <span
+                key={s.id}
+                className="text-xs bg-white px-2 py-1 rounded border border-amber-200 text-amber-700"
+              >
                 {s.name}
               </span>
             ))}

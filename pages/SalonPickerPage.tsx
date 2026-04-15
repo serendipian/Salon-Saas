@@ -1,7 +1,7 @@
-import React from 'react';
+import { ChevronRight, Plus } from 'lucide-react';
+import type React from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Store, ChevronRight, Plus } from 'lucide-react';
 
 const ROLE_LABELS: Record<string, string> = {
   owner: 'Propriétaire',
@@ -11,7 +11,8 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export const SalonPickerPage: React.FC = () => {
-  const { isAuthenticated, isLoading, memberships, activeSalon, switchSalon, signOut, profile } = useAuth();
+  const { isAuthenticated, isLoading, memberships, activeSalon, switchSalon, signOut, profile } =
+    useAuth();
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -60,7 +61,11 @@ export const SalonPickerPage: React.FC = () => {
             >
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-md">
                 {m.salon.logo_url ? (
-                  <img src={m.salon.logo_url} alt="" className="w-full h-full rounded-xl object-cover" />
+                  <img
+                    src={m.salon.logo_url}
+                    alt=""
+                    className="w-full h-full rounded-xl object-cover"
+                  />
                 ) : (
                   m.salon.name.charAt(0).toUpperCase()
                 )}
@@ -69,7 +74,10 @@ export const SalonPickerPage: React.FC = () => {
                 <div className="text-sm font-semibold text-slate-900">{m.salon.name}</div>
                 <div className="text-xs text-slate-500">{ROLE_LABELS[m.role] || m.role}</div>
               </div>
-              <ChevronRight size={18} className="text-slate-300 group-hover:text-slate-500 transition-colors" />
+              <ChevronRight
+                size={18}
+                className="text-slate-300 group-hover:text-slate-500 transition-colors"
+              />
             </button>
           ))}
 

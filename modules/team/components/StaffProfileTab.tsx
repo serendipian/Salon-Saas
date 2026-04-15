@@ -1,14 +1,14 @@
-import React from 'react';
-import type { StaffMember } from '../../../types';
+import type React from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { ProfileIdentityCard } from './ProfileIdentityCard';
-import { ProfileContactCard } from './ProfileContactCard';
-import { ProfileEmergencyCard } from './ProfileEmergencyCard';
-import { ProfilePiiSection } from './ProfilePiiSection';
-import { ProfileContractSection } from './ProfileContractSection';
-import { ProfileClientPortfolio } from './ProfileClientPortfolio';
+import type { StaffMember } from '../../../types';
 import { ProfileActivityPreview } from './ProfileActivityPreview';
+import { ProfileClientPortfolio } from './ProfileClientPortfolio';
+import { ProfileContactCard } from './ProfileContactCard';
+import { ProfileContractSection } from './ProfileContractSection';
 import { ProfileDangerZone } from './ProfileDangerZone';
+import { ProfileEmergencyCard } from './ProfileEmergencyCard';
+import { ProfileIdentityCard } from './ProfileIdentityCard';
+import { ProfilePiiSection } from './ProfilePiiSection';
 
 interface StaffProfileTabProps {
   staff: StaffMember;

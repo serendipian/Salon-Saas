@@ -10,13 +10,8 @@ import type { CartItem, Service } from '../../../types';
  * For PRODUCT lines, returns `null` — products are not tied to a staff
  * specialty, so any active staff member may be attributed to the sale.
  */
-export function resolveCartItemCategoryId(
-  item: CartItem,
-  services: Service[],
-): string | null {
+export function resolveCartItemCategoryId(item: CartItem, services: Service[]): string | null {
   if (item.type !== 'SERVICE') return null;
-  const parent = services.find((s) =>
-    s.variants.some((v) => v.id === item.referenceId),
-  );
+  const parent = services.find((s) => s.variants.some((v) => v.id === item.referenceId));
   return parent?.categoryId ?? null;
 }

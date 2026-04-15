@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useMediaQuery } from '../context/MediaQueryContext';
 
 export type SidebarMode = 'drawer' | 'collapsed' | 'expanded';
@@ -25,7 +25,7 @@ export const useSidebar = (): SidebarState => {
 
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
-  const toggleExpanded = useCallback(() => setExpanded(prev => !prev), []);
+  const toggleExpanded = useCallback(() => setExpanded((prev) => !prev), []);
 
   return {
     isDrawerOpen: drawerOpen,

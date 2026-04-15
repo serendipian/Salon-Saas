@@ -1,15 +1,15 @@
-import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Trash2, Search, X, Plus, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Plus, Search, Trash2, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { formatDuration, formatPrice } from '../../../lib/format';
 import type { AppointmentStatus } from '../../../types';
-import { UseAppointmentFormProps, useAppointmentForm } from '../hooks/useAppointmentForm';
-import { formatPrice, formatDuration } from '../../../lib/format';
+import { type UseAppointmentFormProps, useAppointmentForm } from '../hooks/useAppointmentForm';
+import InlineCalendar from './InlineCalendar';
 import { MobileBottomSheet } from './MobileBottomSheet';
 import { MobileClientSearch } from './MobileClientSearch';
 import { MobileServicePicker } from './MobileServicePicker';
-import StaffPills from './StaffPills';
-import InlineCalendar from './InlineCalendar';
-import TimePicker from './TimePicker';
 import ReminderToggle from './ReminderToggle';
+import StaffPills from './StaffPills';
+import TimePicker from './TimePicker';
 
 interface AppointmentBuilderMobileProps extends UseAppointmentFormProps {
   onCancel: () => void;
@@ -46,7 +46,9 @@ export default function AppointmentBuilderMobile({
   }, [form.clientId, hookProps.clients]);
 
   // Build display info for a block's items (multi-item aware)
-  const getBlockInfo = (block: { items: Array<{ serviceId: string; variantId: string; priceOverride?: number }> }) => {
+  const getBlockInfo = (block: {
+    items: Array<{ serviceId: string; variantId: string; priceOverride?: number }>;
+  }) => {
     if (block.items.length === 0) return null;
     const details = block.items.map((item) => {
       const svc = hookProps.services.find((s) => s.id === item.serviceId);
@@ -62,14 +64,22 @@ export default function AppointmentBuilderMobile({
     const price = details.reduce((sum, d) => sum + d.price, 0);
     const primary = details[0];
     const label =
-      details.length === 1
-        ? `${primary.service?.name ?? ''}`
-        : `${details.length} prestations`;
+      details.length === 1 ? `${primary.service?.name ?? ''}` : `${details.length} prestations`;
     const subtitle =
       details.length === 1
-        ? [primary.variant?.name, formatDuration(duration), formatPrice(price)].filter(Boolean).join(' · ')
-        : `${details.map((d) => d.service?.name).filter(Boolean).join(' · ')} · ${formatDuration(duration)} · ${formatPrice(price)}`;
-    return { label, subtitle, primaryService: primary.service, firstCategoryId: primary.service?.categoryId ?? null };
+        ? [primary.variant?.name, formatDuration(duration), formatPrice(price)]
+            .filter(Boolean)
+            .join(' · ')
+        : `${details
+            .map((d) => d.service?.name)
+            .filter(Boolean)
+            .join(' · ')} · ${formatDuration(duration)} · ${formatPrice(price)}`;
+    return {
+      label,
+      subtitle,
+      primaryService: primary.service,
+      firstCategoryId: primary.service?.categoryId ?? null,
+    };
   };
 
   // Summary for footer
@@ -212,7 +222,10 @@ export default function AppointmentBuilderMobile({
 
                 if (info) {
                   return (
-                    <div key={block.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                    <div
+                      key={block.id}
+                      className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+                    >
                       {/* Service header */}
                       <div className="px-4 py-3 flex items-start gap-3">
                         <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 mt-0.5">
@@ -270,7 +283,9 @@ export default function AppointmentBuilderMobile({
                     <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0">
                       {i + 1}
                     </div>
-                    <span className="text-sm text-slate-400 flex-1 text-left">Choisir un service...</span>
+                    <span className="text-sm text-slate-400 flex-1 text-left">
+                      Choisir un service...
+                    </span>
                     <ChevronRight size={16} className="text-slate-300 shrink-0" />
                   </button>
                 );
@@ -330,15 +345,15 @@ export default function AppointmentBuilderMobile({
             </div>
 
             {/* Reminder */}
-            <ReminderToggle
-              value={form.reminderMinutes}
-              onChange={form.setReminderMinutes}
-            />
+            <ReminderToggle value={form.reminderMinutes} onChange={form.setReminderMinutes} />
           </div>
         </div>
 
         {/* Sticky footer — above BottomTabBar */}
-        <div className="fixed left-0 right-0 bg-white border-t border-slate-200 px-4 py-4 space-y-2 z-10" style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
+        <div
+          className="fixed left-0 right-0 bg-white border-t border-slate-200 px-4 py-4 space-y-2 z-10"
+          style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}
+        >
           {serviceCount > 0 && (
             <p className="text-xs text-slate-500 text-center">
               {serviceCount} service{serviceCount > 1 ? 's' : ''} &middot;{' '}
@@ -524,7 +539,10 @@ export default function AppointmentBuilderMobile({
       </div>
 
       {/* Sticky footer — above BottomTabBar */}
-      <div className="fixed left-0 right-0 bg-white border-t border-slate-200 px-4 py-4 space-y-2 z-10" style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
+      <div
+        className="fixed left-0 right-0 bg-white border-t border-slate-200 px-4 py-4 space-y-2 z-10"
+        style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}
+      >
         <p className="text-xs text-slate-500 text-center truncate">
           {clientName && <span>{clientName} &middot; </span>}
           {serviceNames}

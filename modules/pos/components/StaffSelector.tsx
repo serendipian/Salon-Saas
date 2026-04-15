@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { User, ChevronDown, X } from 'lucide-react';
+import { ChevronDown, User, X } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { StaffMember } from '../../../types';
 
 interface StaffSelectorProps {
@@ -33,9 +34,9 @@ export const StaffSelector: React.FC<StaffSelectorProps> = ({
   }, [isOpen]);
 
   const eligibleStaff = useMemo(() => {
-    const active = staffMembers.filter(s => s.active);
+    const active = staffMembers.filter((s) => s.active);
     if (!categoryId) return active;
-    return active.filter(s => s.skills.includes(categoryId));
+    return active.filter((s) => s.skills.includes(categoryId));
   }, [staffMembers, categoryId]);
 
   return (
@@ -55,7 +56,11 @@ export const StaffSelector: React.FC<StaffSelectorProps> = ({
         <ChevronDown size={10} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         {staffId && (
           <span
-            onClick={(e) => { e.stopPropagation(); onChange(undefined, undefined); setIsOpen(false); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onChange(undefined, undefined);
+              setIsOpen(false);
+            }}
             className="ml-0.5 hover:text-red-500"
           >
             <X size={10} />
@@ -64,11 +69,19 @@ export const StaffSelector: React.FC<StaffSelectorProps> = ({
       </button>
 
       {isOpen && (
-        <div role="listbox" aria-label="Sélectionner un membre" className="absolute left-0 top-full mt-1 w-48 bg-white rounded-lg border border-slate-200 shadow-lg py-1 max-h-48 overflow-y-auto" style={{ zIndex: 'var(--z-drawer-panel)' }}>
+        <div
+          role="listbox"
+          aria-label="Sélectionner un membre"
+          className="absolute left-0 top-full mt-1 w-48 bg-white rounded-lg border border-slate-200 shadow-lg py-1 max-h-48 overflow-y-auto"
+          style={{ zIndex: 'var(--z-drawer-panel)' }}
+        >
           <button
             role="option"
             aria-selected={!staffId}
-            onClick={() => { onChange(undefined, undefined); setIsOpen(false); }}
+            onClick={() => {
+              onChange(undefined, undefined);
+              setIsOpen(false);
+            }}
             className={`w-full text-left px-3 py-2 text-xs hover:bg-slate-50 flex items-center gap-2 ${
               !staffId ? 'text-slate-900 font-medium' : 'text-slate-500'
             }`}
@@ -78,7 +91,7 @@ export const StaffSelector: React.FC<StaffSelectorProps> = ({
             </div>
             Non attribué
           </button>
-          {eligibleStaff.map(member => (
+          {eligibleStaff.map((member) => (
             <button
               key={member.id}
               role="option"
@@ -97,7 +110,8 @@ export const StaffSelector: React.FC<StaffSelectorProps> = ({
                 <div
                   className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold ${member.color || 'bg-slate-500 text-white'}`}
                 >
-                  {member.firstName[0]}{member.lastName[0]}
+                  {member.firstName[0]}
+                  {member.lastName[0]}
                 </div>
               )}
               {member.firstName} {member.lastName}

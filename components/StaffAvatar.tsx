@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 interface StaffAvatarProps {
   firstName: string;
@@ -32,7 +32,7 @@ export const StaffAvatar: React.FC<StaffAvatarProps> = ({
   }
 
   // color can be a Tailwind class string (e.g. "bg-rose-100 text-rose-800") or a hex color
-  const isTailwindClass = color && color.startsWith('bg-');
+  const isTailwindClass = color?.startsWith('bg-');
 
   return (
     <span

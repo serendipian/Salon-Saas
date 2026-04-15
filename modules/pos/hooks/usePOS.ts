@@ -1,13 +1,12 @@
-
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTransactions } from '../../../hooks/useTransactions';
+import type { Appointment, CartItem, Client, PaymentEntry } from '../../../types';
+import { useAppointments } from '../../appointments/hooks/useAppointments';
+import { useClients } from '../../clients/hooks/useClients';
 import { useProducts } from '../../products/hooks/useProducts';
 import { useServices } from '../../services/hooks/useServices';
-import { useClients } from '../../clients/hooks/useClients';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useTeam } from '../../team/hooks/useTeam';
-import { useAppointments } from '../../appointments/hooks/useAppointments';
-import { CartItem, Client, Service, Product, PaymentEntry, Appointment } from '../../../types';
 
 export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'APPOINTMENTS';
 
@@ -21,7 +20,14 @@ export const usePOS = () => {
     return { from: from.toISOString(), to: to.toISOString() };
   }, []);
 
-  const { transactions, addTransaction, voidTransaction, refundTransaction, isVoiding, isRefunding } = useTransactions(posRange);
+  const {
+    transactions,
+    addTransaction,
+    voidTransaction,
+    refundTransaction,
+    isVoiding,
+    isRefunding,
+  } = useTransactions(posRange);
   const { salonSettings } = useSettings();
 
   const { allClients: clients } = useClients();
@@ -59,23 +65,24 @@ export const usePOS = () => {
 
   const addToCart = (item: CartItem) => {
     const itemWithMeta = {
-        ...item,
-        originalPrice: item.originalPrice ?? item.price // Store reference for discounts
+      ...item,
+      originalPrice: item.originalPrice ?? item.price, // Store reference for discounts
     };
 
-    setCart(prev => {
+    setCart((prev) => {
       // Pack items always append (never merge) to preserve pro-rata pricing
       if (item.packId) {
         return [...prev, itemWithMeta];
       }
 
       const existingItemIndex = prev.findIndex(
-        i => i.referenceId === item.referenceId && i.variantName === item.variantName && !i.packId
+        (i) =>
+          i.referenceId === item.referenceId && i.variantName === item.variantName && !i.packId,
       );
 
       if (existingItemIndex >= 0) {
         return prev.map((existing, i) =>
-          i === existingItemIndex ? { ...existing, quantity: existing.quantity + 1 } : existing
+          i === existingItemIndex ? { ...existing, quantity: existing.quantity + 1 } : existing,
         );
       }
       return [...prev, itemWithMeta];
@@ -83,21 +90,25 @@ export const usePOS = () => {
   };
 
   const updateCartItem = (id: string, updates: Partial<CartItem>) => {
-    setCart(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
+    setCart((prev) => prev.map((item) => (item.id === id ? { ...item, ...updates } : item)));
   };
 
   const updateQuantity = (id: string, delta: number) => {
-    setCart(prev => prev.map(item => {
-      if (item.id === id) {
-        const newQty = Math.max(1, item.quantity + delta);
-        return { ...item, quantity: newQty };
-      }
-      return item;
-    }).filter(i => i.quantity > 0));
+    setCart((prev) =>
+      prev
+        .map((item) => {
+          if (item.id === id) {
+            const newQty = Math.max(1, item.quantity + delta);
+            return { ...item, quantity: newQty };
+          }
+          return item;
+        })
+        .filter((i) => i.quantity > 0),
+    );
   };
 
   const removeFromCart = (id: string) => {
-    setCart(prev => prev.filter(item => item.id !== id));
+    setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
   const clearCart = () => {
@@ -110,7 +121,12 @@ export const usePOS = () => {
 
   const processTransaction = async (payments: PaymentEntry[]) => {
     // Read from refs to avoid stale closures (realtime events can cause re-renders)
-    await addTransaction(cartRef.current, payments, selectedClientRef.current?.id, linkedAppointmentIdRef.current ?? undefined);
+    await addTransaction(
+      cartRef.current,
+      payments,
+      selectedClientRef.current?.id,
+      linkedAppointmentIdRef.current ?? undefined,
+    );
     clearCart();
   };
 
@@ -122,30 +138,36 @@ export const usePOS = () => {
         // POSCatalog renders favorites directly from the favorites list (unified sort order)
         return [];
       }
-      return services.filter(s => {
+      return services.filter((s) => {
         if (!s.active || s.variants.length === 0) return false;
         const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === 'ALL' || s.categoryId === selectedCategory;
         return matchesSearch && matchesCategory;
       });
     } else if (viewMode === 'PRODUCTS') {
-      return products.filter(p => {
+      return products.filter((p) => {
         if (p.usageType === 'internal') return false;
-        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.sku.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch =
+          p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.sku.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === 'ALL' || p.categoryId === selectedCategory;
         return matchesSearch && matchesCategory;
       });
     }
     return [];
-  }, [viewMode, searchTerm, selectedCategory, services, products, favorites]);
+  }, [viewMode, searchTerm, selectedCategory, services, products]);
 
   const pendingAppointments = useMemo(() => {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const tomorrowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+    const tomorrowStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1,
+    ).toISOString();
 
     return allAppointments
-      .filter(a => {
+      .filter((a) => {
         if (a.status !== 'SCHEDULED') return false;
         // Today's appointments OR overdue from previous days
         return a.date < tomorrowStart;
@@ -165,17 +187,17 @@ export const usePOS = () => {
   const importAppointment = (appointment: Appointment) => {
     // Find all appointments in the same group (or just this one if no group)
     const groupAppointments = appointment.groupId
-      ? allAppointments.filter(a => a.groupId === appointment.groupId && a.status === 'SCHEDULED')
+      ? allAppointments.filter((a) => a.groupId === appointment.groupId && a.status === 'SCHEDULED')
       : [appointment];
 
     // Clear current cart and set client
     setCart([]);
-    const client = clients.find(c => c.id === appointment.clientId);
+    const client = clients.find((c) => c.id === appointment.clientId);
     setSelectedClient(client ?? null);
     setLinkedAppointmentId(appointment.id);
 
     // Convert each appointment in the group to a cart item
-    const cartItems: CartItem[] = groupAppointments.map(appt => ({
+    const cartItems: CartItem[] = groupAppointments.map((appt) => ({
       id: crypto.randomUUID(),
       referenceId: appt.variantId || appt.serviceId,
       type: 'SERVICE' as const,
@@ -193,25 +215,33 @@ export const usePOS = () => {
   };
 
   const totals = useMemo(() => {
-    const subtotal = Math.round(cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) * 100) / 100;
+    const subtotal =
+      Math.round(cart.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100) / 100;
     const taxRate = (salonSettings.vatRate || 20) / 100;
-    const tax = subtotal * taxRate / (1 + taxRate);
+    const tax = (subtotal * taxRate) / (1 + taxRate);
     return { subtotal, tax, total: subtotal, vatRate: salonSettings.vatRate || 20 };
   }, [cart, salonSettings.vatRate]);
 
   return {
     // State
-    viewMode, setViewMode,
-    searchTerm, setSearchTerm,
-    selectedCategory, setSelectedCategory,
-    selectedClient, setSelectedClient,
+    viewMode,
+    setViewMode,
+    searchTerm,
+    setSearchTerm,
+    selectedCategory,
+    setSelectedCategory,
+    selectedClient,
+    setSelectedClient,
     cart,
 
     // Data
-    services, serviceCategories,
+    services,
+    serviceCategories,
     favorites,
-    products, productCategories,
-    clients, allStaff,
+    products,
+    productCategories,
+    clients,
+    allStaff,
     transactions,
     filteredItems,
     totals,

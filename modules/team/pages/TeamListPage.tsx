@@ -1,11 +1,11 @@
-
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAppointments } from '../../appointments/hooks/useAppointments';
+import { useServices } from '../../services/hooks/useServices';
 import { TeamList } from '../components/TeamList';
 import { TeamPerformance } from '../components/TeamPerformance';
 import { useTeam } from '../hooks/useTeam';
-import { useAppointments } from '../../appointments/hooks/useAppointments';
-import { useServices } from '../../services/hooks/useServices';
 
 type Tab = 'members' | 'performance';
 

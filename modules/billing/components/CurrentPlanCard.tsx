@@ -1,5 +1,5 @@
 // modules/billing/components/CurrentPlanCard.tsx
-import React from 'react';
+import type React from 'react';
 import type { Subscription, SubscriptionTier } from '../../../lib/auth.types';
 import type { PLAN_LIMITS } from '../hooks/useBilling';
 
@@ -33,25 +33,25 @@ const UsageBar: React.FC<UsageBarProps> = ({ label, current, max }) => {
 };
 
 const TIER_LABELS: Record<SubscriptionTier, string> = {
-  trial:    'Premium (Essai)',
-  free:     'Free',
-  premium:  'Premium',
-  pro:      'Pro',
+  trial: 'Premium (Essai)',
+  free: 'Free',
+  premium: 'Premium',
+  pro: 'Pro',
   past_due: 'Premium',
 };
 
 const TIER_BADGES: Record<SubscriptionTier, { label: string; className: string }> = {
-  trial:    { label: 'ESSAI',   className: 'bg-blue-100 text-blue-700' },
-  free:     { label: 'FREE',    className: 'bg-slate-100 text-slate-600' },
-  premium:  { label: 'PREMIUM', className: 'bg-brand-100 text-brand-700' },
-  pro:      { label: 'PRO',     className: 'bg-purple-100 text-purple-700' },
-  past_due: { label: 'IMPAYÉ',  className: 'bg-rose-100 text-rose-700' },
+  trial: { label: 'ESSAI', className: 'bg-blue-100 text-blue-700' },
+  free: { label: 'FREE', className: 'bg-slate-100 text-slate-600' },
+  premium: { label: 'PREMIUM', className: 'bg-brand-100 text-brand-700' },
+  pro: { label: 'PRO', className: 'bg-purple-100 text-purple-700' },
+  past_due: { label: 'IMPAYÉ', className: 'bg-rose-100 text-rose-700' },
 };
 
 interface CurrentPlanCardProps {
   subscription: Subscription | undefined;
   tier: SubscriptionTier;
-  limits: typeof PLAN_LIMITS[SubscriptionTier];
+  limits: (typeof PLAN_LIMITS)[SubscriptionTier];
   staffCount: number;
   clientCount: number;
   productCount: number;
@@ -60,20 +60,36 @@ interface CurrentPlanCardProps {
 }
 
 export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
-  subscription, tier, limits, staffCount, clientCount, productCount,
-  onManageBilling, isLoadingPortal,
+  subscription,
+  tier,
+  limits,
+  staffCount,
+  clientCount,
+  productCount,
+  onManageBilling,
+  isLoadingPortal,
 }) => {
   const badge = TIER_BADGES[tier];
   const renewalDate = subscription?.current_period_end
-    ? new Date(subscription.current_period_end).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+    ? new Date(subscription.current_period_end).toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
     : subscription?.trial_ends_at
-    ? new Date(subscription.trial_ends_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-    : null;
+      ? new Date(subscription.trial_ends_at).toLocaleDateString('fr-FR', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : null;
 
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col sm:flex-row gap-6 justify-between">
       <div className="flex-1">
-        <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Plan actuel</div>
+        <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+          Plan actuel
+        </div>
         <div className="flex items-center gap-3 mb-1.5">
           <span className="text-2xl font-extrabold text-slate-900">{TIER_LABELS[tier]}</span>
           <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${badge.className}`}>
@@ -101,7 +117,10 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
           >
             {isLoadingPortal ? '...' : 'Gérer la facturation ↗'}
           </button>
-          <p className="text-xs text-slate-400 text-right">Factures, carte bancaire,<br className="hidden sm:block" /> annulation via Stripe</p>
+          <p className="text-xs text-slate-400 text-right">
+            Factures, carte bancaire,
+            <br className="hidden sm:block" /> annulation via Stripe
+          </p>
         </div>
       )}
     </div>

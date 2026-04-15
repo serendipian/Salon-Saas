@@ -1,5 +1,5 @@
-import React from 'react';
 import { LayoutGrid, List } from 'lucide-react';
+import type React from 'react';
 import type { ViewMode } from '../hooks/useViewMode';
 
 interface ViewToggleProps {

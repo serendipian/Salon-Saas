@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const COLOR_PRESETS = [
   { value: 'bg-slate-100 text-slate-800 border-slate-200', dot: 'bg-slate-400' },
@@ -56,7 +56,10 @@ export function ColorPicker({ selectedColor, onSelect }: ColorPickerProps) {
             <button
               key={color.value}
               type="button"
-              onClick={() => { onSelect(color.value); setOpen(false); }}
+              onClick={() => {
+                onSelect(color.value);
+                setOpen(false);
+              }}
               className={`flex items-center justify-center w-7 h-7 rounded-lg transition-colors ${
                 selectedColor === color.value
                   ? 'ring-2 ring-slate-900 ring-offset-1'

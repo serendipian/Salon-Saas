@@ -14,5 +14,5 @@ export const REFUND_CATEGORIES = [
   { key: 'other', label: 'Autre' },
 ] as const;
 
-export type VoidCategoryKey = typeof VOID_CATEGORIES[number]['key'];
-export type RefundCategoryKey = typeof REFUND_CATEGORIES[number]['key'];
+export type VoidCategoryKey = (typeof VOID_CATEGORIES)[number]['key'];
+export type RefundCategoryKey = (typeof REFUND_CATEGORIES)[number]['key'];

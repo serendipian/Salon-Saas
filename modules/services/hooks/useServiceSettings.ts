@@ -1,7 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import { supabase } from '../../../lib/supabase';
 import type { ServiceSettings } from '../../../types';
 
 const DEFAULTS: ServiceSettings = {
@@ -29,10 +29,18 @@ export function useServiceSettings() {
       const raw = data?.service_settings as Record<string, unknown> | null;
       if (!raw || Object.keys(raw).length === 0) return DEFAULTS;
       return {
-        defaultDuration: typeof raw.defaultDuration === 'number' ? raw.defaultDuration : DEFAULTS.defaultDuration,
-        defaultVariantName: typeof raw.defaultVariantName === 'string' ? raw.defaultVariantName : DEFAULTS.defaultVariantName,
-        showCostsInList: typeof raw.showCostsInList === 'boolean' ? raw.showCostsInList : DEFAULTS.showCostsInList,
-        defaultView: raw.defaultView === 'card' || raw.defaultView === 'table' ? raw.defaultView : DEFAULTS.defaultView,
+        defaultDuration:
+          typeof raw.defaultDuration === 'number' ? raw.defaultDuration : DEFAULTS.defaultDuration,
+        defaultVariantName:
+          typeof raw.defaultVariantName === 'string'
+            ? raw.defaultVariantName
+            : DEFAULTS.defaultVariantName,
+        showCostsInList:
+          typeof raw.showCostsInList === 'boolean' ? raw.showCostsInList : DEFAULTS.showCostsInList,
+        defaultView:
+          raw.defaultView === 'card' || raw.defaultView === 'table'
+            ? raw.defaultView
+            : DEFAULTS.defaultView,
       } satisfies ServiceSettings;
     },
     enabled: !!salonId,

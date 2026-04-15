@@ -1,7 +1,7 @@
-import React from 'react';
 import { ChevronRight, Users } from 'lucide-react';
-import { StaffMember, Appointment, ServiceCategory } from '../../../types';
+import type React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
+import type { Appointment, ServiceCategory, StaffMember } from '../../../types';
 
 interface TeamTableProps {
   team: StaffMember[];
@@ -19,13 +19,18 @@ function formatStartDate(dateStr?: string): string {
   });
 }
 
-export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, serviceCategories, onSelect }) => {
+export const TeamTable: React.FC<TeamTableProps> = ({
+  team,
+  appointments,
+  serviceCategories,
+  onSelect,
+}) => {
   const getMemberStats = (memberId: string) => {
-    const memberAppointments = appointments.filter(a => a.staffId === memberId);
+    const memberAppointments = appointments.filter((a) => a.staffId === memberId);
     const today = new Date().toISOString().slice(0, 10);
-    const todaysAppointments = memberAppointments.filter(a => a.date.startsWith(today));
+    const todaysAppointments = memberAppointments.filter((a) => a.date.startsWith(today));
     const totalRevenue = memberAppointments
-      .filter(a => a.status === 'COMPLETED')
+      .filter((a) => a.status === 'COMPLETED')
       .reduce((sum, a) => sum + a.price, 0);
     return {
       totalAppointments: memberAppointments.length,
@@ -34,12 +39,10 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
     };
   };
 
-  const categoryMap = new Map(serviceCategories.map(c => [c.id, c]));
+  const categoryMap = new Map(serviceCategories.map((c) => [c.id, c]));
 
   const resolveSkills = (skills: string[]) =>
-    skills
-      .map(id => categoryMap.get(id))
-      .filter((c): c is ServiceCategory => !!c);
+    skills.map((id) => categoryMap.get(id)).filter((c): c is ServiceCategory => !!c);
 
   if (team.length === 0) {
     return (
@@ -56,14 +59,30 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
       <table className="w-full text-left border-collapse">
         <thead className="bg-slate-50 border-b border-slate-200">
           <tr>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Membre</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Contact</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Début</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell text-center">Heures/sem</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden xl:table-cell">Compétences</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Activité</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Commission</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Membre
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">
+              Contact
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
+              Début
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell text-center">
+              Heures/sem
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden xl:table-cell">
+              Compétences
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">
+              Activité
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
+              Commission
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Statut
+            </th>
             <th className="px-6 py-3"></th>
           </tr>
         </thead>
@@ -89,7 +108,9 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
                       )}
                     </div>
                     <div>
-                      <div className="font-bold text-slate-900 text-sm">{member.firstName} {member.lastName}</div>
+                      <div className="font-bold text-slate-900 text-sm">
+                        {member.firstName} {member.lastName}
+                      </div>
                       <div className="text-xs text-slate-500">{member.role}</div>
                     </div>
                   </div>
@@ -98,11 +119,15 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
                   <span className="text-sm text-slate-600">{member.phone || '-'}</span>
                 </td>
                 <td className="px-6 py-4 hidden lg:table-cell">
-                  <span className="text-sm text-slate-600">{formatStartDate(member.startDate)}</span>
+                  <span className="text-sm text-slate-600">
+                    {formatStartDate(member.startDate)}
+                  </span>
                 </td>
                 <td className="px-6 py-4 hidden lg:table-cell text-center">
                   {member.weeklyHours ? (
-                    <span className="text-sm font-medium text-slate-700">{member.weeklyHours}h</span>
+                    <span className="text-sm font-medium text-slate-700">
+                      {member.weeklyHours}h
+                    </span>
                   ) : (
                     <span className="text-sm text-slate-400">-</span>
                   )}
@@ -110,7 +135,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
                 <td className="px-6 py-4 hidden xl:table-cell">
                   <div className="flex flex-wrap gap-1 max-w-[200px]">
                     {skills.length > 0 ? (
-                      skills.map(cat => (
+                      skills.map((cat) => (
                         <span
                           key={cat.id}
                           className="inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap"
@@ -131,7 +156,9 @@ export const TeamTable: React.FC<TeamTableProps> = ({ team, appointments, servic
                     </div>
                     <div className="w-px h-6 bg-slate-200"></div>
                     <div>
-                      <div className="font-bold text-slate-900 text-sm">{stats.totalAppointments}</div>
+                      <div className="font-bold text-slate-900 text-sm">
+                        {stats.totalAppointments}
+                      </div>
                       <div className="text-[10px] text-slate-400 uppercase">Total</div>
                     </div>
                   </div>

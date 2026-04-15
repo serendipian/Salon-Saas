@@ -1,7 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import { supabase } from '../../../lib/supabase';
 import type { ProductSettings } from '../../../types';
 
 const DEFAULTS: ProductSettings = {
@@ -28,9 +28,16 @@ export function useProductSettings() {
       const raw = data?.product_settings as Record<string, unknown> | null;
       if (!raw || Object.keys(raw).length === 0) return DEFAULTS;
       return {
-        lowStockThreshold: typeof raw.lowStockThreshold === 'number' ? raw.lowStockThreshold : DEFAULTS.lowStockThreshold,
-        showCostsInList: typeof raw.showCostsInList === 'boolean' ? raw.showCostsInList : DEFAULTS.showCostsInList,
-        defaultView: raw.defaultView === 'card' || raw.defaultView === 'table' ? raw.defaultView : DEFAULTS.defaultView,
+        lowStockThreshold:
+          typeof raw.lowStockThreshold === 'number'
+            ? raw.lowStockThreshold
+            : DEFAULTS.lowStockThreshold,
+        showCostsInList:
+          typeof raw.showCostsInList === 'boolean' ? raw.showCostsInList : DEFAULTS.showCostsInList,
+        defaultView:
+          raw.defaultView === 'card' || raw.defaultView === 'table'
+            ? raw.defaultView
+            : DEFAULTS.defaultView,
       } satisfies ProductSettings;
     },
     enabled: !!salonId,

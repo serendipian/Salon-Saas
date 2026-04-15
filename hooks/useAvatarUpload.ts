@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { supabase } from '../lib/supabase';
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -35,9 +35,9 @@ export function useAvatarUpload() {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(path);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('avatars').getPublicUrl(path);
 
       // Append timestamp to bust cache
       const avatarUrl = `${publicUrl}?t=${Date.now()}`;
@@ -46,7 +46,7 @@ export function useAvatarUpload() {
       if (profileError) throw new Error(profileError);
 
       addToast({ type: 'success', message: 'Photo mise à jour' });
-    } catch (err) {
+    } catch (_err) {
       addToast({ type: 'error', message: 'Impossible de mettre à jour la photo' });
     } finally {
       setIsUploading(false);

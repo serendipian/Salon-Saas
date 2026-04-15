@@ -1,11 +1,10 @@
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
-import { toClient, toClientInsert } from '../mappers';
-import type { Client } from '../../../types';
-import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { supabase } from '../../../lib/supabase';
+import type { Client } from '../../../types';
+import { toClient, toClientInsert } from '../mappers';
 
 export const useClients = () => {
   const { activeSalon } = useAuth();
@@ -25,21 +24,18 @@ export const useClients = () => {
           .eq('salon_id', salonId)
           .is('deleted_at', null)
           .order('last_name'),
-        supabase
-          .from('client_stats')
-          .select('*')
-          .eq('salon_id', salonId),
+        supabase.from('client_stats').select('*').eq('salon_id', salonId),
       ]);
 
       if (clientsRes.error) throw clientsRes.error;
       if (statsRes.error) throw statsRes.error;
 
-      const statsMap = new Map(
-        (statsRes.data ?? []).map(s => [s.client_id, s])
-      );
+      const statsMap = new Map((statsRes.data ?? []).map((s) => [s.client_id, s]));
 
-      return (clientsRes.data ?? []).map(row =>
-        toClient(row, statsMap.get(row.id) ?? null)
+      // biome-ignore lint/suspicious/noExplicitAny: hand-written Row aliases narrower than generated types
+      return (clientsRes.data ?? []).map((row: any) =>
+        // biome-ignore lint/suspicious/noExplicitAny: stats row also narrower than generated
+        toClient(row, (statsMap.get(row.id) ?? null) as any),
       );
     },
     enabled: !!salonId,
@@ -47,9 +43,7 @@ export const useClients = () => {
 
   const addClientMutation = useMutation({
     mutationFn: async (client: Client) => {
-      const { error } = await supabase
-        .from('clients')
-        .insert(toClientInsert(client, salonId));
+      const { error } = await supabase.from('clients').insert(toClientInsert(client, salonId));
       if (error) throw error;
     },
     onSuccess: () => {
@@ -70,7 +64,7 @@ export const useClients = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients', salonId] });
     },
-    onError: toastOnError("Impossible de modifier le client"),
+    onError: toastOnError('Impossible de modifier le client'),
   });
 
   const deleteClientMutation = useMutation({
@@ -83,7 +77,7 @@ export const useClients = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients', salonId] });
     },
-    onError: toastOnError("Impossible de supprimer le client"),
+    onError: toastOnError('Impossible de supprimer le client'),
   });
 
   return {

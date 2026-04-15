@@ -1,5 +1,5 @@
-import React from 'react';
 import { AlertTriangle, Info, Loader2 } from 'lucide-react';
+import type React from 'react';
 import { Modal } from './Modal';
 
 export type ConfirmTone = 'danger' | 'warning' | 'info';
@@ -17,16 +17,19 @@ export interface ConfirmModalProps {
   onClose: () => void;
 }
 
-const TONE_CONFIG: Record<ConfirmTone, {
-  icon: React.ComponentType<{ className?: string }>;
-  iconBg: string;
-  iconColor: string;
-  bannerBg: string;
-  bannerBorder: string;
-  bannerText: string;
-  confirmBg: string;
-  confirmHover: string;
-}> = {
+const TONE_CONFIG: Record<
+  ConfirmTone,
+  {
+    icon: React.ComponentType<{ className?: string }>;
+    iconBg: string;
+    iconColor: string;
+    bannerBg: string;
+    bannerBorder: string;
+    bannerText: string;
+    confirmBg: string;
+    confirmHover: string;
+  }
+> = {
   danger: {
     icon: AlertTriangle,
     iconBg: 'bg-red-50',
@@ -80,7 +83,9 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} dismissible={!isLoading}>
       <div className="px-6 pb-6">
-        <div className={`flex items-start gap-3 p-3 ${cfg.bannerBg} border ${cfg.bannerBorder} rounded-lg mb-5`}>
+        <div
+          className={`flex items-start gap-3 p-3 ${cfg.bannerBg} border ${cfg.bannerBorder} rounded-lg mb-5`}
+        >
           <Icon className={`w-5 h-5 ${cfg.iconColor} shrink-0 mt-0.5`} />
           <div className={`text-sm ${cfg.bannerText}`}>{message}</div>
         </div>

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 interface MobileBottomSheetProps {
@@ -87,16 +88,9 @@ export const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
   const sheetHeight = expanded ? '90dvh' : '50dvh';
 
   return createPortal(
-    <div
-      className="fixed inset-0"
-      style={{ zIndex: 'var(--z-modal, 60)' }}
-    >
+    <div className="fixed inset-0" style={{ zIndex: 'var(--z-modal, 60)' }}>
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40"
-        aria-hidden="true"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/40" aria-hidden="true" onClick={onClose} />
 
       {/* Sheet */}
       <div
@@ -119,17 +113,13 @@ export const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
 
         {/* Optional title */}
         {title && (
-          <h3 className="text-base font-semibold text-slate-900 px-5 pb-3 shrink-0">
-            {title}
-          </h3>
+          <h3 className="text-base font-semibold text-slate-900 px-5 pb-3 shrink-0">{title}</h3>
         )}
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-8">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-8">{children}</div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };

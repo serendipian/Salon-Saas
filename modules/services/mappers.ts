@@ -1,4 +1,4 @@
-import type { Service, ServiceVariant, ServiceCategory } from '../../types';
+import type { Service, ServiceCategory, ServiceVariant } from '../../types';
 
 interface ServiceVariantRow {
   id: string;
@@ -65,9 +65,7 @@ export function toService(row: ServiceRow): Service {
     name: row.name,
     categoryId: row.category_id ?? '',
     description: row.description ?? '',
-    variants: (row.service_variants ?? [])
-      .filter(v => !v.deleted_at)
-      .map(toServiceVariant),
+    variants: (row.service_variants ?? []).filter((v) => !v.deleted_at).map(toServiceVariant),
     active: row.active,
     isFavorite: row.is_favorite,
     favoriteSortOrder: row.favorite_sort_order,
@@ -84,7 +82,12 @@ export function toServiceInsert(data: Service, salonId: string) {
   };
 }
 
-export function toVariantInsert(variant: ServiceVariant, serviceId: string, salonId: string, sortOrder: number) {
+export function toVariantInsert(
+  variant: ServiceVariant,
+  serviceId: string,
+  salonId: string,
+  sortOrder: number,
+) {
   return {
     service_id: serviceId,
     salon_id: salonId,

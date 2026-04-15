@@ -1,17 +1,21 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import type { Session, User, AuthChangeEvent } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
-import { setSalonCurrency } from '../lib/format';
-import { useRealtimeEpoch } from '../lib/realtimeReset';
+import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
+import type React from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type {
-  Role,
-  Profile,
-  SalonMembership,
   ActiveSalon,
+  Profile,
+  Role,
+  SalonMembership,
   SubscriptionTier,
 } from '../lib/auth.types';
+import { setSalonCurrency } from '../lib/format';
+import { useRealtimeEpoch } from '../lib/realtimeReset';
+import { supabase } from '../lib/supabase';
 
-export type ProfileUpdates = Omit<Partial<Profile>, 'is_admin' | 'id' | 'email' | 'created_at' | 'updated_at'>;
+export type ProfileUpdates = Omit<
+  Partial<Profile>,
+  'is_admin' | 'id' | 'email' | 'created_at' | 'updated_at'
+>;
 
 interface AuthContextType {
   // State
@@ -26,10 +30,18 @@ interface AuthContextType {
 
   // Auth actions
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: string | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+  ) => Promise<{ error: string | null }>;
   signInWithMagicLink: (email: string) => Promise<{ error: string | null }>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
-  updatePassword: (newPassword: string, currentPassword?: string) => Promise<{ error: string | null }>;
+  updatePassword: (
+    newPassword: string,
+    currentPassword?: string,
+  ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 
   // Profile actions
@@ -39,7 +51,11 @@ interface AuthContextType {
   // Salon actions
   switchSalon: (salonId: string) => Promise<void>;
   refreshActiveSalon: (updates: Partial<ActiveSalon>) => void;
-  createSalon: (name: string, timezone?: string, currency?: string) => Promise<{ salonId: string | null; error: string | null }>;
+  createSalon: (
+    name: string,
+    timezone?: string,
+    currency?: string,
+  ) => Promise<{ salonId: string | null; error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   activeSalonRef.current = activeSalon;
   roleRef.current = role;
 
-  const epoch = useRealtimeEpoch();
+  const _epoch = useRealtimeEpoch();
 
   // Sync global currency for formatPrice()
   useEffect(() => {
@@ -73,7 +89,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, email, first_name, last_name, avatar_url, phone, bio, language, notification_email, notification_sms, is_admin')
+      .select(
+        'id, email, first_name, last_name, avatar_url, phone, bio, language, notification_email, notification_sms, is_admin',
+      )
       .eq('id', userId)
       .single();
 
@@ -114,16 +132,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Switch active salon
-  const switchSalon = useCallback(async (salonId: string) => {
-    const membership = memberships.find(m => m.salon_id === salonId);
-    if (!membership) {
-      console.error('No membership found for salon:', salonId);
-      return;
-    }
-    setActiveSalon(membership.salon);
-    setRole(membership.role);
-    localStorage.setItem('lastSalonId', salonId);
-  }, [memberships]);
+  const switchSalon = useCallback(
+    async (salonId: string) => {
+      const membership = memberships.find((m) => m.salon_id === salonId);
+      if (!membership) {
+        console.error('No membership found for salon:', salonId);
+        return;
+      }
+      setActiveSalon(membership.salon);
+      setRole(membership.role);
+      localStorage.setItem('lastSalonId', salonId);
+    },
+    [memberships],
+  );
 
   // Initialize auth state on mount
   const initializeAuth = useCallback(async () => {
@@ -132,10 +153,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const sessionResult = await Promise.race([
         supabase.auth.getSession(),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Session fetch timed out')), 5000)
+          setTimeout(() => reject(new Error('Session fetch timed out')), 5000),
         ),
       ]);
-      const { data: { session: currentSession } } = sessionResult;
+      const {
+        data: { session: currentSession },
+      } = sessionResult;
 
       if (!currentSession?.user) {
         setIsLoading(false);
@@ -162,7 +185,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Try to restore last salon
         const lastSalonId = localStorage.getItem('lastSalonId');
         const lastMembership = lastSalonId
-          ? userMemberships.find(m => m.salon_id === lastSalonId)
+          ? userMemberships.find((m) => m.salon_id === lastSalonId)
           : null;
         if (lastMembership) {
           setActiveSalon(lastMembership.salon);
@@ -181,7 +204,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     initializeAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, newSession: Session | null) => {
         if (event === 'SIGNED_IN' && newSession) {
           setSession(newSession);
@@ -201,7 +226,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Try to restore last salon (same logic as initializeAuth)
             const lastSalonId = localStorage.getItem('lastSalonId');
             const lastMembership = lastSalonId
-              ? userMemberships.find(m => m.salon_id === lastSalonId)
+              ? userMemberships.find((m) => m.salon_id === lastSalonId)
               : null;
             if (lastMembership) {
               setActiveSalon(lastMembership.salon);
@@ -219,7 +244,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else if (event === 'TOKEN_REFRESHED' && newSession) {
           setSession(newSession);
         }
-      }
+      },
     );
 
     return () => {
@@ -253,14 +278,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         (payload) => {
           const updated = payload.new as Record<string, unknown>;
-          setActiveSalon(prev => {
+          setActiveSalon((prev) => {
             if (!prev) return prev;
             const patch: Partial<ActiveSalon> = {};
-            if (updated.subscription_tier !== undefined) patch.subscription_tier = updated.subscription_tier as SubscriptionTier;
-            if (updated.is_suspended !== undefined) patch.is_suspended = updated.is_suspended as boolean;
+            if (updated.subscription_tier !== undefined)
+              patch.subscription_tier = updated.subscription_tier as SubscriptionTier;
+            if (updated.is_suspended !== undefined)
+              patch.is_suspended = updated.is_suspended as boolean;
             return Object.keys(patch).length > 0 ? { ...prev, ...patch } : prev;
           });
-        }
+        },
       )
       .subscribe();
 
@@ -269,7 +296,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activeSalon?.id, epoch]);
+  }, [activeSalon?.id, activeSalon]);
 
   // Real-time membership tracking (detect revocation / role changes)
   useEffect(() => {
@@ -301,7 +328,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           // If active salon membership was revoked, clear it
           if (currentSalon) {
-            const stillMember = updated.find(m => m.salon_id === currentSalon.id);
+            const stillMember = updated.find((m) => m.salon_id === currentSalon.id);
             if (!stillMember) {
               setActiveSalon(null);
               setRole(null);
@@ -311,7 +338,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setRole(stillMember.role);
             }
           }
-        }
+        },
       )
       .subscribe();
 
@@ -320,7 +347,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, fetchMemberships, epoch]);
+  }, [user, fetchMemberships]);
 
   // --- Auth Actions ---
 
@@ -341,110 +368,125 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return 'Une erreur est survenue. Veuillez réessayer.';
   };
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error ? sanitizeAuthError(error.message) : null };
-  }, []);
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      return { error: error ? sanitizeAuthError(error.message) : null };
+    },
+    [sanitizeAuthError],
+  );
 
-  const signUp = useCallback(async (email: string, password: string, firstName: string, lastName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { first_name: firstName, last_name: lastName },
-      },
-    });
-    return { error: error ? sanitizeAuthError(error.message) : null };
-  }, []);
-
-  const signInWithMagicLink = useCallback(async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    return { error: error ? sanitizeAuthError(error.message) : null };
-  }, []);
-
-  const resetPassword = useCallback(async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    return { error: error ? sanitizeAuthError(error.message) : null };
-  }, []);
-
-  const updatePassword = useCallback(async (newPassword: string, currentPassword?: string) => {
-    // Raw fetch — supabase.auth.updateUser() can hang indefinitely after
-    // background-tab throttling (same SDK lock issue as getUser/signOut).
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-    const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\./)?.[1];
-    const storageKey = projectRef ? `sb-${projectRef}-auth-token` : null;
-
-    let accessToken: string | null = null;
-    try {
-      const raw = storageKey ? localStorage.getItem(storageKey) : null;
-      if (raw) {
-        const parsed = JSON.parse(raw) as { access_token?: string };
-        accessToken = parsed.access_token ?? null;
-      }
-    } catch {
-      // fall through
-    }
-    if (!accessToken) {
-      return { error: 'Session introuvable, veuillez vous reconnecter.' };
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
-    try {
-      const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
-        method: 'PUT',
-        headers: {
-          apikey: anonKey,
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
+  const signUp = useCallback(
+    async (email: string, password: string, firstName: string, lastName: string) => {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { first_name: firstName, last_name: lastName },
         },
-        body: JSON.stringify(
-          currentPassword
-            ? { password: newPassword, current_password: currentPassword }
-            : { password: newPassword },
-        ),
-        signal: controller.signal,
       });
-      if (!response.ok) {
-        let message = `HTTP ${response.status}`;
-        try {
-          const body = (await response.json()) as { msg?: string; message?: string };
-          message = body.msg ?? body.message ?? message;
-        } catch {
-          // ignore
+      return { error: error ? sanitizeAuthError(error.message) : null };
+    },
+    [sanitizeAuthError],
+  );
+
+  const signInWithMagicLink = useCallback(
+    async (email: string) => {
+      const { error } = await supabase.auth.signInWithOtp({ email });
+      return { error: error ? sanitizeAuthError(error.message) : null };
+    },
+    [sanitizeAuthError],
+  );
+
+  const resetPassword = useCallback(
+    async (email: string) => {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      return { error: error ? sanitizeAuthError(error.message) : null };
+    },
+    [sanitizeAuthError],
+  );
+
+  const updatePassword = useCallback(
+    async (newPassword: string, currentPassword?: string) => {
+      // Raw fetch — supabase.auth.updateUser() can hang indefinitely after
+      // background-tab throttling (same SDK lock issue as getUser/signOut).
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+      const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\./)?.[1];
+      const storageKey = projectRef ? `sb-${projectRef}-auth-token` : null;
+
+      let accessToken: string | null = null;
+      try {
+        const raw = storageKey ? localStorage.getItem(storageKey) : null;
+        if (raw) {
+          const parsed = JSON.parse(raw) as { access_token?: string };
+          accessToken = parsed.access_token ?? null;
         }
-        return { error: sanitizeAuthError(message) };
+      } catch {
+        // fall through
       }
-      // Notify SDK so in-memory state + onAuthStateChange listeners catch up.
-      // Fire-and-forget — if the SDK hangs, the password was already changed.
-      void supabase.auth.refreshSession().catch(() => {});
-      return { error: null };
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      return { error: sanitizeAuthError(msg) };
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  }, []);
+      if (!accessToken) {
+        return { error: 'Session introuvable, veuillez vous reconnecter.' };
+      }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      try {
+        const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
+          method: 'PUT',
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(
+            currentPassword
+              ? { password: newPassword, current_password: currentPassword }
+              : { password: newPassword },
+          ),
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          let message = `HTTP ${response.status}`;
+          try {
+            const body = (await response.json()) as { msg?: string; message?: string };
+            message = body.msg ?? body.message ?? message;
+          } catch {
+            // ignore
+          }
+          return { error: sanitizeAuthError(message) };
+        }
+        // Notify SDK so in-memory state + onAuthStateChange listeners catch up.
+        // Fire-and-forget — if the SDK hangs, the password was already changed.
+        void supabase.auth.refreshSession().catch(() => {});
+        return { error: null };
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return { error: sanitizeAuthError(msg) };
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    },
+    [sanitizeAuthError],
+  );
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
   }, []);
 
-  const updateProfile = useCallback(async (data: ProfileUpdates) => {
-    if (!user) return { error: 'Not authenticated' };
-    const { error } = await supabase
-      .from('profiles')
-      .update(data)
-      .eq('id', user.id);
-    if (error) return { error: error.message };
-    const updated = await fetchProfile(user.id);
-    if (updated) setProfile(updated);
-    return { error: null };
-  }, [user, fetchProfile]);
+  const updateProfile = useCallback(
+    async (data: ProfileUpdates) => {
+      if (!user) return { error: 'Not authenticated' };
+      const { error } = await supabase.from('profiles').update(data).eq('id', user.id);
+      if (error) return { error: error.message };
+      const updated = await fetchProfile(user.id);
+      if (updated) setProfile(updated);
+      return { error: null };
+    },
+    [user, fetchProfile],
+  );
 
   const refreshProfile = useCallback(async () => {
     if (!user) return;
@@ -453,40 +495,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user, fetchProfile]);
 
   const refreshActiveSalon = useCallback((updates: Partial<ActiveSalon>) => {
-    setActiveSalon(prev => prev ? { ...prev, ...updates } : prev);
+    setActiveSalon((prev) => (prev ? { ...prev, ...updates } : prev));
   }, []);
 
-  const createSalon = useCallback(async (name: string, timezone = 'Europe/Paris', currency = 'MAD') => {
-    const { data, error } = await supabase.rpc('create_salon', {
-      p_name: name,
-      p_timezone: timezone,
-      p_currency: currency,
-    });
+  const createSalon = useCallback(
+    async (name: string, timezone = 'Europe/Paris', currency = 'MAD') => {
+      const { data, error } = await supabase.rpc('create_salon', {
+        p_name: name,
+        p_timezone: timezone,
+        p_currency: currency,
+      });
 
-    if (error) {
-      return { salonId: null, error: error.message };
-    }
-
-    // Initialize 14-day Pro trial for the new salon
-    const { error: trialError } = await supabase.rpc('initialize_salon_trial', { p_salon_id: data });
-    if (trialError) {
-      console.error('Failed to initialize salon trial:', trialError.message);
-    }
-
-    // Refetch memberships after salon creation
-    if (user) {
-      const updated = await fetchMemberships(user.id);
-      setMemberships(updated);
-      const newMembership = updated.find(m => m.salon_id === data);
-      if (newMembership) {
-        setActiveSalon(newMembership.salon);
-        setRole(newMembership.role);
-        localStorage.setItem('lastSalonId', newMembership.salon_id);
+      if (error) {
+        return { salonId: null, error: error.message };
       }
-    }
 
-    return { salonId: data as string, error: null };
-  }, [user, fetchMemberships]);
+      // Initialize 14-day Pro trial for the new salon
+      const { error: trialError } = await supabase.rpc('initialize_salon_trial', {
+        p_salon_id: data,
+      });
+      if (trialError) {
+        console.error('Failed to initialize salon trial:', trialError.message);
+      }
+
+      // Refetch memberships after salon creation
+      if (user) {
+        const updated = await fetchMemberships(user.id);
+        setMemberships(updated);
+        const newMembership = updated.find((m) => m.salon_id === data);
+        if (newMembership) {
+          setActiveSalon(newMembership.salon);
+          setRole(newMembership.role);
+          localStorage.setItem('lastSalonId', newMembership.salon_id);
+        }
+      }
+
+      return { salonId: data as string, error: null };
+    },
+    [user, fetchMemberships],
+  );
 
   const value: AuthContextType = {
     user,

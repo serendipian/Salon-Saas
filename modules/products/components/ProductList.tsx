@@ -1,14 +1,13 @@
-
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Settings } from 'lucide-react';
-import { Product, ProductCategory, Brand } from '../../../types';
-import { useViewMode } from '../../../hooks/useViewMode';
+import type React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ViewToggle } from '../../../components/ViewToggle';
-import { usePermissions } from '../../../hooks/usePermissions';
 import { useAuth } from '../../../context/AuthContext';
-import { ProductTable } from './ProductTable';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { useViewMode } from '../../../hooks/useViewMode';
+import type { Brand, Product, ProductCategory } from '../../../types';
 import { ProductCard } from './ProductCard';
+import { ProductTable } from './ProductTable';
 
 interface ProductListProps {
   products: Product[];
@@ -76,9 +75,19 @@ export const ProductList: React.FC<ProductListProps> = ({
         </div>
 
         {viewMode === 'table' ? (
-          <ProductTable products={products} categories={categories} brands={brands} onEdit={onEdit} />
+          <ProductTable
+            products={products}
+            categories={categories}
+            brands={brands}
+            onEdit={onEdit}
+          />
         ) : (
-          <ProductCard products={products} categories={categories} brands={brands} onEdit={onEdit} />
+          <ProductCard
+            products={products}
+            categories={categories}
+            brands={brands}
+            onEdit={onEdit}
+          />
         )}
       </div>
     </div>

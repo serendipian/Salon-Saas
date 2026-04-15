@@ -1,17 +1,25 @@
-import React, { useState, useMemo } from 'react';
-import { ArrowLeft, AlertTriangle, Plus, Minus } from 'lucide-react';
-import type { Pack, PackGroup, Service, ServiceCategory } from '../../../types';
-import { formatPrice, formatDuration } from '../../../lib/format';
-import { packSchema } from '../packSchemas';
+import { AlertTriangle, ArrowLeft, Minus, Plus } from 'lucide-react';
+import type React from 'react';
+import { useMemo, useState } from 'react';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import { CategoryIcon } from '../../../lib/categoryIcons';
+import { formatDuration, formatPrice } from '../../../lib/format';
+import type { Pack, PackGroup, Service, ServiceCategory } from '../../../types';
+import { packSchema } from '../packSchemas';
 
 interface PackFormProps {
   existingPack?: Pack;
   services: Service[];
   categories: ServiceCategory[];
   packGroups: PackGroup[];
-  onSave: (data: { id?: string; name: string; description: string; price: number; groupId: string | null; items: Array<{ serviceId: string; serviceVariantId: string }> }) => void;
+  onSave: (data: {
+    id?: string;
+    name: string;
+    description: string;
+    price: number;
+    groupId: string | null;
+    items: Array<{ serviceId: string; serviceVariantId: string }>;
+  }) => void;
   onCancel: () => void;
   isSaving?: boolean;
 }
@@ -29,8 +37,13 @@ export const PackForm: React.FC<PackFormProps> = ({
   const [description, setDescription] = useState(existingPack?.description ?? '');
   const [price, setPrice] = useState(existingPack?.price?.toString() ?? '');
   const [groupId, setGroupId] = useState<string | null>(existingPack?.groupId ?? null);
-  const [selectedItems, setSelectedItems] = useState<Array<{ serviceId: string; serviceVariantId: string }>>(
-    existingPack?.items.map((i) => ({ serviceId: i.serviceId, serviceVariantId: i.serviceVariantId })) ?? []
+  const [selectedItems, setSelectedItems] = useState<
+    Array<{ serviceId: string; serviceVariantId: string }>
+  >(
+    existingPack?.items.map((i) => ({
+      serviceId: i.serviceId,
+      serviceVariantId: i.serviceVariantId,
+    })) ?? [],
   );
   const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null);
 
@@ -62,7 +75,8 @@ export const PackForm: React.FC<PackFormProps> = ({
   }, [selectedItems, services]);
 
   const priceNum = parseFloat(price) || 0;
-  const discountPercent = totalOriginal > 0 ? Math.round(((totalOriginal - priceNum) / totalOriginal) * 100) : 0;
+  const discountPercent =
+    totalOriginal > 0 ? Math.round(((totalOriginal - priceNum) / totalOriginal) * 100) : 0;
   // M-23: Block save when the pack costs more than (or equal to) the sum of
   // its items' original prices — that's a negative-discount pack and almost
   // always a typo. The price summary card already warns visually; this just
@@ -127,7 +141,10 @@ export const PackForm: React.FC<PackFormProps> = ({
               <input
                 type="text"
                 value={name}
-                onChange={(e) => { setName(e.target.value); clearFieldError('name'); }}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  clearFieldError('name');
+                }}
                 placeholder="Ex: Pack Mariée Complet"
                 className={`w-full px-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 ${errors.name ? 'border-red-400' : 'border-slate-200'}`}
               />
@@ -135,11 +152,16 @@ export const PackForm: React.FC<PackFormProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Prix du pack *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Prix du pack *
+              </label>
               <input
                 type="number"
                 value={price}
-                onChange={(e) => { setPrice(e.target.value); clearFieldError('price'); }}
+                onChange={(e) => {
+                  setPrice(e.target.value);
+                  clearFieldError('price');
+                }}
                 placeholder="0.00"
                 min="0"
                 step="0.01"
@@ -169,10 +191,14 @@ export const PackForm: React.FC<PackFormProps> = ({
             >
               <option value="">Aucun groupe</option>
               {packGroups.map((g) => (
-                <option key={g.id} value={g.id}>{g.name}</option>
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
               ))}
             </select>
-            <p className="text-xs text-slate-400 mt-1">Regrouper ce pack dans une collection (ex: Halloween, Été)</p>
+            <p className="text-xs text-slate-400 mt-1">
+              Regrouper ce pack dans une collection (ex: Halloween, Été)
+            </p>
           </div>
 
           {/* Price summary */}
@@ -189,8 +215,14 @@ export const PackForm: React.FC<PackFormProps> = ({
               {priceNum > 0 && totalOriginal > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">Réduction</span>
-                  <span className={`font-semibold ${discountPercent > 0 ? 'text-emerald-600' : discountPercent < 0 ? 'text-red-500' : 'text-slate-500'}`}>
-                    {discountPercent > 0 ? `-${discountPercent}%` : discountPercent < 0 ? `+${Math.abs(discountPercent)}%` : '0%'}
+                  <span
+                    className={`font-semibold ${discountPercent > 0 ? 'text-emerald-600' : discountPercent < 0 ? 'text-red-500' : 'text-slate-500'}`}
+                  >
+                    {discountPercent > 0
+                      ? `-${discountPercent}%`
+                      : discountPercent < 0
+                        ? `+${Math.abs(discountPercent)}%`
+                        : '0%'}
                   </span>
                 </div>
               )}
@@ -214,7 +246,11 @@ export const PackForm: React.FC<PackFormProps> = ({
             <button
               onClick={handleSubmit}
               disabled={isSaving || isOverCost}
-              title={isOverCost ? 'Le prix du pack doit être inférieur au prix total des services' : undefined}
+              title={
+                isOverCost
+                  ? 'Le prix du pack doit être inférieur au prix total des services'
+                  : undefined
+              }
               className="flex-1 px-4 py-3 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? 'Enregistrement...' : existingPack ? 'Mettre à jour' : 'Créer le pack'}
@@ -225,7 +261,10 @@ export const PackForm: React.FC<PackFormProps> = ({
         {/* Right panel — Service picker */}
         <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col">
           <label className="block text-sm font-semibold text-slate-700 mb-3">
-            Services inclus * <span className="text-slate-400 font-normal">({selectedItems.length} sélectionné{selectedItems.length !== 1 ? 's' : ''})</span>
+            Services inclus *{' '}
+            <span className="text-slate-400 font-normal">
+              ({selectedItems.length} sélectionné{selectedItems.length !== 1 ? 's' : ''})
+            </span>
           </label>
           {errors.items && <p className="text-xs text-red-500 mb-2">{errors.items}</p>}
 
@@ -235,7 +274,7 @@ export const PackForm: React.FC<PackFormProps> = ({
               if (catServices.length === 0) return null;
               const isExpanded = expandedCategoryId === cat.id;
               const selectedInCat = selectedItems.filter((i) =>
-                catServices.some((s) => s.id === i.serviceId)
+                catServices.some((s) => s.id === i.serviceId),
               ).length;
 
               return (
@@ -246,20 +285,31 @@ export const PackForm: React.FC<PackFormProps> = ({
                     className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-slate-50 transition-colors"
                   >
                     <div className="flex items-center gap-2">
-                      <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={16} className="text-slate-500" />
+                      <CategoryIcon
+                        categoryName={cat.name}
+                        iconName={cat.icon}
+                        size={16}
+                        className="text-slate-500"
+                      />
                       <span className="text-sm font-medium text-slate-900">{cat.name}</span>
                       {selectedInCat > 0 && (
-                        <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">{selectedInCat}</span>
+                        <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
+                          {selectedInCat}
+                        </span>
                       )}
                     </div>
-                    <span className="text-xs text-slate-400">{catServices.length} service{catServices.length > 1 ? 's' : ''}</span>
+                    <span className="text-xs text-slate-400">
+                      {catServices.length} service{catServices.length > 1 ? 's' : ''}
+                    </span>
                   </button>
 
                   {isExpanded && (
                     <div className="border-t border-slate-100 bg-slate-50 p-3 space-y-2">
                       {catServices.map((svc) => (
                         <div key={svc.id}>
-                          <p className="text-xs font-medium text-slate-600 mb-1.5 px-1">{svc.name}</p>
+                          <p className="text-xs font-medium text-slate-600 mb-1.5 px-1">
+                            {svc.name}
+                          </p>
                           <div className="space-y-1">
                             {svc.variants.map((variant) => {
                               const count = getVariantCount(variant.id);
@@ -275,10 +325,14 @@ export const PackForm: React.FC<PackFormProps> = ({
                                 >
                                   <div className="flex items-center gap-2 min-w-0">
                                     <span className="truncate">{variant.name}</span>
-                                    <span className="text-xs text-slate-400 shrink-0">{formatDuration(variant.durationMinutes)}</span>
+                                    <span className="text-xs text-slate-400 shrink-0">
+                                      {formatDuration(variant.durationMinutes)}
+                                    </span>
                                   </div>
                                   <div className="flex items-center gap-3 shrink-0">
-                                    <span className="font-medium">{formatPrice(variant.price)}</span>
+                                    <span className="font-medium">
+                                      {formatPrice(variant.price)}
+                                    </span>
                                     <div className="flex items-center gap-1">
                                       <button
                                         type="button"
@@ -293,7 +347,9 @@ export const PackForm: React.FC<PackFormProps> = ({
                                       >
                                         <Minus size={14} />
                                       </button>
-                                      <span className={`w-6 text-center font-semibold tabular-nums ${selected ? 'text-blue-900' : 'text-slate-400'}`}>
+                                      <span
+                                        className={`w-6 text-center font-semibold tabular-nums ${selected ? 'text-blue-900' : 'text-slate-400'}`}
+                                      >
                                         {count}
                                       </span>
                                       <button

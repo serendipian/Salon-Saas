@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import { Banknote, Globe, Loader2, Store } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Store, Loader2, Globe, Banknote } from 'lucide-react';
 
 export const CreateSalonPage: React.FC = () => {
-  const { isAuthenticated, isLoading, memberships, activeSalon, createSalon, signOut, profile } = useAuth();
+  const { isAuthenticated, isLoading, memberships, activeSalon, createSalon, signOut, profile } =
+    useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState('');
@@ -46,7 +48,7 @@ export const CreateSalonPage: React.FC = () => {
     if (createError) {
       setError(createError);
     } else {
-      navigate('/dashboard');
+      await navigate('/dashboard');
     }
     setIsSubmitting(false);
   };
@@ -65,9 +67,14 @@ export const CreateSalonPage: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-8">
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Nom du salon</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Nom du salon
+              </label>
               <div className="relative">
-                <Store className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <Store
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={18}
+                />
                 <input
                   type="text"
                   value={name}
@@ -81,9 +88,14 @@ export const CreateSalonPage: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Fuseau horaire</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Fuseau horaire
+                </label>
                 <div className="relative">
-                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Globe
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={18}
+                  />
                   <select
                     value={timezone}
                     onChange={(e) => setTimezone(e.target.value)}
@@ -99,7 +111,10 @@ export const CreateSalonPage: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Devise</label>
                 <div className="relative">
-                  <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Banknote
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={18}
+                  />
                   <select
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}

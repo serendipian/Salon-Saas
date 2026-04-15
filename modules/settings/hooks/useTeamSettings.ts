@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { Role } from '../../../lib/auth.types';
+import { supabase } from '../../../lib/supabase';
 
 /** Number of days before a generated invitation link expires. */
 export const INVITATION_EXPIRY_DAYS = 7;
@@ -57,7 +57,9 @@ export function useTeamSettings() {
       // tells PostgREST which relationship to embed.
       const { data, error } = await supabase
         .from('salon_memberships')
-        .select('id, role, status, created_at, accepted_at, profile_id, profile:profiles!salon_memberships_profile_id_fkey(id, first_name, last_name, email, avatar_url)')
+        .select(
+          'id, role, status, created_at, accepted_at, profile_id, profile:profiles!salon_memberships_profile_id_fkey(id, first_name, last_name, email, avatar_url)',
+        )
         .eq('salon_id', salonId!)
         .is('deleted_at', null)
         .order('created_at', { ascending: true });
@@ -72,15 +74,17 @@ export function useTeamSettings() {
       return ((data as unknown as JoinedRow[] | null) ?? []).flatMap((row) => {
         const profile = Array.isArray(row.profile) ? row.profile[0] : row.profile;
         if (!profile) return [];
-        return [{
-          id: row.id,
-          role: row.role as Role,
-          status: row.status,
-          created_at: row.created_at,
-          accepted_at: row.accepted_at,
-          profile_id: row.profile_id,
-          profile,
-        }];
+        return [
+          {
+            id: row.id,
+            role: row.role as Role,
+            status: row.status,
+            created_at: row.created_at,
+            accepted_at: row.accepted_at,
+            profile_id: row.profile_id,
+            profile,
+          },
+        ];
       });
     },
     enabled: !!salonId,
@@ -222,7 +226,8 @@ export function useTeamSettings() {
       await revokeMutation.mutateAsync(membershipId);
     },
     isRevoking: revokeMutation.isPending,
-    transferOwnership: (newOwnerProfileId: string) => transferMutation.mutateAsync(newOwnerProfileId),
+    transferOwnership: (newOwnerProfileId: string) =>
+      transferMutation.mutateAsync(newOwnerProfileId),
     isTransferring: transferMutation.isPending,
     createInvitation: (role: string) => createInvitationMutation.mutateAsync(role),
     isCreatingInvitation: createInvitationMutation.isPending,

@@ -1,9 +1,9 @@
-import { useEffect, useRef, useCallback } from 'react';
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { useCallback, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useRealtimeEpoch } from '../lib/realtimeReset';
-import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 
 type EventPayload = RealtimePostgresChangesPayload<Record<string, unknown>>;
 type EventHandler = (payload: EventPayload) => void;
@@ -83,22 +83,25 @@ export function useRealtimeSync(tableName: string, options?: RealtimeSyncOptions
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
-  const epoch = useRealtimeEpoch();
+  const _epoch = useRealtimeEpoch();
 
   // Store onEvent in a ref so we always call the latest version
   const onEventRef = useRef(options?.onEvent);
   onEventRef.current = options?.onEvent;
 
   // Stable handler that delegates to the ref — this identity is used for registration
-  const stableHandler = useCallback((payload: EventPayload) => {
-    queryClient.invalidateQueries({ queryKey: [tableName, salonId] });
-    onEventRef.current?.(payload);
-  }, [tableName, salonId, queryClient]);
+  const stableHandler = useCallback(
+    (payload: EventPayload) => {
+      queryClient.invalidateQueries({ queryKey: [tableName, salonId] });
+      onEventRef.current?.(payload);
+    },
+    [tableName, salonId, queryClient],
+  );
 
   useEffect(() => {
     if (!salonId) return;
 
     return subscribe(tableName, salonId, stableHandler, options?.filterOverride);
     // epoch is in deps so a resetAllChannels() bump tears down and resubscribes.
-  }, [tableName, salonId, stableHandler, options?.filterOverride, epoch]);
+  }, [tableName, salonId, stableHandler, options?.filterOverride]);
 }

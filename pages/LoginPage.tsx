@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import { Loader2, Lock, Mail, Sparkles } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, Loader2, Sparkles } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
-  const { signIn, signInWithMagicLink, isAuthenticated, isLoading: authLoading, profile } = useAuth();
+  const {
+    signIn,
+    signInWithMagicLink,
+    isAuthenticated,
+    isLoading: authLoading,
+    profile,
+  } = useAuth();
   const [searchParams] = useSearchParams();
   const redirect = searchParams.get('redirect');
 
@@ -66,8 +73,8 @@ export const LoginPage: React.FC = () => {
               </div>
               <h2 className="text-lg font-semibold text-slate-900 mb-2">Vérifiez votre email</h2>
               <p className="text-sm text-slate-500">
-                Un lien de connexion a été envoyé à <strong>{email}</strong>.
-                Cliquez sur le lien dans l'email pour vous connecter.
+                Un lien de connexion a été envoyé à <strong>{email}</strong>. Cliquez sur le lien
+                dans l'email pour vous connecter.
               </p>
               <button
                 onClick={() => setMagicLinkSent(false)}
@@ -80,7 +87,10 @@ export const LoginPage: React.FC = () => {
             <>
               <div className="flex rounded-xl bg-slate-50 p-1 mb-6">
                 <button
-                  onClick={() => { setMode('password'); setError(null); }}
+                  onClick={() => {
+                    setMode('password');
+                    setError(null);
+                  }}
                   className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
                     mode === 'password'
                       ? 'bg-white text-slate-900 shadow-sm'
@@ -90,7 +100,10 @@ export const LoginPage: React.FC = () => {
                   Mot de passe
                 </button>
                 <button
-                  onClick={() => { setMode('magic'); setError(null); }}
+                  onClick={() => {
+                    setMode('magic');
+                    setError(null);
+                  }}
                   className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
                     mode === 'magic'
                       ? 'bg-white text-slate-900 shadow-sm'
@@ -105,7 +118,10 @@ export const LoginPage: React.FC = () => {
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <Mail
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                      size={18}
+                    />
                     <input
                       type="email"
                       value={email}
@@ -121,13 +137,21 @@ export const LoginPage: React.FC = () => {
                 {mode === 'password' && (
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-sm font-medium text-slate-700">Mot de passe</label>
-                      <Link to="/forgot-password" className="text-xs text-slate-500 hover:text-slate-900 transition-colors">
+                      <label className="block text-sm font-medium text-slate-700">
+                        Mot de passe
+                      </label>
+                      <Link
+                        to="/forgot-password"
+                        className="text-xs text-slate-500 hover:text-slate-900 transition-colors"
+                      >
                         Mot de passe oublié ?
                       </Link>
                     </div>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                      <Lock
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                        size={18}
+                      />
                       <input
                         type="password"
                         value={password}
@@ -171,7 +195,10 @@ export const LoginPage: React.FC = () => {
 
         <p className="text-center text-sm text-slate-500 mt-6">
           Pas encore de compte ?{' '}
-          <Link to={redirect ? `/signup?redirect=${encodeURIComponent(redirect)}` : '/signup'} className="text-slate-900 font-medium hover:underline">
+          <Link
+            to={redirect ? `/signup?redirect=${encodeURIComponent(redirect)}` : '/signup'}
+            className="text-slate-900 font-medium hover:underline"
+          >
             Créer un compte
           </Link>
         </p>

@@ -1,8 +1,25 @@
-import React, { useMemo, useState } from 'react';
-import { Plus, Package, AlertTriangle, Star, Trash2, Edit3, FolderPlus, ChevronDown, ChevronRight, Calendar } from 'lucide-react';
-import type { Pack, PackGroup } from '../../../types';
+import {
+  AlertTriangle,
+  Calendar,
+  ChevronDown,
+  ChevronRight,
+  Edit3,
+  FolderPlus,
+  Package,
+  Plus,
+  Star,
+  Trash2,
+} from 'lucide-react';
+import type React from 'react';
+import { useMemo, useState } from 'react';
 import { formatPrice } from '../../../lib/format';
-import { isPackValid, getPackDiscount, formatPackItemCount, isPackGroupLive } from '../utils/packExpansion';
+import type { Pack, PackGroup } from '../../../types';
+import {
+  formatPackItemCount,
+  getPackDiscount,
+  isPackGroupLive,
+  isPackValid,
+} from '../utils/packExpansion';
 
 interface PackListProps {
   packs: Pack[];
@@ -30,7 +47,8 @@ const GROUP_COLOR_CLASSES: Record<string, string> = {
 
 const formatDateRange = (startsAt: string | null, endsAt: string | null): string | null => {
   if (!startsAt && !endsAt) return null;
-  const fmt = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  const fmt = (iso: string) =>
+    new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
   if (startsAt && endsAt) return `${fmt(startsAt)} — ${fmt(endsAt)}`;
   if (startsAt) return `Dès le ${fmt(startsAt)}`;
   return `Jusqu'au ${fmt(endsAt!)}`;
@@ -50,7 +68,11 @@ const PackRow: React.FC<{
   return (
     <div
       className={`bg-white rounded-xl border p-4 transition-all ${
-        !pack.active ? 'opacity-60 border-slate-200' : valid ? 'border-slate-200 hover:border-slate-300' : 'border-amber-300 bg-amber-50'
+        !pack.active
+          ? 'opacity-60 border-slate-200'
+          : valid
+            ? 'border-slate-200 hover:border-slate-300'
+            : 'border-amber-300 bg-amber-50'
       }`}
     >
       <div className="flex items-start justify-between">
@@ -70,7 +92,8 @@ const PackRow: React.FC<{
             )}
           </div>
           <p className="text-sm text-slate-500">
-            {formatPackItemCount(pack)} · {formatPrice(totalOriginal)} → <span className="font-semibold text-slate-800">{formatPrice(pack.price)}</span>
+            {formatPackItemCount(pack)} · {formatPrice(totalOriginal)} →{' '}
+            <span className="font-semibold text-slate-800">{formatPrice(pack.price)}</span>
           </p>
           {pack.description && (
             <p className="text-xs text-slate-400 mt-1 truncate">{pack.description}</p>
@@ -98,7 +121,9 @@ const PackRow: React.FC<{
           </button>
           <button
             onClick={() => {
-              if (window.confirm(`Supprimer le pack "${pack.name}" ? Cette action est irréversible.`)) {
+              if (
+                window.confirm(`Supprimer le pack "${pack.name}" ? Cette action est irréversible.`)
+              ) {
                 onDelete(pack.id);
               }
             }}
@@ -164,7 +189,12 @@ export const PackList: React.FC<PackListProps> = ({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">Packs</h2>
-          <p className="text-sm text-slate-500">{packs.length} pack{packs.length !== 1 ? 's' : ''}{hasAnyGroups ? ` · ${packGroups.length} groupe${packGroups.length !== 1 ? 's' : ''}` : ''}</p>
+          <p className="text-sm text-slate-500">
+            {packs.length} pack{packs.length !== 1 ? 's' : ''}
+            {hasAnyGroups
+              ? ` · ${packGroups.length} groupe${packGroups.length !== 1 ? 's' : ''}`
+              : ''}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {onAddGroup && (
@@ -190,7 +220,9 @@ export const PackList: React.FC<PackListProps> = ({
         <div className="text-center py-16">
           <Package size={48} className="mx-auto text-slate-300 mb-4" />
           <p className="text-slate-500 mb-2">Aucun pack créé</p>
-          <p className="text-sm text-slate-400">Créez des packs pour regrouper vos services avec un prix réduit</p>
+          <p className="text-sm text-slate-400">
+            Créez des packs pour regrouper vos services avec un prix réduit
+          </p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -198,7 +230,9 @@ export const PackList: React.FC<PackListProps> = ({
           {ungroupedPacks.length > 0 && (
             <div>
               {hasAnyGroups && (
-                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Sans groupe</h3>
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+                  Sans groupe
+                </h3>
               )}
               <div className="space-y-3">
                 {ungroupedPacks.map((pack) => (
@@ -219,32 +253,47 @@ export const PackList: React.FC<PackListProps> = ({
           {packGroups.map((group) => {
             const groupPacks = packsByGroup.get(group.id) ?? [];
             const isCollapsed = collapsedGroups.has(group.id);
-            const colorClass = group.color ? GROUP_COLOR_CLASSES[group.color] ?? GROUP_COLOR_CLASSES.slate : GROUP_COLOR_CLASSES.slate;
+            const colorClass = group.color
+              ? (GROUP_COLOR_CLASSES[group.color] ?? GROUP_COLOR_CLASSES.slate)
+              : GROUP_COLOR_CLASSES.slate;
             const live = isPackGroupLive(group);
             const dateRange = formatDateRange(group.startsAt, group.endsAt);
 
             return (
-              <div key={group.id} className={`rounded-2xl border ${group.active ? 'border-slate-200' : 'border-slate-200 bg-slate-50/50 opacity-75'}`}>
+              <div
+                key={group.id}
+                className={`rounded-2xl border ${group.active ? 'border-slate-200' : 'border-slate-200 bg-slate-50/50 opacity-75'}`}
+              >
                 <div className="flex items-center justify-between p-4 border-b border-slate-100">
                   <button
                     onClick={() => toggleCollapse(group.id)}
                     className="flex items-center gap-2 min-w-0 flex-1 text-left"
                   >
-                    {isCollapsed ? <ChevronRight size={16} className="text-slate-400 shrink-0" /> : <ChevronDown size={16} className="text-slate-400 shrink-0" />}
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${colorClass} shrink-0`}>
+                    {isCollapsed ? (
+                      <ChevronRight size={16} className="text-slate-400 shrink-0" />
+                    ) : (
+                      <ChevronDown size={16} className="text-slate-400 shrink-0" />
+                    )}
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full border ${colorClass} shrink-0`}
+                    >
                       {group.name}
                     </span>
                     <span className="text-xs text-slate-400 shrink-0">
                       {groupPacks.length} pack{groupPacks.length !== 1 ? 's' : ''}
                     </span>
                     {dateRange && (
-                      <span className={`flex items-center gap-1 text-xs shrink-0 ${live ? 'text-slate-400' : 'text-amber-600'}`}>
+                      <span
+                        className={`flex items-center gap-1 text-xs shrink-0 ${live ? 'text-slate-400' : 'text-amber-600'}`}
+                      >
                         <Calendar size={11} />
                         {dateRange}
                       </span>
                     )}
                     {!live && group.active && (
-                      <span className="text-xs text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded shrink-0">Hors période</span>
+                      <span className="text-xs text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded shrink-0">
+                        Hors période
+                      </span>
                     )}
                   </button>
                   <div className="flex items-center gap-2 ml-4 shrink-0">
@@ -259,7 +308,11 @@ export const PackList: React.FC<PackListProps> = ({
                     {onDeleteGroup && (
                       <button
                         onClick={() => {
-                          if (window.confirm(`Supprimer le groupe "${group.name}" ? Les packs de ce groupe seront simplement dégroupés.`)) {
+                          if (
+                            window.confirm(
+                              `Supprimer le groupe "${group.name}" ? Les packs de ce groupe seront simplement dégroupés.`,
+                            )
+                          ) {
                             onDeleteGroup(group.id);
                           }
                         }}
@@ -269,7 +322,10 @@ export const PackList: React.FC<PackListProps> = ({
                       </button>
                     )}
                     {onToggleGroupActive && (
-                      <label className="relative inline-flex items-center cursor-pointer" title={group.active ? 'Désactiver le groupe' : 'Activer le groupe'}>
+                      <label
+                        className="relative inline-flex items-center cursor-pointer"
+                        title={group.active ? 'Désactiver le groupe' : 'Activer le groupe'}
+                      >
                         <input
                           type="checkbox"
                           checked={group.active}
@@ -285,7 +341,9 @@ export const PackList: React.FC<PackListProps> = ({
                 {!isCollapsed && (
                   <div className="p-3 space-y-2">
                     {groupPacks.length === 0 ? (
-                      <p className="text-sm text-slate-400 text-center py-4">Aucun pack dans ce groupe</p>
+                      <p className="text-sm text-slate-400 text-center py-4">
+                        Aucun pack dans ce groupe
+                      </p>
                     ) : (
                       groupPacks.map((pack) => (
                         <PackRow

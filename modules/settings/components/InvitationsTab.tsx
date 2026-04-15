@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Plus, Copy, Check, X, Loader2, Link as LinkIcon } from 'lucide-react';
-import { type InvitationRow, INVITATION_EXPIRY_DAYS } from '../hooks/useTeamSettings';
+import { Check, Copy, Link as LinkIcon, Loader2, Plus, X } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { useToast } from '../../../context/ToastContext';
+import { INVITATION_EXPIRY_DAYS, type InvitationRow } from '../hooks/useTeamSettings';
 
 const ROLE_LABELS: Record<string, string> = {
   manager: 'Manager',
@@ -17,7 +18,8 @@ const ROLE_COLORS: Record<string, string> = {
 
 function getStatus(inv: InvitationRow): { label: string; className: string } {
   if (inv.accepted_at) return { label: 'Acceptée', className: 'bg-emerald-100 text-emerald-700' };
-  if (new Date(inv.expires_at) < new Date()) return { label: 'Expirée', className: 'bg-slate-100 text-slate-500' };
+  if (new Date(inv.expires_at) < new Date())
+    return { label: 'Expirée', className: 'bg-slate-100 text-slate-500' };
   return { label: 'En attente', className: 'bg-orange-100 text-orange-700' };
 }
 
@@ -34,7 +36,11 @@ interface InvitationsTabProps {
 }
 
 export const InvitationsTab: React.FC<InvitationsTabProps> = ({
-  invitations, onCreate, isCreating, onCancel, isCancelling,
+  invitations,
+  onCreate,
+  isCreating,
+  onCancel,
+  isCancelling,
 }) => {
   const { addToast } = useToast();
   const [showForm, setShowForm] = useState(false);
@@ -100,7 +106,7 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
                 <label className="block text-sm font-medium text-slate-700 mb-1">Rôle</label>
                 <select
                   value={selectedRole}
-                  onChange={e => setSelectedRole(e.target.value)}
+                  onChange={(e) => setSelectedRole(e.target.value)}
                   className="w-full sm:w-48 px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"
                 >
                   <option value="manager">Manager</option>
@@ -114,7 +120,11 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
                   disabled={isCreating}
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 disabled:opacity-50"
                 >
-                  {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
+                  {isCreating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <LinkIcon className="w-4 h-4" />
+                  )}
                   Générer le lien
                 </button>
                 <button
@@ -128,7 +138,8 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
           ) : (
             <>
               <p className="text-sm text-slate-600">
-                Lien d'invitation ({ROLE_LABELS[selectedRole]}) — expire dans {INVITATION_EXPIRY_DAYS} jours.
+                Lien d'invitation ({ROLE_LABELS[selectedRole]}) — expire dans{' '}
+                {INVITATION_EXPIRY_DAYS} jours.
               </p>
               <div className="flex items-center gap-2">
                 <input
@@ -141,7 +152,11 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
                   onClick={handleCopy}
                   className="flex items-center gap-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium shrink-0"
                 >
-                  {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                  {copied ? (
+                    <Check className="w-4 h-4 text-emerald-600" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
                   {copied ? 'Copié' : 'Copier'}
                 </button>
               </div>
@@ -157,11 +172,13 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
         {invitations.length === 0 ? (
           <div className="p-8 text-center text-sm text-slate-400">Aucune invitation</div>
         ) : (
-          invitations.map(inv => {
+          invitations.map((inv) => {
             const status = getStatus(inv);
             return (
               <div key={inv.id} className="flex items-center gap-4 p-4">
-                <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${ROLE_COLORS[inv.role] || 'bg-slate-100 text-slate-600'}`}>
+                <span
+                  className={`text-xs font-medium px-2.5 py-1 rounded-full ${ROLE_COLORS[inv.role] || 'bg-slate-100 text-slate-600'}`}
+                >
                   {ROLE_LABELS[inv.role] || inv.role}
                 </span>
 
@@ -171,7 +188,9 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
                   </p>
                 </div>
 
-                <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${status.className}`}>
+                <span
+                  className={`text-xs font-medium px-2.5 py-1 rounded-full ${status.className}`}
+                >
                   {status.label}
                 </span>
 

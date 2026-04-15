@@ -1,14 +1,16 @@
-import type { WorkSchedule, BonusTier } from '../../types';
+import type { BonusTier, WorkSchedule } from '../../types';
 
 const DAY_KEYS: (keyof WorkSchedule)[] = [
-  'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
+  'sunday',
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
 ];
 
-export function countWorkingDays(
-  from: Date,
-  to: Date,
-  schedule: WorkSchedule | undefined
-): number {
+export function countWorkingDays(from: Date, to: Date, schedule: WorkSchedule | undefined): number {
   if (!schedule) return 0;
   let count = 0;
   const current = new Date(from);
@@ -23,7 +25,7 @@ export function countWorkingDays(
 export function calcBonus(revenue: number, tiers?: BonusTier[]): number {
   if (!tiers || tiers.length === 0) return 0;
   const sorted = [...tiers].sort((a, b) => b.target - a.target);
-  const applicable = sorted.find(t => revenue >= t.target);
+  const applicable = sorted.find((t) => revenue >= t.target);
   return applicable?.bonus ?? 0;
 }
 

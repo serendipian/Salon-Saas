@@ -2,10 +2,9 @@
 // duplicated 258-LOC implementation moved to components/CategoriesManager.tsx
 // during M-25 — see audit-remaining-items.md for the rationale.
 
-import React from 'react';
 import { CategoriesManager } from '../../../components/CategoriesManager';
-import { useServices } from '../hooks/useServices';
 import type { ServiceCategory } from '../../../types';
+import { useServices } from '../hooks/useServices';
 
 export function CategoriesTab() {
   const { allServices, serviceCategories, updateServiceCategories } = useServices();

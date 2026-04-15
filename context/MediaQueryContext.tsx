@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useMemo, useRef, useSyncExternalStore } from 'react';
+import type React from 'react';
+import { createContext, useContext, useMemo, useRef, useSyncExternalStore } from 'react';
 
 interface MediaQueryState {
   isMobile: boolean;
@@ -26,7 +27,13 @@ function readSnapshot(): MediaQueryState {
 }
 
 function getServerSnapshot(): MediaQueryState {
-  return { isMobile: false, isTablet: false, isTabletPortrait: false, isTabletLandscape: false, isDesktop: true };
+  return {
+    isMobile: false,
+    isTablet: false,
+    isTabletPortrait: false,
+    isTabletLandscape: false,
+    isDesktop: true,
+  };
 }
 
 const MediaQueryContext = createContext<MediaQueryState>(getServerSnapshot());

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Shield, Lock } from 'lucide-react';
+import { Lock, Shield } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { Input, Section } from '../../components/FormElements';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { Input, Section } from '../../components/FormElements';
 
 export const ProfileSecurity: React.FC = () => {
   const { updatePassword } = useAuth();
@@ -18,7 +19,10 @@ export const ProfileSecurity: React.FC = () => {
       return;
     }
     if (newPassword.length < 8) {
-      addToast({ type: 'error', message: 'Le nouveau mot de passe doit contenir au moins 8 caractères' });
+      addToast({
+        type: 'error',
+        message: 'Le nouveau mot de passe doit contenir au moins 8 caractères',
+      });
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -26,7 +30,10 @@ export const ProfileSecurity: React.FC = () => {
       return;
     }
     if (newPassword === currentPassword) {
-      addToast({ type: 'error', message: 'Le nouveau mot de passe doit être différent de l\'actuel' });
+      addToast({
+        type: 'error',
+        message: "Le nouveau mot de passe doit être différent de l'actuel",
+      });
       return;
     }
 

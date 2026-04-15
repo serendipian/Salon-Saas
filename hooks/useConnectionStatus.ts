@@ -1,9 +1,9 @@
-import { useEffect, useRef, useSyncExternalStore } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import type { QueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { useToast } from '../context/ToastContext';
 import { resetAllChannels } from '../lib/realtimeReset';
+import { supabase } from '../lib/supabase';
 
 export type ConnectionState =
   | 'connected'
@@ -79,33 +79,29 @@ function evaluateStateInternal() {
     setState('connected');
   } else {
     const elapsed = Date.now() - disconnectedAt;
-    setState(
-      elapsed >= TIMINGS.DISCONNECT_BANNER_THRESHOLD_MS ? 'disconnected' : 'reconnecting',
-    );
+    setState(elapsed >= TIMINGS.DISCONNECT_BANNER_THRESHOLD_MS ? 'disconnected' : 'reconnecting');
   }
 }
 
 function startMonitoring() {
   if (monitorChannel) return;
-  monitorChannel = supabase
-    .channel('connection-monitor')
-    .subscribe((status) => {
-      if (recoveryInFlight) return; // ignore expected churn during recovery
-      if (status === 'SUBSCRIBED') {
-        disconnectedAt = null;
-        evaluateStateInternal();
-      } else if (status === 'TIMED_OUT' || status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-        if (disconnectedAt === null) {
-          disconnectedAt = Date.now();
-          wasDisconnected = true;
-        }
-        evaluateStateInternal();
-        // WS-initiated recovery when the tab is visible.
-        if (document.visibilityState === 'visible') {
-          void triggerRecovery('ws');
-        }
+  monitorChannel = supabase.channel('connection-monitor').subscribe((status) => {
+    if (recoveryInFlight) return; // ignore expected churn during recovery
+    if (status === 'SUBSCRIBED') {
+      disconnectedAt = null;
+      evaluateStateInternal();
+    } else if (status === 'TIMED_OUT' || status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+      if (disconnectedAt === null) {
+        disconnectedAt = Date.now();
+        wasDisconnected = true;
       }
-    });
+      evaluateStateInternal();
+      // WS-initiated recovery when the tab is visible.
+      if (document.visibilityState === 'visible') {
+        void triggerRecovery('ws');
+      }
+    }
+  });
 }
 
 function stopMonitoring() {
@@ -181,28 +177,21 @@ async function refreshSessionRaw(
 ): Promise<StoredSession | 'auth' | 'network'> {
   let response: Response;
   try {
-    response = await fetch(
-      `${supabaseUrl}/auth/v1/token?grant_type=refresh_token`,
-      {
-        method: 'POST',
-        headers: {
-          apikey: anonKey,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refresh_token: refreshToken }),
-        signal,
+    response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: {
+        apikey: anonKey,
+        'Content-Type': 'application/json',
       },
-    );
+      body: JSON.stringify({ refresh_token: refreshToken }),
+      signal,
+    });
   } catch (err) {
     return classifyProbeError(err) === 'auth' ? 'auth' : 'network';
   }
 
   // 400/401 from /token means the refresh_token is invalid/expired/rotated.
-  if (
-    response.status === 400 ||
-    response.status === 401 ||
-    response.status === 403
-  ) {
+  if (response.status === 400 || response.status === 401 || response.status === 403) {
     return 'auth';
   }
   if (!response.ok) return 'network';
@@ -211,9 +200,7 @@ async function refreshSessionRaw(
   if (!fresh.access_token) return 'network';
 
   const existingRaw = localStorage.getItem(storageKey);
-  const existing = existingRaw
-    ? (JSON.parse(existingRaw) as StoredSession)
-    : ({} as StoredSession);
+  const existing = existingRaw ? (JSON.parse(existingRaw) as StoredSession) : ({} as StoredSession);
 
   const merged: StoredSession = {
     ...existing,
@@ -246,10 +233,7 @@ async function probeAuth(): Promise<'ok' | 'signed-out' | 'network' | 'auth'> {
   if (!session) return 'signed-out';
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(
-    () => controller.abort(),
-    TIMINGS.AUTH_PROBE_TIMEOUT_MS,
-  );
+  const timeoutId = setTimeout(() => controller.abort(), TIMINGS.AUTH_PROBE_TIMEOUT_MS);
 
   try {
     // Refresh proactively if the access_token is expired or within 30s of
@@ -323,29 +307,24 @@ async function probeRealtime(): Promise<boolean> {
   });
 }
 
-async function triggerRecovery(reason: 'visibility' | 'ws'): Promise<void> {
+async function triggerRecovery(_reason: 'visibility' | 'ws'): Promise<void> {
   if (!isRecoveryEnabled()) {
-    console.log('[recovery] skip reason=', reason, 'flag=off');
     return;
   }
   if (recoveryInFlight) {
-    console.log('[recovery] skip reason=', reason, 'already-in-flight');
     return;
   }
   if (Date.now() - lastRecoveryAt < TIMINGS.RECOVERY_RATE_LIMIT_MS) {
-    console.log('[recovery] skip reason=', reason, 'rate-limited');
     return;
   }
 
   recoveryInFlight = true;
-  const startedAt = Date.now();
-  console.log('[recovery] start reason=', reason);
+  const _startedAt = Date.now();
   setState('recovering');
 
   try {
     // Auth probe
     const authResult = await probeAuth();
-    console.log('[recovery] auth', authResult);
 
     if (authResult === 'signed-out') {
       // User was signed out elsewhere; AuthContext will handle the redirect.
@@ -389,12 +368,10 @@ async function triggerRecovery(reason: 'visibility' | 'ws'): Promise<void> {
     stopMonitoring();
     startMonitoring();
     const realtimeOk = await probeRealtime();
-    console.log('[recovery] probe', realtimeOk ? 'subscribed' : 'timeout');
 
     // Query invalidation.
     if (lastQueryClient) {
       lastQueryClient.invalidateQueries({ refetchType: 'active' });
-      console.log('[recovery] queries invalidated');
     }
 
     // Final state — only promote to connected if realtime probe succeeded.
@@ -409,7 +386,6 @@ async function triggerRecovery(reason: 'visibility' | 'ws'): Promise<void> {
   } finally {
     recoveryInFlight = false;
     lastRecoveryAt = Date.now();
-    console.log('[recovery] done state=', currentState, 'ms=', Date.now() - startedAt);
   }
 }
 
@@ -441,7 +417,12 @@ export function useConnectionStatus(): ConnectionState {
   lastQueryClient = queryClient;
 
   const state = useSyncExternalStore(
-    (cb) => { listeners.add(cb); return () => { listeners.delete(cb); }; },
+    (cb) => {
+      listeners.add(cb);
+      return () => {
+        listeners.delete(cb);
+      };
+    },
     () => currentState,
   );
 

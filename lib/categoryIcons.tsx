@@ -1,49 +1,48 @@
-import React from 'react';
 import { Icon as IconifyIcon } from '@iconify/react';
 import type { IconifyIcon as IconifyIconData } from '@iconify/types';
-import {
-  Scissors,
-  Sparkles,
-  Droplets,
-  Zap,
-  Heart,
-  Sun,
-  Eye,
-  Flower2,
-  Layers,
-  SprayCan,
-  Crown,
-  Gem,
-  Feather,
-  Shell,
-  Ribbon,
-  Star,
-  Palette,
-  Flame,
-  Wind,
-  Bath,
-  ShowerHead,
-  WandSparkles,
-  HandHeart,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-
 // Offline-bundled @iconify icons (Icon Park Outline for beauty, Phosphor for extras)
 import combIcon from '@iconify-icons/icon-park-outline/comb';
-import nailPolishIcon from '@iconify-icons/icon-park-outline/nail-polish';
-import hairDryerIcon from '@iconify-icons/icon-park-outline/hair-dryer';
-import lipstickIcon from '@iconify-icons/icon-park-outline/lipstick';
-import mascaraIcon from '@iconify-icons/icon-park-outline/mascara';
-import perfumeIcon from '@iconify-icons/icon-park-outline/perfume';
 import cosmeticBrushIcon from '@iconify-icons/icon-park-outline/cosmetic-brush';
-import facialCleanserIcon from '@iconify-icons/icon-park-outline/facial-cleanser';
 import eyebrowIcon from '@iconify-icons/icon-park-outline/eyebrow';
-import lotionIcon from '@iconify-icons/icon-park-outline/lotion';
-import mirrorIcon from '@iconify-icons/icon-park-outline/mirror';
+import facialCleanserIcon from '@iconify-icons/icon-park-outline/facial-cleanser';
+import hairDryerIcon from '@iconify-icons/icon-park-outline/hair-dryer';
 import handCreamIcon from '@iconify-icons/icon-park-outline/hand-cream';
+import lipstickIcon from '@iconify-icons/icon-park-outline/lipstick';
+import lotionIcon from '@iconify-icons/icon-park-outline/lotion';
+import mascaraIcon from '@iconify-icons/icon-park-outline/mascara';
+import mirrorIcon from '@iconify-icons/icon-park-outline/mirror';
+import nailPolishIcon from '@iconify-icons/icon-park-outline/nail-polish';
+import perfumeIcon from '@iconify-icons/icon-park-outline/perfume';
 import towelIcon from '@iconify-icons/icon-park-outline/towel';
-import faceMaskIcon from '@iconify-icons/ph/face-mask';
 import spaIcon from '@iconify-icons/mdi/spa';
+import faceMaskIcon from '@iconify-icons/ph/face-mask';
+import type { LucideIcon } from 'lucide-react';
+import {
+  Bath,
+  Crown,
+  Droplets,
+  Eye,
+  Feather,
+  Flame,
+  Flower2,
+  Gem,
+  HandHeart,
+  Heart,
+  Layers,
+  Palette,
+  Ribbon,
+  Scissors,
+  Shell,
+  ShowerHead,
+  Sparkles,
+  SprayCan,
+  Star,
+  Sun,
+  WandSparkles,
+  Wind,
+  Zap,
+} from 'lucide-react';
+import type React from 'react';
 
 // ── Icon registry ──────────────────────────────────────────────
 // Each entry is either a Lucide component or an @iconify data object.
@@ -54,45 +53,45 @@ type IconEntry =
 
 const ICON_REGISTRY: Record<string, IconEntry> = {
   // Beauty-specific (@iconify — Icon Park Outline / Phosphor / MDI)
-  Comb:           { type: 'iconify', data: combIcon },
-  NailPolish:     { type: 'iconify', data: nailPolishIcon },
-  HairDryer:      { type: 'iconify', data: hairDryerIcon },
-  Lipstick:       { type: 'iconify', data: lipstickIcon },
-  Mascara:        { type: 'iconify', data: mascaraIcon },
-  Perfume:        { type: 'iconify', data: perfumeIcon },
-  CosmeticBrush:  { type: 'iconify', data: cosmeticBrushIcon },
+  Comb: { type: 'iconify', data: combIcon },
+  NailPolish: { type: 'iconify', data: nailPolishIcon },
+  HairDryer: { type: 'iconify', data: hairDryerIcon },
+  Lipstick: { type: 'iconify', data: lipstickIcon },
+  Mascara: { type: 'iconify', data: mascaraIcon },
+  Perfume: { type: 'iconify', data: perfumeIcon },
+  CosmeticBrush: { type: 'iconify', data: cosmeticBrushIcon },
   FacialCleanser: { type: 'iconify', data: facialCleanserIcon },
-  Eyebrow:        { type: 'iconify', data: eyebrowIcon },
-  Lotion:         { type: 'iconify', data: lotionIcon },
-  Mirror:         { type: 'iconify', data: mirrorIcon },
-  HandCream:      { type: 'iconify', data: handCreamIcon },
-  Towel:          { type: 'iconify', data: towelIcon },
-  FaceMask:       { type: 'iconify', data: faceMaskIcon },
-  Spa:            { type: 'iconify', data: spaIcon },
+  Eyebrow: { type: 'iconify', data: eyebrowIcon },
+  Lotion: { type: 'iconify', data: lotionIcon },
+  Mirror: { type: 'iconify', data: mirrorIcon },
+  HandCream: { type: 'iconify', data: handCreamIcon },
+  Towel: { type: 'iconify', data: towelIcon },
+  FaceMask: { type: 'iconify', data: faceMaskIcon },
+  Spa: { type: 'iconify', data: spaIcon },
   // General (Lucide)
-  Scissors:       { type: 'lucide', component: Scissors },
-  Sparkles:       { type: 'lucide', component: Sparkles },
-  Droplets:       { type: 'lucide', component: Droplets },
-  Zap:            { type: 'lucide', component: Zap },
-  Heart:          { type: 'lucide', component: Heart },
-  Sun:            { type: 'lucide', component: Sun },
-  Eye:            { type: 'lucide', component: Eye },
-  Flower2:        { type: 'lucide', component: Flower2 },
-  Layers:         { type: 'lucide', component: Layers },
-  SprayCan:       { type: 'lucide', component: SprayCan },
-  Crown:          { type: 'lucide', component: Crown },
-  Gem:            { type: 'lucide', component: Gem },
-  Feather:        { type: 'lucide', component: Feather },
-  Shell:          { type: 'lucide', component: Shell },
-  Ribbon:         { type: 'lucide', component: Ribbon },
-  Star:           { type: 'lucide', component: Star },
-  Palette:        { type: 'lucide', component: Palette },
-  Flame:          { type: 'lucide', component: Flame },
-  Wind:           { type: 'lucide', component: Wind },
-  Bath:           { type: 'lucide', component: Bath },
-  ShowerHead:     { type: 'lucide', component: ShowerHead },
-  WandSparkles:   { type: 'lucide', component: WandSparkles },
-  HandHeart:      { type: 'lucide', component: HandHeart },
+  Scissors: { type: 'lucide', component: Scissors },
+  Sparkles: { type: 'lucide', component: Sparkles },
+  Droplets: { type: 'lucide', component: Droplets },
+  Zap: { type: 'lucide', component: Zap },
+  Heart: { type: 'lucide', component: Heart },
+  Sun: { type: 'lucide', component: Sun },
+  Eye: { type: 'lucide', component: Eye },
+  Flower2: { type: 'lucide', component: Flower2 },
+  Layers: { type: 'lucide', component: Layers },
+  SprayCan: { type: 'lucide', component: SprayCan },
+  Crown: { type: 'lucide', component: Crown },
+  Gem: { type: 'lucide', component: Gem },
+  Feather: { type: 'lucide', component: Feather },
+  Shell: { type: 'lucide', component: Shell },
+  Ribbon: { type: 'lucide', component: Ribbon },
+  Star: { type: 'lucide', component: Star },
+  Palette: { type: 'lucide', component: Palette },
+  Flame: { type: 'lucide', component: Flame },
+  Wind: { type: 'lucide', component: Wind },
+  Bath: { type: 'lucide', component: Bath },
+  ShowerHead: { type: 'lucide', component: ShowerHead },
+  WandSparkles: { type: 'lucide', component: WandSparkles },
+  HandHeart: { type: 'lucide', component: HandHeart },
 };
 
 // ── Render helper ──────────────────────────────────────────────
@@ -155,9 +154,15 @@ export const ICON_PICKER_LIST: Array<{ name: string; label: string }> = [
 const KEYWORD_ICON_MAP: Array<{ keywords: string[]; iconName: string }> = [
   { keywords: ['coiff', 'cheveu', 'cheveux', 'hair', 'coupe'], iconName: 'Comb' },
   { keywords: ['brushing', 'lissage', 'seche'], iconName: 'HairDryer' },
-  { keywords: ['color', 'coloration', 'meche', 'mèche', 'teinture', 'balayage'], iconName: 'Droplets' },
+  {
+    keywords: ['color', 'coloration', 'meche', 'mèche', 'teinture', 'balayage'],
+    iconName: 'Droplets',
+  },
   { keywords: ['soin', 'visage', 'facial', 'hydrat', 'peel'], iconName: 'FacialCleanser' },
-  { keywords: ['manucure', 'pédicure', 'pedicure', 'ongle', 'nail', 'vernis', 'gel'], iconName: 'NailPolish' },
+  {
+    keywords: ['manucure', 'pédicure', 'pedicure', 'ongle', 'nail', 'vernis', 'gel'],
+    iconName: 'NailPolish',
+  },
   { keywords: ['maquill', 'makeup', 'teint'], iconName: 'CosmeticBrush' },
   { keywords: ['lèvre', 'levre', 'lip'], iconName: 'Lipstick' },
   { keywords: ['épil', 'epil', 'wax', 'cire'], iconName: 'Zap' },
@@ -168,7 +173,10 @@ const KEYWORD_ICON_MAP: Array<{ keywords: string[]; iconName: string }> = [
 ];
 
 function guessIconName(categoryName: string): string {
-  const lower = categoryName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const lower = categoryName
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
   for (const { keywords, iconName } of KEYWORD_ICON_MAP) {
     for (const kw of keywords) {
       const normalizedKw = kw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -193,9 +201,14 @@ interface CategoryIconProps {
 }
 
 /** Renders the appropriate icon for a service category. */
-export const CategoryIcon: React.FC<CategoryIconProps> = ({ categoryName, iconName, size = 14, className }) => {
+export const CategoryIcon: React.FC<CategoryIconProps> = ({
+  categoryName,
+  iconName,
+  size = 14,
+  className,
+}) => {
   const name = resolveIconName(categoryName, iconName);
-  const entry = ICON_REGISTRY[name] ?? ICON_REGISTRY['Layers'];
+  const entry = ICON_REGISTRY[name] ?? ICON_REGISTRY.Layers;
   return renderIcon(entry, size, className);
 };
 

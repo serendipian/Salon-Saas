@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { StaffActivityEvent } from '../../../types';
+import { supabase } from '../../../lib/supabase';
+import type { StaffActivityEvent } from '../../../types';
 
 const PAGE_SIZE = 20;
 
@@ -18,13 +18,15 @@ export const useStaffActivity = (staffId: string) => {
         p_offset: pageParam,
       });
       if (error) throw error;
-      return (data || []).map((row: any): StaffActivityEvent => ({
-        eventType: row.event_type,
-        eventDate: row.event_date,
-        description: row.description,
-        clientName: row.client_name,
-        metadata: row.metadata,
-      }));
+      return (data || []).map(
+        (row: any): StaffActivityEvent => ({
+          eventType: row.event_type,
+          eventDate: row.event_date,
+          description: row.description,
+          clientName: row.client_name,
+          metadata: row.metadata,
+        }),
+      );
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {

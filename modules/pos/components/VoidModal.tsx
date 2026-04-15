@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { AlertTriangle, X } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, AlertTriangle } from 'lucide-react';
-import { Transaction } from '../../../types';
-import { formatPrice } from '../../../lib/format';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { formatPrice } from '../../../lib/format';
+import type { Transaction } from '../../../types';
 import { VOID_CATEGORIES } from '../constants';
 
 interface VoidModalProps {
@@ -13,7 +14,12 @@ interface VoidModalProps {
   isPending: boolean;
 }
 
-export const VoidModal: React.FC<VoidModalProps> = ({ transaction, onConfirm, onClose, isPending }) => {
+export const VoidModal: React.FC<VoidModalProps> = ({
+  transaction,
+  onConfirm,
+  onClose,
+  isPending,
+}) => {
   const { isMobile } = useMediaQuery();
   const [category, setCategory] = useState('');
   const [note, setNote] = useState('');
@@ -32,7 +38,10 @@ export const VoidModal: React.FC<VoidModalProps> = ({ transaction, onConfirm, on
         <AlertTriangle size={20} className="text-red-500 shrink-0 mt-0.5" />
         <div className="text-sm text-red-700">
           <p className="font-semibold">Annulation définitive</p>
-          <p className="mt-1">Cette action va créer une écriture d'annulation. La transaction originale restera visible dans l'historique.</p>
+          <p className="mt-1">
+            Cette action va créer une écriture d'annulation. La transaction originale restera
+            visible dans l'historique.
+          </p>
         </div>
       </div>
 
@@ -40,11 +49,15 @@ export const VoidModal: React.FC<VoidModalProps> = ({ transaction, onConfirm, on
       <div className="bg-slate-50 rounded-lg p-4 space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-slate-500">Client</span>
-          <span className="font-medium text-slate-900">{transaction.clientName || 'Client de passage'}</span>
+          <span className="font-medium text-slate-900">
+            {transaction.clientName || 'Client de passage'}
+          </span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-slate-500">Articles</span>
-          <span className="text-slate-700">{transaction.items.length} article{transaction.items.length > 1 ? 's' : ''}</span>
+          <span className="text-slate-700">
+            {transaction.items.length} article{transaction.items.length > 1 ? 's' : ''}
+          </span>
         </div>
         <div className="flex justify-between text-sm font-bold">
           <span className="text-slate-700">Total</span>
@@ -57,12 +70,14 @@ export const VoidModal: React.FC<VoidModalProps> = ({ transaction, onConfirm, on
         <label className="block text-sm font-medium text-slate-700 mb-1.5">Motif *</label>
         <select
           value={category}
-          onChange={e => setCategory(e.target.value)}
+          onChange={(e) => setCategory(e.target.value)}
           className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 min-h-[44px]"
         >
           <option value="">Sélectionner un motif...</option>
-          {VOID_CATEGORIES.map(c => (
-            <option key={c.key} value={c.key}>{c.label}</option>
+          {VOID_CATEGORIES.map((c) => (
+            <option key={c.key} value={c.key}>
+              {c.label}
+            </option>
           ))}
         </select>
       </div>
@@ -72,7 +87,7 @@ export const VoidModal: React.FC<VoidModalProps> = ({ transaction, onConfirm, on
         <label className="block text-sm font-medium text-slate-700 mb-1.5">Commentaire *</label>
         <textarea
           value={note}
-          onChange={e => setNote(e.target.value)}
+          onChange={(e) => setNote(e.target.value)}
           rows={3}
           placeholder="Décrivez la raison de l'annulation..."
           className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
@@ -101,15 +116,22 @@ export const VoidModal: React.FC<VoidModalProps> = ({ transaction, onConfirm, on
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 shrink-0">
           <h3 className="font-bold text-slate-900">Annuler la transaction</h3>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Fermer">
+          <button
+            onClick={onClose}
+            className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Fermer"
+          >
             <X size={20} />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-5" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
+        <div
+          className="flex-1 overflow-y-auto p-5"
+          style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
+        >
           {content}
         </div>
       </div>,
-      document.body
+      document.body,
     );
   }
 
@@ -118,7 +140,9 @@ export const VoidModal: React.FC<VoidModalProps> = ({ transaction, onConfirm, on
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
         <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
           <h3 className="font-bold text-slate-800">Annuler la transaction</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X size={20} /></button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700">
+            <X size={20} />
+          </button>
         </div>
         <div className="p-6">{content}</div>
       </div>

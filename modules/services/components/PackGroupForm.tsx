@@ -1,22 +1,42 @@
-import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { useFormValidation } from '../../../hooks/useFormValidation';
 import type { PackGroup } from '../../../types';
 import { packGroupSchema } from '../packSchemas';
-import { useFormValidation } from '../../../hooks/useFormValidation';
 
 interface PackGroupFormProps {
   existingGroup?: PackGroup;
-  onSave: (data: { id?: string; name: string; description: string; color: string | null; startsAt: string | null; endsAt: string | null }) => void;
+  onSave: (data: {
+    id?: string;
+    name: string;
+    description: string;
+    color: string | null;
+    startsAt: string | null;
+    endsAt: string | null;
+  }) => void;
   onCancel: () => void;
 }
 
 const COLOR_OPTIONS: Array<{ value: string; label: string; className: string }> = [
   { value: 'slate', label: 'Gris', className: 'bg-slate-100 text-slate-700 border-slate-300' },
-  { value: 'orange', label: 'Orange', className: 'bg-orange-100 text-orange-700 border-orange-300' },
+  {
+    value: 'orange',
+    label: 'Orange',
+    className: 'bg-orange-100 text-orange-700 border-orange-300',
+  },
   { value: 'amber', label: 'Ambre', className: 'bg-amber-100 text-amber-700 border-amber-300' },
-  { value: 'emerald', label: 'Vert', className: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
+  {
+    value: 'emerald',
+    label: 'Vert',
+    className: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+  },
   { value: 'sky', label: 'Bleu', className: 'bg-sky-100 text-sky-700 border-sky-300' },
-  { value: 'violet', label: 'Violet', className: 'bg-violet-100 text-violet-700 border-violet-300' },
+  {
+    value: 'violet',
+    label: 'Violet',
+    className: 'bg-violet-100 text-violet-700 border-violet-300',
+  },
   { value: 'rose', label: 'Rose', className: 'bg-rose-100 text-rose-700 border-rose-300' },
 ];
 
@@ -35,7 +55,11 @@ const fromDateInput = (value: string, kind: 'start' | 'end'): string | null => {
   return new Date(`${value}${time}`).toISOString();
 };
 
-export const PackGroupForm: React.FC<PackGroupFormProps> = ({ existingGroup, onSave, onCancel }) => {
+export const PackGroupForm: React.FC<PackGroupFormProps> = ({
+  existingGroup,
+  onSave,
+  onCancel,
+}) => {
   const [name, setName] = useState(existingGroup?.name ?? '');
   const [description, setDescription] = useState(existingGroup?.description ?? '');
   const [color, setColor] = useState<string | null>(existingGroup?.color ?? null);
@@ -88,7 +112,10 @@ export const PackGroupForm: React.FC<PackGroupFormProps> = ({ existingGroup, onS
           <input
             type="text"
             value={name}
-            onChange={(e) => { setName(e.target.value); clearFieldError('name'); }}
+            onChange={(e) => {
+              setName(e.target.value);
+              clearFieldError('name');
+            }}
             placeholder="Ex: Halloween 2026"
             className={`w-full px-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 ${nameError ? 'border-red-400' : 'border-slate-200'}`}
           />
@@ -113,7 +140,9 @@ export const PackGroupForm: React.FC<PackGroupFormProps> = ({ existingGroup, onS
               type="button"
               onClick={() => setColor(null)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                color === null ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
+                color === null
+                  ? 'bg-slate-900 text-white border-slate-900'
+                  : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
               }`}
             >
               Aucune
@@ -140,7 +169,10 @@ export const PackGroupForm: React.FC<PackGroupFormProps> = ({ existingGroup, onS
               <input
                 type="date"
                 value={startsAt}
-                onChange={(e) => { setStartsAt(e.target.value); clearFieldError('endsAt'); }}
+                onChange={(e) => {
+                  setStartsAt(e.target.value);
+                  clearFieldError('endsAt');
+                }}
                 className={`w-full px-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 ${dateError ? 'border-red-400' : 'border-slate-200'}`}
               />
             </div>
@@ -149,7 +181,10 @@ export const PackGroupForm: React.FC<PackGroupFormProps> = ({ existingGroup, onS
               <input
                 type="date"
                 value={endsAt}
-                onChange={(e) => { setEndsAt(e.target.value); clearFieldError('endsAt'); }}
+                onChange={(e) => {
+                  setEndsAt(e.target.value);
+                  clearFieldError('endsAt');
+                }}
                 className={`w-full px-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 ${dateError ? 'border-red-400' : 'border-slate-200'}`}
               />
             </div>
@@ -157,7 +192,9 @@ export const PackGroupForm: React.FC<PackGroupFormProps> = ({ existingGroup, onS
           {dateError ? (
             <p className="text-xs text-red-500 mt-1">{dateError}</p>
           ) : (
-            <p className="text-xs text-slate-400 mt-1">Optionnel. Le groupe sera automatiquement masqué en dehors de cette période.</p>
+            <p className="text-xs text-slate-400 mt-1">
+              Optionnel. Le groupe sera automatiquement masqué en dehors de cette période.
+            </p>
           )}
         </div>
       </div>

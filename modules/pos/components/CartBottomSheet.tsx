@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { CreditCard, Edit3, Minus, Plus, ShoppingBag, Tag, Trash2, User, X } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ShoppingBag, Minus, Plus, Trash2, Edit3, Tag, CreditCard, User } from 'lucide-react';
-import { CartItem, Client, Service } from '../../../types';
-import type { StaffMember } from '../../../types';
 import { formatPrice } from '../../../lib/format';
-import { StaffSelector } from './StaffSelector';
+import type { CartItem, Client, Service, StaffMember } from '../../../types';
 import { resolveCartItemCategoryId } from '../utils/resolveCartItemCategoryId';
+import { StaffSelector } from './StaffSelector';
 
 interface CartBottomSheetProps {
   isOpen: boolean;
@@ -50,7 +50,9 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = ''; };
+      return () => {
+        document.body.style.overflow = '';
+      };
     }
   }, [isOpen]);
 
@@ -67,7 +69,7 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
       }
       if (e.key === 'Tab' && panelRef.current) {
         const focusable = panelRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
         );
         if (focusable.length === 0) return;
         const first = focusable[0];
@@ -89,13 +91,15 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
     };
   }, [isOpen, onClose]);
 
-  const filteredClients = useMemo(() =>
-    clients.filter(c =>
-      c.firstName.toLowerCase().includes(clientSearch.toLowerCase()) ||
-      c.lastName.toLowerCase().includes(clientSearch.toLowerCase()) ||
-      c.phone.includes(clientSearch)
-    ),
-    [clients, clientSearch]
+  const filteredClients = useMemo(
+    () =>
+      clients.filter(
+        (c) =>
+          c.firstName.toLowerCase().includes(clientSearch.toLowerCase()) ||
+          c.lastName.toLowerCase().includes(clientSearch.toLowerCase()) ||
+          c.phone.includes(clientSearch),
+      ),
+    [clients, clientSearch],
   );
 
   const handleClientSelect = (client: Client) => {
@@ -139,18 +143,28 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
           <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div className="flex items-center gap-3">
               {selectedClient.photoUrl ? (
-                <img src={selectedClient.photoUrl} alt="" className="w-10 h-10 rounded-full object-cover border border-slate-200" />
+                <img
+                  src={selectedClient.photoUrl}
+                  alt=""
+                  className="w-10 h-10 rounded-full object-cover border border-slate-200"
+                />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm">
-                  {selectedClient.firstName[0]}{selectedClient.lastName[0]}
+                  {selectedClient.firstName[0]}
+                  {selectedClient.lastName[0]}
                 </div>
               )}
               <div>
-                <div className="font-bold text-slate-900 text-sm">{selectedClient.firstName} {selectedClient.lastName}</div>
+                <div className="font-bold text-slate-900 text-sm">
+                  {selectedClient.firstName} {selectedClient.lastName}
+                </div>
                 <div className="text-xs text-slate-500">{selectedClient.phone}</div>
               </div>
             </div>
-            <button onClick={() => onSelectClient(null)} className="p-2 text-slate-400 hover:text-red-500 min-w-[44px] min-h-[44px] flex items-center justify-center">
+            <button
+              onClick={() => onSelectClient(null)}
+              className="p-2 text-slate-400 hover:text-red-500 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            >
               <X size={18} />
             </button>
           </div>
@@ -171,7 +185,10 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
           <div className="h-14 flex items-center justify-between px-4 border-b border-slate-200 shrink-0">
             <span className="font-semibold text-slate-900">Sélectionner un client</span>
             <button
-              onClick={() => { setClientSearchOpen(false); setClientSearch(''); }}
+              onClick={() => {
+                setClientSearchOpen(false);
+                setClientSearch('');
+              }}
               className="p-2 rounded-lg text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Fermer"
             >
@@ -180,29 +197,35 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
           </div>
           <div className="p-3 border-b border-slate-100 shrink-0">
             <input
-              autoFocus
               value={clientSearch}
-              onChange={e => setClientSearch(e.target.value)}
+              onChange={(e) => setClientSearch(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-slate-400 focus:bg-white placeholder:text-slate-400 min-h-[44px]"
               placeholder="Chercher par nom ou téléphone..."
             />
           </div>
           <div className="flex-1 overflow-y-auto p-3">
-            {filteredClients.map(client => (
+            {filteredClients.map((client) => (
               <button
                 key={client.id}
                 onClick={() => handleClientSelect(client)}
                 className="w-full text-left px-4 py-4 rounded-xl hover:bg-slate-50 active:bg-slate-100 flex items-center gap-3 mb-1 min-h-[52px]"
               >
                 {client.photoUrl ? (
-                  <img src={client.photoUrl} alt="" className="w-10 h-10 rounded-full object-cover border border-slate-200" />
+                  <img
+                    src={client.photoUrl}
+                    alt=""
+                    className="w-10 h-10 rounded-full object-cover border border-slate-200"
+                  />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-500">
-                    {client.firstName[0]}{client.lastName[0]}
+                    {client.firstName[0]}
+                    {client.lastName[0]}
                   </div>
                 )}
                 <div>
-                  <div className="font-medium text-sm text-slate-900">{client.firstName} {client.lastName}</div>
+                  <div className="font-medium text-sm text-slate-900">
+                    {client.firstName} {client.lastName}
+                  </div>
                   <div className="text-xs text-slate-500">{client.phone}</div>
                 </div>
               </button>
@@ -251,12 +274,16 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
                         staffId={item.staffId}
                         staffName={item.staffName}
                         staffMembers={allStaff}
-                        onChange={(staffId, staffName) => onUpdateCartItem(item.id, { staffId, staffName })}
+                        onChange={(staffId, staffName) =>
+                          onUpdateCartItem(item.id, { staffId, staffName })
+                        }
                         categoryId={resolveCartItemCategoryId(item, services)}
                       />
                     </div>
                     <div className="text-right">
-                      <div className="font-bold text-slate-900 text-sm">{formatPrice(item.price * item.quantity)}</div>
+                      <div className="font-bold text-slate-900 text-sm">
+                        {formatPrice(item.price * item.quantity)}
+                      </div>
                       {item.originalPrice && item.originalPrice > item.price && (
                         <div className="text-xs text-slate-400 line-through decoration-red-400">
                           {formatPrice(item.originalPrice * item.quantity)}
@@ -273,13 +300,21 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
                   <div className="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200">
                     <button
-                      onClick={() => item.quantity > 1 ? onUpdateQuantity(item.id, -1) : onRemoveItem(item.id)}
+                      onClick={() =>
+                        item.quantity > 1 ? onUpdateQuantity(item.id, -1) : onRemoveItem(item.id)
+                      }
                       className="w-12 h-12 flex items-center justify-center hover:bg-white rounded text-slate-600 transition-colors"
                       aria-label={item.quantity > 1 ? 'Diminuer quantité' : 'Supprimer'}
                     >
-                      {item.quantity > 1 ? <Minus size={16} /> : <Trash2 size={16} className="text-red-500" />}
+                      {item.quantity > 1 ? (
+                        <Minus size={16} />
+                      ) : (
+                        <Trash2 size={16} className="text-red-500" />
+                      )}
                     </button>
-                    <span className="w-10 text-center text-sm font-bold text-slate-800">{item.quantity}</span>
+                    <span className="w-10 text-center text-sm font-bold text-slate-800">
+                      {item.quantity}
+                    </span>
                     <button
                       onClick={() => onUpdateQuantity(item.id, 1)}
                       className="w-12 h-12 flex items-center justify-center hover:bg-white rounded text-slate-600 transition-colors"
@@ -299,7 +334,10 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
       </div>
 
       {/* Sticky footer: totals + checkout */}
-      <div className="shrink-0 p-4 bg-slate-50 border-t border-slate-200" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
+      <div
+        className="shrink-0 p-4 bg-slate-50 border-t border-slate-200"
+        style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
+      >
         <div className="space-y-1 mb-4">
           <div className="flex justify-between text-slate-500 text-sm">
             <span>Sous-total</span>
@@ -316,7 +354,10 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
         </div>
 
         <button
-          onClick={() => { onCheckout(); onClose(); }}
+          onClick={() => {
+            onCheckout();
+            onClose();
+          }}
           disabled={cart.length === 0}
           className="w-full py-4 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-bold text-lg shadow-sm transition-all flex items-center justify-center gap-3"
         >
@@ -325,6 +366,6 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
         </button>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };

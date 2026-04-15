@@ -8,53 +8,57 @@ import { z } from 'zod';
 
 const optionalString = z.string().optional().default('');
 
-export const clientSchema = z.object({
-  // --- Identity ---
-  firstName: optionalString,
-  lastName: optionalString,
-  gender: z.enum(['Homme', 'Femme']).optional(),
-  ageGroup: optionalString,
-  city: optionalString,
-  profession: optionalString,
-  company: optionalString,
-  notes: optionalString,
-  allergies: optionalString,
+export const clientSchema = z
+  .object({
+    // --- Identity ---
+    firstName: optionalString,
+    lastName: optionalString,
+    gender: z.enum(['Homme', 'Femme']).optional(),
+    ageGroup: optionalString,
+    city: optionalString,
+    profession: optionalString,
+    company: optionalString,
+    notes: optionalString,
+    allergies: optionalString,
 
-  // --- Relation ---
-  status: z.enum(['ACTIF', 'VIP', 'INACTIF']).optional(),
-  preferredStaffId: z.string().optional(),
+    // --- Relation ---
+    status: z.enum(['ACTIF', 'VIP', 'INACTIF']).optional(),
+    preferredStaffId: z.string().optional(),
 
-  // --- Contact ---
-  phone: optionalString,
-  email: z.union([
-    z.string().email("L'email n'est pas valide"),
-    z.string().length(0),
-  ]).optional().default(''),
-  whatsapp: optionalString,
-  instagram: optionalString,
-  preferredChannel: optionalString,
-  preferredLanguage: optionalString,
-  otherChannelDetail: optionalString,
+    // --- Contact ---
+    phone: optionalString,
+    email: z
+      .union([z.string().email("L'email n'est pas valide"), z.string().length(0)])
+      .optional()
+      .default(''),
+    whatsapp: optionalString,
+    instagram: optionalString,
+    preferredChannel: optionalString,
+    preferredLanguage: optionalString,
+    otherChannelDetail: optionalString,
 
-  // --- Acquisition ---
-  contactDate: optionalString,
-  contactMethod: optionalString,
-  messageChannel: optionalString,
-  acquisitionSource: optionalString,
-  acquisitionDetail: optionalString,
+    // --- Acquisition ---
+    contactDate: optionalString,
+    contactMethod: optionalString,
+    messageChannel: optionalString,
+    acquisitionSource: optionalString,
+    acquisitionDetail: optionalString,
 
-  // --- Permissions ---
-  permissions: z.object({
-    socialMedia: z.boolean().default(false),
-    marketing: z.boolean().default(false),
-    other: z.boolean().default(false),
-    otherDetail: z.string().optional(),
-  }).partial().optional(),
-})
-  .refine(
-    (data) => Boolean(data.firstName?.trim() || data.lastName?.trim()),
-    { message: 'Le prénom ou le nom est requis', path: ['firstName'] },
-  )
+    // --- Permissions ---
+    permissions: z
+      .object({
+        socialMedia: z.boolean().default(false),
+        marketing: z.boolean().default(false),
+        other: z.boolean().default(false),
+        otherDetail: z.string().optional(),
+      })
+      .partial()
+      .optional(),
+  })
+  .refine((data) => Boolean(data.firstName?.trim() || data.lastName?.trim()), {
+    message: 'Le prénom ou le nom est requis',
+    path: ['firstName'],
+  })
   .refine(
     // If preferredChannel is "Autre", the otherChannelDetail must be filled.
     (data) => data.preferredChannel !== 'Autre' || Boolean(data.otherChannelDetail?.trim()),

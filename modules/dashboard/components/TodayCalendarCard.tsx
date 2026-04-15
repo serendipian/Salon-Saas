@@ -1,15 +1,30 @@
-
-import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
+import {
+  CalendarClock,
+  Check,
+  Clock,
+  Filter,
+  Scissors,
+  StickyNote,
+  Tag,
+  User,
+  X,
+} from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarClock, Check, Clock, User, Scissors, Tag, X, StickyNote, Filter } from 'lucide-react';
-import { Appointment, AppointmentStatus, Service, ServiceCategory, StaffMember } from '../../../types';
+import { StaffAvatar } from '../../../components/StaffAvatar';
+import { useToast } from '../../../context/ToastContext';
+import { formatPrice } from '../../../lib/format';
+import { getSalonHourRange } from '../../../lib/scheduleHours';
+import {
+  type Appointment,
+  AppointmentStatus,
+  type Service,
+  type ServiceCategory,
+  type StaffMember,
+} from '../../../types';
 import { isSameDay } from '../../appointments/components/calendarUtils';
 import { StatusBadge } from '../../appointments/components/StatusBadge';
-import { StaffAvatar } from '../../../components/StaffAvatar';
-import { formatPrice } from '../../../lib/format';
-import { useToast } from '../../../context/ToastContext';
 import { useSettings } from '../../settings/hooks/useSettings';
-import { getSalonHourRange } from '../../../lib/scheduleHours';
 
 // --- Constants ---
 const ROW_H = 48;
@@ -42,7 +57,7 @@ function getNowOffset(startHour: number, endHour: number): number | null {
   const h = now.getHours();
   const m = now.getMinutes();
   if (h < startHour || h >= endHour) return null;
-  return ((h - startHour) * 60 + m) / 60 * ROW_H;
+  return (((h - startHour) * 60 + m) / 60) * ROW_H;
 }
 
 function snapToGrid(minutes: number): number {
@@ -51,13 +66,29 @@ function snapToGrid(minutes: number): number {
 
 // Blue-only palette for dashboard calendar (staff columns cycle through shades)
 const BLUE_HEX_PALETTE = [
-  '#3b82f6', '#2563eb', '#60a5fa', '#1d4ed8', '#93c5fd',
-  '#1e40af', '#7dd3fc', '#0ea5e9', '#38bdf8', '#0284c7',
+  '#3b82f6',
+  '#2563eb',
+  '#60a5fa',
+  '#1d4ed8',
+  '#93c5fd',
+  '#1e40af',
+  '#7dd3fc',
+  '#0ea5e9',
+  '#38bdf8',
+  '#0284c7',
 ];
 
 const BLUE_BG_PALETTE = [
-  'bg-blue-50/60', 'bg-blue-100/40', 'bg-sky-50/60', 'bg-indigo-50/40', 'bg-blue-50/40',
-  'bg-sky-100/40', 'bg-blue-100/30', 'bg-sky-50/40', 'bg-indigo-50/30', 'bg-blue-50/50',
+  'bg-blue-50/60',
+  'bg-blue-100/40',
+  'bg-sky-50/60',
+  'bg-indigo-50/40',
+  'bg-blue-50/40',
+  'bg-sky-100/40',
+  'bg-blue-100/30',
+  'bg-sky-50/40',
+  'bg-indigo-50/30',
+  'bg-blue-50/50',
 ];
 
 function staffHexByIndex(index: number): string {
@@ -137,16 +168,18 @@ const AppointmentPopover: React.FC<{
     position: 'fixed',
     left,
     zIndex: 50,
-    ...(showAbove
-      ? { bottom: window.innerHeight - anchorRect.top + 4 }
-      : { top: anchorRect.top }),
+    ...(showAbove ? { bottom: window.innerHeight - anchorRect.top + 4 } : { top: anchorRect.top }),
   };
 
   const start = new Date(appointment.date);
   const end = new Date(start.getTime() + appointment.durationMinutes * 60000);
 
   return (
-    <div ref={ref} style={style} className="w-[280px] bg-white rounded-xl shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden">
+    <div
+      ref={ref}
+      style={style}
+      className="w-[280px] bg-white rounded-xl shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden"
+    >
       {/* Header */}
       <div className="px-4 pt-3.5 pb-3 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white">
         <div className="flex items-start justify-between gap-2">
@@ -172,7 +205,9 @@ const AppointmentPopover: React.FC<{
       <div className="px-4 py-3 space-y-2">
         <div className="flex items-center gap-2.5 text-[13px] text-slate-600">
           <Clock size={14} className="text-slate-400 shrink-0" />
-          <span className="tabular-nums">{fmt(start)} – {fmt(end)}</span>
+          <span className="tabular-nums">
+            {fmt(start)} – {fmt(end)}
+          </span>
           <span className="text-slate-300">·</span>
           <span className="text-slate-400">{appointment.durationMinutes} min</span>
         </div>
@@ -233,7 +268,11 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   }, [targetDateProp]);
   const isToday = useMemo(() => {
     const now = new Date();
-    return targetDate.getFullYear() === now.getFullYear() && targetDate.getMonth() === now.getMonth() && targetDate.getDate() === now.getDate();
+    return (
+      targetDate.getFullYear() === now.getFullYear() &&
+      targetDate.getMonth() === now.getMonth() &&
+      targetDate.getDate() === now.getDate()
+    );
   }, [targetDate]);
   const navigate = useNavigate();
   const { addToast } = useToast();
@@ -250,7 +289,9 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     [START_HOUR, END_HOUR],
   );
 
-  const [nowOffset, setNowOffset] = useState<number | null>(() => getNowOffset(START_HOUR, END_HOUR));
+  const [nowOffset, setNowOffset] = useState<number | null>(() =>
+    getNowOffset(START_HOUR, END_HOUR),
+  );
   const [popover, setPopover] = useState<PopoverState | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [drag, setDrag] = useState<DragState | null>(null);
@@ -277,7 +318,9 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     scrollRef.current.scrollTo({ top: Math.max(nowOffset - 80, 0), behavior: 'smooth' });
   }, [nowOffset]);
 
-  useEffect(() => { scrollToCurrent(); }, [scrollToCurrent]);
+  useEffect(() => {
+    scrollToCurrent();
+  }, [scrollToCurrent]);
 
   const handleBlockClick = useCallback((appt: Appointment, e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
@@ -288,11 +331,11 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   // Build a set of service IDs that belong to the selected category
   const categoryServiceIds = useMemo(() => {
     if (!selectedCategory) return null;
-    return new Set(services.filter(s => s.categoryId === selectedCategory).map(s => s.id));
+    return new Set(services.filter((s) => s.categoryId === selectedCategory).map((s) => s.id));
   }, [selectedCategory, services]);
 
   const todayAppts = useMemo(() => {
-    return appointments.filter(a => {
+    return appointments.filter((a) => {
       if (!isSameDay(new Date(a.date), targetDate)) return false;
       if (a.status === AppointmentStatus.CANCELLED) return false;
       if (categoryServiceIds && !categoryServiceIds.has(a.serviceId)) return false;
@@ -302,14 +345,14 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
 
   // Only show staff who have at least one appointment (after filtering)
   const staffColumns = useMemo(() => {
-    const withAppts = new Set(todayAppts.map(a => a.staffId));
-    const active = staff.filter(s => s.active && !s.deletedAt && withAppts.has(s.id));
+    const withAppts = new Set(todayAppts.map((a) => a.staffId));
+    const active = staff.filter((s) => s.active && !s.deletedAt && withAppts.has(s.id));
     return active;
   }, [staff, todayAppts]);
 
   const apptsByStaff = useMemo(() => {
     const m = new Map<string, Appointment[]>();
-    todayAppts.forEach(a => {
+    todayAppts.forEach((a) => {
       const arr = m.get(a.staffId) || [];
       arr.push(a);
       m.set(a.staffId, arr);
@@ -317,135 +360,196 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     return m;
   }, [todayAppts]);
 
-  const completedCount = useMemo(() => todayAppts.filter(a => a.status === AppointmentStatus.COMPLETED).length, [todayAppts]);
+  const completedCount = useMemo(
+    () => todayAppts.filter((a) => a.status === AppointmentStatus.COMPLETED).length,
+    [todayAppts],
+  );
 
   // Categories that have appointments today (for filter options)
   const availableCategories = useMemo(() => {
-    const dayAppts = appointments.filter(a =>
-      isSameDay(new Date(a.date), targetDate) && a.status !== AppointmentStatus.CANCELLED
+    const dayAppts = appointments.filter(
+      (a) => isSameDay(new Date(a.date), targetDate) && a.status !== AppointmentStatus.CANCELLED,
     );
     const catIds = new Set<string>();
-    dayAppts.forEach(a => {
-      const svc = services.find(s => s.id === a.serviceId);
+    dayAppts.forEach((a) => {
+      const svc = services.find((s) => s.id === a.serviceId);
       if (svc?.categoryId) catIds.add(svc.categoryId);
     });
-    return serviceCategories.filter(c => catIds.has(c.id));
+    return serviceCategories.filter((c) => catIds.has(c.id));
   }, [appointments, services, serviceCategories, targetDate]);
 
   // ── Drag & Drop logic ──
 
   // Check if a staff member can handle a given appointment (based on service category skills)
-  const canStaffHandleAppt = useCallback((staffMember: StaffMember, appt: Appointment): boolean => {
-    // If staff has no skills defined, allow all (backwards compat)
-    if (!staffMember.skills || staffMember.skills.length === 0) return true;
-    const svc = services.find(s => s.id === appt.serviceId);
-    if (!svc?.categoryId) return true;
-    // skills contains category IDs or service IDs
-    return staffMember.skills.includes(svc.categoryId) || staffMember.skills.includes(appt.serviceId);
-  }, [services]);
+  const canStaffHandleAppt = useCallback(
+    (staffMember: StaffMember, appt: Appointment): boolean => {
+      // If staff has no skills defined, allow all (backwards compat)
+      if (!staffMember.skills || staffMember.skills.length === 0) return true;
+      const svc = services.find((s) => s.id === appt.serviceId);
+      if (!svc?.categoryId) return true;
+      // skills contains category IDs or service IDs
+      return (
+        staffMember.skills.includes(svc.categoryId) || staffMember.skills.includes(appt.serviceId)
+      );
+    },
+    [services],
+  );
 
-  const findStaffIndexAtX = useCallback((clientX: number): number => {
-    let closest = 0;
-    let closestDist = Infinity;
-    staffColumns.forEach((s, idx) => {
-      const el = columnRefs.current.get(s.id);
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const center = rect.left + rect.width / 2;
-      const dist = Math.abs(clientX - center);
-      if (dist < closestDist) {
-        closestDist = dist;
-        closest = idx;
-      }
-    });
-    return closest;
-  }, [staffColumns]);
+  const findStaffIndexAtX = useCallback(
+    (clientX: number): number => {
+      let closest = 0;
+      let closestDist = Infinity;
+      staffColumns.forEach((s, idx) => {
+        const el = columnRefs.current.get(s.id);
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const center = rect.left + rect.width / 2;
+        const dist = Math.abs(clientX - center);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closest = idx;
+        }
+      });
+      return closest;
+    },
+    [staffColumns],
+  );
 
-  const calcMinutesFromY = useCallback((clientY: number): number => {
-    if (!gridRef.current) return 0;
-    const gridRect = gridRef.current.getBoundingClientRect();
-    const relY = clientY - gridRect.top + (scrollRef.current?.scrollTop ?? 0);
-    const rawMinutes = (relY / ROW_H) * 60;
-    return snapToGrid(Math.max(0, Math.min(rawMinutes, CALENDAR_HOURS.length * 60 - SNAP_MINUTES)));
-  }, [CALENDAR_HOURS]);
+  const calcMinutesFromY = useCallback(
+    (clientY: number): number => {
+      if (!gridRef.current) return 0;
+      const gridRect = gridRef.current.getBoundingClientRect();
+      const relY = clientY - gridRect.top + (scrollRef.current?.scrollTop ?? 0);
+      const rawMinutes = (relY / ROW_H) * 60;
+      return snapToGrid(
+        Math.max(0, Math.min(rawMinutes, CALENDAR_HOURS.length * 60 - SNAP_MINUTES)),
+      );
+    },
+    [CALENDAR_HOURS],
+  );
 
-  const handlePointerDown = useCallback((appt: Appointment, e: React.PointerEvent<HTMLDivElement>) => {
-    if (!onUpdateAppointment) return;
-    if (appt.status === AppointmentStatus.COMPLETED) return;
+  const handlePointerDown = useCallback(
+    (appt: Appointment, e: React.PointerEvent<HTMLDivElement>) => {
+      if (!onUpdateAppointment) return;
+      if (appt.status === AppointmentStatus.COMPLETED) return;
 
-    const blockRect = e.currentTarget.getBoundingClientRect();
-    const offsetY = e.clientY - blockRect.top;
+      const blockRect = e.currentTarget.getBoundingClientRect();
+      const offsetY = e.clientY - blockRect.top;
 
-    const staffIdx = staffColumns.findIndex(s => s.id === appt.staffId);
-    const startDate = new Date(appt.date);
-    const startMin = Math.max((startDate.getHours() - START_HOUR) * 60 + startDate.getMinutes(), 0);
-    const ghostTop = (startMin / 60) * ROW_H;
+      const staffIdx = staffColumns.findIndex((s) => s.id === appt.staffId);
+      const startDate = new Date(appt.date);
+      const startMin = Math.max(
+        (startDate.getHours() - START_HOUR) * 60 + startDate.getMinutes(),
+        0,
+      );
+      const ghostTop = (startMin / 60) * ROW_H;
 
-    setDrag({
-      appointment: appt,
-      offsetY,
-      startX: e.clientX,
-      startY: e.clientY,
-      isDragging: false,
-      ghostTop,
-      ghostStaffIdx: staffIdx >= 0 ? staffIdx : 0,
-      isValidDrop: true,
-    });
+      setDrag({
+        appointment: appt,
+        offsetY,
+        startX: e.clientX,
+        startY: e.clientY,
+        isDragging: false,
+        ghostTop,
+        ghostStaffIdx: staffIdx >= 0 ? staffIdx : 0,
+        isValidDrop: true,
+      });
 
-    e.currentTarget.setPointerCapture(e.pointerId);
-  }, [onUpdateAppointment, staffColumns, START_HOUR]);
+      e.currentTarget.setPointerCapture(e.pointerId);
+    },
+    [onUpdateAppointment, staffColumns, START_HOUR],
+  );
 
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!drag) return;
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!drag) return;
 
-    const dx = e.clientX - drag.startX;
-    const dy = e.clientY - drag.startY;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+      const dx = e.clientX - drag.startX;
+      const dy = e.clientY - drag.startY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (!drag.isDragging && dist < DRAG_THRESHOLD) return;
+      if (!drag.isDragging && dist < DRAG_THRESHOLD) return;
 
-    const minutes = calcMinutesFromY(e.clientY - drag.offsetY);
-    const staffIdx = findStaffIndexAtX(e.clientX);
-    const newTop = (minutes / 60) * ROW_H;
-    const targetStaff = staffColumns[staffIdx];
-    const isValid = targetStaff ? canStaffHandleAppt(targetStaff, drag.appointment) : false;
-
-    setDrag(prev => prev ? { ...prev, isDragging: true, ghostTop: newTop, ghostStaffIdx: staffIdx, isValidDrop: isValid } : null);
-  }, [drag, calcMinutesFromY, findStaffIndexAtX, staffColumns, canStaffHandleAppt]);
-
-  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!drag) return;
-
-    if (drag.isDragging && onUpdateAppointment) {
       const minutes = calcMinutesFromY(e.clientY - drag.offsetY);
       const staffIdx = findStaffIndexAtX(e.clientX);
+      const newTop = (minutes / 60) * ROW_H;
       const targetStaff = staffColumns[staffIdx];
+      const isValid = targetStaff ? canStaffHandleAppt(targetStaff, drag.appointment) : false;
 
-      if (targetStaff) {
-        if (!canStaffHandleAppt(targetStaff, drag.appointment)) {
-          addToast({ type: 'warning', message: `${targetStaff.firstName} ne prend pas en charge cette prestation` });
-        } else {
-          const newHour = Math.floor(minutes / 60) + START_HOUR;
-          const newMin = minutes % 60;
-          const newDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), newHour, newMin, 0, 0);
+      setDrag((prev) =>
+        prev
+          ? {
+              ...prev,
+              isDragging: true,
+              ghostTop: newTop,
+              ghostStaffIdx: staffIdx,
+              isValidDrop: isValid,
+            }
+          : null,
+      );
+    },
+    [drag, calcMinutesFromY, findStaffIndexAtX, staffColumns, canStaffHandleAppt],
+  );
 
-          const oldDate = new Date(drag.appointment.date);
-          const hasChanged = newDate.getTime() !== oldDate.getTime() || targetStaff.id !== drag.appointment.staffId;
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!drag) return;
 
-          if (hasChanged) {
-            onUpdateAppointment({
-              ...drag.appointment,
-              date: newDate.toISOString(),
-              staffId: targetStaff.id,
-              staffName: `${targetStaff.firstName} ${targetStaff.lastName}`.trim(),
+      if (drag.isDragging && onUpdateAppointment) {
+        const minutes = calcMinutesFromY(e.clientY - drag.offsetY);
+        const staffIdx = findStaffIndexAtX(e.clientX);
+        const targetStaff = staffColumns[staffIdx];
+
+        if (targetStaff) {
+          if (!canStaffHandleAppt(targetStaff, drag.appointment)) {
+            addToast({
+              type: 'warning',
+              message: `${targetStaff.firstName} ne prend pas en charge cette prestation`,
             });
+          } else {
+            const newHour = Math.floor(minutes / 60) + START_HOUR;
+            const newMin = minutes % 60;
+            const newDate = new Date(
+              targetDate.getFullYear(),
+              targetDate.getMonth(),
+              targetDate.getDate(),
+              newHour,
+              newMin,
+              0,
+              0,
+            );
+
+            const oldDate = new Date(drag.appointment.date);
+            const hasChanged =
+              newDate.getTime() !== oldDate.getTime() ||
+              targetStaff.id !== drag.appointment.staffId;
+
+            if (hasChanged) {
+              onUpdateAppointment({
+                ...drag.appointment,
+                date: newDate.toISOString(),
+                staffId: targetStaff.id,
+                staffName: `${targetStaff.firstName} ${targetStaff.lastName}`.trim(),
+              });
+            }
           }
         }
       }
-    }
 
-    setDrag(null);
-  }, [drag, onUpdateAppointment, calcMinutesFromY, findStaffIndexAtX, staffColumns, canStaffHandleAppt, addToast, START_HOUR, targetDate]);
+      setDrag(null);
+    },
+    [
+      drag,
+      onUpdateAppointment,
+      calcMinutesFromY,
+      findStaffIndexAtX,
+      staffColumns,
+      canStaffHandleAppt,
+      addToast,
+      START_HOUR,
+      targetDate,
+    ],
+  );
 
   const handlePointerCancel = useCallback(() => {
     setDrag(null);
@@ -460,7 +564,14 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
     const timeLabel = fmtMinutes(snapped, START_HOUR);
     const endLabel = fmtMinutes(snapped + drag.appointment.durationMinutes, START_HOUR);
     const targetStaff = staffColumns[drag.ghostStaffIdx];
-    return { topPx, timeLabel, endLabel, targetStaff, snappedMinutes: snapped, isValid: drag.isValidDrop };
+    return {
+      topPx,
+      timeLabel,
+      endLabel,
+      targetStaff,
+      snappedMinutes: snapped,
+      isValid: drag.isValidDrop,
+    };
   }, [drag, staffColumns, START_HOUR]);
 
   const totalHeight = CALENDAR_HOURS.length * ROW_H;
@@ -471,7 +582,11 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white">
         <h3 className="font-bold text-slate-800 capitalize">
-          {targetDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+          {targetDate.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+          })}
         </h3>
         <div className="flex items-center gap-2">
           {/* Category filter */}
@@ -479,15 +594,20 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
             <div className="relative">
               <select
                 value={selectedCategory}
-                onChange={e => setSelectedCategory(e.target.value)}
+                onChange={(e) => setSelectedCategory(e.target.value)}
                 className="appearance-none text-[11px] font-medium pl-6 pr-5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-300 cursor-pointer"
               >
                 <option value="">Toutes catégories</option>
-                {availableCategories.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                {availableCategories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
                 ))}
               </select>
-              <Filter size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <Filter
+                size={11}
+                className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
             </div>
           )}
           {todayAppts.length > 0 && (
@@ -509,7 +629,9 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
       {todayAppts.length === 0 && staffColumns.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-slate-300">
           <CalendarClock size={40} strokeWidth={1.5} className="mb-3" />
-          <p className="text-sm font-medium text-slate-400">Aucun rendez-vous {isToday ? "aujourd'hui" : 'ce jour'}</p>
+          <p className="text-sm font-medium text-slate-400">
+            Aucun rendez-vous {isToday ? "aujourd'hui" : 'ce jour'}
+          </p>
           {isToday && <p className="text-xs text-slate-300 mt-1">Profitez de la pause !</p>}
         </div>
       ) : (
@@ -544,9 +666,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                       <div className="text-xs font-semibold text-slate-800 truncate leading-tight">
                         {s.firstName}
                       </div>
-                      <div className="text-[10px] text-slate-400 leading-tight">
-                        {count} rdv
-                      </div>
+                      <div className="text-[10px] text-slate-400 leading-tight">{count} rdv</div>
                     </div>
                   </div>
                 </div>
@@ -556,142 +676,156 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
 
           {/* ── Grid body ── */}
           <div ref={gridRef} className="flex relative" style={{ minHeight: totalHeight }}>
-              {/* ── Hour gutter ── */}
-              <div className="w-[52px] shrink-0 relative" style={{ height: totalHeight }}>
-                {CALENDAR_HOURS.map((hour, i) => (
-                  <div key={hour} className="absolute left-0 right-0" style={{ top: i * ROW_H }}>
-                    <span className="absolute right-2 -top-[6px] text-[10px] font-medium text-slate-300 tabular-nums select-none">
-                      {String(hour).padStart(2, '0')}:00
-                    </span>
-                  </div>
-                ))}
-              </div>
+            {/* ── Hour gutter ── */}
+            <div className="w-[52px] shrink-0 relative" style={{ height: totalHeight }}>
+              {CALENDAR_HOURS.map((hour, i) => (
+                <div key={hour} className="absolute left-0 right-0" style={{ top: i * ROW_H }}>
+                  <span className="absolute right-2 -top-[6px] text-[10px] font-medium text-slate-300 tabular-nums select-none">
+                    {String(hour).padStart(2, '0')}:00
+                  </span>
+                </div>
+              ))}
+            </div>
 
-              {/* ── Staff columns ── */}
-              {staffColumns.map((s, sIdx) => {
-                const staffAppts = apptsByStaff.get(s.id) || [];
-                const isDropTarget = drag?.isDragging && drag.ghostStaffIdx === sIdx;
-                return (
-                  <div
-                    key={s.id}
-                    ref={(el) => { if (el) columnRefs.current.set(s.id, el); }}
-                    className={`flex-1 min-w-[140px] relative border-l border-slate-100/80 transition-colors duration-150 ${isDropTarget ? (drag?.isValidDrop ? 'bg-blue-50/30' : 'bg-red-50/30') : ''}`}
-                    style={{ height: totalHeight }}
-                  >
-                    {CALENDAR_HOURS.map((hour, i) => (
-                      <React.Fragment key={hour}>
-                        <div
-                          className="absolute left-0 right-0 border-t border-slate-100"
-                          style={{ top: i * ROW_H }}
-                        />
-                        <div
-                          className="absolute left-0 right-0 border-t border-dashed border-slate-50"
-                          style={{ top: i * ROW_H + HALF_HOUR_H }}
-                        />
-                      </React.Fragment>
-                    ))}
-
-                    {/* Ghost drop preview */}
-                    {isDropTarget && ghostInfo && (
+            {/* ── Staff columns ── */}
+            {staffColumns.map((s, sIdx) => {
+              const staffAppts = apptsByStaff.get(s.id) || [];
+              const isDropTarget = drag?.isDragging && drag.ghostStaffIdx === sIdx;
+              return (
+                <div
+                  key={s.id}
+                  ref={(el) => {
+                    if (el) columnRefs.current.set(s.id, el);
+                  }}
+                  className={`flex-1 min-w-[140px] relative border-l border-slate-100/80 transition-colors duration-150 ${isDropTarget ? (drag?.isValidDrop ? 'bg-blue-50/30' : 'bg-red-50/30') : ''}`}
+                  style={{ height: totalHeight }}
+                >
+                  {CALENDAR_HOURS.map((hour, i) => (
+                    <React.Fragment key={hour}>
                       <div
-                        className={`absolute left-1.5 right-1.5 rounded-lg border-2 border-dashed z-30 pointer-events-none flex items-center justify-center ${
-                          ghostInfo.isValid
-                            ? 'border-blue-400 bg-blue-100/40'
-                            : 'border-red-400 bg-red-100/40'
-                        }`}
-                        style={{
-                          top: ghostInfo.topPx + 1,
-                          height: Math.max((drag!.appointment.durationMinutes / 60) * ROW_H - 2, 20),
-                        }}
+                        className="absolute left-0 right-0 border-t border-slate-100"
+                        style={{ top: i * ROW_H }}
+                      />
+                      <div
+                        className="absolute left-0 right-0 border-t border-dashed border-slate-50"
+                        style={{ top: i * ROW_H + HALF_HOUR_H }}
+                      />
+                    </React.Fragment>
+                  ))}
+
+                  {/* Ghost drop preview */}
+                  {isDropTarget && ghostInfo && (
+                    <div
+                      className={`absolute left-1.5 right-1.5 rounded-lg border-2 border-dashed z-30 pointer-events-none flex items-center justify-center ${
+                        ghostInfo.isValid
+                          ? 'border-blue-400 bg-blue-100/40'
+                          : 'border-red-400 bg-red-100/40'
+                      }`}
+                      style={{
+                        top: ghostInfo.topPx + 1,
+                        height: Math.max((drag?.appointment.durationMinutes / 60) * ROW_H - 2, 20),
+                      }}
+                    >
+                      <span
+                        className={`text-[10px] font-semibold tabular-nums ${ghostInfo.isValid ? 'text-blue-600' : 'text-red-600'}`}
                       >
-                        <span className={`text-[10px] font-semibold tabular-nums ${ghostInfo.isValid ? 'text-blue-600' : 'text-red-600'}`}>
-                          {ghostInfo.isValid
-                            ? `${ghostInfo.timeLabel} – ${ghostInfo.endLabel}`
-                            : 'Non qualifié(e)'
-                          }
-                        </span>
-                      </div>
-                    )}
+                        {ghostInfo.isValid
+                          ? `${ghostInfo.timeLabel} – ${ghostInfo.endLabel}`
+                          : 'Non qualifié(e)'}
+                      </span>
+                    </div>
+                  )}
 
-                    {staffAppts.map(appt => {
-                      const start = new Date(appt.date);
-                      const startMin = Math.max((start.getHours() - START_HOUR) * 60 + start.getMinutes(), 0);
-                      const top = (startMin / 60) * ROW_H;
-                      const maxMin = CALENDAR_HOURS.length * 60;
-                      const dur = Math.min(appt.durationMinutes, maxMin - startMin);
-                      const height = Math.max((dur / 60) * ROW_H, 22);
+                  {staffAppts.map((appt) => {
+                    const start = new Date(appt.date);
+                    const startMin = Math.max(
+                      (start.getHours() - START_HOUR) * 60 + start.getMinutes(),
+                      0,
+                    );
+                    const top = (startMin / 60) * ROW_H;
+                    const maxMin = CALENDAR_HOURS.length * 60;
+                    const dur = Math.min(appt.durationMinutes, maxMin - startMin);
+                    const height = Math.max((dur / 60) * ROW_H, 22);
 
-                      const done = appt.status === AppointmentStatus.COMPLETED;
-                      const end = new Date(start.getTime() + appt.durationMinutes * 60000);
-                      const isSelected = popover?.appointment.id === appt.id;
-                      const isBeingDragged = drag?.isDragging && drag.appointment.id === appt.id;
+                    const done = appt.status === AppointmentStatus.COMPLETED;
+                    const end = new Date(start.getTime() + appt.durationMinutes * 60000);
+                    const isSelected = popover?.appointment.id === appt.id;
+                    const isBeingDragged = drag?.isDragging && drag.appointment.id === appt.id;
 
-                      return (
-                        <div
-                          key={appt.id}
-                          onClick={(e) => { if (!drag?.isDragging) handleBlockClick(appt, e); }}
-                          onPointerDown={(e) => handlePointerDown(appt, e)}
-                          className={`
+                    return (
+                      <div
+                        key={appt.id}
+                        onClick={(e) => {
+                          if (!drag?.isDragging) handleBlockClick(appt, e);
+                        }}
+                        onPointerDown={(e) => handlePointerDown(appt, e)}
+                        className={`
                             absolute left-1.5 right-1.5 rounded-lg overflow-hidden
                             transition-all duration-200 group/block
                             border-l-[3px]
                             ${onUpdateAppointment && !done ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}
                             ${isBeingDragged ? 'opacity-30 scale-95' : ''}
                             ${isSelected ? 'ring-2 ring-blue-300/40 shadow-lg z-20' : ''}
-                            ${done
-                              ? 'border-slate-300 bg-slate-50/80 text-slate-400 hover:bg-slate-100/80'
-                              : `${BLUE_BLOCK.border} ${BLUE_BLOCK.bg} ${BLUE_BLOCK.text} hover:shadow-md hover:shadow-blue-100/50 hover:-translate-y-[1px]`
+                            ${
+                              done
+                                ? 'border-slate-300 bg-slate-50/80 text-slate-400 hover:bg-slate-100/80'
+                                : `${BLUE_BLOCK.border} ${BLUE_BLOCK.bg} ${BLUE_BLOCK.text} hover:shadow-md hover:shadow-blue-100/50 hover:-translate-y-[1px]`
                             }
                           `}
-                          style={{ top: top + 1, height: Math.max(height - 2, 20), touchAction: 'none' }}
-                        >
-                          <div className="px-2 py-1 h-full flex flex-col justify-center">
-                            <div className="flex items-center gap-1">
-                              {done && <Check size={10} className="text-slate-400 shrink-0" />}
-                              <span className={`text-[11px] font-semibold truncate leading-tight ${done ? 'line-through decoration-slate-300' : ''}`}>
-                                {appt.serviceName}
-                              </span>
-                            </div>
-                            {height >= 32 && (
-                              <div className="text-[9px] opacity-60 truncate leading-tight tabular-nums">
-                                {fmt(start)} – {fmt(end)}
-                              </div>
-                            )}
-                            {height >= 44 && (
-                              <div className="text-[9px] font-medium opacity-50 truncate leading-tight">
-                                {appt.clientName}
-                              </div>
-                            )}
+                        style={{
+                          top: top + 1,
+                          height: Math.max(height - 2, 20),
+                          touchAction: 'none',
+                        }}
+                      >
+                        <div className="px-2 py-1 h-full flex flex-col justify-center">
+                          <div className="flex items-center gap-1">
+                            {done && <Check size={10} className="text-slate-400 shrink-0" />}
+                            <span
+                              className={`text-[11px] font-semibold truncate leading-tight ${done ? 'line-through decoration-slate-300' : ''}`}
+                            >
+                              {appt.serviceName}
+                            </span>
                           </div>
+                          {height >= 32 && (
+                            <div className="text-[9px] opacity-60 truncate leading-tight tabular-nums">
+                              {fmt(start)} – {fmt(end)}
+                            </div>
+                          )}
+                          {height >= 44 && (
+                            <div className="text-[9px] font-medium opacity-50 truncate leading-tight">
+                              {appt.clientName}
+                            </div>
+                          )}
                         </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
 
-              {/* ── Now indicator (only when viewing today) ── */}
-              {isToday && nowOffset !== null && (
-                <div
-                  className="absolute left-0 right-0 z-10 pointer-events-none"
-                  style={{ top: nowOffset }}
-                >
-                  <div className="flex items-center">
-                    <div className="w-[52px] shrink-0 flex justify-end pr-1.5">
-                      <span className="text-[9px] font-bold text-red-500 bg-red-50 px-1 py-[1px] rounded tabular-nums">
-                        {nowLabel}
-                      </span>
-                    </div>
-                    <div className="flex-1 flex items-center">
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-500 -ml-[5px] shadow-[0_0_0_3px_rgba(239,68,68,0.15)] animate-pulse" />
-                      <div className="flex-1 h-[2px] bg-gradient-to-r from-red-500 to-red-500/0" />
-                    </div>
+            {/* ── Now indicator (only when viewing today) ── */}
+            {isToday && nowOffset !== null && (
+              <div
+                className="absolute left-0 right-0 z-10 pointer-events-none"
+                style={{ top: nowOffset }}
+              >
+                <div className="flex items-center">
+                  <div className="w-[52px] shrink-0 flex justify-end pr-1.5">
+                    <span className="text-[9px] font-bold text-red-500 bg-red-50 px-1 py-[1px] rounded tabular-nums">
+                      {nowLabel}
+                    </span>
+                  </div>
+                  <div className="flex-1 flex items-center">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 -ml-[5px] shadow-[0_0_0_3px_rgba(239,68,68,0.15)] animate-pulse" />
+                    <div className="flex-1 h-[2px] bg-gradient-to-r from-red-500 to-red-500/0" />
                   </div>
                 </div>
-              )}
-
-            </div>
+              </div>
+            )}
           </div>
+        </div>
       )}
 
       {/* ── Popover (fixed positioning, outside scroll container) ── */}

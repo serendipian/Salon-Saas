@@ -1,12 +1,12 @@
-
-import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { ViewState, Product } from '../../types';
-import { useProducts } from './hooks/useProducts';
-import { useBilling } from '../billing/hooks/useBilling';
+import type React from 'react';
+import { useState } from 'react';
 import { useToast } from '../../context/ToastContext';
-import { ProductList } from './components/ProductList';
+import type { Product, ViewState } from '../../types';
+import { useBilling } from '../billing/hooks/useBilling';
 import { ProductForm } from './components/ProductForm';
+import { ProductList } from './components/ProductList';
+import { useProducts } from './hooks/useProducts';
 
 export const ProductsModule: React.FC = () => {
   const {
@@ -29,7 +29,11 @@ export const ProductsModule: React.FC = () => {
 
   const handleAdd = () => {
     if (!canAddProduct(allProducts.length)) {
-      addToast({ type: 'warning', message: 'Limite de produits atteinte pour votre forfait. Passez au forfait supérieur pour en ajouter davantage.' });
+      addToast({
+        type: 'warning',
+        message:
+          'Limite de produits atteinte pour votre forfait. Passez au forfait supérieur pour en ajouter davantage.',
+      });
       return;
     }
     setSelectedProductId(null);
@@ -73,16 +77,20 @@ export const ProductsModule: React.FC = () => {
       )}
       {(view === 'ADD' || view === 'EDIT') && (
         <ProductForm
-          existingProduct={products.find(p => p.id === selectedProductId)}
+          existingProduct={products.find((p) => p.id === selectedProductId)}
           categories={productCategories}
           onSave={handleSaveProduct}
           onCancel={() => setView('LIST')}
-          onDelete={view === 'EDIT' && selectedProductId ? () => {
-            if (window.confirm('Supprimer ce produit ? Cette action est irréversible.')) {
-              deleteProduct(selectedProductId);
-              setView('LIST');
-            }
-          } : undefined}
+          onDelete={
+            view === 'EDIT' && selectedProductId
+              ? () => {
+                  if (window.confirm('Supprimer ce produit ? Cette action est irréversible.')) {
+                    deleteProduct(selectedProductId);
+                    setView('LIST');
+                  }
+                }
+              : undefined
+          }
         />
       )}
     </div>

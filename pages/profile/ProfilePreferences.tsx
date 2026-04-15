@@ -1,8 +1,8 @@
-import React from 'react';
 import { Mail, MessageSquare } from 'lucide-react';
+import type React from 'react';
+import { Section, Select } from '../../components/FormElements';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { Section, Select } from '../../components/FormElements';
 
 const LANGUAGE_OPTIONS = [
   { value: 'fr', label: 'Français' },
@@ -23,7 +23,10 @@ export const ProfilePreferences: React.FC = () => {
     }
   };
 
-  const handleToggle = async (field: 'notification_email' | 'notification_sms', current: boolean) => {
+  const handleToggle = async (
+    field: 'notification_email' | 'notification_sms',
+    current: boolean,
+  ) => {
     const { error } = await updateProfile({ [field]: !current });
     if (error) {
       addToast({ type: 'error', message: 'Impossible de modifier les préférences' });
@@ -53,7 +56,9 @@ export const ProfilePreferences: React.FC = () => {
             <input
               type="checkbox"
               checked={profile?.notification_email ?? true}
-              onChange={() => handleToggle('notification_email', profile?.notification_email ?? true)}
+              onChange={() =>
+                handleToggle('notification_email', profile?.notification_email ?? true)
+              }
               className="w-5 h-5 rounded border-slate-300 text-blue-500 focus:ring-blue-500"
             />
           </label>

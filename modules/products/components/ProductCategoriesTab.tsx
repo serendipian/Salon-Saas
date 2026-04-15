@@ -2,10 +2,9 @@
 // duplicated 251-LOC implementation moved to components/CategoriesManager.tsx
 // during M-25 — see audit-remaining-items.md for the rationale.
 
-import React from 'react';
 import { CategoriesManager } from '../../../components/CategoriesManager';
-import { useProducts } from '../hooks/useProducts';
 import type { ProductCategory } from '../../../types';
+import { useProducts } from '../hooks/useProducts';
 
 export function ProductCategoriesTab() {
   const { allProducts, productCategories, updateProductCategories } = useProducts();

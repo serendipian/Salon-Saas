@@ -1,18 +1,35 @@
 // modules/team/components/StaffPerformanceTab.tsx
-import React, { useState, useMemo } from 'react';
-import { TrendingUp, ShoppingBag, Scissors, BarChart2, CalendarCheck, CalendarX, UserX } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+
+import {
+  BarChart2,
+  CalendarCheck,
+  CalendarX,
+  Scissors,
+  ShoppingBag,
+  TrendingUp,
+  UserX,
+} from 'lucide-react';
+import type React from 'react';
+import { useMemo, useState } from 'react';
+import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { DateRangePicker } from '../../../components/DateRangePicker';
-import { formatPrice } from '../../../lib/format';
 import { useTransactions } from '../../../hooks/useTransactions';
+import { formatPrice } from '../../../lib/format';
+import type { CartItem, DateRange, Transaction } from '../../../types';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
-import type { DateRange, Transaction, CartItem } from '../../../types';
 
 interface StaffPerformanceTabProps {
   staffId: string;
 }
 
-function KpiCard({ icon: Icon, label, value, sub, iconBg, iconColor }: {
+function KpiCard({
+  icon: Icon,
+  label,
+  value,
+  sub,
+  iconBg,
+  iconColor,
+}: {
   icon: React.ElementType;
   label: string;
   value: string;
@@ -48,10 +65,13 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
     };
   });
 
-  const perfRange = useMemo(() => ({
-    from: new Date(dateRange.from).toISOString(),
-    to: new Date(dateRange.to).toISOString(),
-  }), [dateRange]);
+  const perfRange = useMemo(
+    () => ({
+      from: new Date(dateRange.from).toISOString(),
+      to: new Date(dateRange.to).toISOString(),
+    }),
+    [dateRange],
+  );
 
   const { transactions } = useTransactions(perfRange);
 
@@ -67,7 +87,10 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
       if (staffItems.length === 0) return;
       txIds.add(t.id);
 
-      const dayKey = new Date(t.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      const dayKey = new Date(t.date).toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+      });
 
       staffItems.forEach((item: CartItem) => {
         const amount = item.price * (item.quantity || 1);
@@ -97,34 +120,44 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
       cur.setDate(cur.getDate() + 1);
     }
 
-    return { totalRevenue, serviceRevenue, productRevenue, avgBasket, txCount: txIds.size, topServices, chartData };
+    return {
+      totalRevenue,
+      serviceRevenue,
+      productRevenue,
+      avgBasket,
+      txCount: txIds.size,
+      topServices,
+      chartData,
+    };
   }, [transactions, staffId, dateRange]);
 
   const appointmentStats = useMemo(() => {
     const from = new Date(dateRange.from).getTime();
     const to = new Date(dateRange.to).getTime();
-    const staffAppts = appointments.filter(a => {
+    const staffAppts = appointments.filter((a) => {
       if (a.staffId !== staffId) return false;
       const time = new Date(a.date).getTime();
       return time >= from && time <= to;
     });
-    const completed = staffAppts.filter(a => a.status === 'COMPLETED').length;
-    const cancelled = staffAppts.filter(a => a.status === 'CANCELLED').length;
-    const noShow = staffAppts.filter(a => a.status === 'NO_SHOW').length;
+    const completed = staffAppts.filter((a) => a.status === 'COMPLETED').length;
+    const cancelled = staffAppts.filter((a) => a.status === 'CANCELLED').length;
+    const noShow = staffAppts.filter((a) => a.status === 'NO_SHOW').length;
     const resolved = completed + cancelled + noShow;
     const total = staffAppts.length;
     return { completed, cancelled, noShow, resolved, total };
   }, [appointments, staffId, dateRange]);
 
-  const cancellationRate = appointmentStats.resolved > 0
-    ? ((appointmentStats.cancelled / appointmentStats.resolved) * 100).toFixed(1)
-    : '0';
-  const noShowRate = appointmentStats.resolved > 0
-    ? ((appointmentStats.noShow / appointmentStats.resolved) * 100).toFixed(1)
-    : '0';
+  const cancellationRate =
+    appointmentStats.resolved > 0
+      ? ((appointmentStats.cancelled / appointmentStats.resolved) * 100).toFixed(1)
+      : '0';
+  const noShowRate =
+    appointmentStats.resolved > 0
+      ? ((appointmentStats.noShow / appointmentStats.resolved) * 100).toFixed(1)
+      : '0';
 
   const daysDiff = Math.ceil(
-    (new Date(dateRange.to).getTime() - new Date(dateRange.from).getTime()) / (1000 * 60 * 60 * 24)
+    (new Date(dateRange.to).getTime() - new Date(dateRange.from).getTime()) / (1000 * 60 * 60 * 24),
   );
   const showChart = daysDiff <= 31;
 
@@ -138,10 +171,34 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
 
       {/* Revenue KPI cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <KpiCard icon={TrendingUp} label="CA total" value={formatPrice(revenueStats.totalRevenue)} iconBg="bg-emerald-100" iconColor="text-emerald-600" />
-        <KpiCard icon={Scissors} label="CA prestations" value={formatPrice(revenueStats.serviceRevenue)} iconBg="bg-violet-100" iconColor="text-violet-600" />
-        <KpiCard icon={ShoppingBag} label="CA produits" value={formatPrice(revenueStats.productRevenue)} iconBg="bg-blue-100" iconColor="text-blue-600" />
-        <KpiCard icon={BarChart2} label="Panier moyen" value={revenueStats.txCount > 0 ? formatPrice(revenueStats.avgBasket) : '\u2014'} iconBg="bg-amber-100" iconColor="text-amber-600" />
+        <KpiCard
+          icon={TrendingUp}
+          label="CA total"
+          value={formatPrice(revenueStats.totalRevenue)}
+          iconBg="bg-emerald-100"
+          iconColor="text-emerald-600"
+        />
+        <KpiCard
+          icon={Scissors}
+          label="CA prestations"
+          value={formatPrice(revenueStats.serviceRevenue)}
+          iconBg="bg-violet-100"
+          iconColor="text-violet-600"
+        />
+        <KpiCard
+          icon={ShoppingBag}
+          label="CA produits"
+          value={formatPrice(revenueStats.productRevenue)}
+          iconBg="bg-blue-100"
+          iconColor="text-blue-600"
+        />
+        <KpiCard
+          icon={BarChart2}
+          label="Panier moyen"
+          value={revenueStats.txCount > 0 ? formatPrice(revenueStats.avgBasket) : '\u2014'}
+          iconBg="bg-amber-100"
+          iconColor="text-amber-600"
+        />
       </div>
 
       {/* Appointment KPI cards */}
@@ -171,9 +228,11 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
       </div>
 
       {/* Revenue chart */}
-      {showChart && revenueStats.chartData.some(d => d.ca > 0) && (
+      {showChart && revenueStats.chartData.some((d) => d.ca > 0) && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">CA par jour</p>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">
+            CA par jour
+          </p>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={revenueStats.chartData} barSize={10}>
@@ -186,7 +245,9 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
                 />
                 <YAxis hide />
                 <Tooltip
-                  formatter={(v: number) => [formatPrice(v), 'CA']}
+                  formatter={(v) =>
+                    [formatPrice(typeof v === 'number' ? v : Number(v)), 'CA'] as [string, string]
+                  }
                   contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}
                 />
                 <Bar dataKey="ca" radius={[3, 3, 0, 0]} animationDuration={600}>
@@ -204,24 +265,39 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
       {revenueStats.topServices.length > 0 && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="p-5 border-b border-slate-100">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Top prestations</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+              Top prestations
+            </p>
           </div>
           <table className="w-full">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-5 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wide w-8">#</th>
-                <th className="px-5 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Prestation</th>
-                <th className="px-5 py-2.5 text-right text-xs font-medium text-slate-500 uppercase tracking-wide">Nombre</th>
-                <th className="px-5 py-2.5 text-right text-xs font-medium text-slate-500 uppercase tracking-wide">CA</th>
+                <th className="px-5 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wide w-8">
+                  #
+                </th>
+                <th className="px-5 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  Prestation
+                </th>
+                <th className="px-5 py-2.5 text-right text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  Nombre
+                </th>
+                <th className="px-5 py-2.5 text-right text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  CA
+                </th>
               </tr>
             </thead>
             <tbody>
               {revenueStats.topServices.map((svc, i) => (
-                <tr key={i} className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
+                <tr
+                  key={i}
+                  className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors"
+                >
                   <td className="px-5 py-3 text-sm text-slate-400">{i + 1}</td>
                   <td className="px-5 py-3 text-sm text-slate-700 font-medium">{svc.name}</td>
                   <td className="px-5 py-3 text-sm text-slate-500 text-right">{svc.count}</td>
-                  <td className="px-5 py-3 text-sm font-semibold text-slate-900 text-right">{formatPrice(svc.revenue)}</td>
+                  <td className="px-5 py-3 text-sm font-semibold text-slate-900 text-right">
+                    {formatPrice(svc.revenue)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -236,7 +312,9 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
             <TrendingUp size={24} className="text-slate-300" />
           </div>
           <p className="text-sm font-medium text-slate-700">Aucune donnée pour cette période</p>
-          <p className="text-xs text-slate-400 mt-1">Sélectionnez une autre période pour voir les statistiques</p>
+          <p className="text-xs text-slate-400 mt-1">
+            Sélectionnez une autre période pour voir les statistiques
+          </p>
         </div>
       )}
     </div>

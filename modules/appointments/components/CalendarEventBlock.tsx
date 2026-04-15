@@ -1,5 +1,5 @@
-import React from 'react';
-import { Appointment, AppointmentStatus, ServiceCategory } from '../../../types';
+import type React from 'react';
+import { type Appointment, AppointmentStatus, type ServiceCategory } from '../../../types';
 import { getCategoryCalendarColors } from './calendarColors';
 
 interface CalendarEventBlockProps {

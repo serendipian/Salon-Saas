@@ -1,7 +1,7 @@
 // modules/admin/hooks/useAdmin.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../../../context/ToastContext';
+import { supabase } from '../../../lib/supabase';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -110,7 +110,9 @@ export function useAdminAccount(salonId: string) {
   return useQuery<AdminAccountDetail>({
     queryKey: ['admin', 'account', salonId],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_account_detail', { p_salon_id: salonId });
+      const { data, error } = await supabase.rpc('get_admin_account_detail', {
+        p_salon_id: salonId,
+      });
       if (error) throw error;
       return data as unknown as AdminAccountDetail;
     },
@@ -178,7 +180,10 @@ export function useAdminMRRHistory() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_admin_mrr_history', { months_back: 6 });
       if (error) throw error;
-      return ((data as { month: string; mrr: number }[]) ?? []).map(d => ({ month: d.month, value: Number(d.mrr) }));
+      return ((data as { month: string; mrr: number }[]) ?? []).map((d) => ({
+        month: d.month,
+        value: Number(d.mrr),
+      }));
     },
     staleTime: 60_000,
     retry: false,
@@ -191,7 +196,10 @@ export function useAdminSignupsHistory() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_admin_signups_history', { months_back: 6 });
       if (error) throw error;
-      return ((data as { month: string; count: number }[]) ?? []).map(d => ({ month: d.month, value: Number(d.count) }));
+      return ((data as { month: string; count: number }[]) ?? []).map((d) => ({
+        month: d.month,
+        value: Number(d.count),
+      }));
     },
     staleTime: 60_000,
     retry: false,
@@ -204,7 +212,10 @@ export function useAdminTrialsHistory() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_admin_trials_history', { months_back: 6 });
       if (error) throw error;
-      return ((data as { month: string; count: number }[]) ?? []).map(d => ({ month: d.month, value: Number(d.count) }));
+      return ((data as { month: string; count: number }[]) ?? []).map((d) => ({
+        month: d.month,
+        value: Number(d.count),
+      }));
     },
     staleTime: 60_000,
     retry: false,
@@ -218,7 +229,10 @@ export function useAdminExtendTrial(salonId: string) {
   const { addToast } = useToast();
   return useMutation({
     mutationFn: async (days: number) => {
-      const { error } = await supabase.rpc('admin_extend_trial', { p_salon_id: salonId, p_days: days });
+      const { error } = await supabase.rpc('admin_extend_trial', {
+        p_salon_id: salonId,
+        p_days: days,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -227,7 +241,11 @@ export function useAdminExtendTrial(salonId: string) {
       queryClient.invalidateQueries({ queryKey: ['admin', 'accounts'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'account', salonId] });
     },
-    onError: (err) => addToast({ type: 'error', message: (err as Error).message || 'Erreur lors de la prolongation.' }),
+    onError: (err) =>
+      addToast({
+        type: 'error',
+        message: (err as Error).message || 'Erreur lors de la prolongation.',
+      }),
   });
 }
 
@@ -244,7 +262,11 @@ export function useAdminSetPlan(salonId: string) {
       queryClient.invalidateQueries({ queryKey: ['admin', 'accounts'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'account', salonId] });
     },
-    onError: (err) => addToast({ type: 'error', message: (err as Error).message || 'Erreur lors du changement de plan.' }),
+    onError: (err) =>
+      addToast({
+        type: 'error',
+        message: (err as Error).message || 'Erreur lors du changement de plan.',
+      }),
   });
 }
 
@@ -261,7 +283,11 @@ export function useAdminSuspend(salonId: string) {
       queryClient.invalidateQueries({ queryKey: ['admin', 'accounts'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'account', salonId] });
     },
-    onError: (err) => addToast({ type: 'error', message: (err as Error).message || 'Erreur lors de la suspension.' }),
+    onError: (err) =>
+      addToast({
+        type: 'error',
+        message: (err as Error).message || 'Erreur lors de la suspension.',
+      }),
   });
 }
 
@@ -278,7 +304,11 @@ export function useAdminReactivate(salonId: string) {
       queryClient.invalidateQueries({ queryKey: ['admin', 'accounts'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'account', salonId] });
     },
-    onError: (err) => addToast({ type: 'error', message: (err as Error).message || 'Erreur lors de la réactivation.' }),
+    onError: (err) =>
+      addToast({
+        type: 'error',
+        message: (err as Error).message || 'Erreur lors de la réactivation.',
+      }),
   });
 }
 
@@ -293,11 +323,18 @@ export function useAdminCancelSubscription(salonId: string) {
       if (fnError) throw fnError;
     },
     onSuccess: () => {
-      addToast({ type: 'success', message: 'Abonnement annulé. Le salon passera en Free à la fin de la période.' });
+      addToast({
+        type: 'success',
+        message: 'Abonnement annulé. Le salon passera en Free à la fin de la période.',
+      });
       queryClient.invalidateQueries({ queryKey: ['admin', 'accounts'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'account', salonId] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'failed_payments'] });
     },
-    onError: (err) => addToast({ type: 'error', message: (err as Error).message || "Erreur lors de l'annulation." }),
+    onError: (err) =>
+      addToast({
+        type: 'error',
+        message: (err as Error).message || "Erreur lors de l'annulation.",
+      }),
   });
 }

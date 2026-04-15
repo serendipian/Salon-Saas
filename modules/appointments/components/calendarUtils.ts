@@ -1,7 +1,11 @@
-import { Appointment, AppointmentStatus } from '../../../types';
+import { type Appointment, AppointmentStatus } from '../../../types';
 
 export function isSameDay(d1: Date, d2: Date): boolean {
-  return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+  return (
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+  );
 }
 
 /**
@@ -32,7 +36,8 @@ function mergeStatuses(statuses: AppointmentStatus[]): AppointmentStatus {
   if (statuses.every((s) => s === AppointmentStatus.COMPLETED)) return AppointmentStatus.COMPLETED;
   if (statuses.some((s) => s === AppointmentStatus.CANCELLED)) return AppointmentStatus.CANCELLED;
   if (statuses.some((s) => s === AppointmentStatus.NO_SHOW)) return AppointmentStatus.NO_SHOW;
-  if (statuses.some((s) => s === AppointmentStatus.IN_PROGRESS)) return AppointmentStatus.IN_PROGRESS;
+  if (statuses.some((s) => s === AppointmentStatus.IN_PROGRESS))
+    return AppointmentStatus.IN_PROGRESS;
   return statuses[0] ?? AppointmentStatus.SCHEDULED;
 }
 
@@ -128,8 +133,8 @@ export function layoutDayEvents(dayAppointments: Appointment[]): PositionedEvent
   }
 
   const totalCols = columns.length;
-  return sorted.map(appt => {
-    const colIndex = columns.findIndex(col => col.includes(appt));
+  return sorted.map((appt) => {
+    const colIndex = columns.findIndex((col) => col.includes(appt));
     const startDate = new Date(appt.date);
     const startMinutes = Math.max((startDate.getHours() - 8) * 60 + startDate.getMinutes(), 0);
     const top = (startMinutes / 60) * ROW_HEIGHT;

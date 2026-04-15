@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
-import { useSupplierSettings } from '../hooks/useSupplierSettings';
+import { useEffect, useState } from 'react';
 import type { SupplierSettings } from '../../../types';
+import { useSupplierSettings } from '../hooks/useSupplierSettings';
 
 const PAYMENT_TERMS_OPTIONS = [
   { value: 'Comptant', label: 'Comptant' },
@@ -44,7 +44,9 @@ export function SupplierGeneralTab() {
               className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm min-h-[44px]"
             >
               {PAYMENT_TERMS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
               ))}
             </select>
           </div>
@@ -63,18 +65,19 @@ export function SupplierGeneralTab() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Prochain numéro
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Prochain numéro</label>
             <input
               type="number"
               min={1}
               value={form.poNextNumber}
-              onChange={(e) => setForm({ ...form, poNextNumber: parseInt(e.target.value) || 1 })}
+              onChange={(e) =>
+                setForm({ ...form, poNextNumber: parseInt(e.target.value, 10) || 1 })
+              }
               className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm min-h-[44px]"
             />
             <p className="text-xs text-slate-500 mt-1">
-              Prochain bon de commande : {form.poPrefix}{String(form.poNextNumber).padStart(4, '0')}
+              Prochain bon de commande : {form.poPrefix}
+              {String(form.poNextNumber).padStart(4, '0')}
             </p>
           </div>
         </div>
@@ -83,7 +86,9 @@ export function SupplierGeneralTab() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-slate-700">Vue par défaut</p>
-              <p className="text-xs text-slate-500">Mode d'affichage par défaut de la liste des fournisseurs</p>
+              <p className="text-xs text-slate-500">
+                Mode d'affichage par défaut de la liste des fournisseurs
+              </p>
             </div>
             <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
               <button

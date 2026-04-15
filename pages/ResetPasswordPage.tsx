@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { CheckCircle, Loader2, Lock } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Lock, Loader2, CheckCircle } from 'lucide-react';
 
 export const ResetPasswordPage: React.FC = () => {
   const { updatePassword } = useAuth();
@@ -16,7 +17,9 @@ export const ResetPasswordPage: React.FC = () => {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setIsRecovery(true);
         setChecking(false);
@@ -106,16 +109,19 @@ export const ResetPasswordPage: React.FC = () => {
                 <CheckCircle size={24} />
               </div>
               <h2 className="text-lg font-semibold text-slate-900 mb-2">Mot de passe mis à jour</h2>
-              <p className="text-sm text-slate-500">
-                Redirection vers votre tableau de bord...
-              </p>
+              <p className="text-sm text-slate-500">Redirection vers votre tableau de bord...</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Nouveau mot de passe</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Nouveau mot de passe
+                </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Lock
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={18}
+                  />
                   <input
                     type="password"
                     value={password}
@@ -129,9 +135,14 @@ export const ResetPasswordPage: React.FC = () => {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Confirmer le mot de passe</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Confirmer le mot de passe
+                </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Lock
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={18}
+                  />
                   <input
                     type="password"
                     value={confirmPassword}

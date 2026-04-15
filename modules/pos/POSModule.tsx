@@ -1,34 +1,55 @@
-
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { History } from 'lucide-react';
-import { usePOS } from './hooks/usePOS';
-import { POSCatalog } from './components/POSCatalog';
-import { POSCart } from './components/POSCart';
-import { PaymentModal } from './components/PaymentModal';
-import { ItemEditorModal, ServiceVariantModal, ReceiptModal, TransactionDetailModal } from './components/POSModals';
-import { VoidModal } from './components/VoidModal';
-import { RefundModal } from './components/RefundModal';
-import { Service, Product, ServiceVariant, Transaction, CartItem, PaymentEntry, Pack, FavoriteItem } from '../../types';
+import type React from 'react';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { useMediaQuery } from '../../context/MediaQueryContext';
+import { usePermissions } from '../../hooks/usePermissions';
+import type {
+  CartItem,
+  FavoriteItem,
+  Pack,
+  PaymentEntry,
+  Product,
+  Service,
+  ServiceVariant,
+  Transaction,
+} from '../../types';
 import { usePacks } from '../services/hooks/usePacks';
 import { expandPack } from '../services/utils/packExpansion';
-import { useMediaQuery } from '../../context/MediaQueryContext';
-import { MiniCartBar } from './components/MiniCartBar';
 import { CartBottomSheet } from './components/CartBottomSheet';
-import { usePermissions } from '../../hooks/usePermissions';
-import { useAuth } from '../../context/AuthContext';
+import { MiniCartBar } from './components/MiniCartBar';
+import { PaymentModal } from './components/PaymentModal';
+import { POSCart } from './components/POSCart';
+import { POSCatalog } from './components/POSCatalog';
+import {
+  ItemEditorModal,
+  ReceiptModal,
+  ServiceVariantModal,
+  TransactionDetailModal,
+} from './components/POSModals';
+import { RefundModal } from './components/RefundModal';
+import { VoidModal } from './components/VoidModal';
+import { usePOS } from './hooks/usePOS';
 
 export const POSModule: React.FC = () => {
   const {
-    viewMode, setViewMode,
-    searchTerm, setSearchTerm,
-    selectedCategory, setSelectedCategory,
-    selectedClient, setSelectedClient,
+    viewMode,
+    setViewMode,
+    searchTerm,
+    setSearchTerm,
+    selectedCategory,
+    setSelectedCategory,
+    selectedClient,
+    setSelectedClient,
     cart,
-    services, serviceCategories, favorites,
-    products, productCategories,
+    services,
+    serviceCategories,
+    favorites,
+    productCategories,
     transactions,
-    clients, allStaff,
+    clients,
+    allStaff,
     filteredItems,
     totals,
     addToCart,
@@ -65,7 +86,7 @@ export const POSModule: React.FC = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
-  const [variantModalData, setVariantModalData] = useState<{service: Service} | null>(null);
+  const [variantModalData, setVariantModalData] = useState<{ service: Service } | null>(null);
   const [receiptTransaction, setReceiptTransaction] = useState<Transaction | null>(null);
   const [detailTransaction, setDetailTransaction] = useState<Transaction | null>(null);
   const [voidTarget, setVoidTarget] = useState<Transaction | null>(null);
@@ -93,7 +114,7 @@ export const POSModule: React.FC = () => {
       price: variant.price,
       originalPrice: variant.price,
       cost: variant.cost,
-      quantity: 1
+      quantity: 1,
     });
     setVariantModalData(null);
   };
@@ -111,7 +132,7 @@ export const POSModule: React.FC = () => {
       name: product.name,
       price: product.price,
       originalPrice: product.price,
-      quantity: 1
+      quantity: 1,
     });
   };
 
@@ -141,11 +162,17 @@ export const POSModule: React.FC = () => {
   };
 
   const handleRefundConfirm = async (
-    items: { original_item_id: string | null; quantity: number; price_override?: number; price?: number; name?: string }[],
+    items: {
+      original_item_id: string | null;
+      quantity: number;
+      price_override?: number;
+      price?: number;
+      name?: string;
+    }[],
     payments: { method: string; amount: number }[],
     reasonCategory: string,
     reasonNote: string,
-    restock: boolean
+    restock: boolean,
   ) => {
     if (!refundTarget) return;
     try {
@@ -171,143 +198,163 @@ export const POSModule: React.FC = () => {
         </button>
       </div>
 
-      <div className={`flex w-full bg-slate-100 overflow-hidden ${isMobile ? 'flex-col flex-1 min-h-0' : 'h-[calc(100vh-10rem)] rounded-xl border border-slate-200 shadow-sm'}`}>
-
-      <POSCatalog
-        viewMode={viewMode}
-        setViewMode={setViewMode}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        serviceCategories={serviceCategories}
-        productCategories={productCategories}
-        filteredItems={filteredItems}
-        onServiceClick={handleServiceClick}
-        onProductClick={handleProductClick}
-        pendingAppointments={pendingAppointments}
-        onImportAppointment={importAppointment}
-        linkedAppointmentId={linkedAppointmentId}
-        favorites={allFavorites}
-        onAddToCart={addToCart}
-        packs={validPacks}
-        onPackClick={handlePackClick}
-      />
-
-      {/* Desktop: sidebar cart */}
-      {!isMobile && (
-        <POSCart
-          cart={cart}
-          clients={clients}
-          selectedClient={selectedClient}
-          onSelectClient={setSelectedClient}
-          onUpdateQuantity={updateQuantity}
-          onRemoveItem={removeFromCart}
-          onEditItem={setEditingItem}
-          onUpdateCartItem={updateCartItem}
-          allStaff={allStaff}
-          services={services}
-          totals={totals}
-          onCheckout={() => setShowPaymentModal(true)}
+      <div
+        className={`flex w-full bg-slate-100 overflow-hidden ${isMobile ? 'flex-col flex-1 min-h-0' : 'h-[calc(100vh-10rem)] rounded-xl border border-slate-200 shadow-sm'}`}
+      >
+        <POSCatalog
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          serviceCategories={serviceCategories}
+          productCategories={productCategories}
+          filteredItems={filteredItems}
+          onServiceClick={handleServiceClick}
+          onProductClick={handleProductClick}
+          pendingAppointments={pendingAppointments}
+          onImportAppointment={importAppointment}
+          linkedAppointmentId={linkedAppointmentId}
+          favorites={allFavorites}
+          onAddToCart={addToCart}
+          packs={validPacks}
+          onPackClick={handlePackClick}
         />
-      )}
 
-      {/* Mobile: mini cart bar + bottom sheet */}
-      {isMobile && (
-        <>
-          <MiniCartBar
-            itemCount={cart.length}
-            total={totals.total}
-            onOpen={() => setIsCartOpen(true)}
-          />
-          <CartBottomSheet
-            isOpen={isCartOpen}
-            onClose={() => setIsCartOpen(false)}
+        {/* Desktop: sidebar cart */}
+        {!isMobile && (
+          <POSCart
             cart={cart}
             clients={clients}
             selectedClient={selectedClient}
             onSelectClient={setSelectedClient}
             onUpdateQuantity={updateQuantity}
             onRemoveItem={removeFromCart}
-            onEditItem={(item) => { setEditingItem(item); setIsCartOpen(false); }}
+            onEditItem={setEditingItem}
             onUpdateCartItem={updateCartItem}
             allStaff={allStaff}
             services={services}
             totals={totals}
             onCheckout={() => setShowPaymentModal(true)}
           />
-        </>
-      )}
+        )}
 
-      {/* Modals (shared between mobile and desktop) */}
-      {showPaymentModal && (
-        <PaymentModal
-          total={totals.total}
-          cart={cart}
-          onClose={() => setShowPaymentModal(false)}
-          onComplete={handleCompletePayment}
-          isProcessing={isProcessing}
-        />
-      )}
+        {/* Mobile: mini cart bar + bottom sheet */}
+        {isMobile && (
+          <>
+            <MiniCartBar
+              itemCount={cart.length}
+              total={totals.total}
+              onOpen={() => setIsCartOpen(true)}
+            />
+            <CartBottomSheet
+              isOpen={isCartOpen}
+              onClose={() => setIsCartOpen(false)}
+              cart={cart}
+              clients={clients}
+              selectedClient={selectedClient}
+              onSelectClient={setSelectedClient}
+              onUpdateQuantity={updateQuantity}
+              onRemoveItem={removeFromCart}
+              onEditItem={(item) => {
+                setEditingItem(item);
+                setIsCartOpen(false);
+              }}
+              onUpdateCartItem={updateCartItem}
+              allStaff={allStaff}
+              services={services}
+              totals={totals}
+              onCheckout={() => setShowPaymentModal(true)}
+            />
+          </>
+        )}
 
-      {editingItem && (
-        <ItemEditorModal
-          item={editingItem}
-          onClose={() => setEditingItem(null)}
-          onSave={(updated) => updateCartItem(updated.id, {
-            price: updated.price,
-            quantity: updated.quantity,
-            note: updated.note,
-            originalPrice: updated.originalPrice,
-          })}
-        />
-      )}
+        {/* Modals (shared between mobile and desktop) */}
+        {showPaymentModal && (
+          <PaymentModal
+            total={totals.total}
+            cart={cart}
+            onClose={() => setShowPaymentModal(false)}
+            onComplete={handleCompletePayment}
+            isProcessing={isProcessing}
+          />
+        )}
 
-      {variantModalData && (
-        <ServiceVariantModal
-          service={variantModalData.service}
-          onClose={() => setVariantModalData(null)}
-          onSelect={(variant) => addVariantToCart(variant, variantModalData.service.name)}
-        />
-      )}
+        {editingItem && (
+          <ItemEditorModal
+            item={editingItem}
+            onClose={() => setEditingItem(null)}
+            onSave={(updated) =>
+              updateCartItem(updated.id, {
+                price: updated.price,
+                quantity: updated.quantity,
+                note: updated.note,
+                originalPrice: updated.originalPrice,
+              })
+            }
+          />
+        )}
 
-      {receiptTransaction && (
-        <ReceiptModal
-          transaction={receiptTransaction}
-          allTransactions={transactions}
-          onClose={() => setReceiptTransaction(null)}
-        />
-      )}
+        {variantModalData && (
+          <ServiceVariantModal
+            service={variantModalData.service}
+            onClose={() => setVariantModalData(null)}
+            onSelect={(variant) => addVariantToCart(variant, variantModalData.service.name)}
+          />
+        )}
 
-      {detailTransaction && (
-        <TransactionDetailModal
-          transaction={detailTransaction}
-          allTransactions={transactions}
-          onClose={() => setDetailTransaction(null)}
-          onVoidClick={canVoid ? (t: Transaction) => { setDetailTransaction(null); setVoidTarget(t); } : undefined}
-          onRefundClick={canRefund ? (t: Transaction) => { setDetailTransaction(null); setRefundTarget(t); } : undefined}
-          onViewTransaction={setDetailTransaction}
-        />
-      )}
+        {receiptTransaction && (
+          <ReceiptModal
+            transaction={receiptTransaction}
+            allTransactions={transactions}
+            onClose={() => setReceiptTransaction(null)}
+          />
+        )}
 
-      {voidTarget && (
-        <VoidModal
-          transaction={voidTarget}
-          onConfirm={handleVoidConfirm}
-          onClose={() => setVoidTarget(null)}
-          isPending={isVoiding}
-        />
-      )}
+        {detailTransaction && (
+          <TransactionDetailModal
+            transaction={detailTransaction}
+            allTransactions={transactions}
+            onClose={() => setDetailTransaction(null)}
+            onVoidClick={
+              canVoid
+                ? (t: Transaction) => {
+                    setDetailTransaction(null);
+                    setVoidTarget(t);
+                  }
+                : undefined
+            }
+            onRefundClick={
+              canRefund
+                ? (t: Transaction) => {
+                    setDetailTransaction(null);
+                    setRefundTarget(t);
+                  }
+                : undefined
+            }
+            onViewTransaction={setDetailTransaction}
+          />
+        )}
 
-      {refundTarget && (
-        <RefundModal
-          transaction={refundTarget}
-          allTransactions={transactions}
-          onConfirm={handleRefundConfirm}
-          onClose={() => setRefundTarget(null)}
-          isPending={isRefunding}
-        />
-      )}
+        {voidTarget && (
+          <VoidModal
+            transaction={voidTarget}
+            onConfirm={handleVoidConfirm}
+            onClose={() => setVoidTarget(null)}
+            isPending={isVoiding}
+          />
+        )}
+
+        {refundTarget && (
+          <RefundModal
+            transaction={refundTarget}
+            allTransactions={transactions}
+            onConfirm={handleRefundConfirm}
+            onClose={() => setRefundTarget(null)}
+            isPending={isRefunding}
+          />
+        )}
       </div>
     </div>
   );

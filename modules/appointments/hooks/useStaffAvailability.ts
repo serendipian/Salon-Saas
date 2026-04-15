@@ -1,10 +1,16 @@
 import { useMemo } from 'react';
+import { getSalonHourRange } from '../../../lib/scheduleHours';
 import type { Appointment, StaffMember, WorkSchedule } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
-import { getSalonHourRange } from '../../../lib/scheduleHours';
 
 const DAY_KEYS: (keyof WorkSchedule)[] = [
-  'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
+  'sunday',
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
 ];
 
 function parseTime(time: string): number {
@@ -43,7 +49,7 @@ export function useStaffAvailability(
     const schedule = staffMember.schedule?.[dayKey];
 
     // If staff doesn't work this day, all hours in the salon range are unavailable
-    if (!schedule || !schedule.isOpen) {
+    if (!schedule?.isOpen) {
       for (let h = minHour; h <= maxHour; h++) unavailable.add(h);
       return unavailable;
     }
@@ -78,9 +84,7 @@ export function useStaffAvailability(
         if (slotStart < workStart || slotEnd > workEnd) continue;
 
         // Overlaps with existing appointment?
-        const hasConflict = dayAppointments.some(
-          (a) => slotStart < a.end && slotEnd > a.start,
-        );
+        const hasConflict = dayAppointments.some((a) => slotStart < a.end && slotEnd > a.start);
         if (!hasConflict) {
           allBlocked = false;
           break;

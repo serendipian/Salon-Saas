@@ -1,9 +1,9 @@
 // modules/clients/hooks/useClientAppointments.ts
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { toAppointment } from '../../appointments/mappers';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { supabase } from '../../../lib/supabase';
+import { toAppointment } from '../../appointments/mappers';
 
 export const useClientAppointments = (clientId: string) => {
   const { activeSalon } = useAuth();
@@ -18,7 +18,9 @@ export const useClientAppointments = (clientId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('appointments')
-        .select('*, clients(first_name, last_name), services(name), service_variants(name), staff_members(first_name, last_name)')
+        .select(
+          '*, clients(first_name, last_name), services(name), service_variants(name), staff_members(first_name, last_name)',
+        )
         .eq('salon_id', salonId)
         .eq('client_id', clientId)
         .is('deleted_at', null)

@@ -1,20 +1,21 @@
-import React, { useState } from 'react';
-import { AlertTriangle, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../../lib/supabase';
+import { AlertTriangle, LogOut } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { supabase } from '../../lib/supabase';
 
 export const ProfileDangerZone: React.FC = () => {
-  const { activeSalon, memberships, user } = useAuth();
+  const { activeSalon, memberships } = useAuth();
   const { addToast } = useToast();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
   const salonId = activeSalon?.id ?? '';
-  const currentMembership = memberships.find(m => m.salon_id === salonId);
+  const currentMembership = memberships.find((m) => m.salon_id === salonId);
 
   // Check if the user is the sole owner by querying all owners in the salon
   const isOwner = currentMembership?.role === 'owner';
@@ -71,7 +72,8 @@ export const ProfileDangerZone: React.FC = () => {
       ) : (
         <div className="p-4 bg-red-50 rounded-xl space-y-3">
           <p className="text-sm text-red-700">
-            Vous perdrez l'accès à <strong>{activeSalon?.name}</strong>. Cette action est irréversible.
+            Vous perdrez l'accès à <strong>{activeSalon?.name}</strong>. Cette action est
+            irréversible.
           </p>
           <div className="flex gap-3">
             <button

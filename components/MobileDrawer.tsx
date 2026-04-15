@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { X, UserCircle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { UserCircle, X } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
 
 interface DrawerNavItem {
   id: string;
@@ -54,7 +54,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
       // Simple focus trap
       if (e.key === 'Tab' && panelRef.current) {
         const focusable = panelRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
         );
         if (focusable.length === 0) return;
         const first = focusable[0];
@@ -93,7 +93,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   };
 
   const renderItem = (item: DrawerNavItem) => {
-    const isActive = activeModule === item.id || activeModule.startsWith(item.id + '/');
+    const isActive = activeModule === item.id || activeModule.startsWith(`${item.id}/`);
     return (
       <button
         key={item.id}
@@ -139,7 +139,9 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center text-white font-bold text-sm shadow-md">
               {salonName.charAt(0) || 'L'}
             </div>
-            <span className="font-bold text-lg text-slate-900 tracking-tight">{salonName || 'Salon'}</span>
+            <span className="font-bold text-lg text-slate-900 tracking-tight">
+              {salonName || 'Salon'}
+            </span>
           </div>
           <button
             ref={closeButtonRef}
@@ -156,7 +158,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
           <div className="px-4 mb-3 text-[11px] font-bold uppercase text-slate-400 tracking-widest">
             Menu Principal
           </div>
-          {mainNavItems.map(item => (
+          {mainNavItems.map((item) => (
             <React.Fragment key={item.id}>
               {renderItem(item)}
               {item.id === 'finances' && (
@@ -165,7 +167,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                     { id: 'finances/revenus', label: 'Revenus' },
                     { id: 'finances/depenses', label: 'Dépenses' },
                     { id: 'finances/journal', label: 'Journal' },
-                  ].map(sub => (
+                  ].map((sub) => (
                     <button
                       key={sub.id}
                       onClick={() => handleNavClick(sub.id)}
@@ -204,7 +206,10 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             <>
               <div className="my-3 border-t border-slate-100 mx-2" />
               <button
-                onClick={() => { onProfilePress(); onClose(); }}
+                onClick={() => {
+                  onProfilePress();
+                  onClose();
+                }}
                 className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all min-h-[44px]"
               >
                 <UserCircle size={20} strokeWidth={1.5} />

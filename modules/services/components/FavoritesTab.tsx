@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Star, GripVertical, ChevronDown, ChevronRight, Save, Package } from 'lucide-react';
-import { useServices } from '../hooks/useServices';
-import { usePacks } from '../hooks/usePacks';
+import { ChevronDown, ChevronRight, GripVertical, Package, Save, Star } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import type { FavoriteItem } from '../../../types';
+import { usePacks } from '../hooks/usePacks';
+import { useServices } from '../hooks/useServices';
 
 export function FavoritesTab() {
-  const { allServices, serviceCategories, favorites, toggleFavorite, reorderFavorites } = useServices();
+  const { allServices, serviceCategories, favorites, toggleFavorite, reorderFavorites } =
+    useServices();
   const { packs } = usePacks();
 
   // Merge pack favorites into the favorites list (packs keep their own favorite
@@ -31,11 +33,17 @@ export function FavoritesTab() {
     return f.pack.id;
   };
 
-  const hasOrderChanged = JSON.stringify(localOrder.map(f => {
-    return `${f.type}:${getFavoriteId(f)}`;
-  })) !== JSON.stringify(allFavorites.map(f => {
-    return `${f.type}:${getFavoriteId(f)}`;
-  }));
+  const hasOrderChanged =
+    JSON.stringify(
+      localOrder.map((f) => {
+        return `${f.type}:${getFavoriteId(f)}`;
+      }),
+    ) !==
+    JSON.stringify(
+      allFavorites.map((f) => {
+        return `${f.type}:${getFavoriteId(f)}`;
+      }),
+    );
 
   const handleSaveOrder = async () => {
     const items = localOrder.map((item, index) => ({
@@ -83,23 +91,31 @@ export function FavoritesTab() {
   };
 
   const getFavoriteCategory = (item: FavoriteItem) => {
-    if (item.type === 'service') return serviceCategories.find(c => c.id === item.service.categoryId);
-    if (item.type === 'variant') return serviceCategories.find(c => c.id === item.parentService.categoryId);
+    if (item.type === 'service')
+      return serviceCategories.find((c) => c.id === item.service.categoryId);
+    if (item.type === 'variant')
+      return serviceCategories.find((c) => c.id === item.parentService.categoryId);
     return undefined;
   };
 
-  const isServiceFavorited = useCallback((serviceId: string) => {
-    return allServices.find(s => s.id === serviceId)?.isFavorite ?? false;
-  }, [allServices]);
+  const isServiceFavorited = useCallback(
+    (serviceId: string) => {
+      return allServices.find((s) => s.id === serviceId)?.isFavorite ?? false;
+    },
+    [allServices],
+  );
 
-  const isVariantFavorited = useCallback((variantId: string) => {
-    for (const s of allServices) {
-      for (const v of s.variants) {
-        if (v.id === variantId) return v.isFavorite;
+  const isVariantFavorited = useCallback(
+    (variantId: string) => {
+      for (const s of allServices) {
+        for (const v of s.variants) {
+          if (v.id === variantId) return v.isFavorite;
+        }
       }
-    }
-    return false;
-  }, [allServices]);
+      return false;
+    },
+    [allServices],
+  );
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -107,8 +123,8 @@ export function FavoritesTab() {
       <div className="bg-white rounded-xl border border-slate-200 p-5">
         <h3 className="text-sm font-semibold text-slate-700 mb-3">Sélectionner les favoris</h3>
         <div className="space-y-3">
-          {serviceCategories.map(cat => {
-            const catServices = allServices.filter(s => s.categoryId === cat.id && s.active);
+          {serviceCategories.map((cat) => {
+            const catServices = allServices.filter((s) => s.categoryId === cat.id && s.active);
             if (catServices.length === 0) return null;
             return (
               <CategorySection
@@ -158,8 +174,14 @@ export function FavoritesTab() {
                     </span>
                   )}
                   {category && (
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border shrink-0 ${category.color}`}>
-                      <CategoryIcon categoryName={category.name} iconName={category.icon} size={10} />
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border shrink-0 ${category.color}`}
+                    >
+                      <CategoryIcon
+                        categoryName={category.name}
+                        iconName={category.icon}
+                        size={10}
+                      />
                       {category.name}
                     </span>
                   )}
@@ -198,7 +220,12 @@ function CategorySection({
   onToggle,
 }: {
   category: { id: string; name: string; color: string; icon?: string };
-  services: { id: string; name: string; variants: { id: string; name: string; isFavorite: boolean }[]; isFavorite: boolean }[];
+  services: {
+    id: string;
+    name: string;
+    variants: { id: string; name: string; isFavorite: boolean }[];
+    isFavorite: boolean;
+  }[];
   isServiceFavorited: (id: string) => boolean;
   isVariantFavorited: (id: string) => boolean;
   onToggle: (params: { type: 'service' | 'variant'; id: string; isFavorite: boolean }) => void;
@@ -212,8 +239,14 @@ function CategorySection({
         onClick={() => setExpanded(!expanded)}
         className="flex items-center gap-2 w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors"
       >
-        {expanded ? <ChevronDown size={14} className="text-slate-400" /> : <ChevronRight size={14} className="text-slate-400" />}
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-medium border ${category.color}`}>
+        {expanded ? (
+          <ChevronDown size={14} className="text-slate-400" />
+        ) : (
+          <ChevronRight size={14} className="text-slate-400" />
+        )}
+        <span
+          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-medium border ${category.color}`}
+        >
           <CategoryIcon categoryName={category.name} iconName={category.icon} size={12} />
           {category.name}
         </span>
@@ -223,31 +256,53 @@ function CategorySection({
       {expanded && (
         <div className="border-t border-slate-100 px-4 py-3">
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-            {services.map(service => (
+            {services.map((service) => (
               <div key={service.id}>
                 <label className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={isServiceFavorited(service.id)}
-                    onChange={() => onToggle({ type: 'service', id: service.id, isFavorite: !isServiceFavorited(service.id) })}
+                    onChange={() =>
+                      onToggle({
+                        type: 'service',
+                        id: service.id,
+                        isFavorite: !isServiceFavorited(service.id),
+                      })
+                    }
                     className="rounded border-slate-300 text-amber-500 focus:ring-amber-500 shrink-0"
                   />
-                  <Star size={12} className={`shrink-0 ${isServiceFavorited(service.id) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
-                  <span className="text-sm font-medium text-slate-700 truncate">{service.name}</span>
+                  <Star
+                    size={12}
+                    className={`shrink-0 ${isServiceFavorited(service.id) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`}
+                  />
+                  <span className="text-sm font-medium text-slate-700 truncate">
+                    {service.name}
+                  </span>
                 </label>
 
                 {service.variants.length > 1 && (
                   <div className="ml-8 space-y-0.5">
-                    {service.variants.map(variant => (
-                      <label key={variant.id} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-50 cursor-pointer">
+                    {service.variants.map((variant) => (
+                      <label
+                        key={variant.id}
+                        className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-50 cursor-pointer"
+                      >
                         <input
                           type="checkbox"
                           checked={isVariantFavorited(variant.id)}
                           disabled={isServiceFavorited(service.id)}
-                          onChange={() => onToggle({ type: 'variant', id: variant.id, isFavorite: !isVariantFavorited(variant.id) })}
+                          onChange={() =>
+                            onToggle({
+                              type: 'variant',
+                              id: variant.id,
+                              isFavorite: !isVariantFavorited(variant.id),
+                            })
+                          }
                           className="rounded border-slate-300 text-amber-500 focus:ring-amber-500 disabled:opacity-40 shrink-0"
                         />
-                        <span className={`text-xs truncate ${isServiceFavorited(service.id) ? 'text-slate-400' : 'text-slate-600'}`}>
+                        <span
+                          className={`text-xs truncate ${isServiceFavorited(service.id) ? 'text-slate-400' : 'text-slate-600'}`}
+                        >
                           {variant.name}
                         </span>
                       </label>

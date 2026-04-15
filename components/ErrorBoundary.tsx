@@ -1,6 +1,7 @@
 // components/ErrorBoundary.tsx
+
+import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 import React from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -25,7 +26,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    console.error(`[ErrorBoundary${this.props.moduleName ? `: ${this.props.moduleName}` : ''}]`, error, errorInfo);
+    console.error(
+      `[ErrorBoundary${this.props.moduleName ? `: ${this.props.moduleName}` : ''}]`,
+      error,
+      errorInfo,
+    );
   }
 
   handleReset = () => {

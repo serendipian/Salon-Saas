@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { toSupplier, toSupplierInsert, toSupplierCategory } from '../mappers';
-import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { supabase } from '../../../lib/supabase';
 import type { Supplier, SupplierCategory } from '../../../types';
+import { toSupplier, toSupplierCategory, toSupplierInsert } from '../mappers';
 
 export interface SupplierCategoryUpdatePayload {
   categories: SupplierCategory[];
@@ -31,7 +31,8 @@ export const useSuppliers = () => {
         .is('deleted_at', null)
         .order('name');
       if (error) throw error;
-      return (data ?? []).map(toSupplier);
+      // biome-ignore lint/suspicious/noExplicitAny: hand-written Row alias narrower than generated types
+      return (data ?? []).map((row: any) => toSupplier(row));
     },
     enabled: !!salonId,
   });
@@ -77,7 +78,7 @@ export const useSuppliers = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers', salonId] });
     },
-    onError: toastOnError("Impossible de modifier le fournisseur"),
+    onError: toastOnError('Impossible de modifier le fournisseur'),
   });
 
   const deleteSupplierMutation = useMutation({
@@ -117,15 +118,15 @@ export const useSuppliers = () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers', salonId] });
       toastOnSuccess('Catégories enregistrées')();
     },
-    onError: toastOnError("Impossible de modifier les catégories de fournisseurs"),
+    onError: toastOnError('Impossible de modifier les catégories de fournisseurs'),
   });
 
   const filteredSuppliers = useMemo(() => {
     if (!searchTerm) return suppliers;
     const term = searchTerm.toLowerCase();
-    return suppliers.filter(s =>
-      s.name.toLowerCase().includes(term) ||
-      (s.contactName ?? '').toLowerCase().includes(term)
+    return suppliers.filter(
+      (s) =>
+        s.name.toLowerCase().includes(term) || (s.contactName ?? '').toLowerCase().includes(term),
     );
   }, [suppliers, searchTerm]);
 

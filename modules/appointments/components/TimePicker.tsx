@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface TimePickerProps {
   hour: number | null;
   minute: number;
@@ -49,16 +47,21 @@ export default function TimePicker({
         onClick={() => onHourChange(h.value)}
         className={`
           rounded-lg py-2.5 px-1 text-center transition-all
-          ${isSelected
-            ? 'bg-blue-500 text-white shadow-sm'
-            : isDisabled
-              ? 'bg-slate-50 text-slate-300 cursor-not-allowed'
-              : 'bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:bg-blue-50 cursor-pointer'
+          ${
+            isSelected
+              ? 'bg-blue-500 text-white shadow-sm'
+              : isDisabled
+                ? 'bg-slate-50 text-slate-300 cursor-not-allowed'
+                : 'bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:bg-blue-50 cursor-pointer'
           }
         `}
       >
-        <span className={`text-xs font-medium ${isSelected ? 'font-semibold' : ''}`}>{h.label}</span>
-        <span className={`text-[9px] ml-0.5 ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>{h.period}</span>
+        <span className={`text-xs font-medium ${isSelected ? 'font-semibold' : ''}`}>
+          {h.label}
+        </span>
+        <span className={`text-[9px] ml-0.5 ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
+          {h.period}
+        </span>
       </button>
     );
   };
@@ -67,12 +70,8 @@ export default function TimePicker({
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-3">
-      <div className="grid grid-cols-6 gap-1.5 mb-1.5">
-        {MORNING_HOURS.map(renderHourButton)}
-      </div>
-      <div className="grid grid-cols-6 gap-1.5">
-        {AFTERNOON_HOURS.map(renderHourButton)}
-      </div>
+      <div className="grid grid-cols-6 gap-1.5 mb-1.5">{MORNING_HOURS.map(renderHourButton)}</div>
+      <div className="grid grid-cols-6 gap-1.5">{AFTERNOON_HOURS.map(renderHourButton)}</div>
       {showMinutes && (
         <>
           <div className="border-t border-slate-100 my-2.5" />
@@ -84,9 +83,10 @@ export default function TimePicker({
                 onClick={() => onMinuteChange(m)}
                 className={`
                   rounded-lg py-2.5 px-1 text-center text-xs font-medium transition-all
-                  ${m === minute
-                    ? 'bg-blue-500 text-white shadow-sm'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50 cursor-pointer'
+                  ${
+                    m === minute
+                      ? 'bg-blue-500 text-white shadow-sm'
+                      : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50 cursor-pointer'
                   }
                 `}
               >

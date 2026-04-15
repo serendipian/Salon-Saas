@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { WorkSchedule } from '../../../types';
+import { supabase } from '../../../lib/supabase';
+import type { WorkSchedule } from '../../../types';
 import { countWorkingDays } from '../utils';
 
 export const useStaffAppointments = (staffId: string, schedule?: WorkSchedule) => {
@@ -40,7 +40,7 @@ export const useStaffAppointments = (staffId: string, schedule?: WorkSchedule) =
 
   const todayAppointments = useMemo(
     () => appointments.filter((a) => new Date(a.date).toDateString() === today.toDateString()),
-    [appointments, today]
+    [appointments, today],
   );
 
   const bookingRate = useMemo(() => {
@@ -49,7 +49,15 @@ export const useStaffAppointments = (staffId: string, schedule?: WorkSchedule) =
     const workDays = countWorkingDays(today, weekEnd, schedule);
     if (workDays === 0) return null;
     // Calculate slots from actual schedule hours, not hardcoded 8
-    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+    const dayNames = [
+      'sunday',
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+    ] as const;
     let totalSlots = 0;
     const d = new Date(today);
     while (d <= weekEnd) {
@@ -57,7 +65,7 @@ export const useStaffAppointments = (staffId: string, schedule?: WorkSchedule) =
       if (day?.isOpen && day.start && day.end) {
         const [sh, sm] = day.start.split(':').map(Number);
         const [eh, em] = day.end.split(':').map(Number);
-        const hours = (eh + em / 60) - (sh + sm / 60);
+        const hours = eh + em / 60 - (sh + sm / 60);
         totalSlots += Math.max(0, Math.floor(hours));
       }
       d.setDate(d.getDate() + 1);

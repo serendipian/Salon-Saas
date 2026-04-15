@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Modal } from '../../../components/Modal';
 import type { MemberRow } from '../hooks/useTeamSettings';
 
@@ -12,22 +13,21 @@ interface TransferOwnershipModalProps {
 }
 
 export const TransferOwnershipModal: React.FC<TransferOwnershipModalProps> = ({
-  members, salonName, onConfirm, onClose, isLoading,
+  members,
+  salonName,
+  onConfirm,
+  onClose,
+  isLoading,
 }) => {
   const [selectedProfileId, setSelectedProfileId] = useState('');
   const [confirmText, setConfirmText] = useState('');
 
-  const eligibleMembers = members.filter(m => m.role !== 'owner' && m.status === 'active');
+  const eligibleMembers = members.filter((m) => m.role !== 'owner' && m.status === 'active');
   const hasEligible = eligibleMembers.length > 0;
   const canConfirm = hasEligible && selectedProfileId && confirmText === salonName && !isLoading;
 
   return (
-    <Modal
-      isOpen
-      onClose={onClose}
-      title="Transférer la propriété"
-      dismissible={!isLoading}
-    >
+    <Modal isOpen onClose={onClose} title="Transférer la propriété" dismissible={!isLoading}>
       <div className="px-6 pb-6">
         {!hasEligible ? (
           // M-2: handle empty eligible members list
@@ -35,7 +35,8 @@ export const TransferOwnershipModal: React.FC<TransferOwnershipModalProps> = ({
             <div className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg mb-5">
               <AlertTriangle className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
               <p className="text-sm text-slate-600">
-                Aucun membre éligible pour le transfert. Invitez d'abord un autre manager ou styliste actif, puis réessayez.
+                Aucun membre éligible pour le transfert. Invitez d'abord un autre manager ou
+                styliste actif, puis réessayez.
               </p>
             </div>
             <div className="flex justify-end">
@@ -53,24 +54,28 @@ export const TransferOwnershipModal: React.FC<TransferOwnershipModalProps> = ({
             <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-100 rounded-lg mb-5">
               <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
               <p className="text-sm text-amber-700">
-                Vous serez rétrogradé au rôle de <strong>manager</strong>. Le nouveau propriétaire aura un contrôle total sur le salon.
+                Vous serez rétrogradé au rôle de <strong>manager</strong>. Le nouveau propriétaire
+                aura un contrôle total sur le salon.
               </p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="transfer-new-owner" className="block text-sm font-medium text-slate-700 mb-1">
+                <label
+                  htmlFor="transfer-new-owner"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
                   Nouveau propriétaire
                 </label>
                 <select
                   id="transfer-new-owner"
                   value={selectedProfileId}
-                  onChange={e => setSelectedProfileId(e.target.value)}
+                  onChange={(e) => setSelectedProfileId(e.target.value)}
                   disabled={isLoading}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white disabled:opacity-60"
                 >
                   <option value="">Sélectionner un membre...</option>
-                  {eligibleMembers.map(m => (
+                  {eligibleMembers.map((m) => (
                     <option key={m.profile.id} value={m.profile.id}>
                       {m.profile.first_name} {m.profile.last_name} — {m.role}
                     </option>
@@ -79,14 +84,17 @@ export const TransferOwnershipModal: React.FC<TransferOwnershipModalProps> = ({
               </div>
 
               <div>
-                <label htmlFor="transfer-confirm-name" className="block text-sm font-medium text-slate-700 mb-1">
+                <label
+                  htmlFor="transfer-confirm-name"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
                   Tapez <strong>{salonName}</strong> pour confirmer
                 </label>
                 <input
                   id="transfer-confirm-name"
                   type="text"
                   value={confirmText}
-                  onChange={e => setConfirmText(e.target.value)}
+                  onChange={(e) => setConfirmText(e.target.value)}
                   disabled={isLoading}
                   placeholder={salonName}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm disabled:opacity-60"

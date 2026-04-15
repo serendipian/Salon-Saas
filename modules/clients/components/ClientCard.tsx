@@ -1,8 +1,8 @@
-import React from 'react';
-import { Phone, Mail, Eye, Edit, Calendar, Users, Trash2 } from 'lucide-react';
-import { Client } from '../../../types';
-import { formatPrice } from '../../../lib/format';
+import { Calendar, Edit, Eye, Mail, Phone, Trash2, Users } from 'lucide-react';
+import type React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
+import { formatPrice } from '../../../lib/format';
+import type { Client } from '../../../types';
 
 interface ClientCardProps {
   clients: Client[];
@@ -32,7 +32,8 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3">
       {clients.map((client) => {
-        const initials = `${client.firstName?.[0] ?? ''}${client.lastName?.[0] ?? ''}`.toUpperCase();
+        const initials =
+          `${client.firstName?.[0] ?? ''}${client.lastName?.[0] ?? ''}`.toUpperCase();
 
         return (
           <button
@@ -52,9 +53,21 @@ export const ClientCard: React.FC<ClientCardProps> = ({
                   {[client.firstName, client.lastName].filter(Boolean).join(' ')}
                 </div>
                 <div className="mt-0.5">
-                  {client.status === 'VIP' && <span className="px-2 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded text-xs font-bold">VIP</span>}
-                  {client.status === 'ACTIF' && <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded text-xs font-medium">Actif</span>}
-                  {client.status === 'INACTIF' && <span className="px-2 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded text-xs font-medium">Inactif</span>}
+                  {client.status === 'VIP' && (
+                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded text-xs font-bold">
+                      VIP
+                    </span>
+                  )}
+                  {client.status === 'ACTIF' && (
+                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded text-xs font-medium">
+                      Actif
+                    </span>
+                  )}
+                  {client.status === 'INACTIF' && (
+                    <span className="px-2 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded text-xs font-medium">
+                      Inactif
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -114,14 +127,16 @@ export const ClientCard: React.FC<ClientCardProps> = ({
               >
                 <Calendar size={16} />
               </button>
-              {onDelete && <button
-                type="button"
-                onClick={() => onDelete(client.id)}
-                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                title="Supprimer"
-              >
-                <Trash2 size={16} />
-              </button>}
+              {onDelete && (
+                <button
+                  type="button"
+                  onClick={() => onDelete(client.id)}
+                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                  title="Supprimer"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
             </div>
           </button>
         );

@@ -1,21 +1,39 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowUp,
+  ArrowUpDown,
+  Ban,
+  Banknote,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  Eye,
+  Gift,
+  History,
+  Receipt,
+  RotateCcw,
+  Scissors,
+  Search,
+  ShoppingBag,
+  TrendingUp,
+} from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { History, ChevronLeft, ChevronRight, ArrowLeft, Eye, Receipt, Ban, RotateCcw, Search, Scissors, ShoppingBag, CreditCard, TrendingUp, Banknote, Gift, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
-import { useTransactions } from '../../hooks/useTransactions';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
+import { useTransactions } from '../../hooks/useTransactions';
 import { formatPrice } from '../../lib/format';
-import { getTransactionStatus, TransactionStatus } from './mappers';
-import { Transaction } from '../../types';
+import type { Transaction } from '../../types';
 import { ReceiptModal, TransactionDetailModal } from './components/POSModals';
-import { VoidModal } from './components/VoidModal';
 import { RefundModal } from './components/RefundModal';
+import { VoidModal } from './components/VoidModal';
+import { getTransactionStatus, type TransactionStatus } from './mappers';
 
 const ALL_PAYMENT_METHODS = ['Espèces', 'Carte Bancaire', 'Carte Cadeau'] as const;
 
 const PAYMENT_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
-  'Espèces': Banknote,
+  Espèces: Banknote,
   'Carte Bancaire': CreditCard,
   'Carte Cadeau': Gift,
 };
@@ -45,10 +63,14 @@ export const TransactionHistoryPage: React.FC = () => {
     ? "Aujourd'hui"
     : isHistoryYesterday
       ? 'Hier'
-      : historyDate.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+      : historyDate.toLocaleDateString('fr-FR', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+        });
 
   const goToPrevDay = () => {
-    setHistoryDate(prev => {
+    setHistoryDate((prev) => {
       const d = new Date(prev);
       d.setDate(d.getDate() - 1);
       return d;
@@ -62,7 +84,7 @@ export const TransactionHistoryPage: React.FC = () => {
 
   const goToNextDay = () => {
     if (isHistoryToday) return;
-    setHistoryDate(prev => {
+    setHistoryDate((prev) => {
       const d = new Date(prev);
       d.setDate(d.getDate() + 1);
       return d;
@@ -84,7 +106,8 @@ export const TransactionHistoryPage: React.FC = () => {
     return { from: from.toISOString(), to: to.toISOString() };
   }, []);
 
-  const { transactions, voidTransaction, refundTransaction, isVoiding, isRefunding } = useTransactions(posRange);
+  const { transactions, voidTransaction, refundTransaction, isVoiding, isRefunding } =
+    useTransactions(posRange);
 
   // Modals
   const [receiptTransaction, setReceiptTransaction] = useState<Transaction | null>(null);
@@ -112,7 +135,7 @@ export const TransactionHistoryPage: React.FC = () => {
 
   // Filter by selected date
   const filteredTransactions = React.useMemo(() => {
-    return transactions.filter(trx => toLocalDate(new Date(trx.date)) === historyDateStr);
+    return transactions.filter((trx) => toLocalDate(new Date(trx.date)) === historyDateStr);
   }, [transactions, historyDateStr]);
 
   // Group: SALE as parents, VOID/REFUND as children
@@ -137,11 +160,11 @@ export const TransactionHistoryPage: React.FC = () => {
       if (!parentIds.has(parentId)) orphans.push(...children);
     });
 
-    const grouped = parents.map(parent => ({
+    const grouped = parents.map((parent) => ({
       parent,
       children: childMap.get(parent.id) || [],
     }));
-    orphans.forEach(orphan => grouped.push({ parent: orphan, children: [] }));
+    orphans.forEach((orphan) => grouped.push({ parent: orphan, children: [] }));
 
     return grouped;
   }, [filteredTransactions]);
@@ -169,7 +192,7 @@ export const TransactionHistoryPage: React.FC = () => {
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
         const matchClient = trx.clientName?.toLowerCase().includes(term);
-        const matchItem = trx.items.some(i => i.name.toLowerCase().includes(term));
+        const matchItem = trx.items.some((i) => i.name.toLowerCase().includes(term));
         if (!matchClient && !matchItem) return false;
       }
 
@@ -177,12 +200,17 @@ export const TransactionHistoryPage: React.FC = () => {
       if (statusFilter !== 'all') {
         const status = getTransactionStatus(trx, transactions);
         if (statusFilter === 'voided' && status !== 'voided') return false;
-        if (statusFilter === 'refunded' && status !== 'fully_refunded' && status !== 'partially_refunded') return false;
+        if (
+          statusFilter === 'refunded' &&
+          status !== 'fully_refunded' &&
+          status !== 'partially_refunded'
+        )
+          return false;
       }
 
       // Payment method filter
       if (paymentFilter) {
-        const hasMethod = trx.payments.some(p => p.method === paymentFilter);
+        const hasMethod = trx.payments.some((p) => p.method === paymentFilter);
         if (!hasMethod) return false;
       }
 
@@ -192,16 +220,28 @@ export const TransactionHistoryPage: React.FC = () => {
     // Sort
     const dir = sortDesc ? -1 : 1;
     filtered.sort((a, b) => {
-      const ta = a.parent, tb = b.parent;
+      const ta = a.parent,
+        tb = b.parent;
       switch (sortBy) {
-        case 'time': return dir * (new Date(ta.date).getTime() - new Date(tb.date).getTime());
-        case 'amount': return dir * (ta.total - tb.total);
-        default: return 0;
+        case 'time':
+          return dir * (new Date(ta.date).getTime() - new Date(tb.date).getTime());
+        case 'amount':
+          return dir * (ta.total - tb.total);
+        default:
+          return 0;
       }
     });
 
     return filtered;
-  }, [groupedTransactions, searchTerm, statusFilter, paymentFilter, transactions, sortBy, sortDesc]);
+  }, [
+    groupedTransactions,
+    searchTerm,
+    statusFilter,
+    paymentFilter,
+    transactions,
+    sortBy,
+    sortDesc,
+  ]);
 
   const PAYMENT_METHOD_SHORT: Record<string, string> = {
     'Carte Bancaire': 'Carte',
@@ -235,20 +275,47 @@ export const TransactionHistoryPage: React.FC = () => {
   const isToday = (date: string) => new Date(date).toDateString() === new Date().toDateString();
 
   const statusBadge = (status: TransactionStatus, trx: Transaction) => {
-    if (trx.type === 'VOID') return <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-red-200 text-red-600">Annulation</span>;
-    if (trx.type === 'REFUND') return <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-orange-200 text-orange-600">Remboursement</span>;
-    if (status === 'voided') return <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-red-200 text-red-600">Annulé</span>;
-    if (status === 'fully_refunded') return <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-orange-200 text-orange-600">Remboursé</span>;
-    if (status === 'partially_refunded') return <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-orange-200 text-orange-600">Remb. partiel</span>;
+    if (trx.type === 'VOID')
+      return (
+        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-red-200 text-red-600">
+          Annulation
+        </span>
+      );
+    if (trx.type === 'REFUND')
+      return (
+        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-orange-200 text-orange-600">
+          Remboursement
+        </span>
+      );
+    if (status === 'voided')
+      return (
+        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-red-200 text-red-600">
+          Annulé
+        </span>
+      );
+    if (status === 'fully_refunded')
+      return (
+        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-orange-200 text-orange-600">
+          Remboursé
+        </span>
+      );
+    if (status === 'partially_refunded')
+      return (
+        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-transparent ring-1 ring-inset ring-orange-200 text-orange-600">
+          Remb. partiel
+        </span>
+      );
     return null;
   };
 
   const getStaffNames = (trx: Transaction): string[] => {
-    return [...new Set(trx.items.filter(i => i.staffName).map(i => i.staffName!))];
+    return [...new Set(trx.items.filter((i) => i.staffName).map((i) => i.staffName!))];
   };
 
-  const TAG = "text-xs font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200";
-  const SERVICE_TAG = "text-xs font-medium bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100";
+  const TAG =
+    'text-xs font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200';
+  const SERVICE_TAG =
+    'text-xs font-medium bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100';
 
   const itemLabel = (item: { name: string; variantName?: string }) =>
     item.variantName ? `${item.name} - ${item.variantName}` : item.name;
@@ -265,15 +332,28 @@ export const TransactionHistoryPage: React.FC = () => {
   };
 
   const handleRefundConfirm = async (
-    items: { original_item_id: string | null; quantity: number; price_override?: number; price?: number; name?: string }[],
+    items: {
+      original_item_id: string | null;
+      quantity: number;
+      price_override?: number;
+      price?: number;
+      name?: string;
+    }[],
     payments: { method: string; amount: number }[],
     reasonCategory: string,
     reasonNote: string,
-    restock: boolean
+    restock: boolean,
   ) => {
     if (!refundTarget) return;
     try {
-      await refundTransaction(refundTarget.id, items, payments, reasonCategory, reasonNote, restock);
+      await refundTransaction(
+        refundTarget.id,
+        items,
+        payments,
+        reasonCategory,
+        reasonNote,
+        restock,
+      );
       setRefundTarget(null);
       setDetailTransaction(null);
     } catch {
@@ -305,7 +385,9 @@ export const TransactionHistoryPage: React.FC = () => {
           </button>
           <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700 min-w-[120px] text-center">
             {historyDateLabel}
-            <span className="ml-1.5 text-xs text-slate-400 font-normal">{filteredTransactions.length}</span>
+            <span className="ml-1.5 text-xs text-slate-400 font-normal">
+              {filteredTransactions.length}
+            </span>
           </span>
           <button
             onClick={goToNextDay}
@@ -317,7 +399,14 @@ export const TransactionHistoryPage: React.FC = () => {
           </button>
           {!isHistoryToday && (
             <button
-              onClick={() => { setHistoryDate(new Date()); setSearchTerm(''); setStatusFilter('all'); setPaymentFilter(null); setSortBy('time'); setSortDesc(true); }}
+              onClick={() => {
+                setHistoryDate(new Date());
+                setSearchTerm('');
+                setStatusFilter('all');
+                setPaymentFilter(null);
+                setSortBy('time');
+                setSortDesc(true);
+              }}
               className="text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors ml-1"
             >
               Aujourd'hui
@@ -334,7 +423,9 @@ export const TransactionHistoryPage: React.FC = () => {
               <TrendingUp size={14} />
               <span className="text-xs font-medium">Chiffre d'affaires</span>
             </div>
-            <div className="text-lg font-bold text-slate-900">{formatPrice(dailySummary.total)}</div>
+            <div className="text-lg font-bold text-slate-900">
+              {formatPrice(dailySummary.total)}
+            </div>
           </div>
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
             <div className="flex items-center gap-2 text-slate-400 mb-1">
@@ -369,7 +460,7 @@ export const TransactionHistoryPage: React.FC = () => {
             <input
               type="text"
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Rechercher..."
               className="w-full pl-8 pr-3 h-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
@@ -377,7 +468,7 @@ export const TransactionHistoryPage: React.FC = () => {
           {/* Filter pills */}
           <div className="flex gap-1.5 flex-wrap">
             {/* Status pills */}
-            {(['all', 'voided', 'refunded'] as const).map(f => {
+            {(['all', 'voided', 'refunded'] as const).map((f) => {
               const labels = { all: 'Tous', voided: 'Annulés', refunded: 'Remboursés' };
               const icons = { all: History, voided: Ban, refunded: RotateCcw };
               const count = statusCounts[f];
@@ -398,7 +489,7 @@ export const TransactionHistoryPage: React.FC = () => {
             {/* Separator */}
             <div className="w-px h-8 bg-slate-200 flex-shrink-0" />
             {/* Payment method pills */}
-            {ALL_PAYMENT_METHODS.map(method => {
+            {ALL_PAYMENT_METHODS.map((method) => {
               const isActive = paymentFilter === method;
               const count = paymentCounts.get(method) || 0;
               const Icon = PAYMENT_ICONS[method] || CreditCard;
@@ -435,10 +526,18 @@ export const TransactionHistoryPage: React.FC = () => {
             </div>
             {sortOpen && (
               <div className="absolute right-0 top-full mt-1 bg-white rounded-lg border border-slate-200 shadow-lg py-1 z-10 min-w-[120px]">
-                {([['time', 'Heure'], ['amount', 'Montant']] as const).map(([key, label]) => (
+                {(
+                  [
+                    ['time', 'Heure'],
+                    ['amount', 'Montant'],
+                  ] as const
+                ).map(([key, label]) => (
                   <button
                     key={key}
-                    onClick={() => { setSortBy(key); setSortOpen(false); }}
+                    onClick={() => {
+                      setSortBy(key);
+                      setSortOpen(false);
+                    }}
                     className={`w-full text-left px-3 py-1.5 text-xs transition-colors ${sortBy === key ? 'bg-blue-50 text-blue-600 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
                   >
                     {label}
@@ -462,12 +561,24 @@ export const TransactionHistoryPage: React.FC = () => {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b-2 border-slate-200 bg-slate-50">
-                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Heure</th>
-                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Client</th>
-                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Styliste</th>
-                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Détails</th>
-                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider text-right">Total</th>
-                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Paiement</th>
+                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Heure
+                </th>
+                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Client
+                </th>
+                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Styliste
+                </th>
+                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Détails
+                </th>
+                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider text-right">
+                  Total
+                </th>
+                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Paiement
+                </th>
                 <th className="px-6 py-3"></th>
               </tr>
             </thead>
@@ -478,108 +589,153 @@ export const TransactionHistoryPage: React.FC = () => {
                 const showVoid = canVoid && status === 'active' && isToday(trx.date);
                 const showRefund = canRefund && status !== 'voided' && status !== 'fully_refunded';
                 return (
-                <React.Fragment key={trx.id}>
-                <tr className={`transition-colors ${idx % 2 === 1 ? 'bg-slate-100/50' : ''} hover:bg-slate-100/70 ${isVoided ? 'opacity-60' : ''}`}>
-                  <td className="px-6 py-5 font-medium text-slate-700">
-                    {new Date(trx.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-2">
-                      {trx.clientName ? (
-                        <span className={`text-slate-900 font-medium text-sm ${isVoided ? 'line-through' : ''}`}>{trx.clientName}</span>
-                      ) : (
-                        <span className="text-slate-400 italic text-sm">Client de passage</span>
-                      )}
-                      {statusBadge(status, trx)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex flex-wrap gap-1">
-                      {getStaffNames(trx).map(name => (
-                        <span key={name} className={TAG}>{name}</span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex flex-wrap gap-1 max-w-xs">
-                      {trx.items.map((item, idx) => (
-                        <span key={idx} className={SERVICE_TAG}>{itemLabel(item)}</span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className={`px-6 py-5 text-right font-bold ${trx.total < 0 ? 'text-red-600' : 'text-slate-900'}`}>
-                    {formatPrice(trx.total)}
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex flex-wrap gap-1">
-                      {trx.payments.map((p, idx) => {
-                        const PIcon = PAYMENT_ICONS[p.method] || CreditCard;
-                        return (
-                          <span key={idx} className={TAG + ' flex items-center gap-1'}><PIcon size={11} />{PAYMENT_METHOD_SHORT[p.method] || p.method}</span>
-                        );
-                      })}
-                    </div>
-                  </td>
-                  <td className="px-6 py-5 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      {showVoid && (
-                        <button onClick={() => setVoidTarget(trx)} className="p-2 text-red-300 hover:text-red-600 transition-colors" title="Annuler">
-                          <Ban size={16} />
-                        </button>
-                      )}
-                      {showRefund && (
-                        <button onClick={() => setRefundTarget(trx)} className="p-2 text-orange-300 hover:text-orange-600 transition-colors" title="Rembourser">
-                          <RotateCcw size={16} />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => setDetailTransaction(trx)}
-                        className="p-2 text-slate-300 hover:text-slate-900 transition-colors"
-                        title="Voir les détails"
+                  <React.Fragment key={trx.id}>
+                    <tr
+                      className={`transition-colors ${idx % 2 === 1 ? 'bg-slate-100/50' : ''} hover:bg-slate-100/70 ${isVoided ? 'opacity-60' : ''}`}
+                    >
+                      <td className="px-6 py-5 font-medium text-slate-700">
+                        {new Date(trx.date).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-2">
+                          {trx.clientName ? (
+                            <span
+                              className={`text-slate-900 font-medium text-sm ${isVoided ? 'line-through' : ''}`}
+                            >
+                              {trx.clientName}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 italic text-sm">Client de passage</span>
+                          )}
+                          {statusBadge(status, trx)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex flex-wrap gap-1">
+                          {getStaffNames(trx).map((name) => (
+                            <span key={name} className={TAG}>
+                              {name}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex flex-wrap gap-1 max-w-xs">
+                          {trx.items.map((item, idx) => (
+                            <span key={idx} className={SERVICE_TAG}>
+                              {itemLabel(item)}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td
+                        className={`px-6 py-5 text-right font-bold ${trx.total < 0 ? 'text-red-600' : 'text-slate-900'}`}
                       >
-                        <Eye size={16} />
-                      </button>
-                      <button
-                        onClick={() => setReceiptTransaction(trx)}
-                        className="p-2 text-slate-300 hover:text-slate-900 transition-colors"
-                        title="Imprimer ticket"
+                        {formatPrice(trx.total)}
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex flex-wrap gap-1">
+                          {trx.payments.map((p, idx) => {
+                            const PIcon = PAYMENT_ICONS[p.method] || CreditCard;
+                            return (
+                              <span key={idx} className={`${TAG} flex items-center gap-1`}>
+                                <PIcon size={11} />
+                                {PAYMENT_METHOD_SHORT[p.method] || p.method}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {showVoid && (
+                            <button
+                              onClick={() => setVoidTarget(trx)}
+                              className="p-2 text-red-300 hover:text-red-600 transition-colors"
+                              title="Annuler"
+                            >
+                              <Ban size={16} />
+                            </button>
+                          )}
+                          {showRefund && (
+                            <button
+                              onClick={() => setRefundTarget(trx)}
+                              className="p-2 text-orange-300 hover:text-orange-600 transition-colors"
+                              title="Rembourser"
+                            >
+                              <RotateCcw size={16} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setDetailTransaction(trx)}
+                            className="p-2 text-slate-300 hover:text-slate-900 transition-colors"
+                            title="Voir les détails"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            onClick={() => setReceiptTransaction(trx)}
+                            className="p-2 text-slate-300 hover:text-slate-900 transition-colors"
+                            title="Imprimer ticket"
+                          >
+                            <Receipt size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {children.map((child) => (
+                      <tr
+                        key={child.id}
+                        className="bg-slate-50/50 hover:bg-slate-100/50 transition-colors"
                       >
-                        <Receipt size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                {children.map(child => (
-                  <tr key={child.id} className="bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
-                    <td className="px-6 py-2 pl-10 text-xs text-slate-500">
-                      {new Date(child.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                    </td>
-                    <td className="px-6 py-2">
-                      <div className="flex items-center gap-2">
-                        {child.type === 'VOID' ? <Ban size={12} className="text-red-500" /> : <RotateCcw size={12} className="text-orange-500" />}
-                        {statusBadge('active', child)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-2"></td>
-                    <td className="px-6 py-2">
-                      <div className="flex flex-wrap gap-1">
-                        {child.items.map((item, idx) => (
-                          <span key={idx} className="text-[11px] font-medium bg-blue-50/50 text-blue-500 px-1.5 py-0.5 rounded border border-blue-100">{itemLabel(item)}</span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-2 text-right font-semibold text-sm text-red-600">
-                      {formatPrice(child.total)}
-                    </td>
-                    <td className="px-6 py-2"></td>
-                    <td className="px-6 py-2 text-right">
-                      <button onClick={() => setDetailTransaction(child)} className="p-1.5 text-slate-300 hover:text-slate-900 transition-colors" title="Voir les détails">
-                        <Eye size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                </React.Fragment>
+                        <td className="px-6 py-2 pl-10 text-xs text-slate-500">
+                          {new Date(child.date).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </td>
+                        <td className="px-6 py-2">
+                          <div className="flex items-center gap-2">
+                            {child.type === 'VOID' ? (
+                              <Ban size={12} className="text-red-500" />
+                            ) : (
+                              <RotateCcw size={12} className="text-orange-500" />
+                            )}
+                            {statusBadge('active', child)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-2"></td>
+                        <td className="px-6 py-2">
+                          <div className="flex flex-wrap gap-1">
+                            {child.items.map((item, idx) => (
+                              <span
+                                key={idx}
+                                className="text-[11px] font-medium bg-blue-50/50 text-blue-500 px-1.5 py-0.5 rounded border border-blue-100"
+                              >
+                                {itemLabel(item)}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-6 py-2 text-right font-semibold text-sm text-red-600">
+                          {formatPrice(child.total)}
+                        </td>
+                        <td className="px-6 py-2"></td>
+                        <td className="px-6 py-2 text-right">
+                          <button
+                            onClick={() => setDetailTransaction(child)}
+                            className="p-1.5 text-slate-300 hover:text-slate-900 transition-colors"
+                            title="Voir les détails"
+                          >
+                            <Eye size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
                 );
               })}
             </tbody>
@@ -601,8 +757,22 @@ export const TransactionHistoryPage: React.FC = () => {
           transaction={detailTransaction}
           allTransactions={transactions}
           onClose={() => setDetailTransaction(null)}
-          onVoidClick={canVoid ? (t: Transaction) => { setDetailTransaction(null); setVoidTarget(t); } : undefined}
-          onRefundClick={canRefund ? (t: Transaction) => { setDetailTransaction(null); setRefundTarget(t); } : undefined}
+          onVoidClick={
+            canVoid
+              ? (t: Transaction) => {
+                  setDetailTransaction(null);
+                  setVoidTarget(t);
+                }
+              : undefined
+          }
+          onRefundClick={
+            canRefund
+              ? (t: Transaction) => {
+                  setDetailTransaction(null);
+                  setRefundTarget(t);
+                }
+              : undefined
+          }
           onViewTransaction={setDetailTransaction}
         />
       )}

@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Loader2 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useAvatarUpload } from '../../hooks/useAvatarUpload';
-import { useToast } from '../../context/ToastContext';
-import { Input, TextArea, Section } from '../../components/FormElements';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Input, Section, TextArea } from '../../components/FormElements';
 import { PhoneInput } from '../../components/PhoneInput';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { useAvatarUpload } from '../../hooks/useAvatarUpload';
 
 export const ProfileIdentity: React.FC = () => {
   const { profile, updateProfile } = useAuth();
@@ -25,7 +26,8 @@ export const ProfileIdentity: React.FC = () => {
     setBio(profile?.bio ?? '');
   }, [profile?.first_name, profile?.last_name, profile?.phone, profile?.bio]);
 
-  const initials = `${(profile?.first_name || '?')[0]}${(profile?.last_name || '?')[0]}`.toUpperCase();
+  const initials =
+    `${(profile?.first_name || '?')[0]}${(profile?.last_name || '?')[0]}`.toUpperCase();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,11 +66,7 @@ export const ProfileIdentity: React.FC = () => {
           disabled={isUploading}
         >
           {profile?.avatar_url ? (
-            <img
-              src={profile.avatar_url}
-              alt="Avatar"
-              className="w-full h-full object-cover"
-            />
+            <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-slate-900 text-white flex items-center justify-center">
               <span className="font-bold text-2xl">{initials}</span>
@@ -113,18 +111,8 @@ export const ProfileIdentity: React.FC = () => {
           required
         />
       </div>
-      <Input
-        label="Email"
-        value={profile?.email ?? ''}
-        disabled
-        className="mt-4"
-      />
-      <PhoneInput
-        label="Téléphone"
-        value={phone}
-        onChange={setPhone}
-        className="mt-4"
-      />
+      <Input label="Email" value={profile?.email ?? ''} disabled className="mt-4" />
+      <PhoneInput label="Téléphone" value={phone} onChange={setPhone} className="mt-4" />
       <TextArea
         label="Bio"
         value={bio}

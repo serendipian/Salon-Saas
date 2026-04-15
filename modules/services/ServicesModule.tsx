@@ -1,12 +1,12 @@
-
-import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { ViewState, Service } from '../../types';
-import { useServices } from './hooks/useServices';
+import type React from 'react';
+import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
-import { ServiceList } from './components/ServiceList';
+import type { Service, ViewState } from '../../types';
 import { ServiceForm } from './components/ServiceForm';
+import { ServiceList } from './components/ServiceList';
+import { useServices } from './hooks/useServices';
 
 export const ServicesModule: React.FC = () => {
   const {
@@ -58,10 +58,13 @@ export const ServicesModule: React.FC = () => {
     return (
       <div className="w-full">
         <ServiceForm
-          existingService={services.find(s => s.id === selectedServiceId)}
+          existingService={services.find((s) => s.id === selectedServiceId)}
           categories={serviceCategories}
           onSave={handleSaveService}
-          onDelete={(id) => { deleteService(id); setView('LIST'); }}
+          onDelete={(id) => {
+            deleteService(id);
+            setView('LIST');
+          }}
           onCancel={() => setView('LIST')}
         />
       </div>
@@ -77,7 +80,11 @@ export const ServicesModule: React.FC = () => {
         onSearchChange={setSearchTerm}
         onAdd={handleAdd}
         onEdit={handleEdit}
-        onToggleFavorite={canEditServices ? (type, id, isFavorite) => toggleFavorite({ type, id, isFavorite }) : undefined}
+        onToggleFavorite={
+          canEditServices
+            ? (type, id, isFavorite) => toggleFavorite({ type, id, isFavorite })
+            : undefined
+        }
       />
     </div>
   );

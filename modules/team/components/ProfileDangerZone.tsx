@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
 import { AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import type { StaffMember } from '../../../types';
 
 interface ProfileDangerZoneProps {
@@ -19,13 +20,18 @@ export const ProfileDangerZone: React.FC<ProfileDangerZoneProps> = ({ staff, onA
         className="flex items-center justify-between w-full text-left"
       >
         <h3 className="text-lg font-semibold text-red-900">Zone de danger</h3>
-        {dangerOpen ? <ChevronDown size={18} className="text-red-400" /> : <ChevronRight size={18} className="text-red-400" />}
+        {dangerOpen ? (
+          <ChevronDown size={18} className="text-red-400" />
+        ) : (
+          <ChevronRight size={18} className="text-red-400" />
+        )}
       </button>
 
       {dangerOpen && (
         <div className="mt-4 space-y-4">
           <p className="text-sm text-red-700">
-            L'archivage retire ce membre de l'equipe active. Cette action peut etre annulee par un administrateur.
+            L'archivage retire ce membre de l'equipe active. Cette action peut etre annulee par un
+            administrateur.
           </p>
 
           {!showArchiveConfirm ? (

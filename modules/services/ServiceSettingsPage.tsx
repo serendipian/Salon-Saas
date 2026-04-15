@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Layers, Package, Settings, Star } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CategoriesTab } from './components/CategoriesTab';
-import { GeneralTab } from './components/GeneralTab';
 import { FavoritesTab } from './components/FavoritesTab';
+import { GeneralTab } from './components/GeneralTab';
 import { PacksTab } from './components/PacksTab';
 
 type Tab = 'favorites' | 'packs' | 'categories' | 'general';

@@ -1,36 +1,36 @@
-import React, { useState, useEffect, useRef } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard,
-  Users,
-  Scissors,
-  Calendar,
-  ShoppingBag,
-  CreditCard,
   BarChart3,
-  Search,
-  Settings,
-  Truck,
-  Smile,
+  Bell,
+  Calendar,
+  ChevronDown,
+  CreditCard,
+  LayoutDashboard,
+  LogOut,
+  Menu,
   PanelLeftClose,
   PanelLeftOpen,
-  Bell,
-  LogOut,
-  ChevronDown,
-  Menu,
+  Scissors,
+  Search,
+  Settings,
+  ShoppingBag,
+  Smile,
+  Truck,
   UserCircle,
+  Users,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { usePermissions } from '../hooks/usePermissions';
 import { useMediaQuery } from '../context/MediaQueryContext';
+import { usePermissions } from '../hooks/usePermissions';
 import { useSidebar } from '../hooks/useSidebar';
-import { ConnectionStatusDot, ConnectionBanner } from './ConnectionStatus';
-import { BottomTabBar } from './BottomTabBar';
-import { MobileDrawer } from './MobileDrawer';
 import type { AuthResource } from '../lib/auth.types';
-import { useBilling } from '../modules/billing/hooks/useBilling';
 import { PastDueBanner } from '../modules/billing/components/PastDueBanner';
+import { useBilling } from '../modules/billing/hooks/useBilling';
+import { BottomTabBar } from './BottomTabBar';
+import { ConnectionBanner, ConnectionStatusDot } from './ConnectionStatus';
+import { MobileDrawer } from './MobileDrawer';
 
 const PastDueBannerConnected: React.FC = () => {
   const { createPortalSession, isLoadingPortal } = useBilling();
@@ -77,9 +77,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     className={`
       group relative flex items-center w-full rounded-xl transition-all duration-200 ease-out my-1
       ${collapsed ? 'justify-center px-0 py-3' : 'px-4 py-3 gap-3.5'}
-      ${active
-        ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/10'
-        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+      ${
+        active
+          ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/10'
+          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
       }
     `}
     title={collapsed ? label : ''}
@@ -93,7 +94,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       `}
     />
     {!collapsed && (
-      <span className={`text-sm font-medium tracking-wide whitespace-nowrap ${active ? 'font-semibold' : ''}`}>
+      <span
+        className={`text-sm font-medium tracking-wide whitespace-nowrap ${active ? 'font-semibold' : ''}`}
+      >
         {label}
       </span>
     )}
@@ -153,8 +156,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
     { id: 'suppliers', label: 'Fournisseurs', icon: Truck, resource: 'suppliers' },
   ];
 
-  const visibleMainNav = mainNavItems.filter(item => can('view', item.resource));
-  const visibleMgmtNav = managementNavItems.filter(item => can('view', item.resource));
+  const visibleMainNav = mainNavItems.filter((item) => can('view', item.resource));
+  const visibleMgmtNav = managementNavItems.filter((item) => can('view', item.resource));
   const canViewSettings = can('view', 'settings');
 
   const displayName = profile
@@ -178,11 +181,17 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
           style={{ zIndex: 'var(--z-sidebar)' }}
         >
           {/* Header: Salon name + switcher */}
-          <div className={`h-20 flex items-center transition-all shrink-0 ${collapsed ? 'justify-center px-0' : 'px-6'}`}>
+          <div
+            className={`h-20 flex items-center transition-all shrink-0 ${collapsed ? 'justify-center px-0' : 'px-6'}`}
+          >
             {!collapsed ? (
               <div className="relative flex items-center gap-3 animate-in fade-in duration-300">
                 {activeSalon?.logo_url ? (
-                  <img src={activeSalon.logo_url} alt="" className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-md" />
+                  <img
+                    src={activeSalon.logo_url}
+                    alt=""
+                    className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-md"
+                  />
                 ) : (
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center text-white font-bold text-base shrink-0 shadow-md shadow-slate-900/20">
                     {activeSalon?.name ? activeSalon.name.charAt(0) : 'L'}
@@ -207,8 +216,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                 </div>
 
                 {showSalonMenu && memberships.length > 1 && (
-                  <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-lg py-2" style={{ zIndex: 'var(--z-drawer-panel)' }}>
-                    {memberships.map(m => (
+                  <div
+                    className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-lg py-2"
+                    style={{ zIndex: 'var(--z-drawer-panel)' }}
+                  >
+                    {memberships.map((m) => (
                       <button
                         key={m.id}
                         onClick={() => {
@@ -220,7 +232,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                         }`}
                       >
                         {m.salon.logo_url ? (
-                          <img src={m.salon.logo_url} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0" />
+                          <img
+                            src={m.salon.logo_url}
+                            alt=""
+                            className="w-7 h-7 rounded-lg object-cover shrink-0"
+                          />
                         ) : (
                           <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0">
                             {m.salon.name.charAt(0)}
@@ -239,7 +255,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
               /* Collapsed: show salon initial */
               <div className="flex flex-col items-center gap-1">
                 {activeSalon?.logo_url ? (
-                  <img src={activeSalon.logo_url} alt="" className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-md" />
+                  <img
+                    src={activeSalon.logo_url}
+                    alt=""
+                    className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-md"
+                  />
                 ) : (
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center text-white font-bold text-base shrink-0 shadow-md shadow-slate-900/20">
                     {activeSalon?.name ? activeSalon.name.charAt(0) : 'L'}
@@ -256,19 +276,19 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                 Menu Principal
               </div>
             )}
-            {visibleMainNav.map(item => (
+            {visibleMainNav.map((item) => (
               <React.Fragment key={item.id}>
                 <SidebarItem
                   icon={item.icon}
                   label={item.label}
-                  active={activeModule === item.id || activeModule.startsWith(item.id + '/')}
+                  active={activeModule === item.id || activeModule.startsWith(`${item.id}/`)}
                   onClick={() => onNavigate(item.id)}
                   collapsed={collapsed}
                 />
                 {/* Finances sub-items */}
                 {item.id === 'finances' && !collapsed && (
                   <div className="ml-4 pl-4 border-l border-slate-100 space-y-0.5">
-                    {financesSubItems.map(sub => (
+                    {financesSubItems.map((sub) => (
                       <button
                         key={sub.id}
                         onClick={() => onNavigate(sub.id)}
@@ -294,7 +314,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                 Gestion
               </div>
             )}
-            {visibleMgmtNav.map(item => (
+            {visibleMgmtNav.map((item) => (
               <SidebarItem
                 key={item.id}
                 icon={item.icon}
@@ -307,7 +327,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
 
             {canViewSettings && (
               <>
-                {visibleMgmtNav.length > 0 && <div className="my-2 border-t border-slate-50 mx-2" />}
+                {visibleMgmtNav.length > 0 && (
+                  <div className="my-2 border-t border-slate-50 mx-2" />
+                )}
                 <SidebarItem
                   icon={Settings}
                   label="Réglages"
@@ -357,10 +379,18 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                   className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all"
                   aria-label={collapsed ? 'Déplier le menu' : 'Replier le menu'}
                 >
-                  {collapsed ? <PanelLeftOpen size={20} strokeWidth={1.5} /> : <PanelLeftClose size={20} strokeWidth={1.5} />}
+                  {collapsed ? (
+                    <PanelLeftOpen size={20} strokeWidth={1.5} />
+                  ) : (
+                    <PanelLeftClose size={20} strokeWidth={1.5} />
+                  )}
                 </button>
                 <div className="relative max-w-md w-full hidden md:block group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-600 transition-colors" size={18} strokeWidth={1.5} />
+                  <Search
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-600 transition-colors"
+                    size={18}
+                    strokeWidth={1.5}
+                  />
                   <input
                     type="text"
                     placeholder="Rechercher (Clients, Services, Factures...)"
@@ -387,13 +417,20 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                       <div className="text-[11px] text-slate-500 font-medium">{roleLabel}</div>
                     </div>
                     {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-md" />
+                      <img
+                        src={profile.avatar_url}
+                        alt=""
+                        className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-md"
+                      />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md ring-2 ring-white">
                         <span className="font-bold text-sm">{initials}</span>
                       </div>
                     )}
-                    <ChevronDown size={14} className={`text-slate-400 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
+                    <ChevronDown
+                      size={14}
+                      className={`text-slate-400 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`}
+                    />
                   </button>
 
                   {showProfileMenu && (
@@ -404,17 +441,25 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                       <div className="px-4 py-3 border-b border-slate-100">
                         <p className="text-sm font-semibold text-slate-900">{displayName}</p>
                         <p className="text-xs text-slate-500 truncate">{profile?.email}</p>
-                        <span className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${
-                          role === 'owner' ? 'bg-slate-100 text-slate-700' :
-                          role === 'manager' ? 'bg-blue-50 text-blue-700' :
-                          role === 'stylist' ? 'bg-violet-50 text-violet-700' :
-                          'bg-amber-50 text-amber-700'
-                        }`}>
+                        <span
+                          className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                            role === 'owner'
+                              ? 'bg-slate-100 text-slate-700'
+                              : role === 'manager'
+                                ? 'bg-blue-50 text-blue-700'
+                                : role === 'stylist'
+                                  ? 'bg-violet-50 text-violet-700'
+                                  : 'bg-amber-50 text-amber-700'
+                          }`}
+                        >
                           {roleLabel}
                         </span>
                       </div>
                       <button
-                        onClick={() => { navigate('/profile'); setShowProfileMenu(false); }}
+                        onClick={() => {
+                          navigate('/profile');
+                          setShowProfileMenu(false);
+                        }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-all"
                       >
                         <UserCircle size={16} className="text-slate-400" />
@@ -422,7 +467,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                       </button>
                       <div className="my-1 border-t border-slate-100" />
                       <button
-                        onClick={() => { signOut(); setShowProfileMenu(false); }}
+                        onClick={() => {
+                          signOut();
+                          setShowProfileMenu(false);
+                        }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-all"
                       >
                         <LogOut size={16} />
@@ -444,9 +492,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
             isMobile ? 'pb-[calc(56px+env(safe-area-inset-bottom)+1rem)]' : ''
           }`}
         >
-          {activeSalon?.subscription_tier === 'past_due' && (
-            <PastDueBannerConnected />
-          )}
+          {activeSalon?.subscription_tier === 'past_due' && <PastDueBannerConnected />}
           {children}
         </main>
       </div>
@@ -470,7 +516,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
           onNavigate={onNavigate}
           mainNavItems={visibleMainNav}
           managementNavItems={visibleMgmtNav}
-          settingsItem={canViewSettings ? { id: 'settings', label: 'Réglages', icon: Settings } : undefined}
+          settingsItem={
+            canViewSettings ? { id: 'settings', label: 'Réglages', icon: Settings } : undefined
+          }
           salonName={activeSalon?.name || 'Salon'}
           onProfilePress={() => navigate('/profile')}
         />
@@ -478,7 +526,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
 
       {/* Click-outside to close salon menu (desktop only) */}
       {showSalonMenu && !isMobile && (
-        <div className="fixed inset-0" style={{ zIndex: 'var(--z-topbar)' }} onClick={() => setShowSalonMenu(false)} />
+        <div
+          className="fixed inset-0"
+          style={{ zIndex: 'var(--z-topbar)' }}
+          onClick={() => setShowSalonMenu(false)}
+        />
       )}
     </div>
   );

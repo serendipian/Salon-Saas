@@ -1,10 +1,9 @@
-import React, { useMemo } from 'react';
-import type { ServiceBlockState } from '../../../types';
-import type { StaffMember, Service } from '../../../types';
-import StaffPills from './StaffPills';
+import { Bell, Users } from 'lucide-react';
+import { useMemo } from 'react';
+import type { Service, ServiceBlockState, StaffMember } from '../../../types';
 import InlineCalendar from './InlineCalendar';
+import StaffPills from './StaffPills';
 import TimePicker from './TimePicker';
-import { Users, Bell } from 'lucide-react';
 
 interface StaffCalendarPanelProps {
   activeBlock: ServiceBlockState | undefined;
@@ -28,7 +27,7 @@ export default function StaffCalendarPanel({
   onReminderChange,
 }: StaffCalendarPanelProps) {
   const hasService = (activeBlock?.items.length ?? 0) > 0;
-  const hasStaff = hasService && (activeBlock?.staffConfirmed === true);
+  const hasStaff = hasService && activeBlock?.staffConfirmed === true;
 
   // Derive the category from the first item's service for staff filtering
   const firstItemCategoryId = useMemo(() => {
@@ -43,32 +42,35 @@ export default function StaffCalendarPanel({
       <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">
-            <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">3</span>
+            <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
+              3
+            </span>
             <span className="text-slate-900 text-base font-semibold">Équipe</span>
           </div>
-          {hasService && (() => {
-            const isActive = activeBlock?.staffConfirmed && activeBlock?.staffId === null;
-            return (
-              <button
-                type="button"
-                onClick={() => {
-                  if (isActive) {
-                    onUpdateBlock(activeBlockIndex, { staffId: null, staffConfirmed: false });
-                  } else {
-                    onUpdateBlock(activeBlockIndex, { staffId: null, staffConfirmed: true });
-                  }
-                }}
-                className={`px-3.5 py-2 rounded-xl text-xs transition-all flex items-center gap-2 ${
-                  isActive
-                    ? 'bg-blue-500 text-white font-medium shadow-sm'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'
-                }`}
-              >
-                <Users size={14} />
-                Aucun
-              </button>
-            );
-          })()}
+          {hasService &&
+            (() => {
+              const isActive = activeBlock?.staffConfirmed && activeBlock?.staffId === null;
+              return (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isActive) {
+                      onUpdateBlock(activeBlockIndex, { staffId: null, staffConfirmed: false });
+                    } else {
+                      onUpdateBlock(activeBlockIndex, { staffId: null, staffConfirmed: true });
+                    }
+                  }}
+                  className={`px-3.5 py-2 rounded-xl text-xs transition-all flex items-center gap-2 ${
+                    isActive
+                      ? 'bg-blue-500 text-white font-medium shadow-sm'
+                      : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'
+                  }`}
+                >
+                  <Users size={14} />
+                  Aucun
+                </button>
+              );
+            })()}
         </div>
         <div className="border-b border-slate-200 mb-3" />
         <div className="relative">
@@ -77,7 +79,9 @@ export default function StaffCalendarPanel({
               team={team}
               categoryId={firstItemCategoryId}
               selectedStaffId={activeBlock?.staffId ?? null}
-              onSelect={(staffId) => onUpdateBlock(activeBlockIndex, { staffId, staffConfirmed: staffId !== null })}
+              onSelect={(staffId) =>
+                onUpdateBlock(activeBlockIndex, { staffId, staffConfirmed: staffId !== null })
+              }
               hideLabel
             />
           </div>
@@ -101,7 +105,9 @@ export default function StaffCalendarPanel({
       <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">
-            <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">4</span>
+            <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
+              4
+            </span>
             <span className="text-slate-900 text-base font-semibold">Date & Heure</span>
           </div>
           <button

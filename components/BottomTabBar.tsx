@@ -1,7 +1,7 @@
-import React from 'react';
-import { LayoutDashboard, Calendar, CreditCard, Users, Menu } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { AuthResource } from '../lib/auth.types';
+import { Calendar, CreditCard, LayoutDashboard, Menu, Users } from 'lucide-react';
+import type React from 'react';
+import type { AuthAction, AuthResource } from '../lib/auth.types';
 
 interface TabItem {
   id: string;
@@ -21,7 +21,7 @@ interface BottomTabBarProps {
   activeModule: string;
   onNavigate: (module: string) => void;
   onMorePress: () => void;
-  can: (action: string, resource: string) => boolean;
+  can: (action: AuthAction, resource: AuthResource) => boolean;
 }
 
 export const BottomTabBar: React.FC<BottomTabBarProps> = ({
@@ -30,14 +30,14 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
   onMorePress,
   can,
 }) => {
-  const visibleTabs = TABS.filter(tab => can('view', tab.resource));
+  const visibleTabs = TABS.filter((tab) => can('view', tab.resource));
 
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex items-center justify-around px-2 shadow-[0_-4px_12px_rgba(0,0,0,0.04)]"
       style={{ zIndex: 'var(--z-topbar)', paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      {visibleTabs.map(tab => {
+      {visibleTabs.map((tab) => {
         const isActive = activeModule === tab.id;
         return (
           <button
