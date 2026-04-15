@@ -26,7 +26,7 @@ const COUNTRY_CODES: CountryCode[] = [
   { code: 'LY', dial: '+218', flag: '🇱🇾', name: 'Libye' },
   { code: 'MR', dial: '+222', flag: '🇲🇷', name: 'Mauritanie' },
   { code: 'SN', dial: '+221', flag: '🇸🇳', name: 'Sénégal' },
-  { code: 'CI', dial: '+225', flag: '🇨🇮', name: 'Côte d\'Ivoire' },
+  { code: 'CI', dial: '+225', flag: '🇨🇮', name: "Côte d'Ivoire" },
   { code: 'CM', dial: '+237', flag: '🇨🇲', name: 'Cameroun' },
   { code: 'CD', dial: '+243', flag: '🇨🇩', name: 'RD Congo' },
   { code: 'GA', dial: '+241', flag: '🇬🇦', name: 'Gabon' },
@@ -139,21 +139,23 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
 
   return (
     <div className={className} ref={containerRef}>
-      {label && (
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-          {label}
-        </label>
-      )}
+      {label && <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>}
       <div className="relative flex">
         {/* Country code selector */}
         <button
           type="button"
-          onClick={() => { setIsOpen(!isOpen); setShowNumpad(false); }}
+          onClick={() => {
+            setIsOpen(!isOpen);
+            setShowNumpad(false);
+          }}
           className="flex items-center gap-1 bg-slate-100 border border-r-0 border-slate-300 rounded-l-lg px-2.5 text-sm font-medium text-slate-700 min-h-[44px] hover:bg-slate-200 transition-colors select-none shrink-0"
         >
           <span className="text-base leading-none">{country.flag}</span>
           <span className="text-xs font-semibold">{country.dial}</span>
-          <ChevronDown size={12} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown
+            size={12}
+            className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          />
         </button>
 
         {/* Phone number input */}
@@ -178,7 +180,10 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         {/* Numpad toggle button — desktop only (mobile/tablet use native keyboard) */}
         <button
           type="button"
-          onClick={() => { setShowNumpad(!showNumpad); setIsOpen(false); }}
+          onClick={() => {
+            setShowNumpad(!showNumpad);
+            setIsOpen(false);
+          }}
           className={`hidden lg:flex items-center justify-center border border-l-0 border-slate-300 rounded-r-lg px-2.5 min-h-[44px] transition-colors select-none shrink-0 ${
             showNumpad
               ? 'bg-slate-900 text-white'
@@ -191,10 +196,16 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
 
         {/* Country dropdown */}
         {isOpen && (
-          <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-2xl ring-1 ring-black/5 max-h-72 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200" style={{ zIndex: 'var(--z-drawer-panel, 50)' }}>
+          <div
+            className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-2xl ring-1 ring-black/5 max-h-72 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200"
+            style={{ zIndex: 'var(--z-drawer-panel, 50)' }}
+          >
             <div className="p-2 border-b border-slate-100 sticky top-0 bg-white">
               <div className="relative">
-                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search
+                  size={14}
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
                 <input
                   ref={searchRef}
                   type="text"
@@ -232,20 +243,27 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
 
         {/* Numpad */}
         {showNumpad && (
-          <div className="absolute top-[calc(100%+4px)] right-0 bg-white border border-slate-200 rounded-xl shadow-2xl ring-1 ring-black/5 p-2 animate-in fade-in slide-in-from-top-2 duration-200 w-52" style={{ zIndex: 'var(--z-drawer-panel, 50)' }}>
+          <div
+            className="absolute top-[calc(100%+4px)] right-0 bg-white border border-slate-200 rounded-xl shadow-2xl ring-1 ring-black/5 p-2 animate-in fade-in slide-in-from-top-2 duration-200 w-52"
+            style={{ zIndex: 'var(--z-drawer-panel, 50)' }}
+          >
             <div className="grid grid-cols-3 gap-1.5">
               {NUMPAD_KEYS.map((key) => (
                 <button
                   key={key}
                   type="button"
-                  onMouseDown={(e) => { e.preventDefault(); handleNumpadPress(key); }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    handleNumpadPress(key);
+                  }}
                   className={`
                     min-h-[44px] rounded-lg text-sm font-semibold transition-all select-none flex items-center justify-center
-                    ${key === 'del'
-                      ? 'bg-red-50 text-red-500 hover:bg-red-100 active:bg-red-200'
-                      : key === ' '
-                        ? 'invisible'
-                        : 'bg-slate-50 text-slate-800 hover:bg-slate-100 active:bg-slate-200 border border-slate-200'
+                    ${
+                      key === 'del'
+                        ? 'bg-red-50 text-red-500 hover:bg-red-100 active:bg-red-200'
+                        : key === ' '
+                          ? 'invisible'
+                          : 'bg-slate-50 text-slate-800 hover:bg-slate-100 active:bg-slate-200 border border-slate-200'
                     }
                   `}
                 >

@@ -3,7 +3,10 @@ import { Pencil, Save, X, Loader2 } from 'lucide-react';
 import type { WorkSchedule } from '../../../types';
 
 // --- Read-only field display ---
-export const Field: React.FC<{ label: string; value?: string | number | null }> = ({ label, value }) => (
+export const Field: React.FC<{ label: string; value?: string | number | null }> = ({
+  label,
+  value,
+}) => (
   <div>
     <dt className="text-sm text-slate-500">{label}</dt>
     <dd className="text-sm text-slate-900 mt-0.5">{value || '—'}</dd>
@@ -67,7 +70,15 @@ export const DAY_LABELS: Record<keyof WorkSchedule, string> = {
   sunday: 'Dimanche',
 };
 
-export const ORDERED_DAYS: (keyof WorkSchedule)[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+export const ORDERED_DAYS: (keyof WorkSchedule)[] = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+];
 
 export const CONTRACT_LABELS: Record<string, string> = {
   CDI: 'CDI',
@@ -91,7 +102,11 @@ export const CONTRACT_COLORS: Record<string, string> = {
 export const formatDate = (d?: string) => {
   if (!d) return '—';
   try {
-    return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    return new Date(d).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
   } catch {
     return d;
   }

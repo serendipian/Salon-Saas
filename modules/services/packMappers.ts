@@ -76,9 +76,7 @@ export function toPack(row: PackRow): Pack {
     favoriteSortOrder: row.favorite_sort_order,
     sortOrder: row.sort_order,
     groupId: row.pack_group_id,
-    items: (row.pack_items ?? [])
-      .map(toPackItem)
-      .sort((a, b) => a.sortOrder - b.sortOrder),
+    items: (row.pack_items ?? []).map(toPackItem).sort((a, b) => a.sortOrder - b.sortOrder),
   };
 }
 

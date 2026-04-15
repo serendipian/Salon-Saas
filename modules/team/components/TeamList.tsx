@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Plus, Search, Users, BarChart2 } from 'lucide-react';
 import { StaffMember, Appointment, ServiceCategory } from '../../../types';
@@ -25,7 +24,21 @@ interface TeamListProps {
   performanceContent?: React.ReactNode;
 }
 
-export const TeamList: React.FC<TeamListProps> = ({ team, appointments, serviceCategories, searchTerm, onSearchChange, onAdd, onSelect, showArchived, onToggleArchived, activeTab, onTabChange, isLoading, performanceContent }) => {
+export const TeamList: React.FC<TeamListProps> = ({
+  team,
+  appointments,
+  serviceCategories,
+  searchTerm,
+  onSearchChange,
+  onAdd,
+  onSelect,
+  showArchived,
+  onToggleArchived,
+  activeTab,
+  onTabChange,
+  isLoading,
+  performanceContent,
+}) => {
   const { viewMode, setViewMode } = useViewMode('team');
 
   return (
@@ -74,7 +87,10 @@ export const TeamList: React.FC<TeamListProps> = ({ team, appointments, serviceC
           {/* Filter Bar */}
           <div className="p-3 border-b border-slate-200 flex gap-3 bg-white">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                size={16}
+              />
               <input
                 type="text"
                 value={searchTerm}
@@ -98,9 +114,19 @@ export const TeamList: React.FC<TeamListProps> = ({ team, appointments, serviceC
               <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" />
             </div>
           ) : viewMode === 'table' ? (
-            <TeamTable team={team} appointments={appointments} serviceCategories={serviceCategories} onSelect={onSelect} />
+            <TeamTable
+              team={team}
+              appointments={appointments}
+              serviceCategories={serviceCategories}
+              onSelect={onSelect}
+            />
           ) : (
-            <TeamCard team={team} appointments={appointments} serviceCategories={serviceCategories} onSelect={onSelect} />
+            <TeamCard
+              team={team}
+              appointments={appointments}
+              serviceCategories={serviceCategories}
+              onSelect={onSelect}
+            />
           )}
         </div>
       )}

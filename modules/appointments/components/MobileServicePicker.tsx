@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { Check, Star, Package } from 'lucide-react';
-import type { Service, ServiceCategory, FavoriteItem, Pack, ServiceBlockItem } from '../../../types';
+import type {
+  Service,
+  ServiceCategory,
+  FavoriteItem,
+  Pack,
+  ServiceBlockItem,
+} from '../../../types';
 import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import { getPackDiscount, formatPackItemCount } from '../../services/utils/packExpansion';
@@ -35,7 +41,7 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
       const svc = services.find((s) => s.id === first.serviceId);
       if (svc?.categoryId) return svc.categoryId;
     }
-    return favorites.length > 0 ? 'FAVORITES' : initialCategoryId ?? categories[0]?.id ?? null;
+    return favorites.length > 0 ? 'FAVORITES' : (initialCategoryId ?? categories[0]?.id ?? null);
   });
 
   const isLocked = selectedItems.length > 0;
@@ -145,18 +151,14 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
           type="button"
           onClick={handleHeaderTap}
           className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl min-h-[52px] transition-colors ${
-            isSelected
-              ? 'bg-blue-50 border-2 border-blue-400'
-              : 'bg-white border border-slate-200'
+            isSelected ? 'bg-blue-50 border-2 border-blue-400' : 'bg-white border border-slate-200'
           }`}
         >
           <div className="text-left">
             <div className="text-sm font-medium text-slate-900">{service.name}</div>
             <div className="text-xs text-slate-500 mt-0.5">{getServiceSubtitle(service)}</div>
           </div>
-          {isSelected && (
-            <Check size={16} className="text-blue-500 shrink-0 ml-2" />
-          )}
+          {isSelected && <Check size={16} className="text-blue-500 shrink-0 ml-2" />}
         </button>
 
         {showVariantList && (
@@ -176,10 +178,14 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
                 >
                   <div className="text-left flex items-center gap-2">
                     <span className="text-sm font-medium text-slate-900">{variant.name}</span>
-                    <span className="text-xs text-slate-500">{formatDuration(variant.durationMinutes)}</span>
+                    <span className="text-xs text-slate-500">
+                      {formatDuration(variant.durationMinutes)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <span className="text-sm font-semibold text-blue-600">{formatPrice(variant.price)}</span>
+                    <span className="text-sm font-semibold text-blue-600">
+                      {formatPrice(variant.price)}
+                    </span>
                     {variantSelected && <Check size={14} className="text-blue-500" />}
                   </div>
                 </button>
@@ -215,9 +221,7 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
           type="button"
           onClick={handleHeaderTap}
           className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl min-h-[52px] transition-colors ${
-            isSelected
-              ? 'bg-blue-50 border-2 border-blue-400'
-              : 'bg-white border border-slate-200'
+            isSelected ? 'bg-blue-50 border-2 border-blue-400' : 'bg-white border border-slate-200'
           }`}
         >
           <div className="text-left">
@@ -235,7 +239,9 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
                 <button
                   key={variant.id}
                   type="button"
-                  onClick={() => { if (!disabledByLock) toggleItem(service.id, variant.id); }}
+                  onClick={() => {
+                    if (!disabledByLock) toggleItem(service.id, variant.id);
+                  }}
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-xl min-h-[48px] transition-colors ${
                     variantSelected
                       ? 'bg-blue-50 border-2 border-blue-400'
@@ -244,10 +250,14 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
                 >
                   <div className="text-left flex items-center gap-2">
                     <span className="text-sm font-medium text-slate-900">{variant.name}</span>
-                    <span className="text-xs text-slate-500">{formatDuration(variant.durationMinutes)}</span>
+                    <span className="text-xs text-slate-500">
+                      {formatDuration(variant.durationMinutes)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <span className="text-sm font-semibold text-blue-600">{formatPrice(variant.price)}</span>
+                    <span className="text-sm font-semibold text-blue-600">
+                      {formatPrice(variant.price)}
+                    </span>
                     {variantSelected && <Check size={14} className="text-blue-500" />}
                   </div>
                 </button>
@@ -260,14 +270,20 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
   };
 
   // Render a variant-type favorite (single-tap to toggle a specific variant)
-  const renderFavoriteVariantCard = (parentService: Service, variant: Service['variants'][number], disabledByLock: boolean) => {
+  const renderFavoriteVariantCard = (
+    parentService: Service,
+    variant: Service['variants'][number],
+    disabledByLock: boolean,
+  ) => {
     const selected = getSelectedVariantId(parentService.id) === variant.id;
     const disabledClass = disabledByLock ? 'opacity-40 pointer-events-none' : '';
     return (
       <button
         key={`fav-var-${variant.id}`}
         type="button"
-        onClick={() => { if (!disabledByLock) toggleItem(parentService.id, variant.id); }}
+        onClick={() => {
+          if (!disabledByLock) toggleItem(parentService.id, variant.id);
+        }}
         aria-disabled={disabledByLock}
         className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl min-h-[52px] transition-colors ${
           selected
@@ -288,7 +304,8 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
     );
   };
 
-  const pillBaseClass = 'flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium whitespace-nowrap shrink-0 min-h-[36px] transition-colors';
+  const pillBaseClass =
+    'flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium whitespace-nowrap shrink-0 min-h-[36px] transition-colors';
   const pillDisabledClass = 'opacity-40';
 
   return (
@@ -307,7 +324,12 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
                 : 'bg-slate-100 text-slate-600'
             } ${isCategoryPillDisabled('FAVORITES') ? pillDisabledClass : ''}`}
           >
-            <Star size={14} className={activeCategoryId === 'FAVORITES' ? 'text-white fill-white' : 'text-slate-500'} />
+            <Star
+              size={14}
+              className={
+                activeCategoryId === 'FAVORITES' ? 'text-white fill-white' : 'text-slate-500'
+              }
+            />
             Favoris
           </button>
         )}
@@ -321,7 +343,10 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
                 : 'bg-slate-100 text-slate-600'
             }`}
           >
-            <Package size={14} className={activeCategoryId === 'PACKS' ? 'text-white' : 'text-slate-500'} />
+            <Package
+              size={14}
+              className={activeCategoryId === 'PACKS' ? 'text-white' : 'text-slate-500'}
+            />
             Packs
           </button>
         )}
@@ -426,11 +451,17 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
                 );
               }
               if (fav.type === 'service') {
-                const disabledByLock = isLocked && lockedCategoryId !== null && fav.service.categoryId !== lockedCategoryId;
+                const disabledByLock =
+                  isLocked &&
+                  lockedCategoryId !== null &&
+                  fav.service.categoryId !== lockedCategoryId;
                 return renderFavoriteServiceCard(fav.service, disabledByLock);
               }
               // Variant-type favorite
-              const disabledByLock = isLocked && lockedCategoryId !== null && fav.parentService.categoryId !== lockedCategoryId;
+              const disabledByLock =
+                isLocked &&
+                lockedCategoryId !== null &&
+                fav.parentService.categoryId !== lockedCategoryId;
               return renderFavoriteVariantCard(fav.parentService, fav.variant, disabledByLock);
             })}
           </div>

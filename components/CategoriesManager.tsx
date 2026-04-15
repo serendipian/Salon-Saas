@@ -12,7 +12,16 @@
 // `icon`) on the category side, and `id`, `name`, `categoryId` on the item side.
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, ChevronDown, ChevronRight, ArrowUp, ArrowDown, Save, Search } from 'lucide-react';
+import {
+  Plus,
+  Trash2,
+  ChevronDown,
+  ChevronRight,
+  ArrowUp,
+  ArrowDown,
+  Save,
+  Search,
+} from 'lucide-react';
 import { IconPicker } from '../modules/services/components/IconPicker';
 import { ColorPicker } from '../modules/services/components/ColorPicker';
 
@@ -35,7 +44,10 @@ export interface CategoriesSavePayload<TCategory extends ManagedCategory> {
   assignments?: Record<string, string | null>;
 }
 
-export interface CategoriesManagerProps<TCategory extends ManagedCategory, TItem extends ManagedItem> {
+export interface CategoriesManagerProps<
+  TCategory extends ManagedCategory,
+  TItem extends ManagedItem,
+> {
   /** Live items from the parent's data hook (e.g., allServices, allProducts). */
   items: TItem[];
   /** Live categories from the parent's data hook. */
@@ -116,16 +128,16 @@ export function CategoriesManager<TCategory extends ManagedCategory, TItem exten
     // Unassign all items from this category first
     const affected = items.filter((it) => getEffectiveCategoryId(it) === id);
     const newAssignments = { ...localAssignments };
-    affected.forEach((it) => { newAssignments[it.id] = null; });
+    affected.forEach((it) => {
+      newAssignments[it.id] = null;
+    });
     setLocalAssignments(newAssignments);
     setLocalCategories(localCategories.filter((c) => c.id !== id));
     if (expandedId === id) setExpandedId(null);
   };
 
   const handleUpdateCategory = (id: string, updates: Partial<TCategory>) => {
-    setLocalCategories(
-      localCategories.map((c) => (c.id === id ? { ...c, ...updates } : c)),
-    );
+    setLocalCategories(localCategories.map((c) => (c.id === id ? { ...c, ...updates } : c)));
   };
 
   const handleMoveCategory = (index: number, direction: 'up' | 'down') => {
@@ -205,9 +217,7 @@ export function CategoriesManager<TCategory extends ManagedCategory, TItem exten
 
             <ColorPicker
               selectedColor={cat.color}
-              onSelect={(color) =>
-                handleUpdateCategory(cat.id, { color } as Partial<TCategory>)
-              }
+              onSelect={(color) => handleUpdateCategory(cat.id, { color } as Partial<TCategory>)}
             />
 
             <input
@@ -251,7 +261,10 @@ export function CategoriesManager<TCategory extends ManagedCategory, TItem exten
           {expandedId === cat.id && (
             <div className="border-t border-slate-100 px-4 py-3 bg-slate-50">
               <div className="relative mb-3">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search
+                  size={14}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
                 <input
                   type="text"
                   value={searchTerm}

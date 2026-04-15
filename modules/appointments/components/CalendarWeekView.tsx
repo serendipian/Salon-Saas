@@ -1,7 +1,15 @@
 import React from 'react';
 import { Appointment, ServiceCategory } from '../../../types';
 import { CalendarEventBlock } from './CalendarEventBlock';
-import { isSameDay, isToday, formatHourLabel, layoutDayEvents, mergeAppointmentGroups, HOURS, ROW_HEIGHT } from './calendarUtils';
+import {
+  isSameDay,
+  isToday,
+  formatHourLabel,
+  layoutDayEvents,
+  mergeAppointmentGroups,
+  HOURS,
+  ROW_HEIGHT,
+} from './calendarUtils';
 
 interface CalendarWeekViewProps {
   currentDate: Date;
@@ -34,12 +42,13 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   onEventClick,
 }) => {
   const weekDays = getWeekDays(currentDate);
-  const categoryMap = new Map(serviceCategories.map(c => [c.id, c]));
-  const serviceCatMap = new Map(services.map(s => [s.id, s.categoryId]));
+  const categoryMap = new Map(serviceCategories.map((c) => [c.id, c]));
+  const serviceCatMap = new Map(services.map((s) => [s.id, s.categoryId]));
 
-  const tzLabel = Intl.DateTimeFormat('fr-FR', { timeZoneName: 'short' })
-    .formatToParts(new Date())
-    .find(p => p.type === 'timeZoneName')?.value ?? '';
+  const tzLabel =
+    Intl.DateTimeFormat('fr-FR', { timeZoneName: 'short' })
+      .formatToParts(new Date())
+      .find((p) => p.type === 'timeZoneName')?.value ?? '';
 
   return (
     <div className="flex-1 overflow-auto bg-white">
@@ -57,9 +66,11 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
               className={`flex-1 text-center py-2 border-l border-slate-100 ${isSat ? 'text-blue-500' : 'text-slate-500'}`}
             >
               <div className="text-xs font-semibold uppercase">{DAYS_HEADER[i]}</div>
-              <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold mt-0.5 ${
-                today ? 'bg-blue-500 text-white' : ''
-              }`}>
+              <div
+                className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold mt-0.5 ${
+                  today ? 'bg-blue-500 text-white' : ''
+                }`}
+              >
                 {day.getDate()}
               </div>
             </div>
@@ -71,8 +82,12 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
       <div className="flex">
         {/* Hour labels */}
         <div className="w-16 flex-shrink-0">
-          {HOURS.map(hour => (
-            <div key={hour} style={{ height: ROW_HEIGHT }} className="text-right pr-3 text-xs text-slate-400 font-medium -mt-2">
+          {HOURS.map((hour) => (
+            <div
+              key={hour}
+              style={{ height: ROW_HEIGHT }}
+              className="text-right pr-3 text-xs text-slate-400 font-medium -mt-2"
+            >
               {formatHourLabel(hour)}
             </div>
           ))}
@@ -80,7 +95,7 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
 
         {/* Day columns */}
         {weekDays.map((day, dayIndex) => {
-          const dayAppts = appointments.filter(a => isSameDay(new Date(a.date), day));
+          const dayAppts = appointments.filter((a) => isSameDay(new Date(a.date), day));
           // M-13: merge multi-item service blocks into single visual events
           const mergedAppts = mergeAppointmentGroups(dayAppts);
           const positioned = layoutDayEvents(mergedAppts);
@@ -88,8 +103,12 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
           return (
             <div key={dayIndex} className="flex-1 border-l border-slate-100 relative">
               {/* Hour rows */}
-              {HOURS.map(hour => (
-                <div key={hour} style={{ height: ROW_HEIGHT }} className="border-t border-dashed border-slate-200" />
+              {HOURS.map((hour) => (
+                <div
+                  key={hour}
+                  style={{ height: ROW_HEIGHT }}
+                  className="border-t border-dashed border-slate-200"
+                />
               ))}
 
               {/* Events */}

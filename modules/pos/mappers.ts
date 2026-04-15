@@ -52,7 +52,7 @@ export function toTransaction(row: TransactionRow): Transaction {
     ? `${row.clients.first_name} ${row.clients.last_name}`.trim()
     : undefined;
 
-  const items: CartItem[] = (row.transaction_items ?? []).map(item => ({
+  const items: CartItem[] = (row.transaction_items ?? []).map((item) => ({
     id: item.id,
     referenceId: item.reference_id,
     type: item.type as 'SERVICE' | 'PRODUCT',
@@ -70,15 +70,15 @@ export function toTransaction(row: TransactionRow): Transaction {
 
   // Map DB constants back to French labels for display
   const dbMethodToLabel: Record<string, string> = {
-    'CASH': 'Espèces',
-    'CARD': 'Carte Bancaire',
-    'TRANSFER': 'Virement',
-    'CHECK': 'Chèque',
-    'MOBILE': 'Mobile',
-    'OTHER': 'Carte Cadeau',
+    CASH: 'Espèces',
+    CARD: 'Carte Bancaire',
+    TRANSFER: 'Virement',
+    CHECK: 'Chèque',
+    MOBILE: 'Mobile',
+    OTHER: 'Carte Cadeau',
   };
 
-  const payments: PaymentEntry[] = (row.transaction_payments ?? []).map(p => ({
+  const payments: PaymentEntry[] = (row.transaction_payments ?? []).map((p) => ({
     id: p.id,
     method: dbMethodToLabel[p.method] ?? p.method,
     amount: p.amount,
@@ -111,11 +111,11 @@ export function toTransactionRpcPayload(
   payments: PaymentEntry[],
   clientId: string | undefined,
   salonId: string,
-  appointmentId?: string
+  appointmentId?: string,
 ) {
   const round2 = (n: number) => Math.round(n * 100) / 100;
 
-  const p_items = cart.map(item => ({
+  const p_items = cart.map((item) => ({
     reference_id: item.referenceId,
     type: item.type,
     name: item.name,
@@ -131,16 +131,16 @@ export function toTransactionRpcPayload(
 
   // Map French UI labels to DB constants
   const methodMap: Record<string, string> = {
-    'Espèces': 'CASH',
+    Espèces: 'CASH',
     'Carte Bancaire': 'CARD',
-    'Virement': 'TRANSFER',
-    'Chèque': 'CHECK',
-    'Mobile': 'MOBILE',
+    Virement: 'TRANSFER',
+    Chèque: 'CHECK',
+    Mobile: 'MOBILE',
     'Carte Cadeau': 'OTHER',
-    'Autre': 'OTHER',
+    Autre: 'OTHER',
   };
 
-  const p_payments = payments.map(p => ({
+  const p_payments = payments.map((p) => ({
     method: methodMap[p.method] ?? 'OTHER',
     amount: p.amount,
   }));
@@ -156,21 +156,26 @@ export function toTransactionRpcPayload(
 
 // --- Transaction status helpers ---
 
-export type TransactionStatus = 'active' | 'voided' | 'partially_refunded' | 'fully_refunded' | 'reversal';
+export type TransactionStatus =
+  | 'active'
+  | 'voided'
+  | 'partially_refunded'
+  | 'fully_refunded'
+  | 'reversal';
 
 export function getTransactionStatus(
   transaction: Transaction,
-  allTransactions: Transaction[]
+  allTransactions: Transaction[],
 ): TransactionStatus {
   if (transaction.type !== 'SALE') return 'reversal';
 
   const relatedVoid = allTransactions.find(
-    t => t.type === 'VOID' && t.originalTransactionId === transaction.id
+    (t) => t.type === 'VOID' && t.originalTransactionId === transaction.id,
   );
   if (relatedVoid) return 'voided';
 
   const refunds = allTransactions.filter(
-    t => t.type === 'REFUND' && t.originalTransactionId === transaction.id
+    (t) => t.type === 'REFUND' && t.originalTransactionId === transaction.id,
   );
   if (refunds.length === 0) return 'active';
 
@@ -179,11 +184,8 @@ export function getTransactionStatus(
   return 'partially_refunded';
 }
 
-export function getRefundedAmount(
-  transactionId: string,
-  allTransactions: Transaction[]
-): number {
+export function getRefundedAmount(transactionId: string, allTransactions: Transaction[]): number {
   return allTransactions
-    .filter(t => t.type === 'REFUND' && t.originalTransactionId === transactionId)
+    .filter((t) => t.type === 'REFUND' && t.originalTransactionId === transactionId)
     .reduce((sum, r) => sum + Math.abs(r.total), 0);
 }

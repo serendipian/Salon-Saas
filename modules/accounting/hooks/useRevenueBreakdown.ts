@@ -141,13 +141,19 @@ export function useRevenueBreakdown(
   }, [allProducts, productCategories]);
 
   const revenueByServiceCategory = useMemo<ServiceCategoryEntry[]>(() => {
-    const map = new Map<string, {
-      categoryId: string;
-      categoryName: string;
-      count: number;
-      revenue: number;
-      services: Map<string, { name: string; variantName?: string; count: number; revenue: number }>;
-    }>();
+    const map = new Map<
+      string,
+      {
+        categoryId: string;
+        categoryName: string;
+        count: number;
+        revenue: number;
+        services: Map<
+          string,
+          { name: string; variantName?: string; count: number; revenue: number }
+        >;
+      }
+    >();
 
     currentTransactions.forEach((t) => {
       t.items.forEach((item) => {
@@ -156,7 +162,13 @@ export function useRevenueBreakdown(
         const catId = lookup?.categoryId || 'uncategorized';
         const catName = lookup?.categoryName || 'Non catégorisé';
         if (!map.has(catId)) {
-          map.set(catId, { categoryId: catId, categoryName: catName, count: 0, revenue: 0, services: new Map() });
+          map.set(catId, {
+            categoryId: catId,
+            categoryName: catName,
+            count: 0,
+            revenue: 0,
+            services: new Map(),
+          });
         }
         const cat = map.get(catId)!;
         cat.count += item.quantity || 1;
@@ -164,7 +176,12 @@ export function useRevenueBreakdown(
 
         const serviceKey = item.referenceId || item.name;
         if (!cat.services.has(serviceKey)) {
-          cat.services.set(serviceKey, { name: item.name, variantName: item.variantName, count: 0, revenue: 0 });
+          cat.services.set(serviceKey, {
+            name: item.name,
+            variantName: item.variantName,
+            count: 0,
+            revenue: 0,
+          });
         }
         const svc = cat.services.get(serviceKey)!;
         svc.count += item.quantity || 1;
@@ -181,13 +198,16 @@ export function useRevenueBreakdown(
   }, [currentTransactions, serviceCategoryLookup]);
 
   const revenueByProductCategory = useMemo<ProductCategoryEntry[]>(() => {
-    const map = new Map<string, {
-      categoryId: string;
-      categoryName: string;
-      count: number;
-      revenue: number;
-      products: Map<string, { name: string; count: number; revenue: number }>;
-    }>();
+    const map = new Map<
+      string,
+      {
+        categoryId: string;
+        categoryName: string;
+        count: number;
+        revenue: number;
+        products: Map<string, { name: string; count: number; revenue: number }>;
+      }
+    >();
 
     currentTransactions.forEach((t) => {
       t.items.forEach((item) => {
@@ -196,7 +216,13 @@ export function useRevenueBreakdown(
         const catId = lookup?.categoryId || 'uncategorized';
         const catName = lookup?.categoryName || 'Non catégorisé';
         if (!map.has(catId)) {
-          map.set(catId, { categoryId: catId, categoryName: catName, count: 0, revenue: 0, products: new Map() });
+          map.set(catId, {
+            categoryId: catId,
+            categoryName: catName,
+            count: 0,
+            revenue: 0,
+            products: new Map(),
+          });
         }
         const cat = map.get(catId)!;
         cat.count += item.quantity || 1;
@@ -221,13 +247,19 @@ export function useRevenueBreakdown(
   }, [currentTransactions, productCategoryLookup]);
 
   const revenueByStaffServices = useMemo<StaffServiceRow[]>(() => {
-    const map = new Map<string, {
-      staffId: string | null;
-      staffName: string;
-      count: number;
-      revenue: number;
-      services: Map<string, { name: string; variantName?: string; count: number; revenue: number }>;
-    }>();
+    const map = new Map<
+      string,
+      {
+        staffId: string | null;
+        staffName: string;
+        count: number;
+        revenue: number;
+        services: Map<
+          string,
+          { name: string; variantName?: string; count: number; revenue: number }
+        >;
+      }
+    >();
 
     currentTransactions.forEach((t) => {
       t.items.forEach((item) => {
@@ -235,7 +267,13 @@ export function useRevenueBreakdown(
         const key = item.staffId || UNASSIGNED_KEY;
         const name = item.staffName || 'Non attribué';
         if (!map.has(key)) {
-          map.set(key, { staffId: item.staffId || null, staffName: name, count: 0, revenue: 0, services: new Map() });
+          map.set(key, {
+            staffId: item.staffId || null,
+            staffName: name,
+            count: 0,
+            revenue: 0,
+            services: new Map(),
+          });
         }
         const row = map.get(key)!;
         const qty = item.quantity || 1;
@@ -244,7 +282,12 @@ export function useRevenueBreakdown(
 
         const svcKey = item.referenceId || item.name;
         if (!row.services.has(svcKey)) {
-          row.services.set(svcKey, { name: item.name, variantName: item.variantName, count: 0, revenue: 0 });
+          row.services.set(svcKey, {
+            name: item.name,
+            variantName: item.variantName,
+            count: 0,
+            revenue: 0,
+          });
         }
         const svc = row.services.get(svcKey)!;
         svc.count += qty;
@@ -275,7 +318,10 @@ export function useRevenueBreakdown(
   }, [currentTransactions, allStaff]);
 
   const revenueByStaffProducts = useMemo<StaffProductRow[]>(() => {
-    const map = new Map<string, { staffId: string | null; staffName: string; count: number; revenue: number }>();
+    const map = new Map<
+      string,
+      { staffId: string | null; staffName: string; count: number; revenue: number }
+    >();
     currentTransactions.forEach((t) => {
       t.items.forEach((item) => {
         if (item.type !== 'PRODUCT') return;
@@ -298,10 +344,22 @@ export function useRevenueBreakdown(
     }));
   }, [currentTransactions]);
 
-  const serviceRevenue = useMemo(() => computeRevenue(currentTransactions, 'SERVICE'), [currentTransactions]);
-  const productRevenue = useMemo(() => computeRevenue(currentTransactions, 'PRODUCT'), [currentTransactions]);
-  const prevServiceRevenue = useMemo(() => computeRevenue(previousTransactions, 'SERVICE'), [previousTransactions]);
-  const prevProductRevenue = useMemo(() => computeRevenue(previousTransactions, 'PRODUCT'), [previousTransactions]);
+  const serviceRevenue = useMemo(
+    () => computeRevenue(currentTransactions, 'SERVICE'),
+    [currentTransactions],
+  );
+  const productRevenue = useMemo(
+    () => computeRevenue(currentTransactions, 'PRODUCT'),
+    [currentTransactions],
+  );
+  const prevServiceRevenue = useMemo(
+    () => computeRevenue(previousTransactions, 'SERVICE'),
+    [previousTransactions],
+  );
+  const prevProductRevenue = useMemo(
+    () => computeRevenue(previousTransactions, 'PRODUCT'),
+    [previousTransactions],
+  );
 
   const paymentMethodBreakdown = useMemo<PaymentMethodRow[]>(() => {
     const map = new Map<string, number>();
@@ -312,7 +370,11 @@ export function useRevenueBreakdown(
     });
     const total = Array.from(map.values()).reduce((s, v) => s + v, 0);
     return Array.from(map.entries())
-      .map(([method, amount]) => ({ method, amount, percent: total > 0 ? (amount / total) * 100 : 0 }))
+      .map(([method, amount]) => ({
+        method,
+        amount,
+        percent: total > 0 ? (amount / total) * 100 : 0,
+      }))
       .sort((a, b) => b.amount - a.amount);
   }, [currentTransactions]);
 
@@ -327,7 +389,9 @@ export function useRevenueBreakdown(
         productSales[key].revenue += i.price * (i.quantity || 1);
       });
     });
-    return Object.values(productSales).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+    return Object.values(productSales)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
   }, [currentTransactions]);
 
   return {

@@ -29,10 +29,17 @@ export function useSupplierSettings() {
       const raw = data?.supplier_settings as Record<string, unknown> | null;
       if (!raw || Object.keys(raw).length === 0) return DEFAULTS;
       return {
-        defaultPaymentTerms: typeof raw.defaultPaymentTerms === 'string' ? raw.defaultPaymentTerms : DEFAULTS.defaultPaymentTerms,
+        defaultPaymentTerms:
+          typeof raw.defaultPaymentTerms === 'string'
+            ? raw.defaultPaymentTerms
+            : DEFAULTS.defaultPaymentTerms,
         poPrefix: typeof raw.poPrefix === 'string' ? raw.poPrefix : DEFAULTS.poPrefix,
-        poNextNumber: typeof raw.poNextNumber === 'number' ? raw.poNextNumber : DEFAULTS.poNextNumber,
-        defaultView: raw.defaultView === 'card' || raw.defaultView === 'table' ? raw.defaultView : DEFAULTS.defaultView,
+        poNextNumber:
+          typeof raw.poNextNumber === 'number' ? raw.poNextNumber : DEFAULTS.poNextNumber,
+        defaultView:
+          raw.defaultView === 'card' || raw.defaultView === 'table'
+            ? raw.defaultView
+            : DEFAULTS.defaultView,
       } satisfies SupplierSettings;
     },
     enabled: !!salonId,

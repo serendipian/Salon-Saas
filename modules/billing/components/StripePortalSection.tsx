@@ -7,7 +7,10 @@ interface StripePortalSectionProps {
   isLoading: boolean;
 }
 
-export const StripePortalSection: React.FC<StripePortalSectionProps> = ({ onOpenPortal, isLoading }) => (
+export const StripePortalSection: React.FC<StripePortalSectionProps> = ({
+  onOpenPortal,
+  isLoading,
+}) => (
   <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex items-center gap-4">
     <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
       <CreditCard size={18} className="text-slate-600" />

@@ -25,7 +25,7 @@ export const useSidebar = (): SidebarState => {
 
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
-  const toggleExpanded = useCallback(() => setExpanded(prev => !prev), []);
+  const toggleExpanded = useCallback(() => setExpanded((prev) => !prev), []);
 
   return {
     isDrawerOpen: drawerOpen,

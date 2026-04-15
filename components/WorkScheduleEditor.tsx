@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Clock, Copy, RefreshCw } from 'lucide-react';
 import { WorkSchedule, WorkDay } from '../types';
@@ -18,24 +17,31 @@ const DAY_LABELS: Record<keyof WorkSchedule, string> = {
   sunday: 'Dimanche',
 };
 
-const ORDERED_DAYS: (keyof WorkSchedule)[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const ORDERED_DAYS: (keyof WorkSchedule)[] = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+];
 
 export const WorkScheduleEditor: React.FC<WorkScheduleEditorProps> = ({ value, onChange }) => {
-  
   const handleChange = (day: keyof WorkSchedule, field: keyof WorkDay, val: string | boolean) => {
     onChange({
       ...value,
       [day]: {
         ...value[day],
-        [field]: val
-      }
+        [field]: val,
+      },
     });
   };
 
   const copyMondayToWeekdays = () => {
     const monday = value.monday;
     const newSchedule = { ...value };
-    (['tuesday', 'wednesday', 'thursday', 'friday'] as (keyof WorkSchedule)[]).forEach(day => {
+    (['tuesday', 'wednesday', 'thursday', 'friday'] as (keyof WorkSchedule)[]).forEach((day) => {
       newSchedule[day] = { ...monday };
     });
     onChange(newSchedule);
@@ -44,7 +50,7 @@ export const WorkScheduleEditor: React.FC<WorkScheduleEditorProps> = ({ value, o
   const copyMondayToAll = () => {
     const monday = value.monday;
     const newSchedule = { ...value };
-    ORDERED_DAYS.forEach(day => {
+    ORDERED_DAYS.forEach((day) => {
       if (day !== 'monday') newSchedule[day] = { ...monday };
     });
     onChange(newSchedule);
@@ -65,7 +71,9 @@ export const WorkScheduleEditor: React.FC<WorkScheduleEditorProps> = ({ value, o
             title="Copier les horaires de Lundi sur Mardi-Vendredi"
           >
             <Copy size={12} />
-            <span>Lun <span className="text-slate-400">→</span> Ven</span>
+            <span>
+              Lun <span className="text-slate-400">→</span> Ven
+            </span>
           </button>
           <button
             type="button"
@@ -74,7 +82,9 @@ export const WorkScheduleEditor: React.FC<WorkScheduleEditorProps> = ({ value, o
             title="Copier les horaires de Lundi sur toute la semaine"
           >
             <RefreshCw size={12} />
-            <span>Lun <span className="text-brand-400">→</span> Tous</span>
+            <span>
+              Lun <span className="text-brand-400">→</span> Tous
+            </span>
           </button>
         </div>
       </div>
@@ -82,15 +92,25 @@ export const WorkScheduleEditor: React.FC<WorkScheduleEditorProps> = ({ value, o
       {/* Scrollable grid */}
       <div className="relative">
         {/* Fade gradient on right edge to signal scrollability */}
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none md:hidden" style={{ zIndex: 1 }} />
+        <div
+          className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none md:hidden"
+          style={{ zIndex: 1 }}
+        />
 
         <div className="overflow-x-auto scroll-smooth" style={{ scrollSnapType: 'x mandatory' }}>
           <div className="min-w-[600px]">
             {/* Grid Header */}
             <div className="grid grid-cols-12 gap-4 p-3 bg-slate-50/50 border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               <div className="col-span-3 min-w-[64px]">Jour</div>
-              <div className="col-span-3 text-center min-w-[120px]" style={{ scrollSnapAlign: 'start' }}>Statut</div>
-              <div className="col-span-6 min-w-[240px]" style={{ scrollSnapAlign: 'start' }}>Plage Horaire</div>
+              <div
+                className="col-span-3 text-center min-w-[120px]"
+                style={{ scrollSnapAlign: 'start' }}
+              >
+                Statut
+              </div>
+              <div className="col-span-6 min-w-[240px]" style={{ scrollSnapAlign: 'start' }}>
+                Plage Horaire
+              </div>
             </div>
 
             {/* Rows */}
@@ -110,8 +130,12 @@ export const WorkScheduleEditor: React.FC<WorkScheduleEditorProps> = ({ value, o
                   >
                     {/* Day Label */}
                     <div className="col-span-3 flex items-center gap-3 min-w-[64px]">
-                      <div className={`w-1 h-8 rounded-full transition-colors ${isOpen ? 'bg-slate-900' : 'bg-slate-300'}`}></div>
-                      <span className={`font-medium text-sm ${isOpen ? 'text-slate-900' : 'text-slate-400'}`}>
+                      <div
+                        className={`w-1 h-8 rounded-full transition-colors ${isOpen ? 'bg-slate-900' : 'bg-slate-300'}`}
+                      ></div>
+                      <span
+                        className={`font-medium text-sm ${isOpen ? 'text-slate-900' : 'text-slate-400'}`}
+                      >
                         {DAY_LABELS[day]}
                       </span>
                     </div>
@@ -140,14 +164,24 @@ export const WorkScheduleEditor: React.FC<WorkScheduleEditorProps> = ({ value, o
                             aria-hidden="true"
                           >
                             <svg className="h-3 w-3 text-slate-400" fill="none" viewBox="0 0 12 12">
-                              <path d="M4 8l2-2m0 0l2-2M6 6L4 4m2 2l2 2" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                              <path
+                                d="M4 8l2-2m0 0l2-2M6 6L4 4m2 2l2 2"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
                             </svg>
                           </span>
                           <span
                             className={`absolute inset-0 flex h-full w-full items-center justify-center transition-opacity ${isOpen ? 'opacity-100 duration-200 ease-in' : 'opacity-0 duration-100 ease-out'}`}
                             aria-hidden="true"
                           >
-                            <svg className="h-3 w-3 text-slate-900" fill="currentColor" viewBox="0 0 12 12">
+                            <svg
+                              className="h-3 w-3 text-slate-900"
+                              fill="currentColor"
+                              viewBox="0 0 12 12"
+                            >
                               <path d="M3.707 5.293a1 1 0 00-1.414 1.414l1.414-1.414zM5 8l-.707.707a1 1 0 001.414 0L5 8zm4.707-3.293a1 1 0 00-1.414-1.414l1.414 1.414zm-7.414 2l2 2 1.414-1.414-2-2-1.414 1.414zm3.414 2l4-4-1.414-1.414-4 4 1.414 1.414z" />
                             </svg>
                           </span>
@@ -187,9 +221,9 @@ export const WorkScheduleEditor: React.FC<WorkScheduleEditorProps> = ({ value, o
                         </div>
                       ) : (
                         <div className="w-full flex justify-center items-center h-[44px] animate-in zoom-in-95 duration-200">
-                           <span className="inline-flex items-center justify-center px-4 py-1 rounded-lg bg-slate-100 text-slate-400 text-xs font-bold uppercase tracking-widest border border-slate-200/60 shadow-sm select-none">
-                             Fermé
-                           </span>
+                          <span className="inline-flex items-center justify-center px-4 py-1 rounded-lg bg-slate-100 text-slate-400 text-xs font-bold uppercase tracking-widest border border-slate-200/60 shadow-sm select-none">
+                            Fermé
+                          </span>
                         </div>
                       )}
                     </div>

@@ -36,7 +36,7 @@ function formatOffset(timezone: string): string {
 export const ProfileSalonRole: React.FC = () => {
   const { activeSalon, role, memberships } = useAuth();
 
-  const currentMembership = memberships.find(m => m.salon_id === activeSalon?.id);
+  const currentMembership = memberships.find((m) => m.salon_id === activeSalon?.id);
   const memberSince = currentMembership?.created_at;
 
   // H-11: Detect timezone mismatch between browser and salon. Appointment
@@ -70,12 +70,18 @@ export const ProfileSalonRole: React.FC = () => {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-slate-900 truncate">{activeSalon.name}</p>
-            <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[role]}`}>
+            <span
+              className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[role]}`}
+            >
               {ROLE_LABELS[role]}
             </span>
             {memberSince && (
               <p className="text-xs text-slate-500 mt-2">
-                Membre depuis {new Date(memberSince).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                Membre depuis{' '}
+                {new Date(memberSince).toLocaleDateString('fr-FR', {
+                  month: 'long',
+                  year: 'numeric',
+                })}
               </p>
             )}
           </div>
@@ -88,10 +94,12 @@ export const ProfileSalonRole: React.FC = () => {
           <div className="text-sm text-amber-700">
             <p className="font-medium">Fuseau horaire différent détecté</p>
             <p className="mt-1 text-amber-700/90">
-              Votre navigateur est en <strong>{timezoneMismatch.browser}</strong> ({timezoneMismatch.browserOffset}),
-              mais le salon est configuré en <strong>{timezoneMismatch.salon}</strong> ({timezoneMismatch.salonOffset}).
-              Les horaires des rendez-vous que vous créez ou modifiez seront enregistrés avec l'heure de votre navigateur
-              — pour éviter tout décalage, utilisez un appareil dont le fuseau horaire correspond à celui du salon.
+              Votre navigateur est en <strong>{timezoneMismatch.browser}</strong> (
+              {timezoneMismatch.browserOffset}), mais le salon est configuré en{' '}
+              <strong>{timezoneMismatch.salon}</strong> ({timezoneMismatch.salonOffset}). Les
+              horaires des rendez-vous que vous créez ou modifiez seront enregistrés avec l'heure de
+              votre navigateur — pour éviter tout décalage, utilisez un appareil dont le fuseau
+              horaire correspond à celui du salon.
             </p>
           </div>
         </div>
@@ -99,15 +107,22 @@ export const ProfileSalonRole: React.FC = () => {
 
       {memberships.length > 1 && (
         <div className="mt-4">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">Tous mes salons</p>
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+            Tous mes salons
+          </p>
           <div className="space-y-2">
             {memberships.map((m) => (
-              <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100">
+              <div
+                key={m.id}
+                className="flex items-center justify-between p-3 rounded-lg border border-slate-100"
+              >
                 <div className="flex items-center gap-3 min-w-0">
                   <Building2 size={16} className="text-slate-400 shrink-0" />
                   <span className="text-sm text-slate-700 truncate">{m.salon.name}</span>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${ROLE_COLORS[m.role]}`}>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${ROLE_COLORS[m.role]}`}
+                >
                   {ROLE_LABELS[m.role]}
                 </span>
               </div>

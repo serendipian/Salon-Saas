@@ -1,7 +1,12 @@
-
 import React, { useMemo } from 'react';
 import { Pencil, Trash2, User } from 'lucide-react';
-import { Appointment, AppointmentStatus, StaffMember, Service, ServiceCategory } from '../../../types';
+import {
+  Appointment,
+  AppointmentStatus,
+  StaffMember,
+  Service,
+  ServiceCategory,
+} from '../../../types';
 import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import { EmptyState } from '../../../components/EmptyState';
@@ -10,9 +15,10 @@ import { StatusBadge } from './StatusBadge';
 
 const ClientAvatar: React.FC<{ name: string }> = ({ name }) => {
   const parts = name.trim().split(/\s+/);
-  const initials = parts.length >= 2
-    ? `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase()
-    : name.charAt(0).toUpperCase();
+  const initials =
+    parts.length >= 2
+      ? `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase()
+      : name.charAt(0).toUpperCase();
 
   return (
     <span
@@ -62,7 +68,7 @@ function groupByDayAndClient(appointments: Appointment[]) {
     }
 
     // Sort appointments within each client group by time
-    const clientGroups = [...clientMap.values()].map(group => {
+    const clientGroups = [...clientMap.values()].map((group) => {
       group.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       return group;
     });
@@ -76,14 +82,28 @@ function groupByDayAndClient(appointments: Appointment[]) {
 
 const COL_COUNT = 10; // Date, Heure, Client, Service, Variante, Durée, Prix, Staff, Statut, Actions
 
-export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments, team, services, categories, onDetails, onEdit, onDelete, onStatusChange }) => {
-  const staffMap = useMemo(() => new Map(team.map(s => [s.id, s])), [team]);
-  const serviceMap = useMemo(() => new Map(services.map(s => [s.id, s])), [services]);
-  const categoryMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
+export const AppointmentTable: React.FC<AppointmentTableProps> = ({
+  appointments,
+  team,
+  services,
+  categories,
+  onDetails,
+  onEdit,
+  onDelete,
+  onStatusChange,
+}) => {
+  const staffMap = useMemo(() => new Map(team.map((s) => [s.id, s])), [team]);
+  const serviceMap = useMemo(() => new Map(services.map((s) => [s.id, s])), [services]);
+  const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const grouped = useMemo(() => groupByDayAndClient(appointments), [appointments]);
 
   if (appointments.length === 0) {
-    return <EmptyState title="Aucun rendez-vous" description="Aucun rendez-vous ne correspond aux filtres." />;
+    return (
+      <EmptyState
+        title="Aucun rendez-vous"
+        description="Aucun rendez-vous ne correspond aux filtres."
+      />
+    );
   }
 
   return (
@@ -138,9 +158,10 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                         const rowBg = isMulti
                           ? 'bg-blue-50/40 hover:bg-blue-100/60'
                           : 'hover:bg-slate-50';
-                        const rowBorder = blockMiddle || blockLast
-                          ? 'border-t border-transparent'
-                          : 'border-t border-slate-50';
+                        const rowBorder =
+                          blockMiddle || blockLast
+                            ? 'border-t border-transparent'
+                            : 'border-t border-slate-50';
                         // 3D edge: subtle inset highlight on the first row of a block
                         const rowEdge = blockFirst
                           ? 'shadow-[inset_0_1px_0_0_rgba(96,165,250,0.35)]'
@@ -152,7 +173,9 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                           : '';
                         const railTop = blockFirst ? 'before:rounded-t-full' : '';
                         const railBottom = blockLast ? 'before:rounded-b-full' : '';
-                        const firstCellRail = [railBase, railTop, railBottom].filter(Boolean).join(' ');
+                        const firstCellRail = [railBase, railTop, railBottom]
+                          .filter(Boolean)
+                          .join(' ');
 
                         return (
                           <tr
@@ -160,18 +183,28 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                             className={`${rowBase} ${rowBg} ${rowBorder} ${rowEdge}`}
                             onClick={() => onDetails(appt.id)}
                           >
-                            <td className={`px-4 py-3 align-top border-r border-slate-100 ${firstCellRail}`}>
+                            <td
+                              className={`px-4 py-3 align-top border-r border-slate-100 ${firstCellRail}`}
+                            >
                               <span className="text-sm text-slate-500 capitalize">
-                                {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                                {date.toLocaleDateString('fr-FR', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                })}
                               </span>
                             </td>
                             <td className="px-4 py-3 align-top border-r border-slate-100">
                               <span className="text-sm font-semibold text-slate-900">
-                                {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                {date.toLocaleTimeString('fr-FR', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
                               </span>
                             </td>
                             <td className="px-4 py-3 align-top border-r border-slate-100">
-                              <span className={`flex items-center gap-2 text-sm font-medium ${blockMiddle || blockLast ? 'text-slate-500' : 'text-slate-900'}`}>
+                              <span
+                                className={`flex items-center gap-2 text-sm font-medium ${blockMiddle || blockLast ? 'text-slate-500' : 'text-slate-900'}`}
+                              >
                                 <ClientAvatar name={appt.clientName || '?'} />
                                 <span className="truncate">{appt.clientName || '—'}</span>
                                 {blockFirst && (
@@ -190,42 +223,65 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                                 const cat = svc ? categoryMap.get(svc.categoryId) : undefined;
                                 return (
                                   <span className="flex items-center gap-1.5 text-sm text-slate-800">
-                                    {cat && <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={14} className="text-slate-400 shrink-0" />}
+                                    {cat && (
+                                      <CategoryIcon
+                                        categoryName={cat.name}
+                                        iconName={cat.icon}
+                                        size={14}
+                                        className="text-slate-400 shrink-0"
+                                      />
+                                    )}
                                     {appt.serviceName || '—'}
                                   </span>
                                 );
                               })()}
                             </td>
                             <td className="px-4 py-3 align-top border-r border-slate-100 hidden lg:table-cell">
-                              <span className="text-sm text-slate-500">{appt.variantName || '—'}</span>
+                              <span className="text-sm text-slate-500">
+                                {appt.variantName || '—'}
+                              </span>
                             </td>
                             <td className="px-4 py-3 align-top border-r border-slate-100 hidden md:table-cell">
-                              <span className="text-sm text-slate-500">{formatDuration(appt.durationMinutes)}</span>
+                              <span className="text-sm text-slate-500">
+                                {formatDuration(appt.durationMinutes)}
+                              </span>
                             </td>
                             <td className="px-4 py-3 align-top border-r border-slate-100 text-sm font-medium text-slate-900 hidden md:table-cell">
                               {formatPrice(appt.price)}
                             </td>
                             <td className="px-4 py-3 align-top border-r border-slate-100 hidden lg:table-cell">
-                              {appt.staffId ? (() => {
-                                const staff = staffMap.get(appt.staffId);
-                                return (
-                                  <span className="flex items-center gap-1.5">
-                                    <StaffAvatar
-                                      firstName={staff?.firstName ?? appt.staffName.split(' ')[0] ?? ''}
-                                      lastName={staff?.lastName ?? appt.staffName.split(' ')[1] ?? ''}
-                                      photoUrl={staff?.photoUrl}
-                                      color={staff?.color}
-                                      size={22}
-                                    />
-                                    <span className="text-sm text-slate-500">{appt.staffName}</span>
-                                  </span>
-                                );
-                              })() : <span className="text-sm text-slate-500">—</span>}
+                              {appt.staffId ? (
+                                (() => {
+                                  const staff = staffMap.get(appt.staffId);
+                                  return (
+                                    <span className="flex items-center gap-1.5">
+                                      <StaffAvatar
+                                        firstName={
+                                          staff?.firstName ?? appt.staffName.split(' ')[0] ?? ''
+                                        }
+                                        lastName={
+                                          staff?.lastName ?? appt.staffName.split(' ')[1] ?? ''
+                                        }
+                                        photoUrl={staff?.photoUrl}
+                                        color={staff?.color}
+                                        size={22}
+                                      />
+                                      <span className="text-sm text-slate-500">
+                                        {appt.staffName}
+                                      </span>
+                                    </span>
+                                  );
+                                })()
+                              ) : (
+                                <span className="text-sm text-slate-500">—</span>
+                              )}
                             </td>
                             <td className="px-4 py-3 align-top border-r border-slate-100">
                               <StatusBadge
                                 status={appt.status}
-                                onStatusChange={onStatusChange ? (s) => onStatusChange(appt.id, s) : undefined}
+                                onStatusChange={
+                                  onStatusChange ? (s) => onStatusChange(appt.id, s) : undefined
+                                }
                               />
                               {appt.deletedAt && (
                                 <div className="text-[10px] text-red-500 mt-0.5">
@@ -237,7 +293,10 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                               <div className="flex items-center justify-end gap-1">
                                 {onEdit && (
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); onEdit(appt.id); }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onEdit(appt.id);
+                                    }}
                                     className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors rounded-md hover:bg-slate-100"
                                     title="Modifier"
                                   >
@@ -246,7 +305,10 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({ appointments
                                 )}
                                 {onDelete && (
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); onDelete(appt.id); }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onDelete(appt.id);
+                                    }}
                                     className="p-1.5 text-slate-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50"
                                     title="Supprimer"
                                   >

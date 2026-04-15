@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo } from 'react';
 import { Appointment, ServiceCategory, StaffMember, Service } from '../../../types';
 import { useCalendar } from './useCalendar';
@@ -39,20 +38,32 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
   const closePopover = useCallback(() => setPopover(null), []);
 
-  const handleViewDetails = useCallback((id: string) => {
-    setPopover(null);
-    onViewDetails(id);
-  }, [onViewDetails]);
+  const handleViewDetails = useCallback(
+    (id: string) => {
+      setPopover(null);
+      onViewDetails(id);
+    },
+    [onViewDetails],
+  );
 
-  const handleEdit = useCallback((id: string) => {
-    setPopover(null);
-    onEdit(id);
-  }, [onEdit]);
+  const handleEdit = useCallback(
+    (id: string) => {
+      setPopover(null);
+      onEdit(id);
+    },
+    [onEdit],
+  );
 
-  const serviceData = useMemo(() => services.map(s => ({ id: s.id, categoryId: s.categoryId })), [services]);
+  const serviceData = useMemo(
+    () => services.map((s) => ({ id: s.id, categoryId: s.categoryId })),
+    [services],
+  );
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 140px)' }}>
+    <div
+      className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col"
+      style={{ height: 'calc(100vh - 140px)' }}
+    >
       <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar */}
         <CalendarSidebar

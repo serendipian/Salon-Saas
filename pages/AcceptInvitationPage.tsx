@@ -18,11 +18,14 @@ export const AcceptInvitationPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const rawToken = searchParams.get('token');
-  const token = rawToken && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawToken)
-    ? rawToken
-    : null;
+  const token =
+    rawToken && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawToken)
+      ? rawToken
+      : null;
 
-  const [status, setStatus] = useState<'loading' | 'form' | 'processing' | 'awaiting-memberships' | 'success' | 'error'>('loading');
+  const [status, setStatus] = useState<
+    'loading' | 'form' | 'processing' | 'awaiting-memberships' | 'success' | 'error'
+  >('loading');
   const [invitationInfo, setInvitationInfo] = useState<InvitationInfo | null>(null);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -54,7 +57,9 @@ export const AcceptInvitationPage: React.FC = () => {
       const { data, error } = await supabase.rpc('get_invitation_info', { p_token: token });
       if (error || !data || data.length === 0 || !data[0].is_valid) {
         setStatus('error');
-        setErrorMessage('Cette invitation est invalide ou a expiré. Demandez une nouvelle invitation.');
+        setErrorMessage(
+          'Cette invitation est invalide ou a expiré. Demandez une nouvelle invitation.',
+        );
         return;
       }
       setInvitationInfo(data[0]);
@@ -82,10 +87,10 @@ export const AcceptInvitationPage: React.FC = () => {
         setStatus('error');
         setErrorMessage(
           error.message.includes('expired')
-            ? "Cette invitation a expiré. Demandez une nouvelle invitation."
+            ? 'Cette invitation a expiré. Demandez une nouvelle invitation.'
             : error.message.includes('already')
-            ? "Vous êtes déjà membre de ce salon."
-            : "Une erreur est survenue: " + error.message
+              ? 'Vous êtes déjà membre de ce salon.'
+              : 'Une erreur est survenue: ' + error.message,
         );
       } else {
         acceptedRef.current = true;
@@ -93,7 +98,7 @@ export const AcceptInvitationPage: React.FC = () => {
       }
     } catch {
       setStatus('error');
-      setErrorMessage("Une erreur est survenue. Veuillez réessayer.");
+      setErrorMessage('Une erreur est survenue. Veuillez réessayer.');
     }
   };
 
@@ -126,7 +131,9 @@ export const AcceptInvitationPage: React.FC = () => {
       if (!response.ok) {
         if (result.existing) {
           setStatus('error');
-          setErrorMessage('Un compte existe déjà avec cet email. Connectez-vous puis utilisez le lien d\'invitation.');
+          setErrorMessage(
+            "Un compte existe déjà avec cet email. Connectez-vous puis utilisez le lien d'invitation.",
+          );
           return;
         }
         setStatus('error');
@@ -143,7 +150,9 @@ export const AcceptInvitationPage: React.FC = () => {
       if (signInError) {
         // Account + invitation are done, just can't auto-sign-in
         setStatus('error');
-        setErrorMessage('Compte créé avec succès ! Connectez-vous avec votre email et mot de passe.');
+        setErrorMessage(
+          'Compte créé avec succès ! Connectez-vous avec votre email et mot de passe.',
+        );
         return;
       }
 
@@ -152,7 +161,7 @@ export const AcceptInvitationPage: React.FC = () => {
       setStatus('awaiting-memberships');
     } catch {
       setStatus('error');
-      setErrorMessage("Une erreur est survenue. Veuillez réessayer.");
+      setErrorMessage('Une erreur est survenue. Veuillez réessayer.');
     }
   };
 
@@ -183,8 +192,12 @@ export const AcceptInvitationPage: React.FC = () => {
           {status === 'form' && invitationInfo && (
             <>
               <div className="text-center mb-6">
-                <h2 className="text-lg font-semibold text-slate-900">Bienvenue chez {invitationInfo.salon_name}</h2>
-                <p className="text-sm text-slate-500 mt-1">Créez votre mot de passe pour rejoindre l'équipe</p>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Bienvenue chez {invitationInfo.salon_name}
+                </h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  Créez votre mot de passe pour rejoindre l'équipe
+                </p>
               </div>
 
               <div className="bg-slate-50 rounded-lg p-4 mb-6 space-y-2">
@@ -202,7 +215,9 @@ export const AcceptInvitationPage: React.FC = () => {
                 )}
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">Rôle</span>
-                  <span className="font-medium text-slate-900 capitalize">{invitationInfo.role}</span>
+                  <span className="font-medium text-slate-900 capitalize">
+                    {invitationInfo.role}
+                  </span>
                 </div>
               </div>
 
@@ -211,18 +226,24 @@ export const AcceptInvitationPage: React.FC = () => {
                   <XCircle className="w-10 h-10 text-amber-500 mx-auto mb-3" />
                   <p className="text-sm text-slate-700 font-medium">Email manquant</p>
                   <p className="text-sm text-slate-500 mt-1">
-                    Demandez au gérant d'ajouter votre email à votre fiche avant d'accepter l'invitation.
+                    Demandez au gérant d'ajouter votre email à votre fiche avant d'accepter
+                    l'invitation.
                   </p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Mot de passe</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Mot de passe
+                    </label>
                     <div className="relative">
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={password}
-                        onChange={e => { setPassword(e.target.value); setErrorMessage(null); }}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          setErrorMessage(null);
+                        }}
                         placeholder="Minimum 8 caractères"
                         className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
                         required
@@ -234,14 +255,16 @@ export const AcceptInvitationPage: React.FC = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                       >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   </div>
 
-                  {errorMessage && (
-                    <p className="text-sm text-red-600">{errorMessage}</p>
-                  )}
+                  {errorMessage && <p className="text-sm text-red-600">{errorMessage}</p>}
 
                   <button
                     type="submit"

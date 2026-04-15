@@ -79,33 +79,29 @@ function evaluateStateInternal() {
     setState('connected');
   } else {
     const elapsed = Date.now() - disconnectedAt;
-    setState(
-      elapsed >= TIMINGS.DISCONNECT_BANNER_THRESHOLD_MS ? 'disconnected' : 'reconnecting',
-    );
+    setState(elapsed >= TIMINGS.DISCONNECT_BANNER_THRESHOLD_MS ? 'disconnected' : 'reconnecting');
   }
 }
 
 function startMonitoring() {
   if (monitorChannel) return;
-  monitorChannel = supabase
-    .channel('connection-monitor')
-    .subscribe((status) => {
-      if (recoveryInFlight) return; // ignore expected churn during recovery
-      if (status === 'SUBSCRIBED') {
-        disconnectedAt = null;
-        evaluateStateInternal();
-      } else if (status === 'TIMED_OUT' || status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-        if (disconnectedAt === null) {
-          disconnectedAt = Date.now();
-          wasDisconnected = true;
-        }
-        evaluateStateInternal();
-        // WS-initiated recovery when the tab is visible.
-        if (document.visibilityState === 'visible') {
-          void triggerRecovery('ws');
-        }
+  monitorChannel = supabase.channel('connection-monitor').subscribe((status) => {
+    if (recoveryInFlight) return; // ignore expected churn during recovery
+    if (status === 'SUBSCRIBED') {
+      disconnectedAt = null;
+      evaluateStateInternal();
+    } else if (status === 'TIMED_OUT' || status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+      if (disconnectedAt === null) {
+        disconnectedAt = Date.now();
+        wasDisconnected = true;
       }
-    });
+      evaluateStateInternal();
+      // WS-initiated recovery when the tab is visible.
+      if (document.visibilityState === 'visible') {
+        void triggerRecovery('ws');
+      }
+    }
+  });
 }
 
 function stopMonitoring() {
@@ -181,28 +177,21 @@ async function refreshSessionRaw(
 ): Promise<StoredSession | 'auth' | 'network'> {
   let response: Response;
   try {
-    response = await fetch(
-      `${supabaseUrl}/auth/v1/token?grant_type=refresh_token`,
-      {
-        method: 'POST',
-        headers: {
-          apikey: anonKey,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refresh_token: refreshToken }),
-        signal,
+    response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: {
+        apikey: anonKey,
+        'Content-Type': 'application/json',
       },
-    );
+      body: JSON.stringify({ refresh_token: refreshToken }),
+      signal,
+    });
   } catch (err) {
     return classifyProbeError(err) === 'auth' ? 'auth' : 'network';
   }
 
   // 400/401 from /token means the refresh_token is invalid/expired/rotated.
-  if (
-    response.status === 400 ||
-    response.status === 401 ||
-    response.status === 403
-  ) {
+  if (response.status === 400 || response.status === 401 || response.status === 403) {
     return 'auth';
   }
   if (!response.ok) return 'network';
@@ -211,9 +200,7 @@ async function refreshSessionRaw(
   if (!fresh.access_token) return 'network';
 
   const existingRaw = localStorage.getItem(storageKey);
-  const existing = existingRaw
-    ? (JSON.parse(existingRaw) as StoredSession)
-    : ({} as StoredSession);
+  const existing = existingRaw ? (JSON.parse(existingRaw) as StoredSession) : ({} as StoredSession);
 
   const merged: StoredSession = {
     ...existing,
@@ -246,10 +233,7 @@ async function probeAuth(): Promise<'ok' | 'signed-out' | 'network' | 'auth'> {
   if (!session) return 'signed-out';
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(
-    () => controller.abort(),
-    TIMINGS.AUTH_PROBE_TIMEOUT_MS,
-  );
+  const timeoutId = setTimeout(() => controller.abort(), TIMINGS.AUTH_PROBE_TIMEOUT_MS);
 
   try {
     // Refresh proactively if the access_token is expired or within 30s of
@@ -441,7 +425,12 @@ export function useConnectionStatus(): ConnectionState {
   lastQueryClient = queryClient;
 
   const state = useSyncExternalStore(
-    (cb) => { listeners.add(cb); return () => { listeners.delete(cb); }; },
+    (cb) => {
+      listeners.add(cb);
+      return () => {
+        listeners.delete(cb);
+      };
+    },
     () => currentState,
   );
 

@@ -18,22 +18,21 @@ export const useTeam = (includeArchived = false) => {
   const { data: staff = [], isLoading } = useQuery({
     queryKey: ['staff_members', salonId, { includeArchived }],
     queryFn: async () => {
-      let query = supabase
-        .from('staff_members')
-        .select('*')
-        .eq('salon_id', salonId);
+      let query = supabase.from('staff_members').select('*').eq('salon_id', salonId);
       if (!includeArchived) {
         query = query.is('deleted_at', null);
       }
       const { data, error } = await query.order('last_name');
       if (error) throw error;
-      return (data ?? []).map(row => toStaffMember(row as unknown as Parameters<typeof toStaffMember>[0]));
+      return (data ?? []).map((row) =>
+        toStaffMember(row as unknown as Parameters<typeof toStaffMember>[0]),
+      );
     },
     enabled: !!salonId,
   });
 
   // Batch-fetch baseSalary for all staff via decrypted RPC (one call, not N)
-  const staffIds = useMemo(() => staff.map(m => m.id), [staff]);
+  const staffIds = useMemo(() => staff.map((m) => m.id), [staff]);
 
   const { data: salaryMap = {} as Record<string, number> } = useQuery({
     queryKey: ['staff_pii_batch', salonId, staffIds],
@@ -53,12 +52,14 @@ export const useTeam = (includeArchived = false) => {
   });
 
   // Merge baseSalary into staff members
-  const staffWithSalary = useMemo(() =>
-    staff.map(m => {
-      const salary = salaryMap[m.id];
-      return salary !== undefined ? { ...m, baseSalary: salary } : m;
-    }),
-  [staff, salaryMap]);
+  const staffWithSalary = useMemo(
+    () =>
+      staff.map((m) => {
+        const salary = salaryMap[m.id];
+        return salary !== undefined ? { ...m, baseSalary: salary } : m;
+      }),
+    [staff, salaryMap],
+  );
 
   // Load PII fields for a specific staff member via decrypted RPC
   const loadStaffPii = async (staffId: string): Promise<Partial<StaffMember>> => {
@@ -127,7 +128,9 @@ export const useTeam = (includeArchived = false) => {
       } catch {
         // Invalidate so UI reflects the non-PII changes that did save
         queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });
-        throw new Error('Profil mis à jour, mais les données sensibles (salaire, IBAN) n\'ont pas pu être enregistrées.');
+        throw new Error(
+          "Profil mis à jour, mais les données sensibles (salaire, IBAN) n'ont pas pu être enregistrées.",
+        );
       }
     },
     onSuccess: () => {
@@ -139,9 +142,8 @@ export const useTeam = (includeArchived = false) => {
   const filteredStaff = useMemo(() => {
     if (!searchTerm) return staffWithSalary;
     const term = searchTerm.toLowerCase();
-    return staffWithSalary.filter(m =>
-      m.firstName.toLowerCase().includes(term) ||
-      m.lastName.toLowerCase().includes(term)
+    return staffWithSalary.filter(
+      (m) => m.firstName.toLowerCase().includes(term) || m.lastName.toLowerCase().includes(term),
     );
   }, [staffWithSalary, searchTerm]);
 

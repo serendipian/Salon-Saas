@@ -18,7 +18,10 @@ export const ProfileSecurity: React.FC = () => {
       return;
     }
     if (newPassword.length < 8) {
-      addToast({ type: 'error', message: 'Le nouveau mot de passe doit contenir au moins 8 caractères' });
+      addToast({
+        type: 'error',
+        message: 'Le nouveau mot de passe doit contenir au moins 8 caractères',
+      });
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -26,7 +29,10 @@ export const ProfileSecurity: React.FC = () => {
       return;
     }
     if (newPassword === currentPassword) {
-      addToast({ type: 'error', message: 'Le nouveau mot de passe doit être différent de l\'actuel' });
+      addToast({
+        type: 'error',
+        message: "Le nouveau mot de passe doit être différent de l'actuel",
+      });
       return;
     }
 

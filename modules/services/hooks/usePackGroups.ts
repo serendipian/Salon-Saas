@@ -30,18 +30,22 @@ export function usePackGroups() {
   });
 
   const addPackGroupMutation = useMutation({
-    mutationFn: async (group: { name: string; description: string; color: string | null; startsAt: string | null; endsAt: string | null }) => {
+    mutationFn: async (group: {
+      name: string;
+      description: string;
+      color: string | null;
+      startsAt: string | null;
+      endsAt: string | null;
+    }) => {
       if (!salonId) throw new Error('No salon');
-      const { error } = await supabase
-        .from('pack_groups')
-        .insert({
-          salon_id: salonId,
-          name: group.name,
-          description: group.description || null,
-          color: group.color,
-          starts_at: group.startsAt,
-          ends_at: group.endsAt,
-        });
+      const { error } = await supabase.from('pack_groups').insert({
+        salon_id: salonId,
+        name: group.name,
+        description: group.description || null,
+        color: group.color,
+        starts_at: group.startsAt,
+        ends_at: group.endsAt,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -52,7 +56,14 @@ export function usePackGroups() {
   });
 
   const updatePackGroupMutation = useMutation({
-    mutationFn: async (group: { id: string; name: string; description: string; color: string | null; startsAt: string | null; endsAt: string | null }) => {
+    mutationFn: async (group: {
+      id: string;
+      name: string;
+      description: string;
+      color: string | null;
+      startsAt: string | null;
+      endsAt: string | null;
+    }) => {
       if (!salonId) throw new Error('No salon');
       const { error } = await supabase
         .from('pack_groups')

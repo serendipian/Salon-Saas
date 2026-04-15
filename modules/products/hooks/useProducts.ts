@@ -2,7 +2,13 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { toProduct, toProductInsert, toProductCategory, toProductCategoryInsert, toBrand } from '../mappers';
+import {
+  toProduct,
+  toProductInsert,
+  toProductCategory,
+  toProductCategoryInsert,
+  toBrand,
+} from '../mappers';
 import type { Product, ProductCategory, Brand } from '../../../types';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
@@ -72,7 +78,13 @@ export const useProducts = () => {
 
   // Add product
   const addProductMutation = useMutation({
-    mutationFn: async ({ product, supplierId }: { product: Product; supplierId?: string | null }) => {
+    mutationFn: async ({
+      product,
+      supplierId,
+    }: {
+      product: Product;
+      supplierId?: string | null;
+    }) => {
       const { error } = await supabase
         .from('products')
         .insert(toProductInsert(product, salonId, supplierId));
@@ -87,7 +99,13 @@ export const useProducts = () => {
 
   // Update product
   const updateProductMutation = useMutation({
-    mutationFn: async ({ product, supplierId }: { product: Product; supplierId?: string | null }) => {
+    mutationFn: async ({
+      product,
+      supplierId,
+    }: {
+      product: Product;
+      supplierId?: string | null;
+    }) => {
       const { salon_id, ...updateData } = toProductInsert(product, salonId, supplierId);
       const { error } = await supabase
         .from('products')
@@ -100,7 +118,7 @@ export const useProducts = () => {
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
       toastOnSuccess('Produit enregistré')();
     },
-    onError: toastOnError("Impossible de modifier le produit"),
+    onError: toastOnError('Impossible de modifier le produit'),
   });
 
   // Update product categories (via RPC for atomic operation)
@@ -125,7 +143,7 @@ export const useProducts = () => {
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
       toastOnSuccess('Catégories enregistrées')();
     },
-    onError: toastOnError("Impossible de modifier les catégories de produits"),
+    onError: toastOnError('Impossible de modifier les catégories de produits'),
   });
 
   // Update brands (via RPC for atomic operation)
@@ -149,7 +167,7 @@ export const useProducts = () => {
       queryClient.invalidateQueries({ queryKey: ['brands', salonId] });
       toastOnSuccess('Marques enregistrées')();
     },
-    onError: toastOnError("Impossible de modifier les marques"),
+    onError: toastOnError('Impossible de modifier les marques'),
   });
 
   // Delete product (soft-delete via deleted_at)
@@ -173,9 +191,8 @@ export const useProducts = () => {
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products;
     const term = searchTerm.toLowerCase();
-    return products.filter(p =>
-      p.name.toLowerCase().includes(term) ||
-      p.sku.toLowerCase().includes(term)
+    return products.filter(
+      (p) => p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term),
     );
   }, [products, searchTerm]);
 
@@ -194,7 +211,6 @@ export const useProducts = () => {
     updateProductCategories: (payload: CategoryUpdatePayload) =>
       updateProductCategoriesMutation.mutate(payload),
     deleteProduct: (productId: string) => deleteProductMutation.mutate(productId),
-    updateBrands: (brandList: Brand[]) =>
-      updateBrandsMutation.mutate(brandList),
+    updateBrands: (brandList: Brand[]) => updateBrandsMutation.mutate(brandList),
   };
 };

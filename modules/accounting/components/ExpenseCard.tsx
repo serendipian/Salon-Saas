@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tag, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft } from 'lucide-react';
 import { Expense, PaymentMethod } from '../../../types';
@@ -15,7 +14,10 @@ const PAYMENT_METHOD_LABELS: Record<PaymentMethod, { label: string; icon: React.
 
 const FALLBACK_CATEGORY_COLOR = 'bg-slate-100 text-slate-700';
 
-export const ExpenseCard: React.FC<{ expenses: Expense[]; onEdit?: (id: string) => void }> = ({ expenses, onEdit }) => {
+export const ExpenseCard: React.FC<{ expenses: Expense[]; onEdit?: (id: string) => void }> = ({
+  expenses,
+  onEdit,
+}) => {
   if (expenses.length === 0) {
     return <EmptyState title="Aucune dépense trouvée" />;
   }
@@ -36,19 +38,21 @@ export const ExpenseCard: React.FC<{ expenses: Expense[]; onEdit?: (id: string) 
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="min-w-0">
                 <p className="font-bold text-slate-800 text-sm truncate">{exp.description}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{new Date(exp.date).toLocaleDateString()}</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {new Date(exp.date).toLocaleDateString()}
+                </p>
               </div>
               <span className="font-bold text-slate-900 text-sm shrink-0">
                 {formatPrice(exp.amount)}
               </span>
             </div>
 
-            {exp.supplier && (
-              <p className="text-xs text-slate-600 mb-2">{exp.supplier}</p>
-            )}
+            {exp.supplier && <p className="text-xs text-slate-600 mb-2">{exp.supplier}</p>}
 
             <div className="flex items-center gap-2 mt-2 flex-wrap">
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border border-white/20 shadow-sm ${color}`}>
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border border-white/20 shadow-sm ${color}`}
+              >
                 <Tag size={12} /> {label}
               </span>
               {pm && (

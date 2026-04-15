@@ -7,11 +7,14 @@ interface StaffActivityTabProps {
   staffId: string;
 }
 
-const EVENT_CONFIG: Record<StaffActivityEvent['eventType'], {
-  icon: React.FC<{ className?: string }>;
-  color: string;
-  bgColor: string;
-}> = {
+const EVENT_CONFIG: Record<
+  StaffActivityEvent['eventType'],
+  {
+    icon: React.FC<{ className?: string }>;
+    color: string;
+    bgColor: string;
+  }
+> = {
   appointment_completed: {
     icon: CheckCircle2,
     color: 'text-emerald-600',
@@ -88,11 +91,11 @@ export const StaffActivityTab: React.FC<StaffActivityTabProps> = ({ staffId }) =
           return (
             <div key={`${event.eventDate}-${idx}`} className="flex gap-3 relative">
               {/* Timeline line */}
-              {!isLast && (
-                <div className="absolute left-[15px] top-9 bottom-0 w-px bg-slate-200" />
-              )}
+              {!isLast && <div className="absolute left-[15px] top-9 bottom-0 w-px bg-slate-200" />}
               {/* Icon */}
-              <div className={`w-8 h-8 rounded-full ${config.bgColor} flex items-center justify-center shrink-0 z-10`}>
+              <div
+                className={`w-8 h-8 rounded-full ${config.bgColor} flex items-center justify-center shrink-0 z-10`}
+              >
                 <Icon className={`w-4 h-4 ${config.color}`} />
               </div>
               {/* Content */}
@@ -102,7 +105,9 @@ export const StaffActivityTab: React.FC<StaffActivityTabProps> = ({ staffId }) =
                   {event.clientName && (
                     <span className="text-xs text-slate-500">{event.clientName}</span>
                   )}
-                  <span className="text-xs text-slate-400">{formatRelativeDate(event.eventDate)}</span>
+                  <span className="text-xs text-slate-400">
+                    {formatRelativeDate(event.eventDate)}
+                  </span>
                 </div>
               </div>
             </div>

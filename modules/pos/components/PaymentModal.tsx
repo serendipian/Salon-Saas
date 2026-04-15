@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Trash2, CreditCard, Banknote, Gift, Tag, CheckCircle, ChevronDown } from 'lucide-react';
@@ -15,13 +14,19 @@ interface PaymentModalProps {
   isProcessing?: boolean;
 }
 
-export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], onClose, onComplete, isProcessing }) => {
+export const PaymentModal: React.FC<PaymentModalProps> = ({
+  total,
+  cart = [],
+  onClose,
+  onComplete,
+  isProcessing,
+}) => {
   const { salonSettings } = useSettings();
   const { isMobile } = useMediaQuery();
   const [summaryExpanded, setSummaryExpanded] = useState(false);
   const [payments, setPayments] = useState<PaymentEntry[]>([]);
   const [currentAmount, setCurrentAmount] = useState<string>(total.toFixed(2));
-  
+
   const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
   const remaining = Math.max(0, Math.round((total - totalPaid) * 100) / 100);
   const change = Math.max(0, Math.round((totalPaid - total) * 100) / 100);
@@ -67,7 +72,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
   };
 
   const removePayment = (id: string) => {
-    setPayments(payments.filter(p => p.id !== id));
+    setPayments(payments.filter((p) => p.id !== id));
   };
 
   const handleFinalize = () => {
@@ -85,30 +90,36 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
   };
 
   // Mobile collapsible summary
-  const mobileSummary = cart.length > 0 && isMobile ? (
-    <div className="border-b border-slate-100">
-      <button
-        type="button"
-        onClick={() => setSummaryExpanded(!summaryExpanded)}
-        className="w-full px-5 py-3 flex items-center justify-between text-sm"
-      >
-        <span className="text-slate-600">
-          {cart.length} article{cart.length > 1 ? 's' : ''} · {formatPrice(total)}
-        </span>
-        <ChevronDown size={16} className={`text-slate-400 transition-transform ${summaryExpanded ? 'rotate-180' : ''}`} />
-      </button>
-      {summaryExpanded && (
-        <div className="px-5 pb-3 space-y-2">
-          {cart.map((item, idx) => (
-            <div key={idx} className="flex justify-between text-xs text-slate-600">
-              <span>{item.name} {item.variantName ? `(${item.variantName})` : ''} × {item.quantity}</span>
-              <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  ) : null;
+  const mobileSummary =
+    cart.length > 0 && isMobile ? (
+      <div className="border-b border-slate-100">
+        <button
+          type="button"
+          onClick={() => setSummaryExpanded(!summaryExpanded)}
+          className="w-full px-5 py-3 flex items-center justify-between text-sm"
+        >
+          <span className="text-slate-600">
+            {cart.length} article{cart.length > 1 ? 's' : ''} · {formatPrice(total)}
+          </span>
+          <ChevronDown
+            size={16}
+            className={`text-slate-400 transition-transform ${summaryExpanded ? 'rotate-180' : ''}`}
+          />
+        </button>
+        {summaryExpanded && (
+          <div className="px-5 pb-3 space-y-2">
+            {cart.map((item, idx) => (
+              <div key={idx} className="flex justify-between text-xs text-slate-600">
+                <span>
+                  {item.name} {item.variantName ? `(${item.variantName})` : ''} × {item.quantity}
+                </span>
+                <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    ) : null;
 
   if (isMobile) {
     return createPortal(
@@ -122,7 +133,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 shrink-0">
           <h2 className="text-lg font-bold text-slate-900">Encaissement</h2>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Fermer">
+          <button
+            onClick={onClose}
+            className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Fermer"
+          >
             <X size={20} />
           </button>
         </div>
@@ -133,18 +148,22 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
           {/* Amount input */}
           <div>
-            <label className="block text-sm font-medium text-slate-500 mb-2">Montant à encaisser</label>
+            <label className="block text-sm font-medium text-slate-500 mb-2">
+              Montant à encaisser
+            </label>
             <div className="relative">
               <input
                 type="number"
                 inputMode="decimal"
                 value={currentAmount}
-                onChange={e => setCurrentAmount(e.target.value)}
+                onChange={(e) => setCurrentAmount(e.target.value)}
                 className="w-full text-4xl font-bold text-slate-800 bg-transparent border-b-2 border-slate-200 focus:border-slate-900 outline-none py-2 placeholder:text-slate-300 transition-colors"
                 placeholder="0.00"
                 autoFocus
               />
-              <span className="absolute right-0 bottom-3 text-xl text-slate-400 font-medium">{currencySymbol}</span>
+              <span className="absolute right-0 bottom-3 text-xl text-slate-400 font-medium">
+                {currencySymbol}
+              </span>
             </div>
           </div>
 
@@ -163,7 +182,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
                 className="flex flex-col items-center justify-center gap-2 p-5 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm min-h-[80px]"
               >
                 <Icon size={28} className="text-slate-400 group-hover:text-slate-900" />
-                <span className="font-bold text-sm text-slate-700 group-hover:text-slate-900">{method}</span>
+                <span className="font-bold text-sm text-slate-700 group-hover:text-slate-900">
+                  {method}
+                </span>
               </button>
             ))}
           </div>
@@ -172,10 +193,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
           {payments.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-xs font-bold text-slate-400 uppercase">Paiements reçus</h4>
-              {payments.map(p => {
+              {payments.map((p) => {
                 const Icon = getIcon(p.method);
                 return (
-                  <div key={p.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-white text-slate-500 flex items-center justify-center border border-slate-200">
                         <Icon size={16} />
@@ -184,7 +208,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="font-bold text-slate-700">{formatPrice(p.amount)}</span>
-                      <button onClick={() => removePayment(p.id)} className="p-2 text-slate-300 hover:text-red-600 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
+                      <button
+                        onClick={() => removePayment(p.id)}
+                        className="p-2 text-slate-300 hover:text-red-600 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -196,7 +223,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
         </div>
 
         {/* Sticky footer */}
-        <div className="shrink-0 px-5 py-4 bg-slate-50 border-t border-slate-200 space-y-3" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
+        <div
+          className="shrink-0 px-5 py-4 bg-slate-50 border-t border-slate-200 space-y-3"
+          style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
+        >
           <div className="flex justify-between text-sm text-slate-600">
             <span>Reste à payer</span>
             <span className={`font-bold ${remaining > 0 ? 'text-slate-800' : 'text-slate-400'}`}>
@@ -214,52 +244,60 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
             disabled={!isComplete || isProcessing}
             className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all shadow-sm ${
               isComplete && !isProcessing
-              ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-              : 'bg-slate-100 text-slate-400 border border-slate-200'
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                : 'bg-slate-100 text-slate-400 border border-slate-200'
             }`}
           >
             {isProcessing ? (
-              <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Traitement en cours...</>
+              <>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />{' '}
+                Traitement en cours...
+              </>
             ) : isComplete ? (
-              <><CheckCircle size={24} /> Valider la transaction</>
+              <>
+                <CheckCircle size={24} /> Valider la transaction
+              </>
             ) : (
               <span>Reste {formatPrice(remaining)} à payer</span>
             )}
           </button>
         </div>
       </div>,
-      document.body
+      document.body,
     );
   }
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col md:flex-row h-[600px]">
-        
         {/* Left: Summary & Payments List */}
         <div className="w-full md:w-1/3 bg-slate-50 border-r border-slate-200 p-6 flex flex-col">
           <div className="mb-6">
-             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total à payer</h3>
-             <div className="text-4xl font-bold text-slate-900 mb-4">{formatPrice(total)}</div>
-             
-             <div className="space-y-2 text-sm">
-               <div className="flex justify-between text-slate-600">
-                 <span>Déjà payé</span>
-                 <span className="font-medium text-emerald-700">{formatPrice(totalPaid)}</span>
-               </div>
-               <div className="flex justify-between text-slate-600 pt-2 border-t border-slate-200">
-                 <span>Reste à payer</span>
-                 <span className={`font-bold text-lg ${remaining > 0 ? 'text-slate-800' : 'text-slate-400'}`}>
-                   {formatPrice(remaining)}
-                 </span>
-               </div>
-               {change > 0 && (
-                 <div className="flex justify-between text-slate-600 pt-2 border-t border-slate-200 bg-emerald-50 p-2 rounded-lg mt-2">
-                   <span className="font-bold text-emerald-700">A rendre</span>
-                   <span className="font-bold text-emerald-700">{formatPrice(change)}</span>
-                 </div>
-               )}
-             </div>
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+              Total à payer
+            </h3>
+            <div className="text-4xl font-bold text-slate-900 mb-4">{formatPrice(total)}</div>
+
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between text-slate-600">
+                <span>Déjà payé</span>
+                <span className="font-medium text-emerald-700">{formatPrice(totalPaid)}</span>
+              </div>
+              <div className="flex justify-between text-slate-600 pt-2 border-t border-slate-200">
+                <span>Reste à payer</span>
+                <span
+                  className={`font-bold text-lg ${remaining > 0 ? 'text-slate-800' : 'text-slate-400'}`}
+                >
+                  {formatPrice(remaining)}
+                </span>
+              </div>
+              {change > 0 && (
+                <div className="flex justify-between text-slate-600 pt-2 border-t border-slate-200 bg-emerald-50 p-2 rounded-lg mt-2">
+                  <span className="font-bold text-emerald-700">A rendre</span>
+                  <span className="font-bold text-emerald-700">{formatPrice(change)}</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2">
@@ -267,22 +305,30 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
             {payments.length === 0 && (
               <p className="text-sm text-slate-400 italic">Aucun paiement enregistré.</p>
             )}
-            {payments.map(p => {
+            {payments.map((p) => {
               const Icon = getIcon(p.method);
               return (
-                <div key={p.id} className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm animate-in slide-in-from-left-2">
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm animate-in slide-in-from-left-2"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center">
                       <Icon size={16} />
                     </div>
                     <div>
                       <div className="text-sm font-bold text-slate-700">{p.method}</div>
-                      <div className="text-xs text-slate-500">{new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                      <div className="text-xs text-slate-500">
+                        {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-slate-700">{formatPrice(p.amount)}</span>
-                    <button onClick={() => removePayment(p.id)} className="text-slate-300 hover:text-red-600 transition-colors">
+                    <button
+                      onClick={() => removePayment(p.id)}
+                      className="text-slate-300 hover:text-red-600 transition-colors"
+                    >
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -296,92 +342,103 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, cart = [], on
         <div className="flex-1 p-8 flex flex-col bg-white">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-slate-800">Encaissement</h2>
-            <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"
+            >
               <X size={24} />
             </button>
           </div>
 
           {/* Amount Input */}
           <div className="mb-8">
-             <label className="block text-sm font-medium text-slate-500 mb-2">Montant à encaisser</label>
-             <div className="relative">
-               <input
-                 type="number"
-                 inputMode="decimal"
-                 value={currentAmount}
-                 onChange={e => setCurrentAmount(e.target.value)}
-                 className="w-full text-5xl font-bold text-slate-800 bg-transparent border-b-2 border-slate-200 focus:border-slate-900 outline-none py-2 placeholder:text-slate-300 transition-colors"
-                 placeholder="0.00"
-                 autoFocus
-               />
-               <span className="absolute right-0 bottom-4 text-2xl text-slate-400 font-medium">{currencySymbol}</span>
-             </div>
+            <label className="block text-sm font-medium text-slate-500 mb-2">
+              Montant à encaisser
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                inputMode="decimal"
+                value={currentAmount}
+                onChange={(e) => setCurrentAmount(e.target.value)}
+                className="w-full text-5xl font-bold text-slate-800 bg-transparent border-b-2 border-slate-200 focus:border-slate-900 outline-none py-2 placeholder:text-slate-300 transition-colors"
+                placeholder="0.00"
+                autoFocus
+              />
+              <span className="absolute right-0 bottom-4 text-2xl text-slate-400 font-medium">
+                {currencySymbol}
+              </span>
+            </div>
           </div>
 
           {/* Payment Methods Grid */}
           <div className="grid grid-cols-2 gap-4 mb-auto">
-             <button 
-               onClick={() => handleAddPayment('Carte Bancaire')}
-               disabled={remaining <= 0}
-               className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-             >
-                <CreditCard size={32} className="text-slate-400 group-hover:text-slate-900" />
-                <span className="font-bold text-slate-700 group-hover:text-slate-900">Carte Bancaire</span>
-             </button>
+            <button
+              onClick={() => handleAddPayment('Carte Bancaire')}
+              disabled={remaining <= 0}
+              className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            >
+              <CreditCard size={32} className="text-slate-400 group-hover:text-slate-900" />
+              <span className="font-bold text-slate-700 group-hover:text-slate-900">
+                Carte Bancaire
+              </span>
+            </button>
 
-             <button 
-               onClick={() => handleAddPayment('Espèces')}
-               disabled={remaining <= 0}
-               className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-             >
-                <Banknote size={32} className="text-slate-400 group-hover:text-slate-900" />
-                <span className="font-bold text-slate-700 group-hover:text-slate-900">Espèces</span>
-             </button>
+            <button
+              onClick={() => handleAddPayment('Espèces')}
+              disabled={remaining <= 0}
+              className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            >
+              <Banknote size={32} className="text-slate-400 group-hover:text-slate-900" />
+              <span className="font-bold text-slate-700 group-hover:text-slate-900">Espèces</span>
+            </button>
 
-             <button 
-               onClick={() => handleAddPayment('Carte Cadeau')}
-               disabled={remaining <= 0}
-               className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-             >
-                <Gift size={32} className="text-slate-400 group-hover:text-slate-900" />
-                <span className="font-bold text-slate-700 group-hover:text-slate-900">Carte Cadeau</span>
-             </button>
+            <button
+              onClick={() => handleAddPayment('Carte Cadeau')}
+              disabled={remaining <= 0}
+              className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            >
+              <Gift size={32} className="text-slate-400 group-hover:text-slate-900" />
+              <span className="font-bold text-slate-700 group-hover:text-slate-900">
+                Carte Cadeau
+              </span>
+            </button>
 
-              <button 
-               onClick={() => handleAddPayment('Autre')}
-               disabled={remaining <= 0}
-               className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-             >
-                <Tag size={32} className="text-slate-400 group-hover:text-slate-900" />
-                <span className="font-bold text-slate-700 group-hover:text-slate-900">Autre</span>
-             </button>
+            <button
+              onClick={() => handleAddPayment('Autre')}
+              disabled={remaining <= 0}
+              className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            >
+              <Tag size={32} className="text-slate-400 group-hover:text-slate-900" />
+              <span className="font-bold text-slate-700 group-hover:text-slate-900">Autre</span>
+            </button>
           </div>
 
           {/* Validation */}
           <div className="mt-6 pt-6 border-t border-slate-100">
-             <button
-               onClick={handleFinalize}
-               disabled={!isComplete || isProcessing}
-               className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all shadow-sm ${
-                 isComplete && !isProcessing
-                 ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
-                 : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-               }`}
-             >
-               {isProcessing ? (
-                 <>
-                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                   Traitement en cours...
-                 </>
-               ) : isComplete ? (
-                 <>
-                   <CheckCircle size={24} />
-                   Valider la transaction
-                 </>
-               ) : (
-                 <span>Reste {formatPrice(remaining)} à payer</span>
-               )}
-             </button>
+            <button
+              onClick={handleFinalize}
+              disabled={!isComplete || isProcessing}
+              className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all shadow-sm ${
+                isComplete && !isProcessing
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
+                  : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+              }`}
+            >
+              {isProcessing ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Traitement en cours...
+                </>
+              ) : isComplete ? (
+                <>
+                  <CheckCircle size={24} />
+                  Valider la transaction
+                </>
+              ) : (
+                <span>Reste {formatPrice(remaining)} à payer</span>
+              )}
+            </button>
           </div>
         </div>
       </div>

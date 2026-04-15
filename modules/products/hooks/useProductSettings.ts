@@ -28,9 +28,16 @@ export function useProductSettings() {
       const raw = data?.product_settings as Record<string, unknown> | null;
       if (!raw || Object.keys(raw).length === 0) return DEFAULTS;
       return {
-        lowStockThreshold: typeof raw.lowStockThreshold === 'number' ? raw.lowStockThreshold : DEFAULTS.lowStockThreshold,
-        showCostsInList: typeof raw.showCostsInList === 'boolean' ? raw.showCostsInList : DEFAULTS.showCostsInList,
-        defaultView: raw.defaultView === 'card' || raw.defaultView === 'table' ? raw.defaultView : DEFAULTS.defaultView,
+        lowStockThreshold:
+          typeof raw.lowStockThreshold === 'number'
+            ? raw.lowStockThreshold
+            : DEFAULTS.lowStockThreshold,
+        showCostsInList:
+          typeof raw.showCostsInList === 'boolean' ? raw.showCostsInList : DEFAULTS.showCostsInList,
+        defaultView:
+          raw.defaultView === 'card' || raw.defaultView === 'table'
+            ? raw.defaultView
+            : DEFAULTS.defaultView,
       } satisfies ProductSettings;
     },
     enabled: !!salonId,

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { Client } from '../../../types';
@@ -27,10 +26,11 @@ export const ClientList: React.FC<ClientListProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const { viewMode, setViewMode } = useViewMode('clients');
 
-  const filteredClients = clients.filter(c =>
-    c.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.phone.includes(searchTerm)
+  const filteredClients = clients.filter(
+    (c) =>
+      c.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.phone.includes(searchTerm),
   );
 
   return (

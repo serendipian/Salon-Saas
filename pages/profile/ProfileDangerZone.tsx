@@ -14,7 +14,7 @@ export const ProfileDangerZone: React.FC = () => {
   const [isLeaving, setIsLeaving] = useState(false);
 
   const salonId = activeSalon?.id ?? '';
-  const currentMembership = memberships.find(m => m.salon_id === salonId);
+  const currentMembership = memberships.find((m) => m.salon_id === salonId);
 
   // Check if the user is the sole owner by querying all owners in the salon
   const isOwner = currentMembership?.role === 'owner';
@@ -71,7 +71,8 @@ export const ProfileDangerZone: React.FC = () => {
       ) : (
         <div className="p-4 bg-red-50 rounded-xl space-y-3">
           <p className="text-sm text-red-700">
-            Vous perdrez l'accès à <strong>{activeSalon?.name}</strong>. Cette action est irréversible.
+            Vous perdrez l'accès à <strong>{activeSalon?.name}</strong>. Cette action est
+            irréversible.
           </p>
           <div className="flex gap-3">
             <button

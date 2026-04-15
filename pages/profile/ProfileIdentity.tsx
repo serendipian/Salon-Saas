@@ -25,7 +25,8 @@ export const ProfileIdentity: React.FC = () => {
     setBio(profile?.bio ?? '');
   }, [profile?.first_name, profile?.last_name, profile?.phone, profile?.bio]);
 
-  const initials = `${(profile?.first_name || '?')[0]}${(profile?.last_name || '?')[0]}`.toUpperCase();
+  const initials =
+    `${(profile?.first_name || '?')[0]}${(profile?.last_name || '?')[0]}`.toUpperCase();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,11 +65,7 @@ export const ProfileIdentity: React.FC = () => {
           disabled={isUploading}
         >
           {profile?.avatar_url ? (
-            <img
-              src={profile.avatar_url}
-              alt="Avatar"
-              className="w-full h-full object-cover"
-            />
+            <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-slate-900 text-white flex items-center justify-center">
               <span className="font-bold text-2xl">{initials}</span>
@@ -113,18 +110,8 @@ export const ProfileIdentity: React.FC = () => {
           required
         />
       </div>
-      <Input
-        label="Email"
-        value={profile?.email ?? ''}
-        disabled
-        className="mt-4"
-      />
-      <PhoneInput
-        label="Téléphone"
-        value={phone}
-        onChange={setPhone}
-        className="mt-4"
-      />
+      <Input label="Email" value={profile?.email ?? ''} disabled className="mt-4" />
+      <PhoneInput label="Téléphone" value={phone} onChange={setPhone} className="mt-4" />
       <TextArea
         label="Bio"
         value={bio}

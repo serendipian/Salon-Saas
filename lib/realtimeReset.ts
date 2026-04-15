@@ -42,7 +42,9 @@ export function useRealtimeEpoch(): number {
   return useSyncExternalStore(
     (cb) => {
       listeners.add(cb);
-      return () => { listeners.delete(cb); };
+      return () => {
+        listeners.delete(cb);
+      };
     },
     () => epoch,
   );

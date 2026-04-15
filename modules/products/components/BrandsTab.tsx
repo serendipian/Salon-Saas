@@ -41,7 +41,7 @@ export function BrandsTab() {
   };
 
   const hasChanges = JSON.stringify(localBrands) !== JSON.stringify(brands);
-  const hasEmptyNames = localBrands.some(b => !b.name.trim());
+  const hasEmptyNames = localBrands.some((b) => !b.name.trim());
 
   const handleSave = () => {
     if (hasEmptyNames) return;
@@ -87,12 +87,16 @@ export function BrandsTab() {
 
             <select
               value={brand.supplierId ?? ''}
-              onChange={(e) => handleUpdateBrand(brand.id, { supplierId: e.target.value || undefined })}
+              onChange={(e) =>
+                handleUpdateBrand(brand.id, { supplierId: e.target.value || undefined })
+              }
               className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none bg-white max-w-[180px]"
             >
               <option value="">Aucun fournisseur</option>
               {allSuppliers.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
               ))}
             </select>
 

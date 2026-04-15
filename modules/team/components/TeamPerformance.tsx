@@ -15,22 +15,31 @@ function RatioBar({ ratio }: { ratio: number | null }) {
   if (ratio === null) return <span className="text-slate-400 text-xs italic">—</span>;
   const pct = Math.min(ratio * 33, 100);
   const color =
-    ratio >= 2.5 ? 'bg-emerald-500' :
-    ratio >= 1.5 ? 'bg-blue-500' :
-    ratio >= 1   ? 'bg-amber-500' :
-                   'bg-rose-500';
+    ratio >= 2.5
+      ? 'bg-emerald-500'
+      : ratio >= 1.5
+        ? 'bg-blue-500'
+        : ratio >= 1
+          ? 'bg-amber-500'
+          : 'bg-rose-500';
   const textColor =
-    ratio >= 2.5 ? 'text-emerald-700' :
-    ratio >= 1.5 ? 'text-blue-700' :
-    ratio >= 1   ? 'text-amber-700' :
-                   'text-rose-700';
+    ratio >= 2.5
+      ? 'text-emerald-700'
+      : ratio >= 1.5
+        ? 'text-blue-700'
+        : ratio >= 1
+          ? 'text-amber-700'
+          : 'text-rose-700';
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
         <span className={`text-xs font-medium ${textColor}`}>{ratio.toFixed(2)}x</span>
       </div>
       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
+        <div
+          className={`h-full rounded-full transition-all ${color}`}
+          style={{ width: `${pct}%` }}
+        />
       </div>
     </div>
   );
@@ -44,12 +53,22 @@ function PerformanceCard({ perf, onClick }: { perf: StaffPerformance; onClick: (
       className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-4 text-left w-full hover:border-slate-300 hover:shadow-md transition-all group"
     >
       <div className="flex items-center gap-3">
-        <StaffAvatar firstName={staff.firstName} lastName={staff.lastName} photoUrl={staff.photoUrl} size={40} />
+        <StaffAvatar
+          firstName={staff.firstName}
+          lastName={staff.lastName}
+          photoUrl={staff.photoUrl}
+          size={40}
+        />
         <div className="min-w-0 flex-1">
-          <p className="font-semibold text-slate-900 truncate">{staff.firstName} {staff.lastName}</p>
+          <p className="font-semibold text-slate-900 truncate">
+            {staff.firstName} {staff.lastName}
+          </p>
           <p className="text-xs text-slate-500">{staff.role}</p>
         </div>
-        <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500 transition-colors shrink-0" />
+        <ChevronRight
+          size={16}
+          className="text-slate-300 group-hover:text-slate-500 transition-colors shrink-0"
+        />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-slate-50 rounded-lg p-3">
@@ -64,14 +83,18 @@ function PerformanceCard({ perf, onClick }: { perf: StaffPerformance; onClick: (
             <BarChart2 size={13} className="text-slate-500" />
             <span className="text-xs text-slate-500">CA / jour</span>
           </div>
-          <p className="text-base font-bold text-slate-900">{workingDays > 0 ? formatPrice(revenuePerDay) : '—'}</p>
+          <p className="text-base font-bold text-slate-900">
+            {workingDays > 0 ? formatPrice(revenuePerDay) : '—'}
+          </p>
         </div>
         <div className="bg-slate-50 rounded-lg p-3">
           <div className="flex items-center gap-1.5 mb-1">
             <Award size={13} className="text-slate-500" />
             <span className="text-xs text-slate-500">Bonus</span>
           </div>
-          <p className={`text-base font-bold ${bonusAttribue > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
+          <p
+            className={`text-base font-bold ${bonusAttribue > 0 ? 'text-amber-600' : 'text-slate-400'}`}
+          >
             {bonusAttribue > 0 ? formatPrice(bonusAttribue) : '—'}
           </p>
         </div>
@@ -92,7 +115,15 @@ function PerformanceCard({ perf, onClick }: { perf: StaffPerformance; onClick: (
   );
 }
 
-function PerformanceRow({ perf, totalRevenue, onClick }: { perf: StaffPerformance; totalRevenue: number; onClick: () => void }) {
+function PerformanceRow({
+  perf,
+  totalRevenue,
+  onClick,
+}: {
+  perf: StaffPerformance;
+  totalRevenue: number;
+  onClick: () => void;
+}) {
   const { staff, revenue, revenuePerDay, workingDays, bonusAttribue, baseSalary } = perf;
   const share = totalRevenue > 0 ? (revenue / totalRevenue) * 100 : 0;
   return (
@@ -102,7 +133,12 @@ function PerformanceRow({ perf, totalRevenue, onClick }: { perf: StaffPerformanc
     >
       <td className="py-3 px-4">
         <div className="flex items-center gap-2.5">
-          <StaffAvatar firstName={staff.firstName} lastName={staff.lastName} photoUrl={staff.photoUrl} size={32} />
+          <StaffAvatar
+            firstName={staff.firstName}
+            lastName={staff.lastName}
+            photoUrl={staff.photoUrl}
+            size={32}
+          />
           <div>
             <p className="text-sm font-medium text-slate-900 group-hover:text-blue-600 transition-colors">
               {staff.firstName} {staff.lastName}
@@ -116,7 +152,9 @@ function PerformanceRow({ perf, totalRevenue, onClick }: { perf: StaffPerformanc
         <p className="text-xs text-slate-400">{share.toFixed(1)}%</p>
       </td>
       <td className="py-3 px-4 text-right">
-        <p className="text-sm text-slate-700">{workingDays > 0 ? formatPrice(revenuePerDay) : '—'}</p>
+        <p className="text-sm text-slate-700">
+          {workingDays > 0 ? formatPrice(revenuePerDay) : '—'}
+        </p>
         <p className="text-xs text-slate-400">{workingDays} j.</p>
       </td>
       <td className="py-3 px-4 text-right">
@@ -130,23 +168,31 @@ function PerformanceRow({ perf, totalRevenue, onClick }: { perf: StaffPerformanc
         )}
       </td>
       <td className="py-3 px-4 text-right">
-        <p className="text-sm text-slate-700">{baseSalary != null ? formatPrice(baseSalary) : '—'}</p>
+        <p className="text-sm text-slate-700">
+          {baseSalary != null ? formatPrice(baseSalary) : '—'}
+        </p>
       </td>
       <td className="py-3 px-4 min-w-[140px]">
         <RatioBar ratio={perf.ratio} />
       </td>
       <td className="py-3 px-4">
-        <ChevronRight size={14} className="text-slate-300 group-hover:text-slate-500 transition-colors" />
+        <ChevronRight
+          size={14}
+          className="text-slate-300 group-hover:text-slate-500 transition-colors"
+        />
       </td>
     </tr>
   );
 }
 
 export const TeamPerformance: React.FC<TeamPerformanceProps> = ({ staff }) => {
-  const { performances, dateRange, setDateRange, totalRevenue, isLoadingPii } = useTeamPerformance(staff);
+  const { performances, dateRange, setDateRange, totalRevenue, isLoadingPii } =
+    useTeamPerformance(staff);
   const navigate = useNavigate();
 
-  const activeStaff = performances.filter(p => p.staff.active).sort((a, b) => b.revenue - a.revenue);
+  const activeStaff = performances
+    .filter((p) => p.staff.active)
+    .sort((a, b) => b.revenue - a.revenue);
 
   return (
     <div className="space-y-6 animate-in fade-in">
@@ -190,12 +236,24 @@ export const TeamPerformance: React.FC<TeamPerformanceProps> = ({ staff }) => {
         <table className="w-full">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th className="text-left text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">Membre</th>
-              <th className="text-right text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">CA période</th>
-              <th className="text-right text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">CA / jour</th>
-              <th className="text-right text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">Bonus</th>
-              <th className="text-right text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">Salaire base</th>
-              <th className="text-left text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4 min-w-[140px]">Ratio</th>
+              <th className="text-left text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">
+                Membre
+              </th>
+              <th className="text-right text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">
+                CA période
+              </th>
+              <th className="text-right text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">
+                CA / jour
+              </th>
+              <th className="text-right text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">
+                Bonus
+              </th>
+              <th className="text-right text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4">
+                Salaire base
+              </th>
+              <th className="text-left text-xs font-medium text-slate-500 uppercase tracking-wide py-3 px-4 min-w-[140px]">
+                Ratio
+              </th>
               <th className="w-8" />
             </tr>
           </thead>
@@ -207,7 +265,7 @@ export const TeamPerformance: React.FC<TeamPerformanceProps> = ({ staff }) => {
                 </td>
               </tr>
             ) : (
-              activeStaff.map(perf => (
+              activeStaff.map((perf) => (
                 <PerformanceRow
                   key={perf.staff.id}
                   perf={perf}
@@ -225,7 +283,7 @@ export const TeamPerformance: React.FC<TeamPerformanceProps> = ({ staff }) => {
         {activeStaff.length === 0 ? (
           <p className="text-slate-400 text-sm text-center col-span-2 py-8">Aucun membre actif</p>
         ) : (
-          activeStaff.map(perf => (
+          activeStaff.map((perf) => (
             <PerformanceCard
               key={perf.staff.id}
               perf={perf}
@@ -234,7 +292,6 @@ export const TeamPerformance: React.FC<TeamPerformanceProps> = ({ staff }) => {
           ))
         )}
       </div>
-
     </div>
   );
 };

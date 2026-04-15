@@ -9,7 +9,7 @@ export function useLinkedStaffMember() {
   const salonId = activeSalon?.id ?? '';
 
   // Find the current user's membership ID for the active salon
-  const membershipId = memberships.find(m => m.salon_id === salonId)?.id ?? '';
+  const membershipId = memberships.find((m) => m.salon_id === salonId)?.id ?? '';
 
   const { data: linkedStaff = null, isLoading } = useQuery<StaffMember | null>({
     queryKey: ['linked-staff', salonId, membershipId],

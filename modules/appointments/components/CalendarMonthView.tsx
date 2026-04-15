@@ -55,8 +55,8 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
   onDateClick,
 }) => {
   const cells = getMonthGrid(currentDate.getFullYear(), currentDate.getMonth());
-  const categoryMap = new Map(serviceCategories.map(c => [c.id, c]));
-  const serviceCatMap = new Map(services.map(s => [s.id, s.categoryId]));
+  const categoryMap = new Map(serviceCategories.map((c) => [c.id, c]));
+  const serviceCatMap = new Map(services.map((s) => [s.id, s.categoryId]));
   // M-13: merge multi-item service blocks into single visual events before
   // splitting into per-day cells. Done once at the top instead of per-cell so
   // groups crossing midnight (rare but possible for late appointments) still
@@ -84,7 +84,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
         {cells.map((cell, i) => {
           const today = isToday(cell.date);
           const dayAppts = mergedAppointments
-            .filter(a => isSameDay(new Date(a.date), cell.date))
+            .filter((a) => isSameDay(new Date(a.date), cell.date))
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
           const visible = dayAppts.slice(0, MAX_VISIBLE_EVENTS);
@@ -97,10 +97,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
                 i % 7 > 0 ? 'border-l border-slate-100' : ''
               } ${!cell.isCurrentMonth ? 'bg-slate-50/50' : ''}`}
             >
-              <button
-                onClick={() => onDateClick(cell.date)}
-                className="mb-1"
-              >
+              <button onClick={() => onDateClick(cell.date)} className="mb-1">
                 <span
                   className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-sm ${
                     today
@@ -115,7 +112,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
               </button>
 
               <div className="space-y-0.5">
-                {visible.map(appt => {
+                {visible.map((appt) => {
                   const catId = serviceCatMap.get(appt.serviceId);
                   const category = catId ? categoryMap.get(catId) : undefined;
                   return (

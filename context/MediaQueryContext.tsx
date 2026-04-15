@@ -26,7 +26,13 @@ function readSnapshot(): MediaQueryState {
 }
 
 function getServerSnapshot(): MediaQueryState {
-  return { isMobile: false, isTablet: false, isTabletPortrait: false, isTabletLandscape: false, isDesktop: true };
+  return {
+    isMobile: false,
+    isTablet: false,
+    isTabletPortrait: false,
+    isTabletLandscape: false,
+    isDesktop: true,
+  };
 }
 
 const MediaQueryContext = createContext<MediaQueryState>(getServerSnapshot());

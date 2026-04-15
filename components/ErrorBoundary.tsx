@@ -25,7 +25,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    console.error(`[ErrorBoundary${this.props.moduleName ? `: ${this.props.moduleName}` : ''}]`, error, errorInfo);
+    console.error(
+      `[ErrorBoundary${this.props.moduleName ? `: ${this.props.moduleName}` : ''}]`,
+      error,
+      errorInfo,
+    );
   }
 
   handleReset = () => {

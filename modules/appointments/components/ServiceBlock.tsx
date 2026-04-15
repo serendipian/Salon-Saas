@@ -88,7 +88,9 @@ export default function ServiceBlock({
   const handleCategoryChange = (categoryId: string) => {
     if (!isPillAllowedWhenLocked(categoryId)) return;
     setActiveCategoryId(categoryId);
-    onUpdate({ categoryId: categoryId === 'FAVORITES' || categoryId === 'PACKS' ? null : categoryId });
+    onUpdate({
+      categoryId: categoryId === 'FAVORITES' || categoryId === 'PACKS' ? null : categoryId,
+    });
   };
 
   const handleClear = () => {
@@ -129,7 +131,11 @@ export default function ServiceBlock({
     return services.find((s) => s.id === block.items[0].serviceId) ?? null;
   }, [block.items, services]);
 
-  const dateFmt = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+  const dateFmt = new Intl.DateTimeFormat('fr-FR', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
   const formatBlockDate = (dateStr: string) => dateFmt.format(new Date(dateStr + 'T00:00:00'));
 
   const timeRange = useMemo(() => {
@@ -145,25 +151,28 @@ export default function ServiceBlock({
     block.items.length === 0
       ? 'Service'
       : block.items.length === 1
-        ? firstItemService?.name ?? 'Service'
+        ? (firstItemService?.name ?? 'Service')
         : `${block.items.length} prestations`;
 
-  const serviceInfoBadge = block.items.length > 0 ? (
-    <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
-      {blockDuration > 0 && (
-        <span className="flex items-center gap-0.5">
-          <Clock size={10} /> {formatDuration(blockDuration)}
-        </span>
-      )}
-      {blockPrice > 0 && <span className="text-blue-600 font-semibold">{formatPrice(blockPrice)}</span>}
-      {block.date && (
-        <span className="flex items-center gap-0.5">
-          <Calendar size={10} /> {formatBlockDate(block.date)}
-        </span>
-      )}
-      {timeRange && <span>{timeRange}</span>}
-    </div>
-  ) : null;
+  const serviceInfoBadge =
+    block.items.length > 0 ? (
+      <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+        {blockDuration > 0 && (
+          <span className="flex items-center gap-0.5">
+            <Clock size={10} /> {formatDuration(blockDuration)}
+          </span>
+        )}
+        {blockPrice > 0 && (
+          <span className="text-blue-600 font-semibold">{formatPrice(blockPrice)}</span>
+        )}
+        {block.date && (
+          <span className="flex items-center gap-0.5">
+            <Calendar size={10} /> {formatBlockDate(block.date)}
+          </span>
+        )}
+        {timeRange && <span>{timeRange}</span>}
+      </div>
+    ) : null;
 
   // Collapsed (inactive) state
   if (!isActive) {
@@ -185,7 +194,10 @@ export default function ServiceBlock({
           </div>
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); onRemove(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
             className="w-7 h-7 rounded-full hover:bg-slate-100 flex items-center justify-center flex-shrink-0 transition-colors"
             aria-label="Supprimer ce service"
           >
@@ -236,78 +248,93 @@ export default function ServiceBlock({
           On desktop the Vider sits to the right; on mobile it stacks below. */}
       <div className="flex flex-col sm:flex-row sm:items-start gap-2 mb-3">
         <div className="flex gap-2 flex-wrap items-center flex-1 min-w-0">
-        {favorites.length > 0 && (() => {
-          const disabled = !isPillAllowedWhenLocked('FAVORITES');
-          return (
-            <button
-              type="button"
-              onClick={() => handleCategoryChange('FAVORITES')}
-              disabled={disabled}
-              aria-disabled={disabled}
-              className={`
+          {favorites.length > 0 &&
+            (() => {
+              const disabled = !isPillAllowedWhenLocked('FAVORITES');
+              return (
+                <button
+                  type="button"
+                  onClick={() => handleCategoryChange('FAVORITES')}
+                  disabled={disabled}
+                  aria-disabled={disabled}
+                  className={`
                 px-3 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
-                ${activeCategoryId === 'FAVORITES'
-                  ? 'bg-amber-50 text-amber-700 border-amber-300 shadow-sm'
-                  : disabled
-                    ? 'bg-white text-slate-300 border-slate-100 cursor-not-allowed'
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-amber-300 hover:bg-amber-50/50'
+                ${
+                  activeCategoryId === 'FAVORITES'
+                    ? 'bg-amber-50 text-amber-700 border-amber-300 shadow-sm'
+                    : disabled
+                      ? 'bg-white text-slate-300 border-slate-100 cursor-not-allowed'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-amber-300 hover:bg-amber-50/50'
                 }
               `}
-            >
-              <Star size={14} className={activeCategoryId === 'FAVORITES' ? 'fill-amber-400 text-amber-400' : ''} />
-              Favoris
-            </button>
-          );
-        })()}
-        {packs.length > 0 && (() => {
-          const disabled = !isPillAllowedWhenLocked('PACKS');
-          const activePill = activeCategoryId === 'PACKS';
-          return (
-            <button
-              type="button"
-              onClick={() => handleCategoryChange('PACKS')}
-              disabled={disabled}
-              aria-disabled={disabled}
-              className={`
+                >
+                  <Star
+                    size={14}
+                    className={
+                      activeCategoryId === 'FAVORITES' ? 'fill-amber-400 text-amber-400' : ''
+                    }
+                  />
+                  Favoris
+                </button>
+              );
+            })()}
+          {packs.length > 0 &&
+            (() => {
+              const disabled = !isPillAllowedWhenLocked('PACKS');
+              const activePill = activeCategoryId === 'PACKS';
+              return (
+                <button
+                  type="button"
+                  onClick={() => handleCategoryChange('PACKS')}
+                  disabled={disabled}
+                  aria-disabled={disabled}
+                  className={`
                 px-3 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
-                ${activePill
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm'
-                  : disabled
-                    ? 'bg-white text-slate-300 border-slate-100 cursor-not-allowed'
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50'
+                ${
+                  activePill
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm'
+                    : disabled
+                      ? 'bg-white text-slate-300 border-slate-100 cursor-not-allowed'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50'
                 }
               `}
-            >
-              <Gift size={14} />
-              Packs
-            </button>
-          );
-        })()}
-        {categories.map((cat) => {
-          const isActivePill = cat.id === activeCategoryId;
-          const disabled = !isPillAllowedWhenLocked(cat.id);
-          return (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => handleCategoryChange(cat.id)}
-              disabled={disabled}
-              aria-disabled={disabled}
-              className={`
+                >
+                  <Gift size={14} />
+                  Packs
+                </button>
+              );
+            })()}
+          {categories.map((cat) => {
+            const isActivePill = cat.id === activeCategoryId;
+            const disabled = !isPillAllowedWhenLocked(cat.id);
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => handleCategoryChange(cat.id)}
+                disabled={disabled}
+                aria-disabled={disabled}
+                className={`
                 px-3 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 border
-                ${isActivePill
-                  ? 'bg-blue-50 text-blue-700 border-blue-300 shadow-sm'
-                  : disabled
-                    ? 'bg-white text-slate-300 border-slate-100 cursor-not-allowed'
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
+                ${
+                  isActivePill
+                    ? 'bg-blue-50 text-blue-700 border-blue-300 shadow-sm'
+                    : disabled
+                      ? 'bg-white text-slate-300 border-slate-100 cursor-not-allowed'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
                 }
               `}
-            >
-              <CategoryIcon categoryName={cat.name} iconName={cat.icon} size={14} className="shrink-0" />
-              {cat.name}
-            </button>
-          );
-        })}
+              >
+                <CategoryIcon
+                  categoryName={cat.name}
+                  iconName={cat.icon}
+                  size={14}
+                  className="shrink-0"
+                />
+                {cat.name}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -351,7 +378,9 @@ export default function ServiceBlock({
                   <span className="text-slate-300">·</span>
                   <span className="font-semibold text-slate-700">{formatPrice(pack.price)}</span>
                   {discount > 0 && (
-                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px] font-medium">-{discount}%</span>
+                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px] font-medium">
+                      -{discount}%
+                    </span>
                   )}
                 </div>
               </button>
@@ -359,7 +388,6 @@ export default function ServiceBlock({
           })}
         </div>
       )}
-
     </div>
   );
 }

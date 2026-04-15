@@ -49,8 +49,11 @@ export function expandPack(pack: Pack): CartItem[] {
  * Checks if a pack is valid (all items reference active, non-deleted services/variants).
  */
 export function isPackValid(pack: Pack): boolean {
-  return pack.items.length > 0 && pack.items.every(
-    (item) => item.serviceName !== '' && item.variantName !== '' && !item.isDeleted
+  return (
+    pack.items.length > 0 &&
+    pack.items.every(
+      (item) => item.serviceName !== '' && item.variantName !== '' && !item.isDeleted,
+    )
   );
 }
 

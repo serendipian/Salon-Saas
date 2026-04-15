@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -11,9 +10,33 @@ import {
   Tooltip,
   ResponsiveContainer,
   AreaChart,
-  Area
+  Area,
 } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Minus, Calendar, Users, DollarSign, ShoppingBag, XCircle, ChevronRight, ChevronDown, ChevronUp, Clock, Crown, TrendingUp, Scissors, Plus, Banknote, CreditCard, ArrowRightLeft, FileText, Receipt, Gift, Wallet } from 'lucide-react';
+import {
+  ArrowUpRight,
+  ArrowDownRight,
+  Minus,
+  Calendar,
+  Users,
+  DollarSign,
+  ShoppingBag,
+  XCircle,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Crown,
+  TrendingUp,
+  Scissors,
+  Plus,
+  Banknote,
+  CreditCard,
+  ArrowRightLeft,
+  FileText,
+  Receipt,
+  Gift,
+  Wallet,
+} from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useTransactions } from '../../hooks/useTransactions';
@@ -43,50 +66,76 @@ interface MetricCardProps {
 
 const formatCount = (n: number) => new Intl.NumberFormat('fr-FR').format(n);
 
-const MetricCard = ({ title, value, trend, isPositive, subtitle, icon: Icon, isCurrency = false }: MetricCardProps) => {
+const MetricCard = ({
+  title,
+  value,
+  trend,
+  isPositive,
+  subtitle,
+  icon: Icon,
+  isCurrency = false,
+}: MetricCardProps) => {
   const trendIsZero = trend !== null && Math.abs(trend) < 0.05;
   const trendColor = trendIsZero
     ? 'bg-slate-50 text-slate-500'
-    : isPositive ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600';
+    : isPositive
+      ? 'bg-blue-50 text-blue-700'
+      : 'bg-slate-100 text-slate-600';
   const TrendIcon = trendIsZero ? Minus : isPositive ? ArrowUpRight : ArrowDownRight;
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4 md:p-5 shadow-sm hover:shadow-md transition-all duration-200 h-full flex flex-col justify-between group">
       <div>
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-xs md:text-sm font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">{title}</h3>
-          {Icon && <Icon size={16} className="text-slate-400 group-hover:text-slate-600 transition-colors shrink-0" />}
+          <h3 className="text-xs md:text-sm font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">
+            {title}
+          </h3>
+          {Icon && (
+            <Icon
+              size={16}
+              className="text-slate-400 group-hover:text-slate-600 transition-colors shrink-0"
+            />
+          )}
         </div>
         <div className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight break-words">
-          {typeof value === 'number' ? (isCurrency ? formatPrice(value) : formatCount(value)) : value}
+          {typeof value === 'number'
+            ? isCurrency
+              ? formatPrice(value)
+              : formatCount(value)
+            : value}
         </div>
       </div>
       <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-2 mt-3 md:mt-4 pt-2 md:pt-3 border-t border-slate-50">
-          {trend !== null && (
-             <span className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${trendColor}`}>
-               <TrendIcon size={12} />
-               {Math.abs(trend).toFixed(1)}%
-             </span>
-          )}
-          {subtitle && <span className="text-xs text-slate-400">{subtitle}</span>}
+        {trend !== null && (
+          <span
+            className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${trendColor}`}
+          >
+            <TrendIcon size={12} />
+            {Math.abs(trend).toFixed(1)}%
+          </span>
+        )}
+        {subtitle && <span className="text-xs text-slate-400">{subtitle}</span>}
       </div>
     </div>
   );
 };
 
 // Payment method icon mapping
-const PAYMENT_METHOD_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
-  'Espèces': Banknote,
+const PAYMENT_METHOD_ICONS: Record<
+  string,
+  React.ComponentType<{ size?: number; className?: string }>
+> = {
+  Espèces: Banknote,
   'Carte Bancaire': CreditCard,
   'Carte Cadeau': Gift,
-  'Autre': Wallet,
+  Autre: Wallet,
 };
 
 const PAYMENT_METHOD_COLORS: Record<string, string> = {
-  'Espèces': 'bg-blue-50 text-blue-700',
+  Espèces: 'bg-blue-50 text-blue-700',
   'Carte Bancaire': 'bg-blue-50 text-blue-600',
   'Carte Cadeau': 'bg-blue-50 text-blue-500',
-  'Autre': 'bg-slate-50 text-slate-500',
+  Autre: 'bg-slate-50 text-slate-500',
 };
 
 // All known payment methods for revenue (matching POS options, idle ones show too)
@@ -96,27 +145,30 @@ const ALL_EXPENSE_METHODS = ['especes', 'carte', 'virement', 'cheque', 'prelevem
 
 // Expense payment method labels
 const EXPENSE_METHOD_LABELS: Record<string, string> = {
-  'especes': 'Espèces',
-  'carte': 'Carte Bancaire',
-  'virement': 'Virement',
-  'cheque': 'Chèque',
-  'prelevement': 'Prélèvement',
+  especes: 'Espèces',
+  carte: 'Carte Bancaire',
+  virement: 'Virement',
+  cheque: 'Chèque',
+  prelevement: 'Prélèvement',
 };
 
-const EXPENSE_METHOD_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
-  'especes': Banknote,
-  'carte': CreditCard,
-  'virement': ArrowRightLeft,
-  'cheque': FileText,
-  'prelevement': ArrowRightLeft,
+const EXPENSE_METHOD_ICONS: Record<
+  string,
+  React.ComponentType<{ size?: number; className?: string }>
+> = {
+  especes: Banknote,
+  carte: CreditCard,
+  virement: ArrowRightLeft,
+  cheque: FileText,
+  prelevement: ArrowRightLeft,
 };
 
 const EXPENSE_METHOD_COLORS: Record<string, string> = {
-  'especes': 'bg-blue-50 text-blue-700',
-  'carte': 'bg-blue-50 text-blue-600',
-  'virement': 'bg-blue-50 text-blue-600',
-  'cheque': 'bg-blue-50 text-blue-500',
-  'prelevement': 'bg-blue-50 text-blue-500',
+  especes: 'bg-blue-50 text-blue-700',
+  carte: 'bg-blue-50 text-blue-600',
+  virement: 'bg-blue-50 text-blue-600',
+  cheque: 'bg-blue-50 text-blue-500',
+  prelevement: 'bg-blue-50 text-blue-500',
 };
 
 export const DashboardModule: React.FC = () => {
@@ -133,9 +185,9 @@ export const DashboardModule: React.FC = () => {
   const [dateRange, setDateRange] = useState<DateRange>(() => {
     const today = new Date();
     return {
-        from: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0),
-        to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999),
-        label: "Aujourd'hui"
+      from: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0),
+      to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999),
+      label: "Aujourd'hui",
     };
   });
 
@@ -207,8 +259,13 @@ export const DashboardModule: React.FC = () => {
     const prevToStr = toLocalDate(prevToDate);
 
     // Filter items by comparing local date strings (avoids UTC/local timezone shift)
-    const filterByRange = <T extends object>(dataArr: T[], dateField: keyof T, startStr: string, endStr: string): T[] => {
-      return dataArr.filter(item => {
+    const filterByRange = <T extends object>(
+      dataArr: T[],
+      dateField: keyof T,
+      startStr: string,
+      endStr: string,
+    ): T[] => {
+      return dataArr.filter((item) => {
         const itemDate = toLocalDate(new Date(item[dateField] as string));
         return itemDate >= startStr && itemDate <= endStr;
       });
@@ -227,8 +284,18 @@ export const DashboardModule: React.FC = () => {
     const prevExpenses = filterByRange(allExpenses, 'date', prevFromStr, prevToStr);
 
     return {
-      current: { transactions: currentTrx, appointments: currentAppts, newClients: currentClients, expenses: currentExpenses },
-      previous: { transactions: prevTrx, appointments: prevAppts, newClients: prevClients, expenses: prevExpenses }
+      current: {
+        transactions: currentTrx,
+        appointments: currentAppts,
+        newClients: currentClients,
+        expenses: currentExpenses,
+      },
+      previous: {
+        transactions: prevTrx,
+        appointments: prevAppts,
+        newClients: prevClients,
+        expenses: prevExpenses,
+      },
     };
   }, [transactions, appointments, clients, allExpenses, dateRange]);
 
@@ -236,34 +303,39 @@ export const DashboardModule: React.FC = () => {
   const stats = useMemo(() => {
     // Current Metrics
     const revenue = data.current.transactions.reduce((sum, t) => sum + t.total, 0);
-    const saleCount = data.current.transactions.filter(t => t.type === 'SALE').length;
+    const saleCount = data.current.transactions.filter((t) => t.type === 'SALE').length;
     const prestationCount = data.current.transactions
-      .filter(t => t.type === 'SALE')
-      .reduce((sum, t) => sum + t.items.filter(i => i.type === 'SERVICE').reduce((s, i) => s + i.quantity, 0), 0);
+      .filter((t) => t.type === 'SALE')
+      .reduce(
+        (sum, t) =>
+          sum + t.items.filter((i) => i.type === 'SERVICE').reduce((s, i) => s + i.quantity, 0),
+        0,
+      );
     const totalAppts = data.current.appointments.length;
     const newClientsCount = data.current.newClients.length;
     const avgBasket = saleCount > 0 ? revenue / saleCount : 0;
 
     // Cancellation rate (cancelled + no-show vs total booked)
     const cancelledAppts = data.current.appointments.filter(
-      a => a.status === AppointmentStatus.CANCELLED || a.status === AppointmentStatus.NO_SHOW
+      (a) => a.status === AppointmentStatus.CANCELLED || a.status === AppointmentStatus.NO_SHOW,
     ).length;
     const cancellationRate = totalAppts > 0 ? (cancelledAppts / totalAppts) * 100 : 0;
 
     // Previous Metrics
     const prevRevenue = data.previous.transactions.reduce((sum, t) => sum + t.total, 0);
-    const prevSaleCount = data.previous.transactions.filter(t => t.type === 'SALE').length;
+    const prevSaleCount = data.previous.transactions.filter((t) => t.type === 'SALE').length;
     const prevAppts = data.previous.appointments.length;
     const prevClientsCount = data.previous.newClients.length;
     const prevAvgBasket = prevSaleCount > 0 ? prevRevenue / prevSaleCount : 0;
 
     const prevCancelledAppts = data.previous.appointments.filter(
-      a => a.status === AppointmentStatus.CANCELLED || a.status === AppointmentStatus.NO_SHOW
+      (a) => a.status === AppointmentStatus.CANCELLED || a.status === AppointmentStatus.NO_SHOW,
     ).length;
     const prevCancellationRate = prevAppts > 0 ? (prevCancelledAppts / prevAppts) * 100 : 0;
 
     // Calculate Trends
-    const calcTrend = (curr: number, prev: number) => prev === 0 ? (curr > 0 ? 100 : 0) : ((curr - prev) / prev) * 100;
+    const calcTrend = (curr: number, prev: number) =>
+      prev === 0 ? (curr > 0 ? 100 : 0) : ((curr - prev) / prev) * 100;
 
     return {
       revenue,
@@ -274,7 +346,10 @@ export const DashboardModule: React.FC = () => {
       prestationCount,
 
       transactionCount: data.current.transactions.length,
-      transactionCountTrend: calcTrend(data.current.transactions.length, data.previous.transactions.length),
+      transactionCountTrend: calcTrend(
+        data.current.transactions.length,
+        data.previous.transactions.length,
+      ),
 
       totalAppts,
       apptsTrend: calcTrend(totalAppts, prevAppts),
@@ -294,7 +369,7 @@ export const DashboardModule: React.FC = () => {
   const paymentBreakdown = useMemo(() => {
     const map = new Map<string, number>();
     // Initialize all known methods to 0
-    ALL_REVENUE_METHODS.forEach(m => map.set(m, 0));
+    ALL_REVENUE_METHODS.forEach((m) => map.set(m, 0));
     data.current.transactions.forEach((t: Transaction) => {
       (t.payments || []).forEach((p: PaymentEntry) => {
         map.set(p.method, (map.get(p.method) || 0) + p.amount);
@@ -303,7 +378,11 @@ export const DashboardModule: React.FC = () => {
     const total = Array.from(map.values()).reduce((s, v) => s + v, 0);
     return {
       methods: Array.from(map.entries())
-        .map(([method, amount]) => ({ method, amount, percent: total > 0 ? (amount / total) * 100 : 0 }))
+        .map(([method, amount]) => ({
+          method,
+          amount,
+          percent: total > 0 ? (amount / total) * 100 : 0,
+        }))
         .sort((a, b) => b.amount - a.amount),
       total,
     };
@@ -317,11 +396,11 @@ export const DashboardModule: React.FC = () => {
 
     // Payment method breakdown for expenses
     const methodMap = new Map<string, number>();
-    data.current.expenses.forEach(e => {
+    data.current.expenses.forEach((e) => {
       const key = e.paymentMethod || 'unknown';
       methodMap.set(key, (methodMap.get(key) || 0) + e.amount);
     });
-    const methods = ALL_EXPENSE_METHODS.map(method => {
+    const methods = ALL_EXPENSE_METHODS.map((method) => {
       const amount = methodMap.get(method) || 0;
       return { method, amount, percent: total > 0 ? (amount / total) * 100 : 0 };
     });
@@ -332,20 +411,29 @@ export const DashboardModule: React.FC = () => {
 
   // --- 2d. Bonus (per-staff breakdown) ---
   const bonusStats = useMemo(() => {
-    const staffMap = new Map(allStaff.map(s => [s.id, s]));
+    const staffMap = new Map(allStaff.map((s) => [s.id, s]));
 
     // Aggregate revenue per staff from transactions
     const staffRevMap = new Map<string, number>();
     data.current.transactions.forEach((t: Transaction) => {
-      t.items.forEach(item => {
+      t.items.forEach((item) => {
         if (item.staffId && item.type === 'SERVICE') {
-          staffRevMap.set(item.staffId, (staffRevMap.get(item.staffId) || 0) + item.price * (item.quantity || 1));
+          staffRevMap.set(
+            item.staffId,
+            (staffRevMap.get(item.staffId) || 0) + item.price * (item.quantity || 1),
+          );
         }
       });
     });
 
     // Per-staff bonus breakdown
-    const staffBreakdown: { firstName: string; lastName: string; photoUrl?: string; color?: string; bonus: number }[] = [];
+    const staffBreakdown: {
+      firstName: string;
+      lastName: string;
+      photoUrl?: string;
+      color?: string;
+      bonus: number;
+    }[] = [];
     let totalBonus = 0;
 
     staffRevMap.forEach((revenue, staffId) => {
@@ -370,9 +458,12 @@ export const DashboardModule: React.FC = () => {
     // Previous period
     const prevStaffRevMap = new Map<string, number>();
     data.previous.transactions.forEach((t: Transaction) => {
-      t.items.forEach(item => {
+      t.items.forEach((item) => {
         if (item.staffId && item.type === 'SERVICE') {
-          prevStaffRevMap.set(item.staffId, (prevStaffRevMap.get(item.staffId) || 0) + item.price * (item.quantity || 1));
+          prevStaffRevMap.set(
+            item.staffId,
+            (prevStaffRevMap.get(item.staffId) || 0) + item.price * (item.quantity || 1),
+          );
         }
       });
     });
@@ -385,7 +476,8 @@ export const DashboardModule: React.FC = () => {
       }
     });
 
-    const trend = prevTotal === 0 ? (totalBonus > 0 ? 100 : 0) : ((totalBonus - prevTotal) / prevTotal) * 100;
+    const trend =
+      prevTotal === 0 ? (totalBonus > 0 ? 100 : 0) : ((totalBonus - prevTotal) / prevTotal) * 100;
 
     return { total: totalBonus, trend, staffBreakdown };
   }, [data.current.transactions, data.previous.transactions, allStaff]);
@@ -412,36 +504,36 @@ export const DashboardModule: React.FC = () => {
     // Initialize Map keys using chart range (may be wider than selected)
     const current = new Date(from);
     while (current <= to) {
-        let key, sortKey;
-        const currentNorm = new Date(current);
-        currentNorm.setHours(0, 0, 0, 0);
-        if (currentNorm >= selectedFrom && currentNorm <= selectedTo) {
-          // Will add the key after it's computed
-        }
-        if (isMonthly) {
-            key = current.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
-            sortKey = current.getFullYear() * 100 + current.getMonth();
-            current.setMonth(current.getMonth() + 1);
-            current.setDate(1);
-        } else {
-            key = current.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-            sortKey = current.getTime();
-            current.setDate(current.getDate() + 1);
-        }
+      let key, sortKey;
+      const currentNorm = new Date(current);
+      currentNorm.setHours(0, 0, 0, 0);
+      if (currentNorm >= selectedFrom && currentNorm <= selectedTo) {
+        // Will add the key after it's computed
+      }
+      if (isMonthly) {
+        key = current.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
+        sortKey = current.getFullYear() * 100 + current.getMonth();
+        current.setMonth(current.getMonth() + 1);
+        current.setDate(1);
+      } else {
+        key = current.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        sortKey = current.getTime();
+        current.setDate(current.getDate() + 1);
+      }
 
-        if (!map.has(key)) {
-            map.set(key, { name: key, sortKey, ventes: 0, rdv: 0 });
-        }
-        if (currentNorm >= selectedFrom && currentNorm <= selectedTo) {
-          highlightSet.add(key);
-        }
+      if (!map.has(key)) {
+        map.set(key, { name: key, sortKey, ventes: 0, rdv: 0 });
+      }
+      if (currentNorm >= selectedFrom && currentNorm <= selectedTo) {
+        highlightSet.add(key);
+      }
     }
 
     // Aggregate data from raw arrays (not just data.current) to cover chart range
     const chartFromStr = toLocalDate(from);
     const chartToStr = toLocalDate(to);
 
-    transactions.forEach(t => {
+    transactions.forEach((t) => {
       const d = new Date(t.date);
       const dStr = toLocalDate(d);
       if (dStr < chartFromStr || dStr > chartToStr) return;
@@ -451,7 +543,7 @@ export const DashboardModule: React.FC = () => {
       if (map.has(key)) map.get(key)!.ventes += t.total;
     });
 
-    appointments.forEach(a => {
+    appointments.forEach((a) => {
       const d = new Date(a.date);
       const dStr = toLocalDate(d);
       if (dStr < chartFromStr || dStr > chartToStr) return;
@@ -482,8 +574,12 @@ export const DashboardModule: React.FC = () => {
       const cn = new Date(current);
       cn.setHours(0, 0, 0, 0);
       if (cn >= selectedFrom && cn <= selectedTo) set.add(idx);
-      if (isMonthly) { current.setMonth(current.getMonth() + 1); current.setDate(1); }
-      else { current.setDate(current.getDate() + 1); }
+      if (isMonthly) {
+        current.setMonth(current.getMonth() + 1);
+        current.setDate(1);
+      } else {
+        current.setDate(current.getDate() + 1);
+      }
       idx++;
     }
     return set;
@@ -495,7 +591,7 @@ export const DashboardModule: React.FC = () => {
     // Show appointments after the selected period's end
     const after = new Date(dateRange.to);
     return appointments
-      .filter(a => new Date(a.date) > after && a.status !== AppointmentStatus.CANCELLED)
+      .filter((a) => new Date(a.date) > after && a.status !== AppointmentStatus.CANCELLED)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(0, 10);
   }, [appointments, dateRange]);
@@ -503,14 +599,16 @@ export const DashboardModule: React.FC = () => {
   // --- 5. Top Services by Revenue ---
   const topServices = useMemo(() => {
     const serviceMap = new Map<string, { name: string; revenue: number; count: number }>();
-    data.current.transactions.forEach(t => {
-      t.items.filter(i => i.type === 'SERVICE').forEach(item => {
-        const key = item.name;
-        const existing = serviceMap.get(key) || { name: key, revenue: 0, count: 0 };
-        existing.revenue += item.price * item.quantity;
-        existing.count += item.quantity;
-        serviceMap.set(key, existing);
-      });
+    data.current.transactions.forEach((t) => {
+      t.items
+        .filter((i) => i.type === 'SERVICE')
+        .forEach((item) => {
+          const key = item.name;
+          const existing = serviceMap.get(key) || { name: key, revenue: 0, count: 0 };
+          existing.revenue += item.price * item.quantity;
+          existing.count += item.quantity;
+          serviceMap.set(key, existing);
+        });
     });
     return Array.from(serviceMap.values())
       .sort((a, b) => b.revenue - a.revenue)
@@ -521,20 +619,28 @@ export const DashboardModule: React.FC = () => {
   const staffRevenue = useMemo(() => {
     const staffMap = new Map<string, { name: string; revenue: number; appointments: number }>();
     // From transaction items (revenue)
-    data.current.transactions.forEach(t => {
-      t.items.forEach(item => {
+    data.current.transactions.forEach((t) => {
+      t.items.forEach((item) => {
         if (!item.staffId || !item.staffName) return;
-        const existing = staffMap.get(item.staffId) || { name: item.staffName, revenue: 0, appointments: 0 };
+        const existing = staffMap.get(item.staffId) || {
+          name: item.staffName,
+          revenue: 0,
+          appointments: 0,
+        };
         existing.revenue += item.price * item.quantity;
         staffMap.set(item.staffId, existing);
       });
     });
     // From appointments (count completed)
     data.current.appointments
-      .filter(a => a.status === AppointmentStatus.COMPLETED)
-      .forEach(a => {
+      .filter((a) => a.status === AppointmentStatus.COMPLETED)
+      .forEach((a) => {
         if (!a.staffId) return;
-        const existing = staffMap.get(a.staffId) || { name: a.staffName, revenue: 0, appointments: 0 };
+        const existing = staffMap.get(a.staffId) || {
+          name: a.staffName,
+          revenue: 0,
+          appointments: 0,
+        };
         existing.appointments += 1;
         staffMap.set(a.staffId, existing);
       });
@@ -547,21 +653,29 @@ export const DashboardModule: React.FC = () => {
   const occupancyRate = useMemo(() => {
     const from = dateRange.from;
     const to = dateRange.to;
-    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+    const dayNames = [
+      'sunday',
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+    ] as const;
 
     // Calculate total available hours for active staff in the period
     let totalAvailableMinutes = 0;
-    const activeStaff = allStaff.filter(s => s.active && !s.deletedAt);
+    const activeStaff = allStaff.filter((s) => s.active && !s.deletedAt);
 
     const current = new Date(from);
     while (current <= to) {
       const dayName = dayNames[current.getDay()];
-      activeStaff.forEach(staff => {
+      activeStaff.forEach((staff) => {
         const day = staff.schedule?.[dayName];
         if (day?.isOpen && day.start && day.end) {
           const [sh, sm] = day.start.split(':').map(Number);
           const [eh, em] = day.end.split(':').map(Number);
-          totalAvailableMinutes += (eh * 60 + em) - (sh * 60 + sm);
+          totalAvailableMinutes += eh * 60 + em - (sh * 60 + sm);
         }
       });
       current.setDate(current.getDate() + 1);
@@ -569,13 +683,12 @@ export const DashboardModule: React.FC = () => {
 
     // Calculate total booked minutes (non-cancelled appointments)
     const bookedMinutes = data.current.appointments
-      .filter(a => a.status !== AppointmentStatus.CANCELLED)
+      .filter((a) => a.status !== AppointmentStatus.CANCELLED)
       .reduce((sum, a) => sum + (a.durationMinutes || 0), 0);
 
     const rate = totalAvailableMinutes > 0 ? (bookedMinutes / totalAvailableMinutes) * 100 : 0;
     return { rate, bookedMinutes, totalAvailableMinutes };
   }, [data.current.appointments, allStaff, dateRange]);
-
 
   return (
     <div className="w-full space-y-8">
@@ -615,14 +728,27 @@ export const DashboardModule: React.FC = () => {
               </div>
             </button>
           </div>
-          <div className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(stats.revenue)}</div>
+          <div className="text-2xl font-bold text-slate-900 tracking-tight">
+            {formatPrice(stats.revenue)}
+          </div>
           <div className="flex items-center gap-2 mt-1 mb-4">
             {stats.revenueTrend !== null && (
-              <span className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
-                Math.abs(stats.revenueTrend) < 0.05 ? 'bg-slate-50 text-slate-500'
-                : stats.revenueTrend >= 0 ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'
-              }`}>
-                {Math.abs(stats.revenueTrend) < 0.05 ? <Minus size={12} /> : stats.revenueTrend >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+              <span
+                className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
+                  Math.abs(stats.revenueTrend) < 0.05
+                    ? 'bg-slate-50 text-slate-500'
+                    : stats.revenueTrend >= 0
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'bg-slate-100 text-slate-600'
+                }`}
+              >
+                {Math.abs(stats.revenueTrend) < 0.05 ? (
+                  <Minus size={12} />
+                ) : stats.revenueTrend >= 0 ? (
+                  <ArrowUpRight size={12} />
+                ) : (
+                  <ArrowDownRight size={12} />
+                )}
                 {Math.abs(stats.revenueTrend).toFixed(1)}%
               </span>
             )}
@@ -634,20 +760,32 @@ export const DashboardModule: React.FC = () => {
               const colorClass = PAYMENT_METHOD_COLORS[method] || 'bg-slate-50 text-slate-600';
               const isIdle = amount === 0;
               return (
-                <div key={method} className={`flex items-center gap-2.5 ${isIdle ? 'opacity-40' : ''}`}>
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
+                <div
+                  key={method}
+                  className={`flex items-center gap-2.5 ${isIdle ? 'opacity-40' : ''}`}
+                >
+                  <div
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}
+                  >
                     <Icon size={14} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline">
                       <span className="text-xs font-medium text-slate-600 truncate">{method}</span>
-                      <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(amount)}</span>
+                      <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">
+                        {formatPrice(amount)}
+                      </span>
                     </div>
                     <div className="h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
-                      <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
+                      <div
+                        className="h-full bg-blue-400 rounded-full transition-all duration-500"
+                        style={{ width: `${percent}%` }}
+                      />
                     </div>
                   </div>
-                  <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">{percent.toFixed(0)}%</span>
+                  <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">
+                    {percent.toFixed(0)}%
+                  </span>
                 </div>
               );
             })}
@@ -673,14 +811,27 @@ export const DashboardModule: React.FC = () => {
               </div>
             </button>
           </div>
-          <div className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(expenseStats.total)}</div>
+          <div className="text-2xl font-bold text-slate-900 tracking-tight">
+            {formatPrice(expenseStats.total)}
+          </div>
           <div className="flex items-center gap-2 mt-1 mb-4">
             {expenseStats.trend !== null && (
-              <span className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
-                Math.abs(expenseStats.trend) < 0.05 ? 'bg-slate-50 text-slate-500'
-                : expenseStats.trend <= 0 ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'
-              }`}>
-                {Math.abs(expenseStats.trend) < 0.05 ? <Minus size={12} /> : expenseStats.trend <= 0 ? <ArrowDownRight size={12} /> : <ArrowUpRight size={12} />}
+              <span
+                className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
+                  Math.abs(expenseStats.trend) < 0.05
+                    ? 'bg-slate-50 text-slate-500'
+                    : expenseStats.trend <= 0
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'bg-slate-100 text-slate-600'
+                }`}
+              >
+                {Math.abs(expenseStats.trend) < 0.05 ? (
+                  <Minus size={12} />
+                ) : expenseStats.trend <= 0 ? (
+                  <ArrowDownRight size={12} />
+                ) : (
+                  <ArrowUpRight size={12} />
+                )}
                 {Math.abs(expenseStats.trend).toFixed(1)}%
               </span>
             )}
@@ -693,20 +844,32 @@ export const DashboardModule: React.FC = () => {
               const colorClass = EXPENSE_METHOD_COLORS[method] || 'bg-slate-50 text-slate-600';
               const isIdle = amount === 0;
               return (
-                <div key={method} className={`flex items-center gap-2.5 ${isIdle ? 'opacity-40' : ''}`}>
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
+                <div
+                  key={method}
+                  className={`flex items-center gap-2.5 ${isIdle ? 'opacity-40' : ''}`}
+                >
+                  <div
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}
+                  >
                     <Icon size={14} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline">
                       <span className="text-xs font-medium text-slate-600 truncate">{label}</span>
-                      <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(amount)}</span>
+                      <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">
+                        {formatPrice(amount)}
+                      </span>
                     </div>
                     <div className="h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
-                      <div className="h-full bg-blue-300 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
+                      <div
+                        className="h-full bg-blue-300 rounded-full transition-all duration-500"
+                        style={{ width: `${percent}%` }}
+                      />
                     </div>
                   </div>
-                  <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">{percent.toFixed(0)}%</span>
+                  <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">
+                    {percent.toFixed(0)}%
+                  </span>
                 </div>
               );
             })}
@@ -717,8 +880,12 @@ export const DashboardModule: React.FC = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-xs font-medium text-slate-600 truncate">Non spécifié</span>
-                    <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(expenseStats.unknownAmount)}</span>
+                    <span className="text-xs font-medium text-slate-600 truncate">
+                      Non spécifié
+                    </span>
+                    <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">
+                      {formatPrice(expenseStats.unknownAmount)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -745,14 +912,27 @@ export const DashboardModule: React.FC = () => {
               </div>
             </button>
           </div>
-          <div className="text-2xl font-bold text-slate-900 tracking-tight">{formatPrice(bonusStats.total)}</div>
+          <div className="text-2xl font-bold text-slate-900 tracking-tight">
+            {formatPrice(bonusStats.total)}
+          </div>
           <div className="flex items-center gap-2 mt-1 mb-4">
             {bonusStats.trend !== null && (
-              <span className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
-                Math.abs(bonusStats.trend) < 0.05 ? 'bg-slate-50 text-slate-500'
-                : bonusStats.trend >= 0 ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'
-              }`}>
-                {Math.abs(bonusStats.trend) < 0.05 ? <Minus size={12} /> : bonusStats.trend >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+              <span
+                className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
+                  Math.abs(bonusStats.trend) < 0.05
+                    ? 'bg-slate-50 text-slate-500'
+                    : bonusStats.trend >= 0
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'bg-slate-100 text-slate-600'
+                }`}
+              >
+                {Math.abs(bonusStats.trend) < 0.05 ? (
+                  <Minus size={12} />
+                ) : bonusStats.trend >= 0 ? (
+                  <ArrowUpRight size={12} />
+                ) : (
+                  <ArrowDownRight size={12} />
+                )}
                 {Math.abs(bonusStats.trend).toFixed(1)}%
               </span>
             )}
@@ -760,37 +940,66 @@ export const DashboardModule: React.FC = () => {
           </div>
           <div className="space-y-2 pt-3 border-t border-slate-100">
             {bonusStats.staffBreakdown.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-2">Aucun bonus sur cette période</p>
+              <p className="text-xs text-slate-400 text-center py-2">
+                Aucun bonus sur cette période
+              </p>
             ) : (
               bonusStats.staffBreakdown.slice(0, 4).map((entry, idx) => {
                 const percent = bonusStats.total > 0 ? (entry.bonus / bonusStats.total) * 100 : 0;
-                const blueTones = ['bg-blue-100 text-blue-700', 'bg-blue-50 text-blue-600', 'bg-sky-100 text-sky-700', 'bg-indigo-100 text-indigo-700'];
+                const blueTones = [
+                  'bg-blue-100 text-blue-700',
+                  'bg-blue-50 text-blue-600',
+                  'bg-sky-100 text-sky-700',
+                  'bg-indigo-100 text-indigo-700',
+                ];
                 return (
-                  <div key={`${entry.firstName}-${entry.lastName}`} className="flex items-center gap-2.5">
+                  <div
+                    key={`${entry.firstName}-${entry.lastName}`}
+                    className="flex items-center gap-2.5"
+                  >
                     {entry.photoUrl ? (
-                      <img src={entry.photoUrl} alt={`${entry.firstName} ${entry.lastName}`} className="rounded-lg object-cover shrink-0" style={{ width: 28, height: 28 }} />
+                      <img
+                        src={entry.photoUrl}
+                        alt={`${entry.firstName} ${entry.lastName}`}
+                        className="rounded-lg object-cover shrink-0"
+                        style={{ width: 28, height: 28 }}
+                      />
                     ) : (
-                      <span className={`rounded-lg flex items-center justify-center shrink-0 font-semibold text-[11px] ${blueTones[idx % blueTones.length]}`} style={{ width: 28, height: 28 }}>
-                        {entry.firstName.charAt(0)}{entry.lastName.charAt(0)}
+                      <span
+                        className={`rounded-lg flex items-center justify-center shrink-0 font-semibold text-[11px] ${blueTones[idx % blueTones.length]}`}
+                        style={{ width: 28, height: 28 }}
+                      >
+                        {entry.firstName.charAt(0)}
+                        {entry.lastName.charAt(0)}
                       </span>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-baseline">
-                        <span className="text-xs font-medium text-slate-600 truncate">{entry.firstName} {entry.lastName}</span>
-                        <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">{formatPrice(entry.bonus)}</span>
+                        <span className="text-xs font-medium text-slate-600 truncate">
+                          {entry.firstName} {entry.lastName}
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 ml-2 shrink-0">
+                          {formatPrice(entry.bonus)}
+                        </span>
                       </div>
                       <div className="h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
-                        <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
+                        <div
+                          className="h-full bg-blue-400 rounded-full transition-all duration-500"
+                          style={{ width: `${percent}%` }}
+                        />
                       </div>
                     </div>
-                    <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">{percent.toFixed(0)}%</span>
+                    <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">
+                      {percent.toFixed(0)}%
+                    </span>
                   </div>
                 );
               })
             )}
             {bonusStats.staffBreakdown.length > 4 && (
               <div className="text-xs text-slate-400 text-center">
-                +{bonusStats.staffBreakdown.length - 4} autre{bonusStats.staffBreakdown.length - 4 > 1 ? 's' : ''}
+                +{bonusStats.staffBreakdown.length - 4} autre
+                {bonusStats.staffBreakdown.length - 4 > 1 ? 's' : ''}
               </div>
             )}
           </div>
@@ -815,12 +1024,21 @@ export const DashboardModule: React.FC = () => {
               </div>
             </button>
           </div>
-          <div className={`text-2xl font-bold tracking-tight ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'text-blue-600' : 'text-slate-600'}`}>
+          <div
+            className={`text-2xl font-bold tracking-tight ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'text-blue-600' : 'text-slate-600'}`}
+          >
             {formatPrice(stats.revenue - expenseStats.total - bonusStats.total)}
           </div>
           <div className="flex items-center gap-2 mt-1 mb-4">
             <span className="text-xs text-slate-400">
-              Marge: {stats.revenue > 0 ? (((stats.revenue - expenseStats.total - bonusStats.total) / stats.revenue) * 100).toFixed(1) : '0.0'}%
+              Marge:{' '}
+              {stats.revenue > 0
+                ? (
+                    ((stats.revenue - expenseStats.total - bonusStats.total) / stats.revenue) *
+                    100
+                  ).toFixed(1)
+                : '0.0'}
+              %
             </span>
           </div>
           <div className="pt-3 border-t border-slate-100 space-y-2.5">
@@ -838,7 +1056,9 @@ export const DashboardModule: React.FC = () => {
                 <div className="w-2 h-2 rounded-full bg-blue-300 shrink-0" />
                 <span className="text-xs font-medium text-slate-600">Dépenses</span>
               </div>
-              <span className="text-xs font-bold text-slate-600">-{formatPrice(expenseStats.total)}</span>
+              <span className="text-xs font-bold text-slate-600">
+                -{formatPrice(expenseStats.total)}
+              </span>
             </div>
             {/* Bonus line */}
             <div className="flex justify-between items-center">
@@ -846,14 +1066,18 @@ export const DashboardModule: React.FC = () => {
                 <div className="w-2 h-2 rounded-full bg-blue-200 shrink-0" />
                 <span className="text-xs font-medium text-slate-600">Bonus</span>
               </div>
-              <span className="text-xs font-bold text-slate-600">-{formatPrice(bonusStats.total)}</span>
+              <span className="text-xs font-bold text-slate-600">
+                -{formatPrice(bonusStats.total)}
+              </span>
             </div>
             {/* Divider */}
             <div className="border-t border-dashed border-slate-200 my-1" />
             {/* Net result */}
             <div className="flex justify-between items-center">
               <span className="text-xs font-bold text-slate-700">Net</span>
-              <span className={`text-sm font-bold ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'text-blue-600' : 'text-slate-600'}`}>
+              <span
+                className={`text-sm font-bold ${stats.revenue - expenseStats.total - bonusStats.total >= 0 ? 'text-blue-600' : 'text-slate-600'}`}
+              >
                 {formatPrice(stats.revenue - expenseStats.total - bonusStats.total)}
               </span>
             </div>
@@ -862,7 +1086,9 @@ export const DashboardModule: React.FC = () => {
               {stats.revenue > 0 && (
                 <div
                   className="h-full rounded-full transition-all duration-500 bg-blue-400"
-                  style={{ width: `${Math.min(100, Math.max(0, ((stats.revenue - expenseStats.total - bonusStats.total) / stats.revenue) * 100))}%` }}
+                  style={{
+                    width: `${Math.min(100, Math.max(0, ((stats.revenue - expenseStats.total - bonusStats.total) / stats.revenue) * 100))}%`,
+                  }}
                 />
               )}
             </div>
@@ -937,128 +1163,190 @@ export const DashboardModule: React.FC = () => {
         </div>
 
         <div className="space-y-6">
-           {/* Upcoming Appointments */}
-           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-5 pt-5 pb-3 flex justify-between items-center">
-                <h3 className="font-bold text-slate-800">Prochains RDV</h3>
-                <button onClick={() => navigate('/calendar')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
-                  Voir tout <ChevronRight size={12} />
-                </button>
-              </div>
+          {/* Upcoming Appointments */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-5 pt-5 pb-3 flex justify-between items-center">
+              <h3 className="font-bold text-slate-800">Prochains RDV</h3>
+              <button
+                onClick={() => navigate('/calendar')}
+                className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"
+              >
+                Voir tout <ChevronRight size={12} />
+              </button>
+            </div>
 
-              <div className="px-3 pb-2">
-                 {upcomingAppointments.length > 0 ? (
-                   <>
-                     <div className="space-y-0.5">
-                       {(upcomingExpanded ? upcomingAppointments : upcomingAppointments.slice(0, 3)).map((apt, i) => {
-                         const date = new Date(apt.date);
-                         const endDate = new Date(date.getTime() + apt.durationMinutes * 60000);
-                         const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                         const endStr = endDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                         const isToday = date.toDateString() === new Date().toDateString();
-                         const isTomorrow = date.toDateString() === new Date(Date.now() + 86400000).toDateString();
-                         const dayLabel = isToday ? "Aujourd'hui" : isTomorrow ? 'Demain' : date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+            <div className="px-3 pb-2">
+              {upcomingAppointments.length > 0 ? (
+                <>
+                  <div className="space-y-0.5">
+                    {(upcomingExpanded
+                      ? upcomingAppointments
+                      : upcomingAppointments.slice(0, 3)
+                    ).map((apt, i) => {
+                      const date = new Date(apt.date);
+                      const endDate = new Date(date.getTime() + apt.durationMinutes * 60000);
+                      const timeStr = date.toLocaleTimeString('fr-FR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      });
+                      const endStr = endDate.toLocaleTimeString('fr-FR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      });
+                      const isToday = date.toDateString() === new Date().toDateString();
+                      const isTomorrow =
+                        date.toDateString() === new Date(Date.now() + 86400000).toDateString();
+                      const dayLabel = isToday
+                        ? "Aujourd'hui"
+                        : isTomorrow
+                          ? 'Demain'
+                          : date.toLocaleDateString('fr-FR', {
+                              weekday: 'short',
+                              day: 'numeric',
+                              month: 'short',
+                            });
 
-                         return (
-                           <div
-                             key={apt.id}
-                             onClick={() => navigate(`/calendar/${apt.id}`)}
-                             className="group flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 cursor-pointer transition-all duration-150"
-                           >
-                             {/* Time block */}
-                             <div className="w-[52px] shrink-0 text-center">
-                               <div className="text-sm font-bold text-slate-900 leading-tight">{timeStr}</div>
-                               <div className="text-[10px] text-slate-400 leading-tight">{endStr}</div>
-                             </div>
+                      return (
+                        <div
+                          key={apt.id}
+                          onClick={() => navigate(`/calendar/${apt.id}`)}
+                          className="group flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 cursor-pointer transition-all duration-150"
+                        >
+                          {/* Time block */}
+                          <div className="w-[52px] shrink-0 text-center">
+                            <div className="text-sm font-bold text-slate-900 leading-tight">
+                              {timeStr}
+                            </div>
+                            <div className="text-[10px] text-slate-400 leading-tight">{endStr}</div>
+                          </div>
 
-                             {/* Accent line */}
-                             <div className={`w-0.5 h-9 rounded-full shrink-0 ${isToday ? 'bg-blue-400' : 'bg-slate-200'}`} />
+                          {/* Accent line */}
+                          <div
+                            className={`w-0.5 h-9 rounded-full shrink-0 ${isToday ? 'bg-blue-400' : 'bg-slate-200'}`}
+                          />
 
-                             {/* Details */}
-                             <div className="flex-1 min-w-0">
-                               <div className="flex items-center gap-1.5">
-                                 <span className="text-sm font-semibold text-slate-800 truncate">{apt.clientName}</span>
-                               </div>
-                               <div className="flex items-center gap-2 mt-0.5">
-                                 <span className="text-xs text-slate-500 truncate flex items-center gap-1">
-                                   <Scissors size={10} className="text-slate-400 shrink-0" />
-                                   {apt.serviceName}
-                                 </span>
-                               </div>
-                             </div>
+                          {/* Details */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-sm font-semibold text-slate-800 truncate">
+                                {apt.clientName}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-xs text-slate-500 truncate flex items-center gap-1">
+                                <Scissors size={10} className="text-slate-400 shrink-0" />
+                                {apt.serviceName}
+                              </span>
+                            </div>
+                          </div>
 
-                             {/* Day badge */}
-                             <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${isToday ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
-                               {dayLabel}
-                             </span>
+                          {/* Day badge */}
+                          <span
+                            className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${isToday ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-500'}`}
+                          >
+                            {dayLabel}
+                          </span>
 
-                             <ChevronRight size={14} className="text-slate-300 group-hover:text-slate-500 transition-colors shrink-0" />
-                           </div>
-                         );
-                       })}
-                     </div>
+                          <ChevronRight
+                            size={14}
+                            className="text-slate-300 group-hover:text-slate-500 transition-colors shrink-0"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
 
-                     {/* Expand / Collapse */}
-                     {upcomingAppointments.length > 3 && (
-                       <button
-                         onClick={() => setUpcomingExpanded(!upcomingExpanded)}
-                         className="w-full mt-1 py-2 text-xs font-medium text-slate-500 hover:text-slate-700 flex items-center justify-center gap-1 transition-colors"
-                       >
-                         {upcomingExpanded ? (
-                           <>Voir moins <ChevronUp size={14} /></>
-                         ) : (
-                           <>+{upcomingAppointments.length - 3} autres <ChevronDown size={14} /></>
-                         )}
-                       </button>
-                     )}
-                   </>
-                 ) : (
-                   <div className="text-center py-8 px-4">
-                     <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-2">
-                       <Calendar size={18} className="text-slate-300" />
-                     </div>
-                     <p className="text-sm text-slate-400">Aucun rendez-vous à venir</p>
-                   </div>
-                 )}
-              </div>
+                  {/* Expand / Collapse */}
+                  {upcomingAppointments.length > 3 && (
+                    <button
+                      onClick={() => setUpcomingExpanded(!upcomingExpanded)}
+                      className="w-full mt-1 py-2 text-xs font-medium text-slate-500 hover:text-slate-700 flex items-center justify-center gap-1 transition-colors"
+                    >
+                      {upcomingExpanded ? (
+                        <>
+                          Voir moins <ChevronUp size={14} />
+                        </>
+                      ) : (
+                        <>
+                          +{upcomingAppointments.length - 3} autres <ChevronDown size={14} />
+                        </>
+                      )}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8 px-4">
+                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-2">
+                    <Calendar size={18} className="text-slate-300" />
+                  </div>
+                  <p className="text-sm text-slate-400">Aucun rendez-vous à venir</p>
+                </div>
+              )}
+            </div>
+          </div>
 
-           </div>
-
-           {/* Volume Chart */}
-           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-             <div className="flex justify-between items-center mb-6">
-               <h3 className="font-bold text-slate-800">Rendez-vous</h3>
-               <button onClick={() => navigate('/calendar')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
-                 Détails <ChevronRight size={12} />
-               </button>
-             </div>
-             <div className="h-48">
-               <ResponsiveContainer width="100%" height="100%">
-                 <BarChart data={chartData} barCategoryGap="25%">
-                   <defs>
-                     <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                       <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9}/>
-                       <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.4}/>
-                     </linearGradient>
-                   </defs>
-                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} dy={5} minTickGap={30}/>
-                   <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} width={28} allowDecimals={false} />
-                   <Tooltip
-                     cursor={{fill: 'rgba(59, 130, 246, 0.04)', radius: 4}}
-                     contentStyle={{borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgb(0 0 0 / 0.08)', fontSize: 12}}
-                     formatter={(value: number) => [`${value} rdv`, '']}
-                     labelStyle={{fontWeight: 600, color: '#1e293b', marginBottom: 2}}
-                   />
-                   <Bar dataKey="rdv" fill="#cbd5e1" radius={[6, 6, 0, 0]} maxBarSize={24} animationDuration={800}>
-                     {chartData.map((_entry, i) => (
-                       <Cell key={`rdv-${i}`} fill={chartHighlight.has(i) ? '#3b82f6' : '#cbd5e1'} />
-                     ))}
-                   </Bar>
-                 </BarChart>
-               </ResponsiveContainer>
-             </div>
-           </div>
+          {/* Volume Chart */}
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-bold text-slate-800">Rendez-vous</h3>
+              <button
+                onClick={() => navigate('/calendar')}
+                className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"
+              >
+                Détails <ChevronRight size={12} />
+              </button>
+            </div>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} barCategoryGap="25%">
+                  <defs>
+                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.4} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    dy={5}
+                    minTickGap={30}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    width={28}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(59, 130, 246, 0.04)', radius: 4 }}
+                    contentStyle={{
+                      borderRadius: '10px',
+                      border: '1px solid #e2e8f0',
+                      boxShadow: '0 4px 12px rgb(0 0 0 / 0.08)',
+                      fontSize: 12,
+                    }}
+                    formatter={(value: number) => [`${value} rdv`, '']}
+                    labelStyle={{ fontWeight: 600, color: '#1e293b', marginBottom: 2 }}
+                  />
+                  <Bar
+                    dataKey="rdv"
+                    fill="#cbd5e1"
+                    radius={[6, 6, 0, 0]}
+                    maxBarSize={24}
+                    animationDuration={800}
+                  >
+                    {chartData.map((_entry, i) => (
+                      <Cell key={`rdv-${i}`} fill={chartHighlight.has(i) ? '#3b82f6' : '#cbd5e1'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1067,18 +1355,21 @@ export const DashboardModule: React.FC = () => {
         {/* Financial Chart */}
         <div className="lg:col-span-1 bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-6">
-             <h3 className="font-bold text-slate-800">Activité Financière</h3>
-             <button onClick={() => navigate('/finances')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
-               Détails <ChevronRight size={12} />
-             </button>
+            <h3 className="font-bold text-slate-800">Activité Financière</h3>
+            <button
+              onClick={() => navigate('/finances')}
+              className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"
+            >
+              Détails <ChevronRight size={12} />
+            </button>
           </div>
           <div className="h-64 w-full flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorVentes" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -1086,19 +1377,23 @@ export const DashboardModule: React.FC = () => {
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{fill: '#64748b', fontSize: 10}}
+                  tick={{ fill: '#64748b', fontSize: 10 }}
                   dy={10}
                   minTickGap={40}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{fill: '#64748b', fontSize: 10}}
+                  tick={{ fill: '#64748b', fontSize: 10 }}
                   tickFormatter={(value) => formatPrice(value)}
                   width={70}
                 />
                 <Tooltip
-                  contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)'}}
+                  contentStyle={{
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)',
+                  }}
                   cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
                   formatter={(value: number) => [formatPrice(value), 'Ventes']}
                 />
@@ -1111,8 +1406,23 @@ export const DashboardModule: React.FC = () => {
                   fill="url(#colorVentes)"
                   animationDuration={800}
                   dot={(props: { cx?: number; cy?: number; index?: number }) => {
-                    if (!chartHighlight.has(props.index ?? -1) || props.cx == null || props.cy == null) return <circle key={props.index} r={0} />;
-                    return <circle key={props.index} cx={props.cx} cy={props.cy} r={4} fill="#3b82f6" stroke="#fff" strokeWidth={2} />;
+                    if (
+                      !chartHighlight.has(props.index ?? -1) ||
+                      props.cx == null ||
+                      props.cy == null
+                    )
+                      return <circle key={props.index} r={0} />;
+                    return (
+                      <circle
+                        key={props.index}
+                        cx={props.cx}
+                        cy={props.cy}
+                        r={4}
+                        fill="#3b82f6"
+                        stroke="#fff"
+                        strokeWidth={2}
+                      />
+                    );
                   }}
                 />
               </AreaChart>
@@ -1127,7 +1437,10 @@ export const DashboardModule: React.FC = () => {
               <Crown size={16} className="text-blue-500" />
               Top Services
             </h3>
-            <button onClick={() => navigate('/services')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
+            <button
+              onClick={() => navigate('/services')}
+              className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"
+            >
               Tous <ChevronRight size={12} />
             </button>
           </div>
@@ -1141,20 +1454,31 @@ export const DashboardModule: React.FC = () => {
                     <span className="text-xs font-bold text-slate-400 w-4 text-right">{i + 1}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-baseline mb-1">
-                        <span className="text-sm font-medium text-slate-700 truncate">{svc.name}</span>
-                        <span className="text-sm font-bold text-slate-900 ml-2 shrink-0">{formatPrice(svc.revenue)}</span>
+                        <span className="text-sm font-medium text-slate-700 truncate">
+                          {svc.name}
+                        </span>
+                        <span className="text-sm font-bold text-slate-900 ml-2 shrink-0">
+                          {formatPrice(svc.revenue)}
+                        </span>
                       </div>
                       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${barWidth}%` }} />
+                        <div
+                          className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                          style={{ width: `${barWidth}%` }}
+                        />
                       </div>
-                      <span className="text-[10px] text-slate-400 mt-0.5 block">{svc.count} prestation{svc.count > 1 ? 's' : ''}</span>
+                      <span className="text-[10px] text-slate-400 mt-0.5 block">
+                        {svc.count} prestation{svc.count > 1 ? 's' : ''}
+                      </span>
                     </div>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <p className="text-xs text-slate-400 italic text-center py-6">Aucune donnée pour cette période.</p>
+            <p className="text-xs text-slate-400 italic text-center py-6">
+              Aucune donnée pour cette période.
+            </p>
           )}
         </div>
 
@@ -1165,7 +1489,10 @@ export const DashboardModule: React.FC = () => {
               <TrendingUp size={16} className="text-blue-500" />
               Performance Équipe
             </h3>
-            <button onClick={() => navigate('/team')} className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1">
+            <button
+              onClick={() => navigate('/team')}
+              className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"
+            >
               Voir <ChevronRight size={12} />
             </button>
           </div>
@@ -1179,20 +1506,31 @@ export const DashboardModule: React.FC = () => {
                     <span className="text-xs font-bold text-slate-400 w-4 text-right">{i + 1}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-baseline mb-1">
-                        <span className="text-sm font-medium text-slate-700 truncate">{staff.name}</span>
-                        <span className="text-sm font-bold text-slate-900 ml-2 shrink-0">{formatPrice(staff.revenue)}</span>
+                        <span className="text-sm font-medium text-slate-700 truncate">
+                          {staff.name}
+                        </span>
+                        <span className="text-sm font-bold text-slate-900 ml-2 shrink-0">
+                          {formatPrice(staff.revenue)}
+                        </span>
                       </div>
                       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{ width: `${barWidth}%` }} />
+                        <div
+                          className="h-full bg-blue-400 rounded-full transition-all duration-500"
+                          style={{ width: `${barWidth}%` }}
+                        />
                       </div>
-                      <span className="text-[10px] text-slate-400 mt-0.5 block">{staff.appointments} rdv complété{staff.appointments > 1 ? 's' : ''}</span>
+                      <span className="text-[10px] text-slate-400 mt-0.5 block">
+                        {staff.appointments} rdv complété{staff.appointments > 1 ? 's' : ''}
+                      </span>
                     </div>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <p className="text-xs text-slate-400 italic text-center py-6">Aucune donnée pour cette période.</p>
+            <p className="text-xs text-slate-400 italic text-center py-6">
+              Aucune donnée pour cette période.
+            </p>
           )}
         </div>
       </div>

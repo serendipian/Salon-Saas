@@ -18,13 +18,15 @@ export const useStaffActivity = (staffId: string) => {
         p_offset: pageParam,
       });
       if (error) throw error;
-      return (data || []).map((row: any): StaffActivityEvent => ({
-        eventType: row.event_type,
-        eventDate: row.event_date,
-        description: row.description,
-        clientName: row.client_name,
-        metadata: row.metadata,
-      }));
+      return (data || []).map(
+        (row: any): StaffActivityEvent => ({
+          eventType: row.event_type,
+          eventDate: row.event_date,
+          description: row.description,
+          clientName: row.client_name,
+          metadata: row.metadata,
+        }),
+      );
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {

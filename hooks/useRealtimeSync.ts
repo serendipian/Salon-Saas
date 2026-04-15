@@ -90,10 +90,13 @@ export function useRealtimeSync(tableName: string, options?: RealtimeSyncOptions
   onEventRef.current = options?.onEvent;
 
   // Stable handler that delegates to the ref — this identity is used for registration
-  const stableHandler = useCallback((payload: EventPayload) => {
-    queryClient.invalidateQueries({ queryKey: [tableName, salonId] });
-    onEventRef.current?.(payload);
-  }, [tableName, salonId, queryClient]);
+  const stableHandler = useCallback(
+    (payload: EventPayload) => {
+      queryClient.invalidateQueries({ queryKey: [tableName, salonId] });
+      onEventRef.current?.(payload);
+    },
+    [tableName, salonId, queryClient],
+  );
 
   useEffect(() => {
     if (!salonId) return;

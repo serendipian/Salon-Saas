@@ -22,13 +22,13 @@ function formatPeriod(start: string, end: string): string {
   return `${fmt(start)} — ${fmt(end)}`;
 }
 
-export const PayoutHistory: React.FC<PayoutHistoryProps> = ({ payouts, onMarkAsPaid, onCancel }) => {
+export const PayoutHistory: React.FC<PayoutHistoryProps> = ({
+  payouts,
+  onMarkAsPaid,
+  onCancel,
+}) => {
   if (payouts.length === 0) {
-    return (
-      <div className="text-center py-8 text-sm text-slate-400">
-        Aucun paiement enregistré
-      </div>
-    );
+    return <div className="text-center py-8 text-sm text-slate-400">Aucun paiement enregistré</div>;
   }
 
   return (
@@ -36,23 +36,36 @@ export const PayoutHistory: React.FC<PayoutHistoryProps> = ({ payouts, onMarkAsP
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-slate-200">
-            <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Période</th>
-            <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Type</th>
-            <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Montant</th>
-            <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
-            <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Notes</th>
-            <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+            <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Période
+            </th>
+            <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Type
+            </th>
+            <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Montant
+            </th>
+            <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Statut
+            </th>
+            <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Notes
+            </th>
+            <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
           {payouts.map((p) => (
-            <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+            <tr
+              key={p.id}
+              className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+            >
               <td className="py-2.5 px-3 text-slate-700 whitespace-nowrap">
                 {formatPeriod(p.periodStart, p.periodEnd)}
               </td>
-              <td className="py-2.5 px-3 text-slate-700">
-                {TYPE_LABELS[p.type] || p.type}
-              </td>
+              <td className="py-2.5 px-3 text-slate-700">{TYPE_LABELS[p.type] || p.type}</td>
               <td className="py-2.5 px-3 text-right font-medium text-slate-900">
                 {formatPrice(p.amount)}
               </td>

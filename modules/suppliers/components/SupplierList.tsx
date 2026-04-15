@@ -36,7 +36,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
   const displayedSuppliers = selectedCategoryId
-    ? suppliers.filter(s => s.categoryId === selectedCategoryId)
+    ? suppliers.filter((s) => s.categoryId === selectedCategoryId)
     : suppliers;
 
   return (
@@ -44,7 +44,9 @@ export const SupplierList: React.FC<SupplierListProps> = ({
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Fournisseurs & Bénéficiaires</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Fournisseurs produits, prestataires, charges fixes...</p>
+          <p className="text-sm text-slate-500 mt-0.5">
+            Fournisseurs produits, prestataires, charges fixes...
+          </p>
         </div>
         <div className="flex gap-3">
           {canEditSuppliers && (
@@ -73,7 +75,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
             <input
               type="text"
               value={searchTerm}
-              onChange={e => onSearchChange(e.target.value)}
+              onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Rechercher..."
               className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent text-sm transition-all shadow-sm"
             />
@@ -94,8 +96,8 @@ export const SupplierList: React.FC<SupplierListProps> = ({
             >
               Tous ({suppliers.length})
             </button>
-            {categories.map(cat => {
-              const count = suppliers.filter(s => s.categoryId === cat.id).length;
+            {categories.map((cat) => {
+              const count = suppliers.filter((s) => s.categoryId === cat.id).length;
               if (count === 0) return null;
               const isActive = selectedCategoryId === cat.id;
               return (

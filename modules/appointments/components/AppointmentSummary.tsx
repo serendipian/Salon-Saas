@@ -37,7 +37,11 @@ function formatTime(hour: number | null, minute: number, durationMinutes: number
   return `${start} – ${end}`;
 }
 
-const dateFmt = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+const dateFmt = new Intl.DateTimeFormat('fr-FR', {
+  weekday: 'short',
+  day: 'numeric',
+  month: 'short',
+});
 
 function formatBlockDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
@@ -90,12 +94,14 @@ export default function AppointmentSummary({
     const staffMember = block.staffId ? team.find((m) => m.id === block.staffId) : null;
     const staffLabel = block.staffConfirmed
       ? staffMember
-        ? staffMember.lastName ? `${staffMember.firstName} ${staffMember.lastName[0]}.` : staffMember.firstName
+        ? staffMember.lastName
+          ? `${staffMember.firstName} ${staffMember.lastName[0]}.`
+          : staffMember.firstName
         : 'Aucune préférence'
       : null;
 
     // Pack name (if this block belongs to a pack)
-    const packName = block.packId ? packs.find((p) => p.id === block.packId)?.name ?? null : null;
+    const packName = block.packId ? (packs.find((p) => p.id === block.packId)?.name ?? null) : null;
 
     return {
       itemDetails,
@@ -141,9 +147,7 @@ export default function AppointmentSummary({
       </div>
 
       {isEmpty ? (
-        <div className="text-xs text-slate-400 text-center py-3">
-          Les détails apparaîtront ici
-        </div>
+        <div className="text-xs text-slate-400 text-center py-3">Les détails apparaîtront ici</div>
       ) : (
         <div className="space-y-3">
           {/* Client row */}
@@ -158,30 +162,43 @@ export default function AppointmentSummary({
           {blockDetails.map((block, i) => (
             <div key={i} className="border-l-2 border-slate-200 pl-3 space-y-1">
               {/* Service / Pack names */}
-              {block.packName ? (() => {
-                const packItems = block.itemDetails.filter((i) => i.isPackItem);
-                const extraItems = block.itemDetails.filter((i) => !i.isPackItem);
-                return (
-                  <>
-                    <div className="text-sm text-slate-800 font-medium">
-                      {block.packName}
-                      {packItems.length > 0 && (
-                        <span className="text-slate-400 font-normal"> · {packItems.map((i) => i.name).join(', ')}</span>
-                      )}
-                    </div>
-                    {extraItems.map((item, j) => (
-                      <div key={j} className="text-sm text-slate-800 font-medium">
-                        {item.name}
-                        {item.variantName && <span className="text-slate-400 font-normal"> · {item.variantName}</span>}
+              {block.packName ? (
+                (() => {
+                  const packItems = block.itemDetails.filter((i) => i.isPackItem);
+                  const extraItems = block.itemDetails.filter((i) => !i.isPackItem);
+                  return (
+                    <>
+                      <div className="text-sm text-slate-800 font-medium">
+                        {block.packName}
+                        {packItems.length > 0 && (
+                          <span className="text-slate-400 font-normal">
+                            {' '}
+                            · {packItems.map((i) => i.name).join(', ')}
+                          </span>
+                        )}
                       </div>
-                    ))}
-                  </>
-                );
-              })() : block.itemDetails.length === 1 ? (
+                      {extraItems.map((item, j) => (
+                        <div key={j} className="text-sm text-slate-800 font-medium">
+                          {item.name}
+                          {item.variantName && (
+                            <span className="text-slate-400 font-normal">
+                              {' '}
+                              · {item.variantName}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </>
+                  );
+                })()
+              ) : block.itemDetails.length === 1 ? (
                 <div className="text-sm text-slate-800 font-medium">
                   {block.itemDetails[0].name}
                   {block.itemDetails[0].variantName && (
-                    <span className="text-slate-400 font-normal"> · {block.itemDetails[0].variantName}</span>
+                    <span className="text-slate-400 font-normal">
+                      {' '}
+                      · {block.itemDetails[0].variantName}
+                    </span>
                   )}
                 </div>
               ) : (
@@ -213,7 +230,8 @@ export default function AppointmentSummary({
                   <span className="flex items-center gap-1">
                     <Calendar size={11} className="text-slate-400" />
                     {formatBlockDate(block.date)}
-                    {block.hour !== null && ` · ${formatTime(block.hour, block.minute, block.totalDuration)}`}
+                    {block.hour !== null &&
+                      ` · ${formatTime(block.hour, block.minute, block.totalDuration)}`}
                   </span>
                 )}
               </div>
@@ -223,10 +241,10 @@ export default function AppointmentSummary({
           {/* Total footer */}
           {populatedBlocks.length > 0 && (
             <div className="border-t border-slate-100 pt-3 flex justify-between items-center">
-              <span className="text-xs text-slate-500">
-                {formatDuration(totalDuration)}
+              <span className="text-xs text-slate-500">{formatDuration(totalDuration)}</span>
+              <span className="text-sm font-semibold text-slate-900">
+                {formatPrice(totalPrice)}
               </span>
-              <span className="text-sm font-semibold text-slate-900">{formatPrice(totalPrice)}</span>
             </div>
           )}
         </div>

@@ -17,13 +17,22 @@ export const TeamPermissionsSettings: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>('members');
   const {
-    members, invitations, membersLoading, invitationsLoading,
-    currentUserRole, currentUserId,
-    changeRole, isChangingRole,
-    revokeMember, isRevoking,
-    transferOwnership, isTransferring,
-    createInvitation, isCreatingInvitation,
-    cancelInvitation, isCancellingInvitation,
+    members,
+    invitations,
+    membersLoading,
+    invitationsLoading,
+    currentUserRole,
+    currentUserId,
+    changeRole,
+    isChangingRole,
+    revokeMember,
+    isRevoking,
+    transferOwnership,
+    isTransferring,
+    createInvitation,
+    isCreatingInvitation,
+    cancelInvitation,
+    isCancellingInvitation,
   } = useTeamSettings();
 
   const isLoading = membersLoading || invitationsLoading;
@@ -31,14 +40,17 @@ export const TeamPermissionsSettings: React.FC = () => {
   return (
     <div className="flex flex-col h-full animate-in slide-in-from-right-8 duration-300 w-full">
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => navigate('/settings')} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
+        <button
+          onClick={() => navigate('/settings')}
+          className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
+        >
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-xl font-bold text-slate-900">Équipe & Permissions</h1>
       </div>
 
       <div className="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit mb-6">
-        {tabs.map(tab => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}

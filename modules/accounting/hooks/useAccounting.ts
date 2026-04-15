@@ -70,7 +70,7 @@ export const useAccounting = () => {
   const { data: newClientCount = 0 } = useNewClientCount(
     salonId,
     new Date(dateRange.from).toISOString(),
-    new Date(dateRange.to).toISOString()
+    new Date(dateRange.to).toISOString(),
   );
 
   // --- Expenses Query ---
@@ -103,8 +103,7 @@ export const useAccounting = () => {
     onError: toastOnError("Impossible d'ajouter la dépense"),
   });
 
-  const addExpense = (expense: Omit<Expense, 'id'>) =>
-    addExpenseMutation.mutate(expense);
+  const addExpense = (expense: Omit<Expense, 'id'>) => addExpenseMutation.mutate(expense);
 
   // --- Update Expense Mutation ---
   const updateExpenseMutation = useMutation({
@@ -161,8 +160,13 @@ export const useAccounting = () => {
       return new Date(+parts[0], +parts[1] - 1, +parts[2]).getTime();
     };
 
-    const filterRange = <T extends object>(items: T[], dateKey: keyof T, start: number, end: number): T[] =>
-      items.filter(i => {
+    const filterRange = <T extends object>(
+      items: T[],
+      dateKey: keyof T,
+      start: number,
+      end: number,
+    ): T[] =>
+      items.filter((i) => {
         const t = parseLocalDate(i[dateKey] as string);
         return t >= start && t <= end;
       });
@@ -184,21 +188,21 @@ export const useAccounting = () => {
     const revenue = data.current.transactions.reduce((sum, t) => sum + t.total, 0);
     const cogs = data.current.transactions.reduce(
       (sum, t) => sum + t.items.reduce((isum, item) => isum + (item.cost || 0), 0),
-      0
+      0,
     );
     const opex = data.current.expenses.reduce((sum, e) => sum + e.amount, 0);
     const netProfit = revenue - cogs - opex;
-    const saleCount = data.current.transactions.filter(t => t.type === 'SALE').length;
+    const saleCount = data.current.transactions.filter((t) => t.type === 'SALE').length;
     const avgBasket = saleCount > 0 ? revenue / saleCount : 0;
 
     const prevRevenue = data.previous.transactions.reduce((sum, t) => sum + t.total, 0);
     const prevCogs = data.previous.transactions.reduce(
       (sum, t) => sum + t.items.reduce((isum, item) => isum + (item.cost || 0), 0),
-      0
+      0,
     );
     const prevOpex = data.previous.expenses.reduce((sum, e) => sum + e.amount, 0);
     const prevNetProfit = prevRevenue - prevCogs - prevOpex;
-    const prevSaleCount = data.previous.transactions.filter(t => t.type === 'SALE').length;
+    const prevSaleCount = data.previous.transactions.filter((t) => t.type === 'SALE').length;
     const prevAvgBasket = prevSaleCount > 0 ? prevRevenue / prevSaleCount : 0;
 
     const taxRate = (salonSettings.vatRate || 20) / 100;
@@ -232,7 +236,9 @@ export const useAccounting = () => {
   // --- Unique + New Clients ---
   const clientMetrics = useMemo(() => {
     const currentClientIds = new Set<string>();
-    data.current.transactions.forEach((t: Transaction) => { if (t.clientId) currentClientIds.add(t.clientId); });
+    data.current.transactions.forEach((t: Transaction) => {
+      if (t.clientId) currentClientIds.add(t.clientId);
+    });
     return { uniqueClients: currentClientIds.size, newClients: newClientCount };
   }, [data.current.transactions, newClientCount]);
 
@@ -274,15 +280,20 @@ export const useAccounting = () => {
     const daysDiff = Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
 
     const isMonthly = daysDiff > 60;
-    const map = new Map<string, { name: string; sortKey: number; sales: number; expenses: number }>();
+    const map = new Map<
+      string,
+      { name: string; sortKey: number; sales: number; expenses: number }
+    >();
 
-    const toChartKey = (d: Date) => isMonthly
-      ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const toChartKey = (d: Date) =>
+      isMonthly
+        ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+        : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-    const toDisplayName = (d: Date) => isMonthly
-      ? d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })
-      : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    const toDisplayName = (d: Date) =>
+      isMonthly
+        ? d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })
+        : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 
     const toLocalDate = (d: Date) =>
       `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -293,7 +304,8 @@ export const useAccounting = () => {
       const sortKey = isMonthly
         ? current.getFullYear() * 100 + current.getMonth()
         : current.getTime();
-      if (!map.has(key)) map.set(key, { name: toDisplayName(current), sortKey, sales: 0, expenses: 0 });
+      if (!map.has(key))
+        map.set(key, { name: toDisplayName(current), sortKey, sales: 0, expenses: 0 });
       if (isMonthly) {
         current.setMonth(current.getMonth() + 1);
         current.setDate(1);
@@ -342,8 +354,12 @@ export const useAccounting = () => {
       const cn = new Date(current);
       cn.setHours(0, 0, 0, 0);
       if (cn >= selectedFrom && cn <= selectedTo) set.add(idx);
-      if (isMonthly) { current.setMonth(current.getMonth() + 1); current.setDate(1); }
-      else { current.setDate(current.getDate() + 1); }
+      if (isMonthly) {
+        current.setMonth(current.getMonth() + 1);
+        current.setDate(1);
+      } else {
+        current.setDate(current.getDate() + 1);
+      }
       idx++;
     }
     return set;

@@ -1,5 +1,13 @@
 import React from 'react';
-import { Activity, CheckCircle2, XCircle, AlertCircle, ShoppingBag, Loader2, ArrowRight } from 'lucide-react';
+import {
+  Activity,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  ShoppingBag,
+  Loader2,
+  ArrowRight,
+} from 'lucide-react';
 import { useStaffActivity } from '../hooks/useStaffActivity';
 import type { StaffActivityEvent } from '../../../types';
 
@@ -8,12 +16,19 @@ interface ProfileActivityPreviewProps {
   onSwitchTab?: (tab: string) => void;
 }
 
-const EVENT_CONFIG: Record<StaffActivityEvent['eventType'], {
-  icon: React.FC<{ className?: string; size?: number }>;
-  color: string;
-  bgColor: string;
-}> = {
-  appointment_completed: { icon: CheckCircle2, color: 'text-emerald-600', bgColor: 'bg-emerald-50' },
+const EVENT_CONFIG: Record<
+  StaffActivityEvent['eventType'],
+  {
+    icon: React.FC<{ className?: string; size?: number }>;
+    color: string;
+    bgColor: string;
+  }
+> = {
+  appointment_completed: {
+    icon: CheckCircle2,
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-50',
+  },
   appointment_cancelled: { icon: XCircle, color: 'text-red-500', bgColor: 'bg-red-50' },
   appointment_no_show: { icon: AlertCircle, color: 'text-amber-600', bgColor: 'bg-amber-50' },
   sale: { icon: ShoppingBag, color: 'text-blue-600', bgColor: 'bg-blue-50' },
@@ -34,13 +49,18 @@ function formatRelativeDate(dateStr: string): string {
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 }
 
-export const ProfileActivityPreview: React.FC<ProfileActivityPreviewProps> = ({ staffId, onSwitchTab }) => {
+export const ProfileActivityPreview: React.FC<ProfileActivityPreviewProps> = ({
+  staffId,
+  onSwitchTab,
+}) => {
   const { events: recentEvents, isLoading } = useStaffActivity(staffId);
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide">Activité récente</h3>
+        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+          Activité récente
+        </h3>
         {onSwitchTab && recentEvents.length > 0 && (
           <button
             onClick={() => onSwitchTab('activite')}
@@ -71,11 +91,16 @@ export const ProfileActivityPreview: React.FC<ProfileActivityPreviewProps> = ({ 
               const Icon = config.icon;
               const isLast = idx === Math.min(recentEvents.length, 8) - 1;
               return (
-                <div key={`${event.eventType}-${event.eventDate}-${idx}`} className="flex gap-3 relative">
+                <div
+                  key={`${event.eventType}-${event.eventDate}-${idx}`}
+                  className="flex gap-3 relative"
+                >
                   {!isLast && (
                     <div className="absolute left-[15px] top-9 bottom-0 w-px bg-slate-100" />
                   )}
-                  <div className={`w-8 h-8 rounded-full ${config.bgColor} flex items-center justify-center shrink-0 z-10`}>
+                  <div
+                    className={`w-8 h-8 rounded-full ${config.bgColor} flex items-center justify-center shrink-0 z-10`}
+                  >
                     <Icon className={`w-4 h-4 ${config.color}`} />
                   </div>
                   <div className="flex-1 min-w-0 pb-4">
@@ -84,7 +109,9 @@ export const ProfileActivityPreview: React.FC<ProfileActivityPreviewProps> = ({ 
                       {event.clientName && (
                         <span className="text-xs text-slate-500">{event.clientName}</span>
                       )}
-                      <span className="text-xs text-slate-400">{formatRelativeDate(event.eventDate)}</span>
+                      <span className="text-xs text-slate-400">
+                        {formatRelativeDate(event.eventDate)}
+                      </span>
                     </div>
                   </div>
                 </div>

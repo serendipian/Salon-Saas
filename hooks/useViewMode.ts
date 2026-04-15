@@ -5,7 +5,10 @@ export type ViewMode = 'card' | 'table';
 
 const STORAGE_PREFIX = 'lumiere_viewMode_';
 
-export const useViewMode = (moduleName: string, serverDefault?: ViewMode): {
+export const useViewMode = (
+  moduleName: string,
+  serverDefault?: ViewMode,
+): {
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
 } => {
@@ -19,10 +22,13 @@ export const useViewMode = (moduleName: string, serverDefault?: ViewMode): {
     return serverDefault ?? 'table';
   });
 
-  const setViewMode = useCallback((mode: ViewMode) => {
-    setViewModeState(mode);
-    localStorage.setItem(storageKey, mode);
-  }, [storageKey]);
+  const setViewMode = useCallback(
+    (mode: ViewMode) => {
+      setViewModeState(mode);
+      localStorage.setItem(storageKey, mode);
+    },
+    [storageKey],
+  );
 
   // Force card on mobile regardless of stored preference
   const effectiveMode = isMobile ? 'card' : viewMode;

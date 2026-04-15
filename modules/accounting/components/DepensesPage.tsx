@@ -10,7 +10,16 @@ import type { FinancesOutletContext } from '../FinancesLayout';
 type Tab = 'COURANTES' | 'RECURRENTES';
 
 export const DepensesPage: React.FC = () => {
-  const { filteredExpenses, addExpense, isAddingExpense, updateExpense, isUpdatingExpense, deleteExpense, isDeletingExpense, financials } = useOutletContext<FinancesOutletContext>();
+  const {
+    filteredExpenses,
+    addExpense,
+    isAddingExpense,
+    updateExpense,
+    isUpdatingExpense,
+    deleteExpense,
+    isDeletingExpense,
+    financials,
+  } = useOutletContext<FinancesOutletContext>();
 
   const [activeTab, setActiveTab] = useState<Tab>('COURANTES');
   const [showForm, setShowForm] = useState(false);
@@ -35,7 +44,9 @@ export const DepensesPage: React.FC = () => {
     setEditingExpenseId(null);
   };
 
-  const editingExpense = editingExpenseId ? filteredExpenses.find(e => e.id === editingExpenseId) : undefined;
+  const editingExpense = editingExpenseId
+    ? filteredExpenses.find((e) => e.id === editingExpenseId)
+    : undefined;
 
   if (showForm) {
     return (
@@ -43,8 +54,14 @@ export const DepensesPage: React.FC = () => {
         existingExpense={editingExpense}
         allExpenses={filteredExpenses}
         onSave={handleAddExpense}
-        onUpdate={(expense) => { updateExpense(expense); handleClose(); }}
-        onDelete={(id) => { deleteExpense(id); handleClose(); }}
+        onUpdate={(expense) => {
+          updateExpense(expense);
+          handleClose();
+        }}
+        onDelete={(id) => {
+          deleteExpense(id);
+          handleClose();
+        }}
         onCancel={handleClose}
         isPending={isAddingExpense || isUpdatingExpense || isDeletingExpense}
       />
@@ -56,20 +73,28 @@ export const DepensesPage: React.FC = () => {
       {/* Tabs + Add button */}
       <div className="flex items-center justify-between">
         <div className="flex border-b border-slate-200">
-          {([
+          {[
             { id: 'COURANTES' as Tab, label: 'Courantes' },
             { id: 'RECURRENTES' as Tab, label: 'R\u00e9currentes' },
-          ]).map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.id ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700'
-              }`}>
+                activeTab === tab.id
+                  ? 'border-slate-900 text-slate-900'
+                  : 'border-transparent text-slate-500 hover:text-slate-700'
+              }`}
+            >
               {tab.label}
             </button>
           ))}
         </div>
         {activeTab === 'COURANTES' && (
-          <button onClick={() => setShowForm(true)} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all">
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
+          >
             <Plus size={16} /> Nouvelle D{'\u00e9'}pense
           </button>
         )}
@@ -77,11 +102,18 @@ export const DepensesPage: React.FC = () => {
 
       {activeTab === 'COURANTES' && (
         <>
-          <MiniKpiRow items={[
-            { title: 'Total D\u00e9penses', value: expenseTotal, trend: financials.opexTrend, invertTrend: true },
-            { title: 'Nb D\u00e9penses', value: expenseCount, format: 'number' },
-            { title: 'Moyenne par D\u00e9pense', value: avgExpense },
-          ]} />
+          <MiniKpiRow
+            items={[
+              {
+                title: 'Total D\u00e9penses',
+                value: expenseTotal,
+                trend: financials.opexTrend,
+                invertTrend: true,
+              },
+              { title: 'Nb D\u00e9penses', value: expenseCount, format: 'number' },
+              { title: 'Moyenne par D\u00e9pense', value: avgExpense },
+            ]}
+          />
           <AccountingExpenses expenses={filteredExpenses} onEdit={handleEdit} />
         </>
       )}

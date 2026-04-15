@@ -53,8 +53,8 @@ export const SignupPage: React.FC = () => {
               </div>
               <h2 className="text-lg font-semibold text-slate-900 mb-2">Vérifiez votre email</h2>
               <p className="text-sm text-slate-500">
-                Un email de confirmation a été envoyé à <strong>{email}</strong>.
-                Cliquez sur le lien pour activer votre compte.
+                Un email de confirmation a été envoyé à <strong>{email}</strong>. Cliquez sur le
+                lien pour activer votre compte.
               </p>
             </div>
           ) : (
@@ -63,7 +63,10 @@ export const SignupPage: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Prénom</label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <User
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                      size={18}
+                    />
                     <input
                       type="text"
                       value={firstName}
@@ -90,7 +93,10 @@ export const SignupPage: React.FC = () => {
               <div className="mb-4">
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Mail
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={18}
+                  />
                   <input
                     type="email"
                     value={email}
@@ -103,9 +109,14 @@ export const SignupPage: React.FC = () => {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Mot de passe</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Mot de passe
+                </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Lock
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={18}
+                  />
                   <input
                     type="password"
                     value={password}
@@ -137,7 +148,10 @@ export const SignupPage: React.FC = () => {
 
         <p className="text-center text-sm text-slate-500 mt-6">
           Déjà un compte ?{' '}
-          <Link to={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : '/login'} className="text-slate-900 font-medium hover:underline">
+          <Link
+            to={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : '/login'}
+            className="text-slate-900 font-medium hover:underline"
+          >
             Se connecter
           </Link>
         </p>

@@ -56,7 +56,10 @@ export function ColorPicker({ selectedColor, onSelect }: ColorPickerProps) {
             <button
               key={color.value}
               type="button"
-              onClick={() => { onSelect(color.value); setOpen(false); }}
+              onClick={() => {
+                onSelect(color.value);
+                setOpen(false);
+              }}
               className={`flex items-center justify-center w-7 h-7 rounded-lg transition-colors ${
                 selectedColor === color.value
                   ? 'ring-2 ring-slate-900 ring-offset-1'

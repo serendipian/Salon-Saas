@@ -23,9 +23,7 @@ interface ToastState {
   toasts: Toast[];
 }
 
-type ToastAction =
-  | { type: 'ADD'; toast: Toast }
-  | { type: 'REMOVE'; id: string };
+type ToastAction = { type: 'ADD'; toast: Toast } | { type: 'REMOVE'; id: string };
 
 const MAX_VISIBLE = 3;
 const MAX_QUEUE = 10;
@@ -40,7 +38,7 @@ function toastReducer(state: ToastState, action: ToastAction): ToastState {
       return { toasts: updated };
     }
     case 'REMOVE':
-      return { toasts: state.toasts.filter(t => t.id !== action.id) };
+      return { toasts: state.toasts.filter((t) => t.id !== action.id) };
     default:
       return state;
   }
@@ -97,9 +95,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   return (
     <ToastDispatchContext.Provider value={dispatchValue}>
-      <ToastStateContext.Provider value={state}>
-        {children}
-      </ToastStateContext.Provider>
+      <ToastStateContext.Provider value={state}>{children}</ToastStateContext.Provider>
     </ToastDispatchContext.Provider>
   );
 };

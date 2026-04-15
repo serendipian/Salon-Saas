@@ -16,23 +16,31 @@ interface SupplierFormProps {
   onDelete?: (id: string) => void;
 }
 
-export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, categories, onSave, onCancel, onDelete }) => {
+export const SupplierForm: React.FC<SupplierFormProps> = ({
+  existingSupplier,
+  categories,
+  onSave,
+  onCancel,
+  onDelete,
+}) => {
   const navigate = useNavigate();
   const { errors, validate, clearFieldError } = useFormValidation(supplierSchema);
   const { supplierSettings } = useSupplierSettings();
-  const [formData, setFormData] = useState<Supplier>(existingSupplier || {
-    id: '',
-    name: '',
-    contactName: '',
-    email: '',
-    phone: '',
-    website: '',
-    address: '',
-    categoryId: null,
-    paymentTerms: supplierSettings.defaultPaymentTerms,
-    active: true,
-    notes: ''
-  });
+  const [formData, setFormData] = useState<Supplier>(
+    existingSupplier || {
+      id: '',
+      name: '',
+      contactName: '',
+      email: '',
+      phone: '',
+      website: '',
+      address: '',
+      categoryId: null,
+      paymentTerms: supplierSettings.defaultPaymentTerms,
+      active: true,
+      notes: '',
+    },
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,13 +51,16 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, ca
 
   const categoryOptions = [
     { value: '', label: '— Aucune catégorie —' },
-    ...categories.map(c => ({ value: c.id, label: c.name })),
+    ...categories.map((c) => ({ value: c.id, label: c.name })),
   ];
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 pb-10">
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={onCancel} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
+        <button
+          onClick={onCancel}
+          className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
+        >
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-xl font-bold text-slate-900">
@@ -59,139 +70,151 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({ existingSupplier, ca
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-
-           <Section title="Informations">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <Input
-                  label="Nom"
-                  required
-                  value={formData.name}
-                  onChange={e => { clearFieldError('name'); setFormData({...formData, name: e.target.value}); }}
-                  placeholder="Ex: L'Oréal Pro, EDF, Propriétaire..."
-                  error={errors.name}
-                />
-                <Input
-                  label="Site Web"
-                  value={formData.website}
-                  onChange={e => setFormData({...formData, website: e.target.value})}
-                  placeholder="www.exemple.com"
-                />
-              </div>
-              <TextArea
-                label="Adresse"
-                value={formData.address}
-                onChange={e => setFormData({...formData, address: e.target.value})}
-                rows={2}
-                placeholder="Adresse postale complète..."
-              />
-           </Section>
-
-           <Section title="Contact Principal">
+          <Section title="Informations">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <Input
-                label="Nom du contact"
-                value={formData.contactName}
-                onChange={e => setFormData({...formData, contactName: e.target.value})}
-                placeholder="Ex: Jean Dupont"
+                label="Nom"
+                required
+                value={formData.name}
+                onChange={(e) => {
+                  clearFieldError('name');
+                  setFormData({ ...formData, name: e.target.value });
+                }}
+                placeholder="Ex: L'Oréal Pro, EDF, Propriétaire..."
+                error={errors.name}
               />
-              <div className="grid grid-cols-2 gap-5">
-                <Input
-                  label="Email"
-                  type="email"
-                  value={formData.email}
-                  onChange={e => { clearFieldError('email'); setFormData({...formData, email: e.target.value}); }}
-                  placeholder="contact@email.com"
-                  error={errors.email}
-                />
-                <PhoneInput
-                  label="Téléphone"
-                  value={formData.phone}
-                  onChange={phone => setFormData({...formData, phone})}
-                />
-              </div>
-           </Section>
+              <Input
+                label="Site Web"
+                value={formData.website}
+                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                placeholder="www.exemple.com"
+              />
+            </div>
+            <TextArea
+              label="Adresse"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              rows={2}
+              placeholder="Adresse postale complète..."
+            />
+          </Section>
+
+          <Section title="Contact Principal">
+            <Input
+              label="Nom du contact"
+              value={formData.contactName}
+              onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+              placeholder="Ex: Jean Dupont"
+            />
+            <div className="grid grid-cols-2 gap-5">
+              <Input
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => {
+                  clearFieldError('email');
+                  setFormData({ ...formData, email: e.target.value });
+                }}
+                placeholder="contact@email.com"
+                error={errors.email}
+              />
+              <PhoneInput
+                label="Téléphone"
+                value={formData.phone}
+                onChange={(phone) => setFormData({ ...formData, phone })}
+              />
+            </div>
+          </Section>
         </div>
 
         <div className="lg:col-span-1 space-y-6">
-           <div className="flex flex-col gap-3 sticky top-6 z-10">
-             <button
+          <div className="flex flex-col gap-3 sticky top-6 z-10">
+            <button
               type="submit"
               className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
             >
-               <Save size={16} />
-               Enregistrer
-             </button>
-             <button
+              <Save size={16} />
+              Enregistrer
+            </button>
+            <button
               type="button"
               onClick={onCancel}
               className="w-full py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium transition-all text-sm"
             >
-               Annuler
-             </button>
-             {existingSupplier && onDelete && (
-               <button
-                 type="button"
-                 onClick={() => {
-                   if (window.confirm('Supprimer ce bénéficiaire ? Cette action est irréversible.')) {
-                     onDelete(existingSupplier.id);
-                   }
-                 }}
-                 className="w-full py-2.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg font-medium transition-all text-sm flex justify-center items-center gap-2"
-               >
-                 <Trash2 size={16} />
-                 Supprimer
-               </button>
-             )}
-           </div>
+              Annuler
+            </button>
+            {existingSupplier && onDelete && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (
+                    window.confirm('Supprimer ce bénéficiaire ? Cette action est irréversible.')
+                  ) {
+                    onDelete(existingSupplier.id);
+                  }
+                }}
+                className="w-full py-2.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg font-medium transition-all text-sm flex justify-center items-center gap-2"
+              >
+                <Trash2 size={16} />
+                Supprimer
+              </button>
+            )}
+          </div>
 
-           <Section title="Paramètres">
-              <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-slate-700 font-medium">Actif</span>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({...formData, active: !formData.active})}
-                    className={`w-10 h-5 rounded-full transition-colors relative ${formData.active ? 'bg-emerald-500' : 'bg-slate-300'}`}
-                  >
-                     <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${formData.active ? 'left-5' : 'left-0.5'}`} />
-                  </button>
-              </div>
-
-              {categories.length > 0 ? (
-                <Select
-                  label="Catégorie"
-                  value={formData.categoryId ?? ''}
-                  onChange={(val) => { clearFieldError('categoryId'); setFormData({...formData, categoryId: val ? val as string : null}); }}
-                  options={categoryOptions}
+          <Section title="Paramètres">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm text-slate-700 font-medium">Actif</span>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, active: !formData.active })}
+                className={`w-10 h-5 rounded-full transition-colors relative ${formData.active ? 'bg-emerald-500' : 'bg-slate-300'}`}
+              >
+                <div
+                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${formData.active ? 'left-5' : 'left-0.5'}`}
                 />
-              ) : (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Catégorie</label>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/suppliers/settings')}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-slate-500 bg-slate-50 border border-dashed border-slate-300 rounded-lg hover:bg-slate-100 hover:text-slate-700 transition-colors"
-                  >
-                    <Settings size={14} />
-                    Créer des catégories dans les paramètres
-                  </button>
-                </div>
-              )}
+              </button>
+            </div>
 
-              <Input
-                 label="Conditions de Paiement"
-                 value={formData.paymentTerms}
-                 onChange={e => setFormData({...formData, paymentTerms: e.target.value})}
-                 placeholder="Ex: 30 jours"
+            {categories.length > 0 ? (
+              <Select
+                label="Catégorie"
+                value={formData.categoryId ?? ''}
+                onChange={(val) => {
+                  clearFieldError('categoryId');
+                  setFormData({ ...formData, categoryId: val ? (val as string) : null });
+                }}
+                options={categoryOptions}
               />
-           </Section>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Catégorie</label>
+                <button
+                  type="button"
+                  onClick={() => navigate('/suppliers/settings')}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-slate-500 bg-slate-50 border border-dashed border-slate-300 rounded-lg hover:bg-slate-100 hover:text-slate-700 transition-colors"
+                >
+                  <Settings size={14} />
+                  Créer des catégories dans les paramètres
+                </button>
+              </div>
+            )}
 
-           <Section title="Notes Internes">
-              <TextArea
-                value={formData.notes}
-                onChange={e => setFormData({...formData, notes: e.target.value})}
-                rows={4}
-                placeholder="Notes sur le fournisseur..."
-              />
-           </Section>
+            <Input
+              label="Conditions de Paiement"
+              value={formData.paymentTerms}
+              onChange={(e) => setFormData({ ...formData, paymentTerms: e.target.value })}
+              placeholder="Ex: 30 jours"
+            />
+          </Section>
+
+          <Section title="Notes Internes">
+            <TextArea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              rows={4}
+              placeholder="Notes sur le fournisseur..."
+            />
+          </Section>
         </div>
       </form>
     </div>

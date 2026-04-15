@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppointments } from '../hooks/useAppointments';
@@ -26,13 +25,13 @@ export const AppointmentEditPage: React.FC = () => {
   const { allStaff: team } = useTeam();
   const { validPacks } = usePacks();
 
-  const selectedAppt = allAppointments.find(a => a.id === id);
+  const selectedAppt = allAppointments.find((a) => a.id === id);
 
   // IDs of appointments in this group — exclude from availability check
   const excludeAppointmentIds = useMemo(() => {
     if (!selectedAppt) return [];
     if (selectedAppt.groupId) {
-      return allAppointments.filter(a => a.groupId === selectedAppt.groupId).map(a => a.id);
+      return allAppointments.filter((a) => a.groupId === selectedAppt.groupId).map((a) => a.id);
     }
     return [selectedAppt.id];
   }, [selectedAppt, allAppointments]);
@@ -71,7 +70,9 @@ export const AppointmentEditPage: React.FC = () => {
       // unsaveable and surface an opaque schema error to the user.
       const variant = appt.variantId
         ? svc?.variants.find((v) => v.id === appt.variantId)
-        : svc?.variants.find((v) => v.price === appt.price && v.durationMinutes === appt.durationMinutes);
+        : svc?.variants.find(
+            (v) => v.price === appt.price && v.durationMinutes === appt.durationMinutes,
+          );
 
       if (!svc || !variant) {
         unresolved += 1;
@@ -147,9 +148,7 @@ export const AppointmentEditPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64 text-slate-400">
-        Chargement...
-      </div>
+      <div className="flex items-center justify-center h-64 text-slate-400">Chargement...</div>
     );
   }
 
@@ -161,7 +160,11 @@ export const AppointmentEditPage: React.FC = () => {
     );
   }
 
-  const handleSave = async (payload: Omit<Parameters<typeof editAppointmentGroup>[0], 'oldAppointmentId'> & { newClient: { firstName: string; lastName: string; phone: string } | null }) => {
+  const handleSave = async (
+    payload: Omit<Parameters<typeof editAppointmentGroup>[0], 'oldAppointmentId'> & {
+      newClient: { firstName: string; lastName: string; phone: string } | null;
+    },
+  ) => {
     if (payload.newClient && activeSalon) {
       const { data: newClientRow, error: clientError } = await supabase
         .from('clients')

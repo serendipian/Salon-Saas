@@ -59,25 +59,36 @@ export default function ClientField({
   const phoneMatches = useMemo(() => {
     const phone = (newClientData?.phone ?? '').replace(/[\s+]/g, '');
     if (phone.length < 4) return [];
-    return clients.filter((c) => {
-      const clientPhone = (c.phone ?? '').replace(/[\s+]/g, '');
-      return clientPhone && clientPhone.startsWith(phone);
-    }).slice(0, 5);
+    return clients
+      .filter((c) => {
+        const clientPhone = (c.phone ?? '').replace(/[\s+]/g, '');
+        return clientPhone && clientPhone.startsWith(phone);
+      })
+      .slice(0, 5);
   }, [clients, newClientData?.phone]);
 
   // Show selected client chip
   if (selectedClient) {
-    const initials = `${selectedClient.firstName?.[0] ?? ''}${selectedClient.lastName?.[0] ?? ''}`.toUpperCase();
+    const initials =
+      `${selectedClient.firstName?.[0] ?? ''}${selectedClient.lastName?.[0] ?? ''}`.toUpperCase();
     return (
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shadow-sm">{initials}</div>
+          <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shadow-sm">
+            {initials}
+          </div>
           <div>
-            <div className="text-slate-800 text-sm font-medium">{[selectedClient.firstName, selectedClient.lastName].filter(Boolean).join(' ')}</div>
+            <div className="text-slate-800 text-sm font-medium">
+              {[selectedClient.firstName, selectedClient.lastName].filter(Boolean).join(' ')}
+            </div>
             <div className="text-slate-400 text-xs">{selectedClient.phone ?? ''}</div>
           </div>
         </div>
-        <button type="button" onClick={onClearClient} className="w-7 h-7 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors">
+        <button
+          type="button"
+          onClick={onClearClient}
+          className="w-7 h-7 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors"
+        >
           <X size={14} className="text-slate-400" />
         </button>
       </div>
@@ -93,13 +104,19 @@ export default function ClientField({
             <input
               type="text"
               value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); setIsSearchOpen(true); }}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setIsSearchOpen(true);
+              }}
               onFocus={() => setIsSearchOpen(true)}
               onBlur={() => setTimeout(() => setIsSearchOpen(false), 200)}
               placeholder="Rechercher un client..."
               className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none min-h-[44px] pl-10 transition-all"
             />
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search
+              size={16}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+            />
             {isSearchOpen && filteredClients.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl ring-1 ring-black/5 z-10 max-h-64 overflow-y-auto">
                 {filteredClients.map((client) => (
@@ -115,10 +132,13 @@ export default function ClientField({
                     className="w-full px-3.5 py-2.5 text-left hover:bg-blue-50 flex items-center gap-3 text-sm transition-colors first:rounded-t-xl last:rounded-b-xl"
                   >
                     <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-[11px] font-semibold">
-                      {client.firstName?.[0] ?? ''}{client.lastName?.[0] ?? ''}
+                      {client.firstName?.[0] ?? ''}
+                      {client.lastName?.[0] ?? ''}
                     </div>
                     <div>
-                      <div className="text-slate-800 font-medium">{[client.firstName, client.lastName].filter(Boolean).join(' ')}</div>
+                      <div className="text-slate-800 font-medium">
+                        {[client.firstName, client.lastName].filter(Boolean).join(' ')}
+                      </div>
                       <div className="text-slate-400 text-xs">{client.phone ?? ''}</div>
                     </div>
                   </button>
@@ -186,10 +206,13 @@ export default function ClientField({
                   className="w-full px-3.5 py-2.5 text-left hover:bg-blue-50 flex items-center gap-3 text-sm transition-colors last:rounded-b-xl"
                 >
                   <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-[11px] font-semibold">
-                    {client.firstName?.[0] ?? ''}{client.lastName?.[0] ?? ''}
+                    {client.firstName?.[0] ?? ''}
+                    {client.lastName?.[0] ?? ''}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-slate-800 font-medium truncate">{[client.firstName, client.lastName].filter(Boolean).join(' ')}</div>
+                    <div className="text-slate-800 font-medium truncate">
+                      {[client.firstName, client.lastName].filter(Boolean).join(' ')}
+                    </div>
                     <div className="text-slate-400 text-xs">{client.phone ?? ''}</div>
                   </div>
                 </button>

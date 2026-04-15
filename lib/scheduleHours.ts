@@ -7,7 +7,13 @@
 import type { WorkSchedule } from '../types';
 
 const DAY_KEYS: (keyof WorkSchedule)[] = [
-  'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
 ];
 
 const DEFAULT_RANGE = { minHour: 9, maxHour: 20 };

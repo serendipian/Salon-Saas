@@ -15,12 +15,15 @@ export const useStaffCompensation = (
   staff: StaffMember,
   periodStart: Date,
   periodEnd: Date,
-  baseSalary: number | null
+  baseSalary: number | null,
 ): CompensationSummary => {
-  const compRange = useMemo(() => ({
-    from: periodStart.toISOString(),
-    to: periodEnd.toISOString(),
-  }), [periodStart.getTime(), periodEnd.getTime()]);
+  const compRange = useMemo(
+    () => ({
+      from: periodStart.toISOString(),
+      to: periodEnd.toISOString(),
+    }),
+    [periodStart.getTime(), periodEnd.getTime()],
+  );
 
   const { transactions } = useTransactions(compRange);
 

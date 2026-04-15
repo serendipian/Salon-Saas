@@ -41,7 +41,11 @@ const SparkTooltip: React.FC<any> = ({ active, payload, isCurrency }) => {
 };
 
 // Unique gradient IDs per sparkline to avoid SVG defs collision
-const MiniSparkline: React.FC<{ data: AdminHistoryPoint[]; gradId: string; isCurrency?: boolean }> = ({ data, gradId, isCurrency }) => (
+const MiniSparkline: React.FC<{
+  data: AdminHistoryPoint[];
+  gradId: string;
+  isCurrency?: boolean;
+}> = ({ data, gradId, isCurrency }) => (
   <ResponsiveContainer width="100%" height={80}>
     <AreaChart data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
       <defs>
@@ -73,7 +77,9 @@ const EmptyChart: React.FC = () => (
     className="w-full h-[80px] rounded-[6px] flex items-center justify-center"
     style={{ border: '1.5px dashed #e3e8ef' }}
   >
-    <span className="text-[13px]" style={{ color: '#c1cfe0' }}>Aucune donnée</span>
+    <span className="text-[13px]" style={{ color: '#c1cfe0' }}>
+      Aucune donnée
+    </span>
   </div>
 );
 
@@ -88,21 +94,39 @@ interface MetricCardProps {
   isCurrency?: boolean;
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, to, loading, chartData, gradId, isCurrency }) => {
+const MetricCard: React.FC<MetricCardProps> = ({
+  title,
+  value,
+  subtitle,
+  to,
+  loading,
+  chartData,
+  gradId,
+  isCurrency,
+}) => {
   const inner = (
     <div className="bg-white rounded-[8px] border border-[#e3e8ef] p-5 flex flex-col h-full transition-shadow hover:shadow-sm">
       <div className="flex items-center gap-1.5 mb-1">
-        <span className="text-[13px] font-medium" style={{ color: '#3c4257' }}>{title}</span>
+        <span className="text-[13px] font-medium" style={{ color: '#3c4257' }}>
+          {title}
+        </span>
         <Info className="w-3.5 h-3.5 shrink-0" style={{ color: '#c1cfe0' }} />
       </div>
       {loading ? (
         <div className="h-8 w-32 bg-[#f7fafc] rounded-[4px] animate-pulse mb-1" />
       ) : (
-        <div className="text-[28px] font-bold leading-none mb-1" style={{ color: '#1a1f36', fontVariantNumeric: 'tabular-nums' }}>
+        <div
+          className="text-[28px] font-bold leading-none mb-1"
+          style={{ color: '#1a1f36', fontVariantNumeric: 'tabular-nums' }}
+        >
           {value}
         </div>
       )}
-      {subtitle && <div className="text-[13px] mb-2" style={{ color: '#697386' }}>{subtitle}</div>}
+      {subtitle && (
+        <div className="text-[13px] mb-2" style={{ color: '#697386' }}>
+          {subtitle}
+        </div>
+      )}
       <div className="flex-1 mt-2">
         {loading ? (
           <div className="w-full h-[80px] bg-[#f7fafc] rounded-[6px] animate-pulse" />
@@ -113,34 +137,48 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, subtitle, to, loa
         )}
       </div>
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#f0f0f0]">
-        <span className="text-[11px]" style={{ color: '#c1cfe0' }}>Mis à jour il y a quelques secondes</span>
-        <span className="text-[11px] cursor-pointer hover:underline" style={{ color: '#635bff' }}>Plus d'informations</span>
+        <span className="text-[11px]" style={{ color: '#c1cfe0' }}>
+          Mis à jour il y a quelques secondes
+        </span>
+        <span className="text-[11px] cursor-pointer hover:underline" style={{ color: '#635bff' }}>
+          Plus d'informations
+        </span>
       </div>
     </div>
   );
-  if (to) return <Link to={to} className="block h-full">{inner}</Link>;
+  if (to)
+    return (
+      <Link to={to} className="block h-full">
+        {inner}
+      </Link>
+    );
   return inner;
 };
 
 export const AdminDashboard: React.FC = () => {
   const { data: mrr, isLoading: loadingMRR, isError: errorMRR } = useAdminMRR();
-  const { data: mrrHistory,     isLoading: loadingMRRHistory } = useAdminMRRHistory();
-  const { data: signupsHistory, isLoading: loadingSignups }    = useAdminSignupsHistory();
-  const { data: trialsHistory,  isLoading: loadingTrials }     = useAdminTrialsHistory();
-  const { data: failedPayments }                               = useAdminFailedPayments();
+  const { data: mrrHistory, isLoading: loadingMRRHistory } = useAdminMRRHistory();
+  const { data: signupsHistory, isLoading: loadingSignups } = useAdminSignupsHistory();
+  const { data: trialsHistory, isLoading: loadingTrials } = useAdminTrialsHistory();
+  const { data: failedPayments } = useAdminFailedPayments();
 
   const activeSubs = (mrr?.premium_count ?? 0) + (mrr?.pro_count ?? 0);
 
   return (
     <div className="p-8" style={ADMIN_FONT}>
-      <h1 className="text-[28px] font-bold mb-8" style={{ color: '#1a1f36' }}>Vue d'ensemble</h1>
+      <h1 className="text-[28px] font-bold mb-8" style={{ color: '#1a1f36' }}>
+        Vue d'ensemble
+      </h1>
 
       {errorMRR && <AdminErrorState message="Impossible de charger les données MRR." />}
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         <MetricCard
           title="MRR"
-          value={(mrr?.total_mrr ?? 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+          value={(mrr?.total_mrr ?? 0).toLocaleString('fr-FR', {
+            style: 'currency',
+            currency: 'EUR',
+          })}
           subtitle={`${mrr?.premium_count ?? 0} premium · ${mrr?.pro_count ?? 0} pro · ${mrr?.trial_count ?? 0} essai`}
           loading={loadingMRR || loadingMRRHistory}
           chartData={mrrHistory}

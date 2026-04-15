@@ -36,10 +36,14 @@ export function GeneralTab() {
                 max={480}
                 step={5}
                 value={form.defaultDuration}
-                onChange={(e) => setForm({ ...form, defaultDuration: parseInt(e.target.value) || 60 })}
+                onChange={(e) =>
+                  setForm({ ...form, defaultDuration: parseInt(e.target.value) || 60 })
+                }
                 className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm min-h-[44px]"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">min</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">
+                min
+              </span>
             </div>
           </div>
 
@@ -61,7 +65,9 @@ export function GeneralTab() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-slate-700">Afficher les coûts et marges</p>
-              <p className="text-xs text-slate-500">Affiche les colonnes Coût et Marge dans la vue tableau des services</p>
+              <p className="text-xs text-slate-500">
+                Affiche les colonnes Coût et Marge dans la vue tableau des services
+              </p>
             </div>
             <button
               type="button"
@@ -72,16 +78,20 @@ export function GeneralTab() {
                 form.showCostsInList ? 'bg-emerald-500' : 'bg-slate-200'
               }`}
             >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
-                form.showCostsInList ? 'translate-x-6' : 'translate-x-1'
-              }`} />
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                  form.showCostsInList ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
             </button>
           </div>
 
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-slate-700">Vue par défaut</p>
-              <p className="text-xs text-slate-500">Mode d'affichage par défaut de la liste des services</p>
+              <p className="text-xs text-slate-500">
+                Mode d'affichage par défaut de la liste des services
+              </p>
             </div>
             <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
               <button

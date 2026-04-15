@@ -17,11 +17,14 @@ interface ResourceCopy {
   description: string;
 }
 
-const buildCopy = (maxStaff: number | null | undefined): Record<'staff' | 'clients' | 'products', ResourceCopy> => {
+const buildCopy = (
+  maxStaff: number | null | undefined,
+): Record<'staff' | 'clients' | 'products', ResourceCopy> => {
   const staffCountLabel = formatStaffCount(maxStaff);
-  const staffPhrase = maxStaff === null
-    ? 'inviter une équipe illimitée'
-    : `inviter jusqu'à ${staffCountLabel} membres`;
+  const staffPhrase =
+    maxStaff === null
+      ? 'inviter une équipe illimitée'
+      : `inviter jusqu'à ${staffCountLabel} membres`;
   return {
     staff: {
       headline: 'Débloquez une équipe illimitée',
@@ -48,12 +51,21 @@ interface UpgradeModalProps {
   isLoading?: boolean;
 }
 
-export const UpgradeModal: React.FC<UpgradeModalProps> = ({ resource, priceMonthly, maxStaff, onUpgrade, onClose, isLoading }) => {
+export const UpgradeModal: React.FC<UpgradeModalProps> = ({
+  resource,
+  priceMonthly,
+  maxStaff,
+  onUpgrade,
+  onClose,
+  isLoading,
+}) => {
   const copy = buildCopy(maxStaff)[resource];
   const staffCountLabel = formatStaffCount(maxStaff);
 
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
   }, [onClose]);
@@ -62,7 +74,9 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ resource, priceMonth
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-7 relative animate-in zoom-in-95 duration-200">
         <button
@@ -74,10 +88,10 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ resource, priceMonth
 
         <div className="text-center mb-6">
           <div className="text-4xl mb-4">🚀</div>
-          <h2 className="text-lg font-extrabold text-slate-900 mb-2 leading-snug">{copy.headline}</h2>
-          <p className="text-sm text-slate-500 leading-relaxed">
-            {copy.description}
-          </p>
+          <h2 className="text-lg font-extrabold text-slate-900 mb-2 leading-snug">
+            {copy.headline}
+          </h2>
+          <p className="text-sm text-slate-500 leading-relaxed">{copy.description}</p>
         </div>
 
         <div className="bg-brand-50 border border-brand-100 rounded-xl p-4 mb-5">
@@ -104,7 +118,8 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ resource, priceMonth
         </div>
 
         <div className="text-center text-2xl font-extrabold text-slate-900 mb-4">
-          {priceMonthly.toFixed(2)} €<span className="text-sm font-normal text-slate-400">/mois</span>
+          {priceMonthly.toFixed(2)} €
+          <span className="text-sm font-normal text-slate-400">/mois</span>
         </div>
 
         <button

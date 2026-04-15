@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Scissors, Trash2, User } from 'lucide-react';
 import { Appointment, AppointmentStatus } from '../../../types';
@@ -12,9 +11,18 @@ interface AppointmentCardListProps {
   onDelete?: (id: string) => void;
 }
 
-export const AppointmentCardList: React.FC<AppointmentCardListProps> = ({ appointments, onDetails, onDelete }) => {
+export const AppointmentCardList: React.FC<AppointmentCardListProps> = ({
+  appointments,
+  onDetails,
+  onDelete,
+}) => {
   if (appointments.length === 0) {
-    return <EmptyState title="Aucun rendez-vous" description="Aucun rendez-vous ne correspond aux filtres." />;
+    return (
+      <EmptyState
+        title="Aucun rendez-vous"
+        description="Aucun rendez-vous ne correspond aux filtres."
+      />
+    );
   }
 
   return (
@@ -33,8 +41,11 @@ export const AppointmentCardList: React.FC<AppointmentCardListProps> = ({ appoin
               <div>
                 <div className="font-semibold text-slate-900 text-sm">{appt.clientName}</div>
                 <div className="text-xs text-slate-500 capitalize">
-                  {date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
-                  {' '}
+                  {date.toLocaleDateString('fr-FR', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                  })}{' '}
                   {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
@@ -58,11 +69,16 @@ export const AppointmentCardList: React.FC<AppointmentCardListProps> = ({ appoin
               </div>
             </div>
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-900">{formatPrice(appt.price)}</span>
+              <span className="text-sm font-semibold text-slate-900">
+                {formatPrice(appt.price)}
+              </span>
               {onDelete && (
                 <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); onDelete(appt.id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(appt.id);
+                  }}
                   className="p-1.5 text-slate-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50"
                   title="Supprimer"
                 >

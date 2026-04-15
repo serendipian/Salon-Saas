@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppointments } from '../hooks/useAppointments';
@@ -9,7 +8,7 @@ export const AppointmentDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { allAppointments, deleteAppointment } = useAppointments();
 
-  const appointment = allAppointments.find(a => a.id === id);
+  const appointment = allAppointments.find((a) => a.id === id);
 
   if (!appointment) {
     return (

@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
@@ -25,31 +24,22 @@ export const useClients = () => {
           .eq('salon_id', salonId)
           .is('deleted_at', null)
           .order('last_name'),
-        supabase
-          .from('client_stats')
-          .select('*')
-          .eq('salon_id', salonId),
+        supabase.from('client_stats').select('*').eq('salon_id', salonId),
       ]);
 
       if (clientsRes.error) throw clientsRes.error;
       if (statsRes.error) throw statsRes.error;
 
-      const statsMap = new Map(
-        (statsRes.data ?? []).map(s => [s.client_id, s])
-      );
+      const statsMap = new Map((statsRes.data ?? []).map((s) => [s.client_id, s]));
 
-      return (clientsRes.data ?? []).map(row =>
-        toClient(row, statsMap.get(row.id) ?? null)
-      );
+      return (clientsRes.data ?? []).map((row) => toClient(row, statsMap.get(row.id) ?? null));
     },
     enabled: !!salonId,
   });
 
   const addClientMutation = useMutation({
     mutationFn: async (client: Client) => {
-      const { error } = await supabase
-        .from('clients')
-        .insert(toClientInsert(client, salonId));
+      const { error } = await supabase.from('clients').insert(toClientInsert(client, salonId));
       if (error) throw error;
     },
     onSuccess: () => {
@@ -70,7 +60,7 @@ export const useClients = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients', salonId] });
     },
-    onError: toastOnError("Impossible de modifier le client"),
+    onError: toastOnError('Impossible de modifier le client'),
   });
 
   const deleteClientMutation = useMutation({
@@ -83,7 +73,7 @@ export const useClients = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients', salonId] });
     },
-    onError: toastOnError("Impossible de supprimer le client"),
+    onError: toastOnError('Impossible de supprimer le client'),
   });
 
   return {

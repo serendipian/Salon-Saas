@@ -58,7 +58,14 @@ export function PacksTab() {
     setView('edit-group');
   };
 
-  const handleSave = async (data: { id?: string; name: string; description: string; price: number; groupId: string | null; items: Array<{ serviceId: string; serviceVariantId: string }> }) => {
+  const handleSave = async (data: {
+    id?: string;
+    name: string;
+    description: string;
+    price: number;
+    groupId: string | null;
+    items: Array<{ serviceId: string; serviceVariantId: string }>;
+  }) => {
     try {
       if (data.id) {
         await updatePackAsync({ id: data.id, ...data });
@@ -71,7 +78,14 @@ export function PacksTab() {
     }
   };
 
-  const handleSaveGroup = (data: { id?: string; name: string; description: string; color: string | null; startsAt: string | null; endsAt: string | null }) => {
+  const handleSaveGroup = (data: {
+    id?: string;
+    name: string;
+    description: string;
+    color: string | null;
+    startsAt: string | null;
+    endsAt: string | null;
+  }) => {
     if (data.id) {
       updatePackGroup({ id: data.id, ...data });
     } else {
@@ -112,11 +126,15 @@ export function PacksTab() {
       onEdit={handleEdit}
       onDelete={(id) => deletePack(id)}
       onToggleActive={(id, active) => toggleActive({ packId: id, active })}
-      onToggleFavorite={canEdit ? (id, isFavorite) => toggleFavorite({ packId: id, isFavorite }) : undefined}
+      onToggleFavorite={
+        canEdit ? (id, isFavorite) => toggleFavorite({ packId: id, isFavorite }) : undefined
+      }
       onAddGroup={canEdit ? handleAddGroup : undefined}
       onEditGroup={canEdit ? handleEditGroup : undefined}
       onDeleteGroup={canEdit ? (id) => deletePackGroup(id) : undefined}
-      onToggleGroupActive={canEdit ? (id, active) => toggleGroupActive({ groupId: id, active }) : undefined}
+      onToggleGroupActive={
+        canEdit ? (id, active) => toggleGroupActive({ groupId: id, active }) : undefined
+      }
     />
   );
 }

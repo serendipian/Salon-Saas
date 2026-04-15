@@ -6,7 +6,7 @@ export enum AppointmentStatus {
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
-  NO_SHOW = 'NO_SHOW'
+  NO_SHOW = 'NO_SHOW',
 }
 
 // General Settings Domain
@@ -201,7 +201,7 @@ export interface SupplierSettings {
 export interface WorkDay {
   isOpen: boolean;
   start: string; // "09:00"
-  end: string;   // "18:00"
+  end: string; // "18:00"
 }
 
 export interface WorkSchedule {
@@ -216,7 +216,7 @@ export interface WorkSchedule {
 
 export interface BonusTier {
   target: number; // Revenue target (CA)
-  bonus: number;  // Bonus amount
+  bonus: number; // Bonus amount
 }
 
 export interface StaffMember {
@@ -240,7 +240,7 @@ export interface StaffMember {
   endDate?: string; // For fixed term
   contractType?: 'CDI' | 'CDD' | 'Freelance' | 'Apprentissage' | 'Stage';
   weeklyHours?: number;
-  
+
   // Compensation
   commissionRate: number; // Percentage (0-100)
   baseSalary?: number;
@@ -314,7 +314,7 @@ export interface Client {
   profession?: string;
   company?: string;
   notes?: string; // Moved to Section 1
-  
+
   // Section 2: Medical
   allergies?: string;
 
@@ -444,7 +444,7 @@ export interface Transaction {
 
 // Accounting Domain
 // Changed from Enum to string to support dynamic categories from Settings
-export type ExpenseCategory = string; 
+export type ExpenseCategory = string;
 
 // Settings Types
 export interface RecurringExpense {
@@ -468,8 +468,8 @@ export interface Expense {
   date: string;
   description: string;
   category: ExpenseCategory; // ID of the category setting
-  categoryName?: string;     // Joined from expense_categories — display only
-  categoryColor?: string;    // Joined from expense_categories — display only
+  categoryName?: string; // Joined from expense_categories — display only
+  categoryColor?: string; // Joined from expense_categories — display only
   amount: number;
   supplier?: string;
   supplierId?: string;

@@ -13,9 +13,10 @@ interface TrialBannerProps {
 }
 
 export const TrialBanner: React.FC<TrialBannerProps> = ({ daysLeft, onUpgradeClick }) => {
-  const headline = daysLeft === null
-    ? 'Essai Premium en cours'
-    : `Essai Premium — ${daysLeft} jour${daysLeft > 1 ? 's' : ''} restant${daysLeft > 1 ? 's' : ''}`;
+  const headline =
+    daysLeft === null
+      ? 'Essai Premium en cours'
+      : `Essai Premium — ${daysLeft} jour${daysLeft > 1 ? 's' : ''} restant${daysLeft > 1 ? 's' : ''}`;
 
   return (
     <div className="bg-gradient-to-r from-brand-500 to-rose-500 text-white px-6 py-3 flex items-center justify-between gap-4">

@@ -22,9 +22,14 @@ export const BillingModule: React.FC = () => {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const {
-    subscription, tier, limits, trialDaysLeft,
-    createCheckoutSession, createPortalSession,
-    isLoadingCheckout, isLoadingPortal,
+    subscription,
+    tier,
+    limits,
+    trialDaysLeft,
+    createCheckoutSession,
+    createPortalSession,
+    isLoadingCheckout,
+    isLoadingPortal,
   } = useBilling();
 
   // Load plans from DB
@@ -46,12 +51,21 @@ export const BillingModule: React.FC = () => {
     queryKey: ['salon-usage', activeSalon?.id],
     queryFn: async () => {
       const [staffRes, clientsRes, productsRes] = await Promise.all([
-        supabase.from('staff_members').select('id', { count: 'exact', head: true })
-          .eq('salon_id', activeSalon!.id).is('deleted_at', null),
-        supabase.from('clients').select('id', { count: 'exact', head: true })
-          .eq('salon_id', activeSalon!.id).is('deleted_at', null),
-        supabase.from('products').select('id', { count: 'exact', head: true })
-          .eq('salon_id', activeSalon!.id).is('deleted_at', null),
+        supabase
+          .from('staff_members')
+          .select('id', { count: 'exact', head: true })
+          .eq('salon_id', activeSalon!.id)
+          .is('deleted_at', null),
+        supabase
+          .from('clients')
+          .select('id', { count: 'exact', head: true })
+          .eq('salon_id', activeSalon!.id)
+          .is('deleted_at', null),
+        supabase
+          .from('products')
+          .select('id', { count: 'exact', head: true })
+          .eq('salon_id', activeSalon!.id)
+          .is('deleted_at', null),
       ]);
       return {
         staff: staffRes.count ?? 0,
@@ -63,9 +77,9 @@ export const BillingModule: React.FC = () => {
   });
 
   // Find Premium plan for upgrade modal
-  const premiumPlan = plans.find(p => p.name === 'Premium');
+  const premiumPlan = plans.find((p) => p.name === 'Premium');
   // Find the purchased plan for the success screen (matched by URL param)
-  const successPlan = successPlanName ? plans.find(p => p.name === successPlanName) : undefined;
+  const successPlan = successPlanName ? plans.find((p) => p.name === successPlanName) : undefined;
 
   const handleUpgradeFromModal = async () => {
     if (premiumPlan) await createCheckoutSession(premiumPlan.id);
@@ -86,16 +100,16 @@ export const BillingModule: React.FC = () => {
           TrialBanner handles `daysLeft === null` with a generic headline. */}
       {tier === 'trial' && (
         <div className="-mx-6 -mt-6 mb-6">
-          <TrialBanner
-            daysLeft={trialDaysLeft}
-            onUpgradeClick={() => setShowUpgradeModal(true)}
-          />
+          <TrialBanner daysLeft={trialDaysLeft} onUpgradeClick={() => setShowUpgradeModal(true)} />
         </div>
       )}
 
       {/* Back + title */}
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={() => navigate('/settings')} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
+        <button
+          onClick={() => navigate('/settings')}
+          className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
+        >
           <ArrowLeft size={20} />
         </button>
         <div>
@@ -125,10 +139,7 @@ export const BillingModule: React.FC = () => {
         />
 
         {tier !== 'trial' && tier !== 'free' && (
-          <StripePortalSection
-            onOpenPortal={createPortalSession}
-            isLoading={isLoadingPortal}
-          />
+          <StripePortalSection onOpenPortal={createPortalSession} isLoading={isLoadingPortal} />
         )}
       </div>
 

@@ -69,7 +69,7 @@ export const useInvitation = (staffId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invitation', salonId, staffId] });
     },
-    onError: toastOnError('Erreur lors de la création de l\'invitation'),
+    onError: toastOnError("Erreur lors de la création de l'invitation"),
   });
 
   const cancelMutation = useMutation({
@@ -85,7 +85,7 @@ export const useInvitation = (staffId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invitation', salonId, staffId] });
     },
-    onError: toastOnError('Erreur lors de l\'annulation de l\'invitation'),
+    onError: toastOnError("Erreur lors de l'annulation de l'invitation"),
   });
 
   return {

@@ -1,7 +1,21 @@
-
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Clock, Receipt, User, Scissors, ShoppingBag, StickyNote, CreditCard, Banknote, Smartphone, Gift, Ban, RotateCcw, ExternalLink } from 'lucide-react';
+import {
+  X,
+  Clock,
+  Receipt,
+  User,
+  Scissors,
+  ShoppingBag,
+  StickyNote,
+  CreditCard,
+  Banknote,
+  Smartphone,
+  Gift,
+  Ban,
+  RotateCcw,
+  ExternalLink,
+} from 'lucide-react';
 import { CartItem, Service, ServiceVariant, Transaction } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { formatPrice } from '../../../lib/format';
@@ -54,7 +68,7 @@ export const ItemEditorModal: React.FC<{
       price: safePrice,
       quantity,
       note,
-      originalPrice: originalPrice
+      originalPrice: originalPrice,
     });
     onClose();
   };
@@ -74,7 +88,11 @@ export const ItemEditorModal: React.FC<{
             <h3 className="font-bold text-slate-900">{item.name}</h3>
             {item.variantName && <span className="text-xs text-slate-500">{item.variantName}</span>}
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Fermer">
+          <button
+            onClick={onClose}
+            className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Fermer"
+          >
             <X size={20} />
           </button>
         </div>
@@ -82,7 +100,9 @@ export const ItemEditorModal: React.FC<{
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Prix Unitaire</label>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">
+              Prix Unitaire
+            </label>
             <div className="relative">
               <input
                 type="number"
@@ -91,7 +111,9 @@ export const ItemEditorModal: React.FC<{
                 onChange={(e) => setPrice(parseFloat(e.target.value))}
                 className="w-full text-3xl font-bold text-slate-900 border-b-2 border-slate-200 focus:border-slate-900 outline-none py-1 bg-white"
               />
-              <span className="absolute right-0 bottom-2 text-lg text-slate-400">{currencySymbol}</span>
+              <span className="absolute right-0 bottom-2 text-lg text-slate-400">
+                {currencySymbol}
+              </span>
               {originalPrice !== price && (
                 <span className="absolute right-8 top-2 text-sm text-slate-400 line-through">
                   {formatPrice(originalPrice)}
@@ -101,17 +123,42 @@ export const ItemEditorModal: React.FC<{
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            <button onClick={() => applyDiscount(10)} className="py-3 text-sm font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50 min-h-[44px]">-10%</button>
-            <button onClick={() => applyDiscount(20)} className="py-3 text-sm font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50 min-h-[44px]">-20%</button>
-            <button onClick={() => setPrice(0)} className="py-3 text-sm font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50 text-emerald-600 min-h-[44px]">Offert</button>
+            <button
+              onClick={() => applyDiscount(10)}
+              className="py-3 text-sm font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50 min-h-[44px]"
+            >
+              -10%
+            </button>
+            <button
+              onClick={() => applyDiscount(20)}
+              className="py-3 text-sm font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50 min-h-[44px]"
+            >
+              -20%
+            </button>
+            <button
+              onClick={() => setPrice(0)}
+              className="py-3 text-sm font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50 text-emerald-600 min-h-[44px]"
+            >
+              Offert
+            </button>
           </div>
 
           <div className="flex items-center justify-between border-t border-slate-100 pt-4">
             <span className="text-sm font-medium text-slate-700">Quantité</span>
             <div className="flex items-center gap-3">
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center hover:bg-slate-200 text-lg font-bold">-</button>
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center hover:bg-slate-200 text-lg font-bold"
+              >
+                -
+              </button>
               <span className="font-bold text-lg w-8 text-center">{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)} className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center hover:bg-slate-200 text-lg font-bold">+</button>
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center hover:bg-slate-200 text-lg font-bold"
+              >
+                +
+              </button>
             </div>
           </div>
 
@@ -128,13 +175,19 @@ export const ItemEditorModal: React.FC<{
         </div>
 
         {/* Sticky footer */}
-        <div className="shrink-0 px-5 py-4 bg-slate-50 border-t border-slate-200" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
-          <button onClick={handleSave} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-sm shadow-sm hover:bg-slate-800">
+        <div
+          className="shrink-0 px-5 py-4 bg-slate-50 border-t border-slate-200"
+          style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
+        >
+          <button
+            onClick={handleSave}
+            className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-sm shadow-sm hover:bg-slate-800"
+          >
             Appliquer
           </button>
         </div>
       </div>,
-      document.body
+      document.body,
     );
   }
 
@@ -143,15 +196,19 @@ export const ItemEditorModal: React.FC<{
       <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <div>
-             <h3 className="font-bold text-slate-900 text-sm">{item.name}</h3>
-             {item.variantName && <span className="text-xs text-slate-500">{item.variantName}</span>}
+            <h3 className="font-bold text-slate-900 text-sm">{item.name}</h3>
+            {item.variantName && <span className="text-xs text-slate-500">{item.variantName}</span>}
           </div>
-          <button onClick={onClose}><X size={20} className="text-slate-400 hover:text-slate-700" /></button>
+          <button onClick={onClose}>
+            <X size={20} className="text-slate-400 hover:text-slate-700" />
+          </button>
         </div>
 
         <div className="p-5 space-y-6">
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Prix Unitaire</label>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">
+              Prix Unitaire
+            </label>
             <div className="relative">
               <input
                 type="number"
@@ -160,7 +217,9 @@ export const ItemEditorModal: React.FC<{
                 onChange={(e) => setPrice(parseFloat(e.target.value))}
                 className="w-full text-3xl font-bold text-slate-900 border-b-2 border-slate-200 focus:border-slate-900 outline-none py-1 bg-white"
               />
-              <span className="absolute right-0 bottom-2 text-lg text-slate-400">{currencySymbol}</span>
+              <span className="absolute right-0 bottom-2 text-lg text-slate-400">
+                {currencySymbol}
+              </span>
               {originalPrice !== price && (
                 <span className="absolute right-8 top-2 text-sm text-slate-400 line-through">
                   {formatPrice(originalPrice)}
@@ -170,32 +229,60 @@ export const ItemEditorModal: React.FC<{
           </div>
 
           <div className="grid grid-cols-3 gap-2">
-            <button onClick={() => applyDiscount(10)} className="py-2 text-xs font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50">-10%</button>
-            <button onClick={() => applyDiscount(20)} className="py-2 text-xs font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50">-20%</button>
-            <button onClick={() => setPrice(0)} className="py-2 text-xs font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50 text-emerald-600">Offert</button>
+            <button
+              onClick={() => applyDiscount(10)}
+              className="py-2 text-xs font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50"
+            >
+              -10%
+            </button>
+            <button
+              onClick={() => applyDiscount(20)}
+              className="py-2 text-xs font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50"
+            >
+              -20%
+            </button>
+            <button
+              onClick={() => setPrice(0)}
+              className="py-2 text-xs font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50 text-emerald-600"
+            >
+              Offert
+            </button>
           </div>
 
           <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-             <span className="text-sm font-medium text-slate-700">Quantité</span>
-             <div className="flex items-center gap-3">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center hover:bg-slate-200">-</button>
-                <span className="font-bold text-lg w-6 text-center">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center hover:bg-slate-200">+</button>
-             </div>
+            <span className="text-sm font-medium text-slate-700">Quantité</span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center hover:bg-slate-200"
+              >
+                -
+              </button>
+              <span className="font-bold text-lg w-6 text-center">{quantity}</span>
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center hover:bg-slate-200"
+              >
+                +
+              </button>
+            </div>
           </div>
 
           <Input
-             label="Note"
-             value={note}
-             onChange={(e) => setNote(e.target.value)}
-             placeholder="Ex: Geste commercial..."
+            label="Note"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Ex: Geste commercial..."
           />
         </div>
 
         <div className="p-4 border-t border-slate-100 bg-slate-50">
-           <button onClick={handleSave} className="w-full py-2.5 bg-slate-900 text-white rounded-lg font-bold text-sm shadow-sm hover:bg-slate-800">
-             Appliquer
-           </button>
+          <button
+            onClick={handleSave}
+            className="w-full py-2.5 bg-slate-900 text-white rounded-lg font-bold text-sm shadow-sm hover:bg-slate-800"
+          >
+            Appliquer
+          </button>
         </div>
       </div>
     </div>
@@ -222,12 +309,16 @@ export const ServiceVariantModal: React.FC<{
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 shrink-0">
           <h3 className="font-bold text-slate-900">Choisir une option</h3>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Fermer">
+          <button
+            onClick={onClose}
+            className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Fermer"
+          >
             <X size={20} />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {service.variants.map(variant => (
+          {service.variants.map((variant) => (
             <button
               key={variant.id}
               onClick={() => onSelect(variant)}
@@ -239,43 +330,43 @@ export const ServiceVariantModal: React.FC<{
                   <Clock size={12} /> {variant.durationMinutes} min
                 </div>
               </div>
-              <div className="font-bold text-slate-900 text-lg">
-                {formatPrice(variant.price)}
-              </div>
+              <div className="font-bold text-slate-900 text-lg">{formatPrice(variant.price)}</div>
             </button>
           ))}
         </div>
       </div>,
-      document.body
+      document.body,
     );
   }
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-         <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-            <h3 className="font-bold text-slate-900">Choisir une option</h3>
-            <button onClick={onClose}><X size={20} className="text-slate-400" /></button>
-         </div>
-         <div className="p-2">
-           {service.variants.map(variant => (
-             <button
-               key={variant.id}
-               onClick={() => onSelect(variant)}
-               className="w-full flex items-center justify-between p-4 hover:bg-slate-50 rounded-xl group transition-colors border-b border-slate-50 last:border-0"
-             >
-                <div className="text-left">
-                   <div className="font-semibold text-slate-900">{variant.name}</div>
-                   <div className="text-xs text-slate-500 flex items-center gap-1">
-                     <Clock size={12} /> {variant.durationMinutes} min
-                   </div>
+        <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+          <h3 className="font-bold text-slate-900">Choisir une option</h3>
+          <button onClick={onClose}>
+            <X size={20} className="text-slate-400" />
+          </button>
+        </div>
+        <div className="p-2">
+          {service.variants.map((variant) => (
+            <button
+              key={variant.id}
+              onClick={() => onSelect(variant)}
+              className="w-full flex items-center justify-between p-4 hover:bg-slate-50 rounded-xl group transition-colors border-b border-slate-50 last:border-0"
+            >
+              <div className="text-left">
+                <div className="font-semibold text-slate-900">{variant.name}</div>
+                <div className="text-xs text-slate-500 flex items-center gap-1">
+                  <Clock size={12} /> {variant.durationMinutes} min
                 </div>
-                <div className="font-bold text-slate-900 text-lg group-hover:scale-110 transition-transform">
-                  {formatPrice(variant.price)}
-                </div>
-             </button>
-           ))}
-         </div>
+              </div>
+              <div className="font-bold text-slate-900 text-lg group-hover:scale-110 transition-transform">
+                {formatPrice(variant.price)}
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -293,12 +384,13 @@ export const ReceiptModal: React.FC<{
 
   // Use dynamic VAT from settings
   const vatRate = salonSettings.vatRate || 20;
-  const vatAmount = transaction.total * (vatRate / 100) / (1 + vatRate / 100);
+  const vatAmount = (transaction.total * (vatRate / 100)) / (1 + vatRate / 100);
   const { isMobile } = useMediaQuery();
   useMobileModalA11y(isMobile, onClose);
 
   const receiptStatus = getTransactionStatus(transaction, allTransactions);
-  const watermark = receiptStatus === 'voided' ? 'ANNULÉ' : receiptStatus === 'fully_refunded' ? 'REMBOURSÉ' : null;
+  const watermark =
+    receiptStatus === 'voided' ? 'ANNULÉ' : receiptStatus === 'fully_refunded' ? 'REMBOURSÉ' : null;
 
   if (isMobile) {
     return createPortal(
@@ -311,7 +403,11 @@ export const ReceiptModal: React.FC<{
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 shrink-0">
           <h3 className="font-bold text-slate-900">Ticket de caisse</h3>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Fermer">
+          <button
+            onClick={onClose}
+            className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Fermer"
+          >
             <X size={20} />
           </button>
         </div>
@@ -320,7 +416,9 @@ export const ReceiptModal: React.FC<{
           <div className="bg-white border border-slate-200 shadow-sm p-6 rounded-lg text-center relative overflow-hidden">
             {watermark && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <span className="text-5xl font-black text-red-200 -rotate-12 select-none opacity-60">{watermark}</span>
+                <span className="text-5xl font-black text-red-200 -rotate-12 select-none opacity-60">
+                  {watermark}
+                </span>
               </div>
             )}
             <div className="w-12 h-12 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-xl mx-auto mb-3">
@@ -337,16 +435,25 @@ export const ReceiptModal: React.FC<{
 
             <div className="text-left space-y-4 mb-6">
               {transaction.items.map((item, idx) => (
-                <div key={idx} className="flex justify-between text-sm border-b border-slate-50 pb-2 last:border-0">
+                <div
+                  key={idx}
+                  className="flex justify-between text-sm border-b border-slate-50 pb-2 last:border-0"
+                >
                   <div>
                     <div className="font-bold text-slate-800">{item.name}</div>
-                    {item.variantName && <div className="text-xs text-slate-500">{item.variantName}</div>}
-                    <div className="text-xs text-slate-400">{item.quantity} x {formatPrice(item.price)}</div>
+                    {item.variantName && (
+                      <div className="text-xs text-slate-500">{item.variantName}</div>
+                    )}
+                    <div className="text-xs text-slate-400">
+                      {item.quantity} x {formatPrice(item.price)}
+                    </div>
                   </div>
                   <div className="text-right">
                     <div className="font-bold">{formatPrice(item.price * item.quantity)}</div>
                     {item.originalPrice && item.originalPrice > item.price && (
-                      <div className="text-xs text-slate-400 line-through">{formatPrice(item.originalPrice * item.quantity)}</div>
+                      <div className="text-xs text-slate-400 line-through">
+                        {formatPrice(item.originalPrice * item.quantity)}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -374,13 +481,19 @@ export const ReceiptModal: React.FC<{
         </div>
 
         {/* Sticky footer */}
-        <div className="shrink-0 px-5 py-4 border-t border-slate-200 bg-white" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
-          <button onClick={onClose} className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm min-h-[44px]">
+        <div
+          className="shrink-0 px-5 py-4 border-t border-slate-200 bg-white"
+          style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
+        >
+          <button
+            onClick={onClose}
+            className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm min-h-[44px]"
+          >
             Fermer
           </button>
         </div>
       </div>,
-      document.body
+      document.body,
     );
   }
 
@@ -389,63 +502,79 @@ export const ReceiptModal: React.FC<{
       <div className="bg-white rounded-lg shadow-2xl max-w-md w-full overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
           <h3 className="font-bold text-slate-800">Ticket de caisse</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X size={20} /></button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700">
+            <X size={20} />
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
           <div className="bg-white border border-slate-200 shadow-sm p-6 rounded-lg text-center relative overflow-hidden">
-             {watermark && (
-               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                 <span className="text-5xl font-black text-red-200 -rotate-12 select-none opacity-60">{watermark}</span>
-               </div>
-             )}
-             <div className="w-12 h-12 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-xl mx-auto mb-3">
-                {salonSettings.name.charAt(0)}
-             </div>
-             <h2 className="font-bold text-slate-900 text-lg">{salonSettings.name}</h2>
-             <p className="text-xs text-slate-500 mt-1">{salonSettings.address}</p>
-             <p className="text-xs text-slate-500">{salonSettings.phone}</p>
+            {watermark && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-5xl font-black text-red-200 -rotate-12 select-none opacity-60">
+                  {watermark}
+                </span>
+              </div>
+            )}
+            <div className="w-12 h-12 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-xl mx-auto mb-3">
+              {salonSettings.name.charAt(0)}
+            </div>
+            <h2 className="font-bold text-slate-900 text-lg">{salonSettings.name}</h2>
+            <p className="text-xs text-slate-500 mt-1">{salonSettings.address}</p>
+            <p className="text-xs text-slate-500">{salonSettings.phone}</p>
 
-             <div className="mt-4 mb-6 text-xs text-slate-400">
-               <div>{new Date(transaction.date).toLocaleString()}</div>
-               <div className="uppercase mt-1">#{transaction.id}</div>
-             </div>
+            <div className="mt-4 mb-6 text-xs text-slate-400">
+              <div>{new Date(transaction.date).toLocaleString()}</div>
+              <div className="uppercase mt-1">#{transaction.id}</div>
+            </div>
 
-             <div className="text-left space-y-4 mb-6">
-               {transaction.items.map((item, idx) => (
-                 <div key={idx} className="flex justify-between text-sm border-b border-slate-50 pb-2 last:border-0">
-                    <div>
-                       <div className="font-bold text-slate-800">{item.name}</div>
-                       {item.variantName && <div className="text-xs text-slate-500">{item.variantName}</div>}
-                       <div className="text-xs text-slate-400">{item.quantity} x {formatPrice(item.price)}</div>
+            <div className="text-left space-y-4 mb-6">
+              {transaction.items.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex justify-between text-sm border-b border-slate-50 pb-2 last:border-0"
+                >
+                  <div>
+                    <div className="font-bold text-slate-800">{item.name}</div>
+                    {item.variantName && (
+                      <div className="text-xs text-slate-500">{item.variantName}</div>
+                    )}
+                    <div className="text-xs text-slate-400">
+                      {item.quantity} x {formatPrice(item.price)}
                     </div>
-                    <div className="text-right">
-                       <div className="font-bold">{formatPrice(item.price * item.quantity)}</div>
-                       {item.originalPrice && item.originalPrice > item.price && (
-                         <div className="text-xs text-slate-400 line-through">{formatPrice(item.originalPrice * item.quantity)}</div>
-                       )}
-                    </div>
-                 </div>
-               ))}
-             </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold">{formatPrice(item.price * item.quantity)}</div>
+                    {item.originalPrice && item.originalPrice > item.price && (
+                      <div className="text-xs text-slate-400 line-through">
+                        {formatPrice(item.originalPrice * item.quantity)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
 
-             <div className="border-t-2 border-dashed border-slate-200 pt-4 space-y-1">
-                <div className="flex justify-between text-slate-500 text-xs mb-2">
-                   <span>TVA ({vatRate}%)</span>
-                   <span>{formatPrice(vatAmount)}</span>
-                </div>
-                <div className="flex justify-between text-lg font-bold text-slate-900">
-                   <span>TOTAL</span>
-                   <span>{formatPrice(transaction.total)}</span>
-                </div>
-             </div>
+            <div className="border-t-2 border-dashed border-slate-200 pt-4 space-y-1">
+              <div className="flex justify-between text-slate-500 text-xs mb-2">
+                <span>TVA ({vatRate}%)</span>
+                <span>{formatPrice(vatAmount)}</span>
+              </div>
+              <div className="flex justify-between text-lg font-bold text-slate-900">
+                <span>TOTAL</span>
+                <span>{formatPrice(transaction.total)}</span>
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="p-4 border-t border-slate-100 bg-white">
-           <button onClick={onClose} className="w-full py-2.5 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm">
-              Fermer
-           </button>
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm"
+          >
+            Fermer
+          </button>
         </div>
       </div>
     </div>
@@ -454,10 +583,18 @@ export const ReceiptModal: React.FC<{
 
 // --- Transaction Detail Viewer ---
 const paymentMethodIcon = (method: string) => {
-  if (method.toLowerCase().includes('espèces') || method.toLowerCase().includes('cash')) return <Banknote size={14} />;
-  if (method.toLowerCase().includes('carte') || method.toLowerCase().includes('card')) return <CreditCard size={14} />;
-  if (method.toLowerCase().includes('mobile') || method.toLowerCase().includes('wave') || method.toLowerCase().includes('orange')) return <Smartphone size={14} />;
-  if (method.toLowerCase().includes('offert') || method.toLowerCase().includes('gift')) return <Gift size={14} />;
+  if (method.toLowerCase().includes('espèces') || method.toLowerCase().includes('cash'))
+    return <Banknote size={14} />;
+  if (method.toLowerCase().includes('carte') || method.toLowerCase().includes('card'))
+    return <CreditCard size={14} />;
+  if (
+    method.toLowerCase().includes('mobile') ||
+    method.toLowerCase().includes('wave') ||
+    method.toLowerCase().includes('orange')
+  )
+    return <Smartphone size={14} />;
+  if (method.toLowerCase().includes('offert') || method.toLowerCase().includes('gift'))
+    return <Gift size={14} />;
   return <CreditCard size={14} />;
 };
 
@@ -475,21 +612,25 @@ export const TransactionDetailModal: React.FC<{
   const status = getTransactionStatus(transaction, allTransactions);
   const isToday = new Date(transaction.date).toDateString() === new Date().toDateString();
   const showVoid = onVoidClick && transaction.type === 'SALE' && status === 'active' && isToday;
-  const showRefund = onRefundClick && transaction.type === 'SALE' && status !== 'voided' && status !== 'fully_refunded';
+  const showRefund =
+    onRefundClick &&
+    transaction.type === 'SALE' &&
+    status !== 'voided' &&
+    status !== 'fully_refunded';
   const originalTransaction = transaction.originalTransactionId
-    ? allTransactions.find(t => t.id === transaction.originalTransactionId)
+    ? allTransactions.find((t) => t.id === transaction.originalTransactionId)
     : undefined;
 
   const getCategoryLabel = (key: string) => {
-    const v = VOID_CATEGORIES.find(c => c.key === key);
+    const v = VOID_CATEGORIES.find((c) => c.key === key);
     if (v) return v.label;
-    const r = REFUND_CATEGORIES.find(c => c.key === key);
+    const r = REFUND_CATEGORIES.find((c) => c.key === key);
     if (r) return r.label;
     return key;
   };
 
-  const serviceItems = transaction.items.filter(i => i.type === 'SERVICE');
-  const productItems = transaction.items.filter(i => i.type === 'PRODUCT');
+  const serviceItems = transaction.items.filter((i) => i.type === 'SERVICE');
+  const productItems = transaction.items.filter((i) => i.type === 'PRODUCT');
   const totalPaid = transaction.payments.reduce((acc, p) => acc + p.amount, 0);
   const change = Math.max(0, totalPaid - transaction.total);
   const totalDiscount = transaction.items.reduce((acc, item) => {
@@ -505,11 +646,15 @@ export const TransactionDetailModal: React.FC<{
       <div className="bg-slate-50 rounded-lg p-4 space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-slate-500">Date</span>
-          <span className="font-medium text-slate-900">{new Date(transaction.date).toLocaleString()}</span>
+          <span className="font-medium text-slate-900">
+            {new Date(transaction.date).toLocaleString()}
+          </span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-slate-500">Transaction</span>
-          <span className="font-mono text-xs text-slate-600">#{transaction.id.slice(0, 8).toUpperCase()}</span>
+          <span className="font-mono text-xs text-slate-600">
+            #{transaction.id.slice(0, 8).toUpperCase()}
+          </span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-slate-500">Client</span>
@@ -522,7 +667,9 @@ export const TransactionDetailModal: React.FC<{
         {transaction.type !== 'SALE' && (
           <div className="flex justify-between text-sm">
             <span className="text-slate-500">Type</span>
-            <span className={`font-medium ${transaction.type === 'VOID' ? 'text-red-600' : 'text-orange-600'}`}>
+            <span
+              className={`font-medium ${transaction.type === 'VOID' ? 'text-red-600' : 'text-orange-600'}`}
+            >
               {transaction.type === 'VOID' ? 'Annulation' : 'Remboursement'}
             </span>
           </div>
@@ -530,7 +677,9 @@ export const TransactionDetailModal: React.FC<{
         {transaction.reasonCategory && (
           <div className="flex justify-between text-sm">
             <span className="text-slate-500">Motif</span>
-            <span className="font-medium text-slate-700">{getCategoryLabel(transaction.reasonCategory)}</span>
+            <span className="font-medium text-slate-700">
+              {getCategoryLabel(transaction.reasonCategory)}
+            </span>
           </div>
         )}
         {transaction.reasonNote && (
@@ -561,7 +710,9 @@ export const TransactionDetailModal: React.FC<{
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="font-semibold text-slate-900 text-sm">{item.name}</div>
-                    {item.variantName && <div className="text-xs text-slate-500">{item.variantName}</div>}
+                    {item.variantName && (
+                      <div className="text-xs text-slate-500">{item.variantName}</div>
+                    )}
                     {item.staffName && (
                       <div className="flex items-center gap-1 mt-1 text-xs text-blue-600">
                         <User size={12} /> {item.staffName}
@@ -574,10 +725,18 @@ export const TransactionDetailModal: React.FC<{
                     )}
                   </div>
                   <div className="text-right shrink-0 ml-3">
-                    <div className="font-bold text-slate-900 text-sm">{formatPrice(item.price * item.quantity)}</div>
-                    {item.quantity > 1 && <div className="text-xs text-slate-400">{item.quantity} x {formatPrice(item.price)}</div>}
+                    <div className="font-bold text-slate-900 text-sm">
+                      {formatPrice(item.price * item.quantity)}
+                    </div>
+                    {item.quantity > 1 && (
+                      <div className="text-xs text-slate-400">
+                        {item.quantity} x {formatPrice(item.price)}
+                      </div>
+                    )}
                     {item.originalPrice && item.originalPrice > item.price && (
-                      <div className="text-xs text-red-400 line-through">{formatPrice(item.originalPrice * item.quantity)}</div>
+                      <div className="text-xs text-red-400 line-through">
+                        {formatPrice(item.originalPrice * item.quantity)}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -612,10 +771,18 @@ export const TransactionDetailModal: React.FC<{
                     )}
                   </div>
                   <div className="text-right shrink-0 ml-3">
-                    <div className="font-bold text-slate-900 text-sm">{formatPrice(item.price * item.quantity)}</div>
-                    {item.quantity > 1 && <div className="text-xs text-slate-400">{item.quantity} x {formatPrice(item.price)}</div>}
+                    <div className="font-bold text-slate-900 text-sm">
+                      {formatPrice(item.price * item.quantity)}
+                    </div>
+                    {item.quantity > 1 && (
+                      <div className="text-xs text-slate-400">
+                        {item.quantity} x {formatPrice(item.price)}
+                      </div>
+                    )}
                     {item.originalPrice && item.originalPrice > item.price && (
-                      <div className="text-xs text-red-400 line-through">{formatPrice(item.originalPrice * item.quantity)}</div>
+                      <div className="text-xs text-red-400 line-through">
+                        {formatPrice(item.originalPrice * item.quantity)}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -638,7 +805,9 @@ export const TransactionDetailModal: React.FC<{
                 {paymentMethodIcon(payment.method)}
                 <span>{payment.method}</span>
               </div>
-              <span className="font-bold text-slate-900 text-sm">{formatPrice(payment.amount)}</span>
+              <span className="font-bold text-slate-900 text-sm">
+                {formatPrice(payment.amount)}
+              </span>
             </div>
           ))}
         </div>
@@ -699,15 +868,22 @@ export const TransactionDetailModal: React.FC<{
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 shrink-0">
           <h3 className="font-bold text-slate-900">Détails de la transaction</h3>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Fermer">
+          <button
+            onClick={onClose}
+            className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Fermer"
+          >
             <X size={20} />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-5" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
+        <div
+          className="flex-1 overflow-y-auto p-5"
+          style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
+        >
           {detailContent}
         </div>
       </div>,
-      document.body
+      document.body,
     );
   }
 
@@ -716,11 +892,11 @@ export const TransactionDetailModal: React.FC<{
       <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
           <h3 className="font-bold text-slate-800">Détails de la transaction</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X size={20} /></button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700">
+            <X size={20} />
+          </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-6">
-          {detailContent}
-        </div>
+        <div className="flex-1 overflow-y-auto p-6">{detailContent}</div>
       </div>
     </div>
   );

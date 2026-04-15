@@ -35,9 +35,9 @@ export function useAvatarUpload() {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(path);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('avatars').getPublicUrl(path);
 
       // Append timestamp to bust cache
       const avatarUrl = `${publicUrl}?t=${Date.now()}`;

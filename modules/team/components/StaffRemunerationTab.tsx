@@ -27,7 +27,11 @@ function getMonthBounds(): { start: Date; end: Date; startStr: string; endStr: s
   return { start, end, startStr, endStr };
 }
 
-export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({ staff, currencySymbol, onSave }) => {
+export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({
+  staff,
+  currencySymbol,
+  onSave,
+}) => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const { start, end, startStr, endStr } = useMemo(getMonthBounds, []);
@@ -153,7 +157,10 @@ export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({ staf
               Enregistrer
             </button>
             <button
-              onClick={() => { setEditingCommission(false); setCommissionDraft(staff.commissionRate); }}
+              onClick={() => {
+                setEditingCommission(false);
+                setCommissionDraft(staff.commissionRate);
+              }}
               className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
             >
               Annuler
@@ -186,7 +193,10 @@ export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({ staf
                 Enregistrer
               </button>
               <button
-                onClick={() => { setEditingBonus(false); setBonusDraft(staff.bonusTiers || []); }}
+                onClick={() => {
+                  setEditingBonus(false);
+                  setBonusDraft(staff.bonusTiers || []);
+                }}
                 className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
               >
                 Annuler
@@ -195,24 +205,31 @@ export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({ staf
           )}
         </div>
         {editingBonus ? (
-          <BonusSystemEditor tiers={bonusDraft} onChange={setBonusDraft} currencySymbol={currencySymbol} />
+          <BonusSystemEditor
+            tiers={bonusDraft}
+            onChange={setBonusDraft}
+            currencySymbol={currencySymbol}
+          />
+        ) : staff.bonusTiers && staff.bonusTiers.length > 0 ? (
+          <div className="space-y-2">
+            {staff.bonusTiers.map((tier, idx) => (
+              <div
+                key={idx}
+                className="flex items-center justify-between py-2.5 px-4 bg-slate-50 rounded-lg text-sm"
+              >
+                <span className="text-slate-600">
+                  Objectif :{' '}
+                  <span className="font-medium text-slate-900">{formatPrice(tier.target)}</span>
+                </span>
+                <span className="text-slate-600">
+                  Prime :{' '}
+                  <span className="font-semibold text-emerald-700">{formatPrice(tier.bonus)}</span>
+                </span>
+              </div>
+            ))}
+          </div>
         ) : (
-          (staff.bonusTiers && staff.bonusTiers.length > 0) ? (
-            <div className="space-y-2">
-              {staff.bonusTiers.map((tier, idx) => (
-                <div key={idx} className="flex items-center justify-between py-2.5 px-4 bg-slate-50 rounded-lg text-sm">
-                  <span className="text-slate-600">
-                    Objectif : <span className="font-medium text-slate-900">{formatPrice(tier.target)}</span>
-                  </span>
-                  <span className="text-slate-600">
-                    Prime : <span className="font-semibold text-emerald-700">{formatPrice(tier.bonus)}</span>
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-slate-400">Aucun palier de prime configuré</p>
-          )
+          <p className="text-sm text-slate-400">Aucun palier de prime configuré</p>
         )}
       </div>
 
@@ -229,11 +246,7 @@ export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({ staf
             Marquer comme payé
           </button>
         </div>
-        <PayoutHistory
-          payouts={payouts}
-          onMarkAsPaid={markAsPaid}
-          onCancel={cancelPayout}
-        />
+        <PayoutHistory payouts={payouts} onMarkAsPaid={markAsPaid} onCancel={cancelPayout} />
       </div>
 
       {/* Payout Form Modal */}
@@ -270,7 +283,9 @@ function SummaryItem({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <div className={`w-10 h-10 rounded-lg ${iconBg} ${iconColor} flex items-center justify-center shrink-0`}>
+      <div
+        className={`w-10 h-10 rounded-lg ${iconBg} ${iconColor} flex items-center justify-center shrink-0`}
+      >
         {icon}
       </div>
       <div>

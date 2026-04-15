@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Store, Camera, Loader2 } from 'lucide-react';
@@ -22,10 +21,12 @@ export const GeneralSettings: React.FC = () => {
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Sync form state when real data arrives (initial load returns defaults)
-  useEffect(() => { setFormData(salonSettings); }, [salonSettings]);
+  useEffect(() => {
+    setFormData(salonSettings);
+  }, [salonSettings]);
 
   const set = (field: string, value: string) =>
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -63,9 +64,9 @@ export const GeneralSettings: React.FC = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('logos')
-        .getPublicUrl(path);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('logos').getPublicUrl(path);
 
       const logoUrl = `${publicUrl}?t=${Date.now()}`;
 
@@ -76,7 +77,7 @@ export const GeneralSettings: React.FC = () => {
 
       if (updateError) throw updateError;
 
-      setFormData(prev => ({ ...prev, logoUrl }));
+      setFormData((prev) => ({ ...prev, logoUrl }));
       refreshActiveSalon({ logo_url: logoUrl });
       addToast({ type: 'success', message: 'Logo mis à jour' });
     } catch {
@@ -89,7 +90,10 @@ export const GeneralSettings: React.FC = () => {
   return (
     <div className="flex flex-col h-full animate-in slide-in-from-right-8 duration-300 w-full">
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => navigate('/settings')} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
+        <button
+          onClick={() => navigate('/settings')}
+          className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
+        >
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-xl font-bold text-slate-900">Paramètres Généraux</h1>
@@ -149,12 +153,12 @@ export const GeneralSettings: React.FC = () => {
                 <Input
                   label="Nom du Salon"
                   value={formData.name}
-                  onChange={e => set('name', e.target.value)}
+                  onChange={(e) => set('name', e.target.value)}
                 />
                 <Input
                   label="Site Web"
                   value={formData.website}
-                  onChange={e => set('website', e.target.value)}
+                  onChange={(e) => set('website', e.target.value)}
                   placeholder="https://monsalon.com"
                 />
               </div>
@@ -167,19 +171,19 @@ export const GeneralSettings: React.FC = () => {
               <Input
                 label="Rue"
                 value={formData.street}
-                onChange={e => set('street', e.target.value)}
+                onChange={(e) => set('street', e.target.value)}
                 placeholder="123 Rue de la Beauté"
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Ville"
                   value={formData.city}
-                  onChange={e => set('city', e.target.value)}
+                  onChange={(e) => set('city', e.target.value)}
                 />
                 <Input
                   label="Quartier"
                   value={formData.neighborhood}
-                  onChange={e => set('neighborhood', e.target.value)}
+                  onChange={(e) => set('neighborhood', e.target.value)}
                   placeholder="Ex: Maarif, Marais..."
                 />
               </div>
@@ -187,12 +191,12 @@ export const GeneralSettings: React.FC = () => {
                 <Input
                   label="Code Postal"
                   value={formData.postalCode}
-                  onChange={e => set('postalCode', e.target.value)}
+                  onChange={(e) => set('postalCode', e.target.value)}
                 />
                 <Input
                   label="Pays"
                   value={formData.country}
-                  onChange={e => set('country', e.target.value)}
+                  onChange={(e) => set('country', e.target.value)}
                 />
               </div>
             </div>
@@ -205,20 +209,20 @@ export const GeneralSettings: React.FC = () => {
                 label="Email"
                 type="email"
                 value={formData.email}
-                onChange={e => set('email', e.target.value)}
+                onChange={(e) => set('email', e.target.value)}
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Téléphone"
                   type="tel"
                   value={formData.phone}
-                  onChange={e => set('phone', e.target.value)}
+                  onChange={(e) => set('phone', e.target.value)}
                 />
                 <Input
                   label="WhatsApp"
                   type="tel"
                   value={formData.whatsapp}
-                  onChange={e => set('whatsapp', e.target.value)}
+                  onChange={(e) => set('whatsapp', e.target.value)}
                   placeholder="+212 6XX XXX XXX"
                 />
               </div>
@@ -234,25 +238,25 @@ export const GeneralSettings: React.FC = () => {
               <Input
                 label="Instagram"
                 value={formData.instagram}
-                onChange={e => set('instagram', e.target.value)}
+                onChange={(e) => set('instagram', e.target.value)}
                 placeholder="@monsalon"
               />
               <Input
                 label="Facebook"
                 value={formData.facebook}
-                onChange={e => set('facebook', e.target.value)}
+                onChange={(e) => set('facebook', e.target.value)}
                 placeholder="https://facebook.com/monsalon"
               />
               <Input
                 label="TikTok"
                 value={formData.tiktok}
-                onChange={e => set('tiktok', e.target.value)}
+                onChange={(e) => set('tiktok', e.target.value)}
                 placeholder="@monsalon"
               />
               <Input
                 label="Google Maps"
                 value={formData.googleMapsUrl}
-                onChange={e => set('googleMapsUrl', e.target.value)}
+                onChange={(e) => set('googleMapsUrl', e.target.value)}
                 placeholder="https://maps.google.com/..."
               />
             </div>
@@ -264,7 +268,7 @@ export const GeneralSettings: React.FC = () => {
               <Input
                 label="N° d'enregistrement"
                 value={formData.businessRegistration}
-                onChange={e => set('businessRegistration', e.target.value)}
+                onChange={(e) => set('businessRegistration', e.target.value)}
                 placeholder="SIRET, ICE, RC..."
               />
               <Select

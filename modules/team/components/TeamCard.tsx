@@ -21,13 +21,18 @@ function formatStartDate(dateStr?: string): string {
   });
 }
 
-export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, serviceCategories, onSelect }) => {
+export const TeamCard: React.FC<TeamCardProps> = ({
+  team,
+  appointments,
+  serviceCategories,
+  onSelect,
+}) => {
   const getMemberStats = (memberId: string) => {
-    const memberAppointments = appointments.filter(a => a.staffId === memberId);
+    const memberAppointments = appointments.filter((a) => a.staffId === memberId);
     const today = new Date().toISOString().slice(0, 10);
-    const todaysAppointments = memberAppointments.filter(a => a.date.startsWith(today));
+    const todaysAppointments = memberAppointments.filter((a) => a.date.startsWith(today));
     const totalRevenue = memberAppointments
-      .filter(a => a.status === 'COMPLETED')
+      .filter((a) => a.status === 'COMPLETED')
       .reduce((sum, a) => sum + a.price, 0);
     return {
       totalAppointments: memberAppointments.length,
@@ -36,12 +41,10 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, serviceC
     };
   };
 
-  const categoryMap = new Map(serviceCategories.map(c => [c.id, c]));
+  const categoryMap = new Map(serviceCategories.map((c) => [c.id, c]));
 
   const resolveSkills = (skills: string[]) =>
-    skills
-      .map(id => categoryMap.get(id))
-      .filter((c): c is ServiceCategory => !!c);
+    skills.map((id) => categoryMap.get(id)).filter((c): c is ServiceCategory => !!c);
 
   if (team.length === 0) {
     return (
@@ -78,16 +81,22 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, serviceC
                     ) : (
                       initials
                     )}
-                    <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${member.active ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
+                    <div
+                      className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${member.active ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                    ></div>
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 text-lg">{member.firstName} {member.lastName}</h3>
+                    <h3 className="font-bold text-slate-900 text-lg">
+                      {member.firstName} {member.lastName}
+                    </h3>
                     <div className="flex flex-wrap items-center gap-1.5 mt-1">
                       <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
                         {member.role}
                       </span>
                       {member.contractType && (
-                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${CONTRACT_COLORS[member.contractType] || 'bg-slate-100 text-slate-600'}`}>
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${CONTRACT_COLORS[member.contractType] || 'bg-slate-100 text-slate-600'}`}
+                        >
                           {CONTRACT_LABELS[member.contractType] || member.contractType}
                         </span>
                       )}
@@ -116,7 +125,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, appointments, serviceC
 
               {skills.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-4">
-                  {skills.map(cat => (
+                  {skills.map((cat) => (
                     <span
                       key={cat.id}
                       className="inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200"

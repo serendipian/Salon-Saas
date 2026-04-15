@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Settings } from 'lucide-react';
@@ -76,9 +75,19 @@ export const ProductList: React.FC<ProductListProps> = ({
         </div>
 
         {viewMode === 'table' ? (
-          <ProductTable products={products} categories={categories} brands={brands} onEdit={onEdit} />
+          <ProductTable
+            products={products}
+            categories={categories}
+            brands={brands}
+            onEdit={onEdit}
+          />
         ) : (
-          <ProductCard products={products} categories={categories} brands={brands} onEdit={onEdit} />
+          <ProductCard
+            products={products}
+            categories={categories}
+            brands={brands}
+            onEdit={onEdit}
+          />
         )}
       </div>
     </div>

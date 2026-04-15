@@ -9,7 +9,11 @@ interface SupplierCardProps {
   onEdit: (id: string) => void;
 }
 
-export const SupplierCard: React.FC<SupplierCardProps> = ({ suppliers, categories = [], onEdit }) => {
+export const SupplierCard: React.FC<SupplierCardProps> = ({
+  suppliers,
+  categories = [],
+  onEdit,
+}) => {
   if (suppliers.length === 0) {
     return (
       <EmptyState
@@ -36,9 +40,7 @@ export const SupplierCard: React.FC<SupplierCardProps> = ({ suppliers, categorie
               <Truck size={20} />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="font-semibold text-slate-900 text-sm truncate">
-                {supplier.name}
-              </div>
+              <div className="font-semibold text-slate-900 text-sm truncate">{supplier.name}</div>
               <div className="mt-0.5">
                 {supplier.active ? (
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
@@ -77,9 +79,11 @@ export const SupplierCard: React.FC<SupplierCardProps> = ({ suppliers, categorie
           {/* Category badge */}
           <div className="pt-3 border-t border-slate-100">
             {(() => {
-              const cat = categories.find(c => c.id === supplier.categoryId);
+              const cat = categories.find((c) => c.id === supplier.categoryId);
               return cat ? (
-                <span className={`inline-flex px-2.5 py-0.5 rounded border text-xs font-medium ${cat.color}`}>
+                <span
+                  className={`inline-flex px-2.5 py-0.5 rounded border text-xs font-medium ${cat.color}`}
+                >
                   {cat.name}
                 </span>
               ) : (

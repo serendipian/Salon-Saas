@@ -37,9 +37,9 @@ export function useStaffPhotoUpload() {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(path);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('avatars').getPublicUrl(path);
 
       const photoUrl = `${publicUrl}?t=${Date.now()}`;
 

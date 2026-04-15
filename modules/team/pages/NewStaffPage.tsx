@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
@@ -19,7 +18,11 @@ export const NewStaffPage: React.FC = () => {
     try {
       const result = await addStaffMember(member);
       if (result && 'piiError' in result && result.piiError) {
-        addToast({ type: 'warning', message: 'Membre créé, mais les données sensibles (salaire, IBAN) n\'ont pas pu être enregistrées. Veuillez les saisir dans l\'onglet Profil.' });
+        addToast({
+          type: 'warning',
+          message:
+            "Membre créé, mais les données sensibles (salaire, IBAN) n'ont pas pu être enregistrées. Veuillez les saisir dans l'onglet Profil.",
+        });
       }
       if (result?.slug) {
         navigate(`/team/${result.slug}`);
@@ -43,7 +46,11 @@ export const NewStaffPage: React.FC = () => {
         <ChevronLeft className="w-4 h-4" />
         Retour
       </button>
-      <TeamForm onSave={handleSave} onCancel={() => navigate('/team')} isSubmitting={isSubmitting} />
+      <TeamForm
+        onSave={handleSave}
+        onCancel={() => navigate('/team')}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 };

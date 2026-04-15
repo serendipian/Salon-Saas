@@ -55,7 +55,11 @@ export const CalendarEventPopover: React.FC<CalendarEventPopoverProps> = ({
   const timeStr = `${startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
 
   return (
-    <div ref={ref} style={style} className="w-[280px] bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    <div
+      ref={ref}
+      style={style}
+      className="w-[280px] bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden"
+    >
       <div className="px-4 pt-4 pb-3 border-b border-slate-100">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-sm font-semibold text-slate-900">{appointment.serviceName}</h3>

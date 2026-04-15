@@ -35,12 +35,15 @@ export const StaffDetailPage: React.FC = () => {
   // Sync tab when URL param changes
   useEffect(() => {
     const tab = searchParams.get('tab') as TabKey;
-    if (tab && TABS.some(t => t.key === tab)) setActiveTab(tab);
+    if (tab && TABS.some((t) => t.key === tab)) setActiveTab(tab);
   }, [searchParams]);
 
   const staffSlug = slug ?? '';
-  const { staff, isLoading, isArchived, updateSection, isUpdating, archive, restore, loadPii } = useStaffDetail(staffSlug);
-  const { invitation, createInvitation, cancelInvitation, isCancelling } = useInvitation(staff?.id ?? '');
+  const { staff, isLoading, isArchived, updateSection, isUpdating, archive, restore, loadPii } =
+    useStaffDetail(staffSlug);
+  const { invitation, createInvitation, cancelInvitation, isCancelling } = useInvitation(
+    staff?.id ?? '',
+  );
   const { allAppointments } = useAppointments();
 
   const monthRange = useMemo(() => {
@@ -58,20 +61,23 @@ export const StaffDetailPage: React.FC = () => {
   // Monthly stats for header
   const monthlyStats = useMemo(() => {
     if (!staff || !transactions) return { revenue: 0, appointments: 0 };
-    const revenue = (transactions || [])
-      .reduce((sum: number, t: any) => {
-        return sum + (t.items || [])
+    const revenue = (transactions || []).reduce((sum: number, t: any) => {
+      return (
+        sum +
+        (t.items || [])
           .filter((i: any) => i.staffId === staff.id)
-          .reduce((s: number, i: any) => s + i.price * i.quantity, 0);
-      }, 0);
+          .reduce((s: number, i: any) => s + i.price * i.quantity, 0)
+      );
+    }, 0);
     // monthRange already scopes transactions to current month from DB;
     // allAppointments is NOT date-scoped (H-1 scope), so filter stays
     const monthStart = new Date();
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
-    const apptCount = (allAppointments || [])
-      .filter((a: any) => a.staffId === staff.id && new Date(a.date) >= monthStart && a.status !== 'CANCELLED')
-      .length;
+    const apptCount = (allAppointments || []).filter(
+      (a: any) =>
+        a.staffId === staff.id && new Date(a.date) >= monthStart && a.status !== 'CANCELLED',
+    ).length;
     return { revenue, appointments: apptCount };
   }, [staff, transactions, allAppointments]);
 
@@ -88,7 +94,10 @@ export const StaffDetailPage: React.FC = () => {
     return (
       <div className="text-center py-12">
         <p className="text-slate-500">Membre introuvable</p>
-        <button onClick={() => navigate('/team')} className="mt-4 text-blue-600 hover:text-blue-700 text-sm">
+        <button
+          onClick={() => navigate('/team')}
+          className="mt-4 text-blue-600 hover:text-blue-700 text-sm"
+        >
           Retour à l'équipe
         </button>
       </div>
@@ -102,7 +111,10 @@ export const StaffDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <button onClick={() => navigate('/team')} className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900">
+      <button
+        onClick={() => navigate('/team')}
+        className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
+      >
         <ChevronLeft className="w-4 h-4" /> Équipe
       </button>
 
@@ -128,7 +140,9 @@ export const StaffDetailPage: React.FC = () => {
                 key={key}
                 onClick={() => setActiveTab(key)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
-                  activeTab === key ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  activeTab === key
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <Icon className="w-4 h-4" /> {label}
@@ -137,10 +151,24 @@ export const StaffDetailPage: React.FC = () => {
           </div>
 
           {activeTab === 'profil' && (
-            <StaffProfileTab staff={staff} loadPii={loadPii} onSave={updateSection} isSaving={isUpdating} currencySymbol={currencySymbol} onArchive={handleArchive} onSwitchTab={(tab: string) => setActiveTab(tab as TabKey)} />
+            <StaffProfileTab
+              staff={staff}
+              loadPii={loadPii}
+              onSave={updateSection}
+              isSaving={isUpdating}
+              currencySymbol={currencySymbol}
+              onArchive={handleArchive}
+              onSwitchTab={(tab: string) => setActiveTab(tab as TabKey)}
+            />
           )}
           {activeTab === 'performance' && <StaffPerformanceTab staffId={staff.id} />}
-          {activeTab === 'remuneration' && <StaffRemunerationTab staff={staff} currencySymbol={currencySymbol} onSave={updateSection} />}
+          {activeTab === 'remuneration' && (
+            <StaffRemunerationTab
+              staff={staff}
+              currencySymbol={currencySymbol}
+              onSave={updateSection}
+            />
+          )}
           {activeTab === 'agenda' && <StaffAgendaTab staff={staff} />}
           {activeTab === 'activite' && <StaffActivityTab staffId={staff.id} />}
         </>

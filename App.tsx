@@ -71,7 +71,6 @@ import { DepensesPage } from './modules/accounting/components/DepensesPage';
 import { JournalPage } from './modules/accounting/components/JournalPage';
 import { RefundsPage } from './modules/accounting/components/RefundsPage';
 
-
 const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -81,70 +80,125 @@ const AppContent = () => {
     <Layout activeModule={currentModule} onNavigate={(path) => navigate(`/${path}`)}>
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={
-          <ProtectedRoute action="view" resource="dashboard">
-            <ErrorBoundary moduleName="Tableau de bord"><DashboardModule /></ErrorBoundary>
-          </ProtectedRoute>
-        } />
-        <Route path="/services" element={
-          <ProtectedRoute action="view" resource="services">
-            <ErrorBoundary moduleName="Services"><ServicesModule /></ErrorBoundary>
-          </ProtectedRoute>
-        } />
-        <Route path="/services/settings" element={
-          <ProtectedRoute action="edit" resource="services">
-            <ErrorBoundary moduleName="Paramètres des services"><ServiceSettingsPage /></ErrorBoundary>
-          </ProtectedRoute>
-        } />
-        <Route path="/clients" element={
-          <ProtectedRoute action="view" resource="clients">
-            <ErrorBoundary moduleName="Clients"><ClientsModule /></ErrorBoundary>
-          </ProtectedRoute>
-        } />
-        <Route path="/team" element={
-          <ProtectedRoute action="view" resource="team">
-            <ErrorBoundary moduleName="Équipe"><TeamModule /></ErrorBoundary>
-          </ProtectedRoute>
-        }>
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute action="view" resource="dashboard">
+              <ErrorBoundary moduleName="Tableau de bord">
+                <DashboardModule />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/services"
+          element={
+            <ProtectedRoute action="view" resource="services">
+              <ErrorBoundary moduleName="Services">
+                <ServicesModule />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/services/settings"
+          element={
+            <ProtectedRoute action="edit" resource="services">
+              <ErrorBoundary moduleName="Paramètres des services">
+                <ServiceSettingsPage />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/clients"
+          element={
+            <ProtectedRoute action="view" resource="clients">
+              <ErrorBoundary moduleName="Clients">
+                <ClientsModule />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/team"
+          element={
+            <ProtectedRoute action="view" resource="team">
+              <ErrorBoundary moduleName="Équipe">
+                <TeamModule />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<TeamListPage />} />
           <Route path="new" element={<NewStaffPage />} />
           <Route path=":slug" element={<StaffDetailPage />} />
         </Route>
-        <Route path="/calendar" element={
-          <ProtectedRoute action="view" resource="appointments">
-            <ErrorBoundary moduleName="Rendez-vous"><AppointmentsModule /></ErrorBoundary>
-          </ProtectedRoute>
-        }>
+        <Route
+          path="/calendar"
+          element={
+            <ProtectedRoute action="view" resource="appointments">
+              <ErrorBoundary moduleName="Rendez-vous">
+                <AppointmentsModule />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<AppointmentListPage />} />
           <Route path="new" element={<AppointmentNewPage />} />
           <Route path=":id" element={<AppointmentDetailPage />} />
           <Route path=":id/edit" element={<AppointmentEditPage />} />
         </Route>
-        <Route path="/products" element={
-          <ProtectedRoute action="view" resource="products">
-            <ErrorBoundary moduleName="Produits"><ProductsModule /></ErrorBoundary>
-          </ProtectedRoute>
-        } />
-        <Route path="/products/settings" element={
-          <ProtectedRoute action="edit" resource="products">
-            <ErrorBoundary moduleName="Paramètres des produits"><ProductSettingsPage /></ErrorBoundary>
-          </ProtectedRoute>
-        } />
-        <Route path="/suppliers" element={
-          <ProtectedRoute action="view" resource="suppliers">
-            <ErrorBoundary moduleName="Fournisseurs"><SuppliersModule /></ErrorBoundary>
-          </ProtectedRoute>
-        } />
-        <Route path="/suppliers/settings" element={
-          <ProtectedRoute action="edit" resource="suppliers">
-            <ErrorBoundary moduleName="Paramètres des fournisseurs"><SupplierSettingsPage /></ErrorBoundary>
-          </ProtectedRoute>
-        } />
-        <Route path="/settings" element={
-          <ProtectedRoute action="view" resource="settings">
-            <ErrorBoundary moduleName="Paramètres"><SettingsModule /></ErrorBoundary>
-          </ProtectedRoute>
-        }>
+        <Route
+          path="/products"
+          element={
+            <ProtectedRoute action="view" resource="products">
+              <ErrorBoundary moduleName="Produits">
+                <ProductsModule />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/settings"
+          element={
+            <ProtectedRoute action="edit" resource="products">
+              <ErrorBoundary moduleName="Paramètres des produits">
+                <ProductSettingsPage />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/suppliers"
+          element={
+            <ProtectedRoute action="view" resource="suppliers">
+              <ErrorBoundary moduleName="Fournisseurs">
+                <SuppliersModule />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/suppliers/settings"
+          element={
+            <ProtectedRoute action="edit" resource="suppliers">
+              <ErrorBoundary moduleName="Paramètres des fournisseurs">
+                <SupplierSettingsPage />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute action="view" resource="settings">
+              <ErrorBoundary moduleName="Paramètres">
+                <SettingsModule />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<SettingsIndexPage />} />
           <Route path="general" element={<GeneralSettings />} />
           <Route path="billing" element={<BillingModule />} />
@@ -153,32 +207,50 @@ const AppContent = () => {
           <Route path="team" element={<TeamPermissionsSettings />} />
           <Route path=":section" element={<SettingsPlaceholderPage />} />
         </Route>
-        <Route path="/pos" element={
-          <ProtectedRoute action="view" resource="pos">
-            <ErrorBoundary moduleName="Caisse"><POSModule /></ErrorBoundary>
-          </ProtectedRoute>
-        } />
-        <Route path="/pos/historique" element={
-          <ProtectedRoute action="view" resource="pos">
-            <ErrorBoundary moduleName="Historique"><TransactionHistoryPage /></ErrorBoundary>
-          </ProtectedRoute>
-        } />
-        <Route path="/finances" element={
-          <ProtectedRoute action="view" resource="accounting">
-            <ErrorBoundary moduleName="Finances">
-              <FinancesLayout />
-            </ErrorBoundary>
-          </ProtectedRoute>
-        }>
+        <Route
+          path="/pos"
+          element={
+            <ProtectedRoute action="view" resource="pos">
+              <ErrorBoundary moduleName="Caisse">
+                <POSModule />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pos/historique"
+          element={
+            <ProtectedRoute action="view" resource="pos">
+              <ErrorBoundary moduleName="Historique">
+                <TransactionHistoryPage />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finances"
+          element={
+            <ProtectedRoute action="view" resource="accounting">
+              <ErrorBoundary moduleName="Finances">
+                <FinancesLayout />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<FinancesOverview />} />
           <Route path="revenus" element={<RevenuesPage />} />
           <Route path="depenses" element={<DepensesPage />} />
           <Route path="journal" element={<JournalPage />} />
           <Route path="annulations" element={<RefundsPage />} />
         </Route>
-        <Route path="/profile" element={
-          <ErrorBoundary moduleName="Profil"><ProfilePage /></ErrorBoundary>
-        } />
+        <Route
+          path="/profile"
+          element={
+            <ErrorBoundary moduleName="Profil">
+              <ProfilePage />
+            </ErrorBoundary>
+          }
+        />
         {/* Redirect old route */}
         <Route path="/accounting" element={<Navigate to="/finances" replace />} />
       </Routes>
@@ -202,17 +274,34 @@ export default function App() {
                 <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
 
                 {/* Auth-required, no-salon routes */}
-                <Route path="/create-salon" element={<AuthRequired><CreateSalonPage /></AuthRequired>} />
-                <Route path="/select-salon" element={<AuthRequired><SalonPickerPage /></AuthRequired>} />
+                <Route
+                  path="/create-salon"
+                  element={
+                    <AuthRequired>
+                      <CreateSalonPage />
+                    </AuthRequired>
+                  }
+                />
+                <Route
+                  path="/select-salon"
+                  element={
+                    <AuthRequired>
+                      <SalonPickerPage />
+                    </AuthRequired>
+                  }
+                />
 
                 {/* Admin routes — own layout, own guard, outside salon Layout */}
-                <Route path="/admin" element={
-                  <AdminRoute>
-                    <ErrorBoundary moduleName="Admin">
-                      <AdminLayout />
-                    </ErrorBoundary>
-                  </AdminRoute>
-                }>
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminRoute>
+                      <ErrorBoundary moduleName="Admin">
+                        <AdminLayout />
+                      </ErrorBoundary>
+                    </AdminRoute>
+                  }
+                >
                   <Route index element={<AdminDashboard />} />
                   <Route path="accounts" element={<AdminAccountList />} />
                   <Route path="accounts/:id" element={<AdminAccountDetail />} />
@@ -223,11 +312,14 @@ export default function App() {
                 </Route>
 
                 {/* Protected app routes */}
-                <Route path="/*" element={
-                  <ProtectedRoute>
-                    <AppContent />
-                  </ProtectedRoute>
-                } />
+                <Route
+                  path="/*"
+                  element={
+                    <ProtectedRoute>
+                      <AppContent />
+                    </ProtectedRoute>
+                  }
+                />
               </Routes>
             </BrowserRouter>
             <ToastContainer />

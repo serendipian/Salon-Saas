@@ -60,11 +60,18 @@ export const SuppliersModule: React.FC = () => {
       )}
       {(view === 'ADD' || view === 'EDIT') && (
         <SupplierForm
-          existingSupplier={suppliers.find(s => s.id === selectedSupplierId)}
+          existingSupplier={suppliers.find((s) => s.id === selectedSupplierId)}
           categories={supplierCategories}
           onSave={handleSave}
           onCancel={() => setView('LIST')}
-          onDelete={selectedSupplierId ? (id) => { deleteSupplier(id); setView('LIST'); } : undefined}
+          onDelete={
+            selectedSupplierId
+              ? (id) => {
+                  deleteSupplier(id);
+                  setView('LIST');
+                }
+              : undefined
+          }
         />
       )}
     </div>

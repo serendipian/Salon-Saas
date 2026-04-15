@@ -54,45 +54,45 @@ type IconEntry =
 
 const ICON_REGISTRY: Record<string, IconEntry> = {
   // Beauty-specific (@iconify — Icon Park Outline / Phosphor / MDI)
-  Comb:           { type: 'iconify', data: combIcon },
-  NailPolish:     { type: 'iconify', data: nailPolishIcon },
-  HairDryer:      { type: 'iconify', data: hairDryerIcon },
-  Lipstick:       { type: 'iconify', data: lipstickIcon },
-  Mascara:        { type: 'iconify', data: mascaraIcon },
-  Perfume:        { type: 'iconify', data: perfumeIcon },
-  CosmeticBrush:  { type: 'iconify', data: cosmeticBrushIcon },
+  Comb: { type: 'iconify', data: combIcon },
+  NailPolish: { type: 'iconify', data: nailPolishIcon },
+  HairDryer: { type: 'iconify', data: hairDryerIcon },
+  Lipstick: { type: 'iconify', data: lipstickIcon },
+  Mascara: { type: 'iconify', data: mascaraIcon },
+  Perfume: { type: 'iconify', data: perfumeIcon },
+  CosmeticBrush: { type: 'iconify', data: cosmeticBrushIcon },
   FacialCleanser: { type: 'iconify', data: facialCleanserIcon },
-  Eyebrow:        { type: 'iconify', data: eyebrowIcon },
-  Lotion:         { type: 'iconify', data: lotionIcon },
-  Mirror:         { type: 'iconify', data: mirrorIcon },
-  HandCream:      { type: 'iconify', data: handCreamIcon },
-  Towel:          { type: 'iconify', data: towelIcon },
-  FaceMask:       { type: 'iconify', data: faceMaskIcon },
-  Spa:            { type: 'iconify', data: spaIcon },
+  Eyebrow: { type: 'iconify', data: eyebrowIcon },
+  Lotion: { type: 'iconify', data: lotionIcon },
+  Mirror: { type: 'iconify', data: mirrorIcon },
+  HandCream: { type: 'iconify', data: handCreamIcon },
+  Towel: { type: 'iconify', data: towelIcon },
+  FaceMask: { type: 'iconify', data: faceMaskIcon },
+  Spa: { type: 'iconify', data: spaIcon },
   // General (Lucide)
-  Scissors:       { type: 'lucide', component: Scissors },
-  Sparkles:       { type: 'lucide', component: Sparkles },
-  Droplets:       { type: 'lucide', component: Droplets },
-  Zap:            { type: 'lucide', component: Zap },
-  Heart:          { type: 'lucide', component: Heart },
-  Sun:            { type: 'lucide', component: Sun },
-  Eye:            { type: 'lucide', component: Eye },
-  Flower2:        { type: 'lucide', component: Flower2 },
-  Layers:         { type: 'lucide', component: Layers },
-  SprayCan:       { type: 'lucide', component: SprayCan },
-  Crown:          { type: 'lucide', component: Crown },
-  Gem:            { type: 'lucide', component: Gem },
-  Feather:        { type: 'lucide', component: Feather },
-  Shell:          { type: 'lucide', component: Shell },
-  Ribbon:         { type: 'lucide', component: Ribbon },
-  Star:           { type: 'lucide', component: Star },
-  Palette:        { type: 'lucide', component: Palette },
-  Flame:          { type: 'lucide', component: Flame },
-  Wind:           { type: 'lucide', component: Wind },
-  Bath:           { type: 'lucide', component: Bath },
-  ShowerHead:     { type: 'lucide', component: ShowerHead },
-  WandSparkles:   { type: 'lucide', component: WandSparkles },
-  HandHeart:      { type: 'lucide', component: HandHeart },
+  Scissors: { type: 'lucide', component: Scissors },
+  Sparkles: { type: 'lucide', component: Sparkles },
+  Droplets: { type: 'lucide', component: Droplets },
+  Zap: { type: 'lucide', component: Zap },
+  Heart: { type: 'lucide', component: Heart },
+  Sun: { type: 'lucide', component: Sun },
+  Eye: { type: 'lucide', component: Eye },
+  Flower2: { type: 'lucide', component: Flower2 },
+  Layers: { type: 'lucide', component: Layers },
+  SprayCan: { type: 'lucide', component: SprayCan },
+  Crown: { type: 'lucide', component: Crown },
+  Gem: { type: 'lucide', component: Gem },
+  Feather: { type: 'lucide', component: Feather },
+  Shell: { type: 'lucide', component: Shell },
+  Ribbon: { type: 'lucide', component: Ribbon },
+  Star: { type: 'lucide', component: Star },
+  Palette: { type: 'lucide', component: Palette },
+  Flame: { type: 'lucide', component: Flame },
+  Wind: { type: 'lucide', component: Wind },
+  Bath: { type: 'lucide', component: Bath },
+  ShowerHead: { type: 'lucide', component: ShowerHead },
+  WandSparkles: { type: 'lucide', component: WandSparkles },
+  HandHeart: { type: 'lucide', component: HandHeart },
 };
 
 // ── Render helper ──────────────────────────────────────────────
@@ -155,9 +155,15 @@ export const ICON_PICKER_LIST: Array<{ name: string; label: string }> = [
 const KEYWORD_ICON_MAP: Array<{ keywords: string[]; iconName: string }> = [
   { keywords: ['coiff', 'cheveu', 'cheveux', 'hair', 'coupe'], iconName: 'Comb' },
   { keywords: ['brushing', 'lissage', 'seche'], iconName: 'HairDryer' },
-  { keywords: ['color', 'coloration', 'meche', 'mèche', 'teinture', 'balayage'], iconName: 'Droplets' },
+  {
+    keywords: ['color', 'coloration', 'meche', 'mèche', 'teinture', 'balayage'],
+    iconName: 'Droplets',
+  },
   { keywords: ['soin', 'visage', 'facial', 'hydrat', 'peel'], iconName: 'FacialCleanser' },
-  { keywords: ['manucure', 'pédicure', 'pedicure', 'ongle', 'nail', 'vernis', 'gel'], iconName: 'NailPolish' },
+  {
+    keywords: ['manucure', 'pédicure', 'pedicure', 'ongle', 'nail', 'vernis', 'gel'],
+    iconName: 'NailPolish',
+  },
   { keywords: ['maquill', 'makeup', 'teint'], iconName: 'CosmeticBrush' },
   { keywords: ['lèvre', 'levre', 'lip'], iconName: 'Lipstick' },
   { keywords: ['épil', 'epil', 'wax', 'cire'], iconName: 'Zap' },
@@ -168,7 +174,10 @@ const KEYWORD_ICON_MAP: Array<{ keywords: string[]; iconName: string }> = [
 ];
 
 function guessIconName(categoryName: string): string {
-  const lower = categoryName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const lower = categoryName
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
   for (const { keywords, iconName } of KEYWORD_ICON_MAP) {
     for (const kw of keywords) {
       const normalizedKw = kw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -193,7 +202,12 @@ interface CategoryIconProps {
 }
 
 /** Renders the appropriate icon for a service category. */
-export const CategoryIcon: React.FC<CategoryIconProps> = ({ categoryName, iconName, size = 14, className }) => {
+export const CategoryIcon: React.FC<CategoryIconProps> = ({
+  categoryName,
+  iconName,
+  size = 14,
+  className,
+}) => {
   const name = resolveIconName(categoryName, iconName);
   const entry = ICON_REGISTRY[name] ?? ICON_REGISTRY['Layers'];
   return renderIcon(entry, size, className);

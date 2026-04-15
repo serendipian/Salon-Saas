@@ -10,7 +10,13 @@ interface StaffPillsProps {
   hideLabel?: boolean;
 }
 
-export default function StaffPills({ team, categoryId, selectedStaffId, onSelect, hideLabel }: StaffPillsProps) {
+export default function StaffPills({
+  team,
+  categoryId,
+  selectedStaffId,
+  onSelect,
+  hideLabel,
+}: StaffPillsProps) {
   const eligibleStaff = useMemo(() => {
     if (!categoryId) return team.filter((m) => m.active);
     return team.filter((m) => m.active && m.skills.includes(categoryId));
@@ -22,7 +28,9 @@ export default function StaffPills({ team, categoryId, selectedStaffId, onSelect
       <div className="flex gap-2 flex-wrap">
         {eligibleStaff.map((member) => {
           const isSelected = member.id === selectedStaffId;
-          const label = member.lastName ? `${member.firstName} ${member.lastName[0]}.` : member.firstName;
+          const label = member.lastName
+            ? `${member.firstName} ${member.lastName[0]}.`
+            : member.firstName;
           return (
             <button
               key={member.id}

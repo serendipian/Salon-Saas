@@ -45,7 +45,8 @@ export const ForgotPasswordPage: React.FC = () => {
               </div>
               <h2 className="text-lg font-semibold text-slate-900 mb-2">Email envoyé</h2>
               <p className="text-sm text-slate-500">
-                Si un compte existe avec l'adresse <strong>{email}</strong>, vous recevrez un lien pour réinitialiser votre mot de passe.
+                Si un compte existe avec l'adresse <strong>{email}</strong>, vous recevrez un lien
+                pour réinitialiser votre mot de passe.
               </p>
               <button
                 onClick={() => setEmailSent(false)}
@@ -59,7 +60,10 @@ export const ForgotPasswordPage: React.FC = () => {
               <div className="mb-6">
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Mail
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={18}
+                  />
                   <input
                     type="email"
                     value={email}
@@ -82,18 +86,17 @@ export const ForgotPasswordPage: React.FC = () => {
                 disabled={isSubmitting}
                 className="w-full py-2.5 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
               >
-                {isSubmitting ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  'Envoyer le lien'
-                )}
+                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : 'Envoyer le lien'}
               </button>
             </form>
           )}
         </div>
 
         <p className="text-center text-sm text-slate-500 mt-6">
-          <Link to="/login" className="text-slate-900 font-medium hover:underline inline-flex items-center gap-1">
+          <Link
+            to="/login"
+            className="text-slate-900 font-medium hover:underline inline-flex items-center gap-1"
+          >
             <ArrowLeft size={14} />
             Retour à la connexion
           </Link>

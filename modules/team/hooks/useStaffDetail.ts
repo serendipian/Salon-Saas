@@ -66,7 +66,8 @@ export const useStaffDetail = (slug: string) => {
   const updateSectionMutation = useMutation({
     mutationFn: async (updates: Partial<StaffMember>) => {
       if (!staff) throw new Error('Staff data not loaded');
-      const hasPii = 'baseSalary' in updates || 'iban' in updates || 'socialSecurityNumber' in updates;
+      const hasPii =
+        'baseSalary' in updates || 'iban' in updates || 'socialSecurityNumber' in updates;
 
       // Separate PII from non-PII fields
       const { baseSalary, iban, socialSecurityNumber, ...rest } = updates;

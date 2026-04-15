@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppointments } from '../hooks/useAppointments';
@@ -25,7 +24,11 @@ export const AppointmentNewPage: React.FC = () => {
   const { allStaff: team } = useTeam();
   const { validPacks } = usePacks();
 
-  const handleSave = async (payload: Parameters<typeof addAppointmentGroup>[0] & { newClient: { firstName: string; lastName: string; phone: string } | null }) => {
+  const handleSave = async (
+    payload: Parameters<typeof addAppointmentGroup>[0] & {
+      newClient: { firstName: string; lastName: string; phone: string } | null;
+    },
+  ) => {
     if (payload.newClient && activeSalon) {
       const { data: newClientRow, error: clientError } = await supabase
         .from('clients')

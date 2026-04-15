@@ -34,21 +34,40 @@ export const ClientTable: React.FC<ClientTableProps> = ({
       <table className="w-full text-left border-collapse">
         <thead className="bg-slate-50 border-b border-slate-200">
           <tr>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Client</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Téléphone</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Première Visite</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Dernière Visite</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Visites</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Dépensé</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Panier Moyen</th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Date de Création</th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Client
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Statut
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
+              Téléphone
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
+              Première Visite
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
+              Dernière Visite
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Total Visites
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Total Dépensé
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
+              Panier Moyen
+            </th>
+            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
+              Date de Création
+            </th>
             <th className="px-6 py-3"></th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
           {clients.map((client) => {
-            const initials = `${client.firstName?.[0] ?? ''}${client.lastName?.[0] ?? ''}`.toUpperCase();
+            const initials =
+              `${client.firstName?.[0] ?? ''}${client.lastName?.[0] ?? ''}`.toUpperCase();
             const avgBasket = client.totalVisits > 0 ? client.totalSpent / client.totalVisits : 0;
 
             return (
@@ -63,14 +82,28 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                       {initials}
                     </div>
                     <div>
-                      <div className="font-semibold text-slate-900 text-sm">{[client.firstName, client.lastName].filter(Boolean).join(' ')}</div>
+                      <div className="font-semibold text-slate-900 text-sm">
+                        {[client.firstName, client.lastName].filter(Boolean).join(' ')}
+                      </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  {client.status === 'VIP' && <span className="px-2 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded text-xs font-bold">VIP</span>}
-                  {client.status === 'ACTIF' && <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded text-xs font-medium">Actif</span>}
-                  {client.status === 'INACTIF' && <span className="px-2 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded text-xs font-medium">Inactif</span>}
+                  {client.status === 'VIP' && (
+                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded text-xs font-bold">
+                      VIP
+                    </span>
+                  )}
+                  {client.status === 'ACTIF' && (
+                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded text-xs font-medium">
+                      Actif
+                    </span>
+                  )}
+                  {client.status === 'INACTIF' && (
+                    <span className="px-2 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded text-xs font-medium">
+                      Inactif
+                    </span>
+                  )}
                 </td>
                 <td className="px-6 py-4 hidden lg:table-cell">
                   <div className="flex items-center gap-2 text-sm text-slate-600">
@@ -79,25 +112,36 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap hidden lg:table-cell">
-                  {client.firstVisitDate ? new Date(client.firstVisitDate).toLocaleDateString('fr-FR') : '-'}
+                  {client.firstVisitDate
+                    ? new Date(client.firstVisitDate).toLocaleDateString('fr-FR')
+                    : '-'}
                 </td>
                 <td className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap hidden lg:table-cell">
-                  {client.lastVisitDate ? new Date(client.lastVisitDate).toLocaleDateString('fr-FR') : '-'}
+                  {client.lastVisitDate
+                    ? new Date(client.lastVisitDate).toLocaleDateString('fr-FR')
+                    : '-'}
                 </td>
                 <td className="px-6 py-4 text-sm font-medium text-slate-900">
                   {client.totalVisits}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                   <span className="text-slate-900 font-medium text-sm">{formatPrice(client.totalSpent)}</span>
+                  <span className="text-slate-900 font-medium text-sm">
+                    {formatPrice(client.totalSpent)}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
-                   <span className="text-slate-600 font-medium text-sm">{formatPrice(avgBasket)}</span>
+                  <span className="text-slate-600 font-medium text-sm">
+                    {formatPrice(avgBasket)}
+                  </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-slate-400 whitespace-nowrap hidden lg:table-cell">
                   {new Date(client.createdAt).toLocaleDateString('fr-FR')}
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className="flex items-center justify-end gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <button
                       onClick={() => onViewDetails(client.id)}
                       className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors"
@@ -122,14 +166,16 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                     >
                       <Calendar size={16} />
                     </button>
-                    {onDelete && <button
-                      onClick={() => onDelete(client.id)}
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                      title="Supprimer"
-                      aria-label={`Supprimer ${client.firstName} ${client.lastName}`}
-                    >
-                      <Trash2 size={16} />
-                    </button>}
+                    {onDelete && (
+                      <button
+                        onClick={() => onDelete(client.id)}
+                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        title="Supprimer"
+                        aria-label={`Supprimer ${client.firstName} ${client.lastName}`}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

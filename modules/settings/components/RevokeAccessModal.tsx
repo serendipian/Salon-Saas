@@ -9,7 +9,10 @@ interface RevokeAccessModalProps {
 }
 
 export const RevokeAccessModal: React.FC<RevokeAccessModalProps> = ({
-  memberName, onConfirm, onClose, isLoading,
+  memberName,
+  onConfirm,
+  onClose,
+  isLoading,
 }) => (
   <ConfirmModal
     isOpen
@@ -21,7 +24,8 @@ export const RevokeAccessModal: React.FC<RevokeAccessModalProps> = ({
     onClose={onClose}
     message={
       <>
-        Cette action supprimera l'accès de <strong>{memberName}</strong> au salon et archivera son profil équipe associé. Cette action est irréversible.
+        Cette action supprimera l'accès de <strong>{memberName}</strong> au salon et archivera son
+        profil équipe associé. Cette action est irréversible.
       </>
     }
   />

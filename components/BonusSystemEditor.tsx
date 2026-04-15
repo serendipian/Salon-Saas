@@ -9,7 +9,11 @@ interface BonusSystemEditorProps {
   currencySymbol?: string;
 }
 
-export const BonusSystemEditor: React.FC<BonusSystemEditorProps> = ({ tiers = [], onChange, currencySymbol = '€' }) => {
+export const BonusSystemEditor: React.FC<BonusSystemEditorProps> = ({
+  tiers = [],
+  onChange,
+  currencySymbol = '€',
+}) => {
   const { isMobile } = useMediaQuery();
 
   const addTier = () => {
@@ -29,26 +33,30 @@ export const BonusSystemEditor: React.FC<BonusSystemEditorProps> = ({ tiers = []
   return (
     <div className="space-y-4">
       <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 text-xs text-slate-500 leading-relaxed">
-        Définissez des primes automatiques lorsque le chiffre d'affaires journalier atteint un objectif spécifique.
+        Définissez des primes automatiques lorsque le chiffre d'affaires journalier atteint un
+        objectif spécifique.
       </div>
 
       {tiers.length > 0 && !isMobile && (
         <div className="grid grid-cols-12 gap-4 mb-1 px-1">
           <div className="col-span-5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-             Objectif C.A. ({currencySymbol})
+            Objectif C.A. ({currencySymbol})
           </div>
           <div className="col-span-5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-             Prime ({currencySymbol})
+            Prime ({currencySymbol})
           </div>
           <div className="col-span-2"></div>
         </div>
       )}
-      
+
       <div className="space-y-2">
-        {tiers.map((tier, idx) => (
+        {tiers.map((tier, idx) =>
           isMobile ? (
             /* Mobile: card layout */
-            <div key={idx} className="border border-slate-200 rounded-xl p-4 space-y-3 animate-in slide-in-from-left-2 duration-300">
+            <div
+              key={idx}
+              className="border border-slate-200 rounded-xl p-4 space-y-3 animate-in slide-in-from-left-2 duration-300"
+            >
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                   Objectif C.A. ({currencySymbol})
@@ -57,7 +65,7 @@ export const BonusSystemEditor: React.FC<BonusSystemEditorProps> = ({ tiers = []
                   type="number"
                   inputMode="numeric"
                   value={tier.target}
-                  onChange={e => updateTier(idx, 'target', parseFloat(e.target.value))}
+                  onChange={(e) => updateTier(idx, 'target', parseFloat(e.target.value))}
                   className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm min-h-[44px]"
                   placeholder="0"
                 />
@@ -70,7 +78,7 @@ export const BonusSystemEditor: React.FC<BonusSystemEditorProps> = ({ tiers = []
                   type="number"
                   inputMode="numeric"
                   value={tier.bonus}
-                  onChange={e => updateTier(idx, 'bonus', parseFloat(e.target.value))}
+                  onChange={(e) => updateTier(idx, 'bonus', parseFloat(e.target.value))}
                   className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm font-medium min-h-[44px]"
                   placeholder="0"
                 />
@@ -85,12 +93,15 @@ export const BonusSystemEditor: React.FC<BonusSystemEditorProps> = ({ tiers = []
             </div>
           ) : (
             /* Desktop: grid layout */
-            <div key={idx} className="grid grid-cols-12 gap-4 items-center animate-in slide-in-from-left-2 duration-300 group">
+            <div
+              key={idx}
+              className="grid grid-cols-12 gap-4 items-center animate-in slide-in-from-left-2 duration-300 group"
+            >
               <div className="col-span-5">
                 <input
                   type="number"
                   value={tier.target}
-                  onChange={e => updateTier(idx, 'target', parseFloat(e.target.value))}
+                  onChange={(e) => updateTier(idx, 'target', parseFloat(e.target.value))}
                   className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm placeholder-slate-400"
                   placeholder="0"
                 />
@@ -99,7 +110,7 @@ export const BonusSystemEditor: React.FC<BonusSystemEditorProps> = ({ tiers = []
                 <input
                   type="number"
                   value={tier.bonus}
-                  onChange={e => updateTier(idx, 'bonus', parseFloat(e.target.value))}
+                  onChange={(e) => updateTier(idx, 'bonus', parseFloat(e.target.value))}
                   className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm placeholder-slate-400 font-medium"
                   placeholder="0"
                 />
@@ -115,11 +126,11 @@ export const BonusSystemEditor: React.FC<BonusSystemEditorProps> = ({ tiers = []
                 </button>
               </div>
             </div>
-          )
-        ))}
+          ),
+        )}
       </div>
 
-      <button 
+      <button
         type="button"
         onClick={addTier}
         className="w-full py-2.5 border border-dashed border-slate-300 text-slate-500 hover:text-slate-800 hover:border-slate-400 hover:bg-slate-50 rounded-lg text-xs font-semibold uppercase tracking-wide flex items-center justify-center gap-2 transition-all mt-2"

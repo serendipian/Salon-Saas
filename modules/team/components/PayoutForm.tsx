@@ -67,7 +67,10 @@ export const PayoutForm: React.FC<PayoutFormProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
       <div
         className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4"
         onClick={(e) => e.stopPropagation()}
@@ -128,7 +131,10 @@ export const PayoutForm: React.FC<PayoutFormProps> = ({
               <input
                 type="date"
                 value={start}
-                onChange={(e) => { setStart(e.target.value); setDateError(''); }}
+                onChange={(e) => {
+                  setStart(e.target.value);
+                  setDateError('');
+                }}
                 className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm"
               />
             </div>
@@ -140,7 +146,10 @@ export const PayoutForm: React.FC<PayoutFormProps> = ({
                 type="date"
                 value={end}
                 min={start}
-                onChange={(e) => { setEnd(e.target.value); setDateError(''); }}
+                onChange={(e) => {
+                  setEnd(e.target.value);
+                  setDateError('');
+                }}
                 className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm"
               />
             </div>

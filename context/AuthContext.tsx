@@ -11,7 +11,10 @@ import type {
   SubscriptionTier,
 } from '../lib/auth.types';
 
-export type ProfileUpdates = Omit<Partial<Profile>, 'is_admin' | 'id' | 'email' | 'created_at' | 'updated_at'>;
+export type ProfileUpdates = Omit<
+  Partial<Profile>,
+  'is_admin' | 'id' | 'email' | 'created_at' | 'updated_at'
+>;
 
 interface AuthContextType {
   // State
@@ -26,10 +29,18 @@ interface AuthContextType {
 
   // Auth actions
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: string | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+  ) => Promise<{ error: string | null }>;
   signInWithMagicLink: (email: string) => Promise<{ error: string | null }>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
-  updatePassword: (newPassword: string, currentPassword?: string) => Promise<{ error: string | null }>;
+  updatePassword: (
+    newPassword: string,
+    currentPassword?: string,
+  ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 
   // Profile actions
@@ -39,7 +50,11 @@ interface AuthContextType {
   // Salon actions
   switchSalon: (salonId: string) => Promise<void>;
   refreshActiveSalon: (updates: Partial<ActiveSalon>) => void;
-  createSalon: (name: string, timezone?: string, currency?: string) => Promise<{ salonId: string | null; error: string | null }>;
+  createSalon: (
+    name: string,
+    timezone?: string,
+    currency?: string,
+  ) => Promise<{ salonId: string | null; error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,7 +88,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, email, first_name, last_name, avatar_url, phone, bio, language, notification_email, notification_sms, is_admin')
+      .select(
+        'id, email, first_name, last_name, avatar_url, phone, bio, language, notification_email, notification_sms, is_admin',
+      )
       .eq('id', userId)
       .single();
 
@@ -114,16 +131,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Switch active salon
-  const switchSalon = useCallback(async (salonId: string) => {
-    const membership = memberships.find(m => m.salon_id === salonId);
-    if (!membership) {
-      console.error('No membership found for salon:', salonId);
-      return;
-    }
-    setActiveSalon(membership.salon);
-    setRole(membership.role);
-    localStorage.setItem('lastSalonId', salonId);
-  }, [memberships]);
+  const switchSalon = useCallback(
+    async (salonId: string) => {
+      const membership = memberships.find((m) => m.salon_id === salonId);
+      if (!membership) {
+        console.error('No membership found for salon:', salonId);
+        return;
+      }
+      setActiveSalon(membership.salon);
+      setRole(membership.role);
+      localStorage.setItem('lastSalonId', salonId);
+    },
+    [memberships],
+  );
 
   // Initialize auth state on mount
   const initializeAuth = useCallback(async () => {
@@ -132,10 +152,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const sessionResult = await Promise.race([
         supabase.auth.getSession(),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Session fetch timed out')), 5000)
+          setTimeout(() => reject(new Error('Session fetch timed out')), 5000),
         ),
       ]);
-      const { data: { session: currentSession } } = sessionResult;
+      const {
+        data: { session: currentSession },
+      } = sessionResult;
 
       if (!currentSession?.user) {
         setIsLoading(false);
@@ -162,7 +184,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Try to restore last salon
         const lastSalonId = localStorage.getItem('lastSalonId');
         const lastMembership = lastSalonId
-          ? userMemberships.find(m => m.salon_id === lastSalonId)
+          ? userMemberships.find((m) => m.salon_id === lastSalonId)
           : null;
         if (lastMembership) {
           setActiveSalon(lastMembership.salon);
@@ -181,7 +203,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     initializeAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, newSession: Session | null) => {
         if (event === 'SIGNED_IN' && newSession) {
           setSession(newSession);
@@ -201,7 +225,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Try to restore last salon (same logic as initializeAuth)
             const lastSalonId = localStorage.getItem('lastSalonId');
             const lastMembership = lastSalonId
-              ? userMemberships.find(m => m.salon_id === lastSalonId)
+              ? userMemberships.find((m) => m.salon_id === lastSalonId)
               : null;
             if (lastMembership) {
               setActiveSalon(lastMembership.salon);
@@ -219,7 +243,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else if (event === 'TOKEN_REFRESHED' && newSession) {
           setSession(newSession);
         }
-      }
+      },
     );
 
     return () => {
@@ -253,14 +277,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         (payload) => {
           const updated = payload.new as Record<string, unknown>;
-          setActiveSalon(prev => {
+          setActiveSalon((prev) => {
             if (!prev) return prev;
             const patch: Partial<ActiveSalon> = {};
-            if (updated.subscription_tier !== undefined) patch.subscription_tier = updated.subscription_tier as SubscriptionTier;
-            if (updated.is_suspended !== undefined) patch.is_suspended = updated.is_suspended as boolean;
+            if (updated.subscription_tier !== undefined)
+              patch.subscription_tier = updated.subscription_tier as SubscriptionTier;
+            if (updated.is_suspended !== undefined)
+              patch.is_suspended = updated.is_suspended as boolean;
             return Object.keys(patch).length > 0 ? { ...prev, ...patch } : prev;
           });
-        }
+        },
       )
       .subscribe();
 
@@ -301,7 +327,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           // If active salon membership was revoked, clear it
           if (currentSalon) {
-            const stillMember = updated.find(m => m.salon_id === currentSalon.id);
+            const stillMember = updated.find((m) => m.salon_id === currentSalon.id);
             if (!stillMember) {
               setActiveSalon(null);
               setRole(null);
@@ -311,7 +337,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setRole(stillMember.role);
             }
           }
-        }
+        },
       )
       .subscribe();
 
@@ -346,16 +372,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error: error ? sanitizeAuthError(error.message) : null };
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string, firstName: string, lastName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { first_name: firstName, last_name: lastName },
-      },
-    });
-    return { error: error ? sanitizeAuthError(error.message) : null };
-  }, []);
+  const signUp = useCallback(
+    async (email: string, password: string, firstName: string, lastName: string) => {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { first_name: firstName, last_name: lastName },
+        },
+      });
+      return { error: error ? sanitizeAuthError(error.message) : null };
+    },
+    [],
+  );
 
   const signInWithMagicLink = useCallback(async (email: string) => {
     const { error } = await supabase.auth.signInWithOtp({ email });
@@ -434,17 +463,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
   }, []);
 
-  const updateProfile = useCallback(async (data: ProfileUpdates) => {
-    if (!user) return { error: 'Not authenticated' };
-    const { error } = await supabase
-      .from('profiles')
-      .update(data)
-      .eq('id', user.id);
-    if (error) return { error: error.message };
-    const updated = await fetchProfile(user.id);
-    if (updated) setProfile(updated);
-    return { error: null };
-  }, [user, fetchProfile]);
+  const updateProfile = useCallback(
+    async (data: ProfileUpdates) => {
+      if (!user) return { error: 'Not authenticated' };
+      const { error } = await supabase.from('profiles').update(data).eq('id', user.id);
+      if (error) return { error: error.message };
+      const updated = await fetchProfile(user.id);
+      if (updated) setProfile(updated);
+      return { error: null };
+    },
+    [user, fetchProfile],
+  );
 
   const refreshProfile = useCallback(async () => {
     if (!user) return;
@@ -453,40 +482,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user, fetchProfile]);
 
   const refreshActiveSalon = useCallback((updates: Partial<ActiveSalon>) => {
-    setActiveSalon(prev => prev ? { ...prev, ...updates } : prev);
+    setActiveSalon((prev) => (prev ? { ...prev, ...updates } : prev));
   }, []);
 
-  const createSalon = useCallback(async (name: string, timezone = 'Europe/Paris', currency = 'MAD') => {
-    const { data, error } = await supabase.rpc('create_salon', {
-      p_name: name,
-      p_timezone: timezone,
-      p_currency: currency,
-    });
+  const createSalon = useCallback(
+    async (name: string, timezone = 'Europe/Paris', currency = 'MAD') => {
+      const { data, error } = await supabase.rpc('create_salon', {
+        p_name: name,
+        p_timezone: timezone,
+        p_currency: currency,
+      });
 
-    if (error) {
-      return { salonId: null, error: error.message };
-    }
-
-    // Initialize 14-day Pro trial for the new salon
-    const { error: trialError } = await supabase.rpc('initialize_salon_trial', { p_salon_id: data });
-    if (trialError) {
-      console.error('Failed to initialize salon trial:', trialError.message);
-    }
-
-    // Refetch memberships after salon creation
-    if (user) {
-      const updated = await fetchMemberships(user.id);
-      setMemberships(updated);
-      const newMembership = updated.find(m => m.salon_id === data);
-      if (newMembership) {
-        setActiveSalon(newMembership.salon);
-        setRole(newMembership.role);
-        localStorage.setItem('lastSalonId', newMembership.salon_id);
+      if (error) {
+        return { salonId: null, error: error.message };
       }
-    }
 
-    return { salonId: data as string, error: null };
-  }, [user, fetchMemberships]);
+      // Initialize 14-day Pro trial for the new salon
+      const { error: trialError } = await supabase.rpc('initialize_salon_trial', {
+        p_salon_id: data,
+      });
+      if (trialError) {
+        console.error('Failed to initialize salon trial:', trialError.message);
+      }
+
+      // Refetch memberships after salon creation
+      if (user) {
+        const updated = await fetchMemberships(user.id);
+        setMemberships(updated);
+        const newMembership = updated.find((m) => m.salon_id === data);
+        if (newMembership) {
+          setActiveSalon(newMembership.salon);
+          setRole(newMembership.role);
+          localStorage.setItem('lastSalonId', newMembership.salon_id);
+        }
+      }
+
+      return { salonId: data as string, error: null };
+    },
+    [user, fetchMemberships],
+  );
 
   const value: AuthContextType = {
     user,

@@ -10,7 +10,9 @@ const USAGE_STYLES: Record<UsageType, { label: string; className: string }> = {
 export const UsageTypeBadge: React.FC<{ usageType: UsageType }> = ({ usageType }) => {
   const style = USAGE_STYLES[usageType] ?? USAGE_STYLES.retail;
   return (
-    <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium border ${style.className}`}>
+    <span
+      className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium border ${style.className}`}
+    >
       {style.label}
     </span>
   );

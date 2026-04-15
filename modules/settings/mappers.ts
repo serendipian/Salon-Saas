@@ -1,4 +1,9 @@
-import type { SalonSettings, WorkSchedule, ExpenseCategorySetting, RecurringExpense } from '../../types';
+import type {
+  SalonSettings,
+  WorkSchedule,
+  ExpenseCategorySetting,
+  RecurringExpense,
+} from '../../types';
 
 // --- Salon Settings (reads from salons table row) ---
 
@@ -105,7 +110,11 @@ export function toExpenseCategory(row: ExpenseCategoryRow): ExpenseCategorySetti
   };
 }
 
-export function toExpenseCategoryInsert(cat: ExpenseCategorySetting, salonId: string, sortOrder: number) {
+export function toExpenseCategoryInsert(
+  cat: ExpenseCategorySetting,
+  salonId: string,
+  sortOrder: number,
+) {
   return {
     id: cat.id || undefined,
     salon_id: salonId,

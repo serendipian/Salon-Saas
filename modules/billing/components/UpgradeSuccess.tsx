@@ -24,22 +24,32 @@ interface Feature {
 function buildFeatures(plan: PlanDetails): Feature[] {
   const features: Feature[] = [];
 
-  const staffLabel = plan.max_staff === null
-    ? 'Membres illimités'
-    : `Équipe jusqu'à ${plan.max_staff} membres`;
-  features.push({ emoji: '👥', label: staffLabel, sub: "Invitez maintenant depuis l'onglet Équipe" });
+  const staffLabel =
+    plan.max_staff === null ? 'Membres illimités' : `Équipe jusqu'à ${plan.max_staff} membres`;
+  features.push({
+    emoji: '👥',
+    label: staffLabel,
+    sub: "Invitez maintenant depuis l'onglet Équipe",
+  });
 
-  const clientLabel = plan.max_clients === null
-    ? 'Clients illimités'
-    : `Jusqu'à ${plan.max_clients} clients`;
+  const clientLabel =
+    plan.max_clients === null ? 'Clients illimités' : `Jusqu'à ${plan.max_clients} clients`;
   features.push({ emoji: '👤', label: clientLabel, sub: 'Gérez toute votre clientèle' });
 
   if (plan.features?.analytics) {
-    features.push({ emoji: '📊', label: 'Analytics activés', sub: 'Explorez vos performances depuis le tableau de bord' });
+    features.push({
+      emoji: '📊',
+      label: 'Analytics activés',
+      sub: 'Explorez vos performances depuis le tableau de bord',
+    });
   }
 
   if (plan.features?.custom_branding) {
-    features.push({ emoji: '🎨', label: 'Branding personnalisé', sub: 'Personnalisez l\'apparence de votre salon' });
+    features.push({
+      emoji: '🎨',
+      label: 'Branding personnalisé',
+      sub: "Personnalisez l'apparence de votre salon",
+    });
   }
 
   if (plan.features?.api_access) {
@@ -65,7 +75,9 @@ export const UpgradeSuccess: React.FC<UpgradeSuccessProps> = ({ plan, planName }
         Bienvenue sur {displayName}
       </div>
       <h2 className="text-2xl font-extrabold text-slate-900 mb-2 leading-snug">
-        Votre salon est maintenant<br />sur le plan {displayName} !
+        Votre salon est maintenant
+        <br />
+        sur le plan {displayName} !
       </h2>
       <p className="text-sm text-slate-500 mb-7 leading-relaxed">
         Toutes vos fonctionnalités {displayName} sont immédiatement disponibles.
@@ -75,7 +87,9 @@ export const UpgradeSuccess: React.FC<UpgradeSuccessProps> = ({ plan, planName }
         <div className="bg-slate-50 rounded-xl p-4 mb-7 text-left space-y-3">
           {features.map((f) => (
             <div key={f.label} className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-brand-100 rounded-lg flex items-center justify-center text-lg shrink-0">{f.emoji}</div>
+              <div className="w-9 h-9 bg-brand-100 rounded-lg flex items-center justify-center text-lg shrink-0">
+                {f.emoji}
+              </div>
               <div>
                 <div className="text-sm font-semibold text-slate-900">{f.label}</div>
                 <div className="text-xs text-slate-400">{f.sub}</div>

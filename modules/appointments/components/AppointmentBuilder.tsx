@@ -89,7 +89,9 @@ export default function AppointmentBuilder({
           <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2.5">
-                <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">1</span>
+                <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
+                  1
+                </span>
                 <span className="text-slate-900 text-base font-semibold">Client</span>
               </div>
               {!form.clientId && !showExistingClientSearch && (
@@ -110,7 +112,11 @@ export default function AppointmentBuilder({
             <ClientField
               clients={hookProps.clients}
               selectedClientId={form.clientId}
-              onSelectClient={(id) => { form.setClientId(id); form.setNewClient(null); form.clearFieldError('clientId'); }}
+              onSelectClient={(id) => {
+                form.setClientId(id);
+                form.setNewClient(null);
+                form.clearFieldError('clientId');
+              }}
               onClearClient={() => form.setClientId(null)}
               newClientData={form.newClient}
               onNewClientChange={form.setNewClient}
@@ -161,7 +167,9 @@ export default function AppointmentBuilder({
                     onActivate={() => form.setActiveBlockIndex(i)}
                     onRemove={() => form.removeBlock(i)}
                     onUpdate={(updates) => form.updateBlock(i, updates)}
-                    onToggleItem={(serviceId, variantId) => form.toggleBlockItem(i, serviceId, variantId)}
+                    onToggleItem={(serviceId, variantId) =>
+                      form.toggleBlockItem(i, serviceId, variantId)
+                    }
                     onClearItems={() => form.clearBlockItems(i)}
                     summaryText={form.getBlockSummary(block)}
                     stepOffset={1}

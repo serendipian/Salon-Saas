@@ -9,12 +9,15 @@ import type { Subscription, SubscriptionTier } from '../../../lib/auth.types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-export const PLAN_LIMITS: Record<SubscriptionTier, { staff: number | null; clients: number | null; products: number | null }> = {
-  trial:   { staff: 10,   clients: null, products: null },
-  free:    { staff: 2,    clients: 50,   products: 20   },
-  premium: { staff: 10,   clients: null, products: null },
-  pro:     { staff: null, clients: null, products: null },
-  past_due:{ staff: 10,   clients: null, products: null },
+export const PLAN_LIMITS: Record<
+  SubscriptionTier,
+  { staff: number | null; clients: number | null; products: number | null }
+> = {
+  trial: { staff: 10, clients: null, products: null },
+  free: { staff: 2, clients: 50, products: 20 },
+  premium: { staff: 10, clients: null, products: null },
+  pro: { staff: null, clients: null, products: null },
+  past_due: { staff: 10, clients: null, products: null },
 };
 
 export function useBilling() {
@@ -49,7 +52,10 @@ export function useBilling() {
   const canAddProduct = (currentCount: number) =>
     limits.products === null || currentCount < limits.products;
 
-  const invokeWithErrorHandling = async (fnName: string, body: object): Promise<{ url: string } | null> => {
+  const invokeWithErrorHandling = async (
+    fnName: string,
+    body: object,
+  ): Promise<{ url: string } | null> => {
     // Always get a fresh token (triggers refresh if expired)
     const { data: sd } = await supabase.auth.getSession();
     const token = sd.session?.access_token ?? session?.access_token;
@@ -58,8 +64,8 @@ export function useBilling() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${token}`,
+        apikey: SUPABASE_ANON_KEY,
       },
       body: JSON.stringify(body),
     });
@@ -73,11 +79,15 @@ export function useBilling() {
     setIsLoadingCheckout(true);
     try {
       const data = await invokeWithErrorHandling('create-checkout-session', {
-        salon_id: activeSalon!.id, plan_id: planId,
+        salon_id: activeSalon!.id,
+        plan_id: planId,
       });
       if (data?.url) window.location.href = data.url;
     } catch (err) {
-      addToast({ type: 'error', message: (err as Error).message || 'Erreur lors de la création du paiement.' });
+      addToast({
+        type: 'error',
+        message: (err as Error).message || 'Erreur lors de la création du paiement.',
+      });
     } finally {
       setIsLoadingCheckout(false);
     }
@@ -86,19 +96,27 @@ export function useBilling() {
   const createPortalSession = async () => {
     setIsLoadingPortal(true);
     try {
-      const data = await invokeWithErrorHandling('create-portal-session', { salon_id: activeSalon!.id });
+      const data = await invokeWithErrorHandling('create-portal-session', {
+        salon_id: activeSalon!.id,
+      });
       if (data?.url) window.location.href = data.url;
     } catch (err) {
-      addToast({ type: 'error', message: (err as Error).message || "Erreur lors de l'ouverture du portail." });
+      addToast({
+        type: 'error',
+        message: (err as Error).message || "Erreur lors de l'ouverture du portail.",
+      });
     } finally {
       setIsLoadingPortal(false);
     }
   };
 
   const trialDaysLeft = subscription?.trial_ends_at
-    ? Math.max(0, Math.ceil(
-        (new Date(subscription.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-      ))
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(subscription.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+        ),
+      )
     : null;
 
   return {

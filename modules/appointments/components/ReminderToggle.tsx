@@ -29,7 +29,9 @@ export default function ReminderToggle({ value, onChange, compact = false }: Rem
           onClick={toggle}
           className={`w-10 h-[22px] rounded-full relative transition-colors ${isOn ? 'bg-blue-500' : 'bg-slate-300'}`}
         >
-          <div className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all shadow-sm ${isOn ? 'right-[2px]' : 'left-[2px]'}`} />
+          <div
+            className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all shadow-sm ${isOn ? 'right-[2px]' : 'left-[2px]'}`}
+          />
         </button>
       </div>
     );
@@ -47,7 +49,9 @@ export default function ReminderToggle({ value, onChange, compact = false }: Rem
           onClick={toggle}
           className={`w-10 h-[22px] rounded-full relative transition-colors ${isOn ? 'bg-blue-500' : 'bg-slate-300'}`}
         >
-          <div className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all shadow-sm ${isOn ? 'right-[2px]' : 'left-[2px]'}`} />
+          <div
+            className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all shadow-sm ${isOn ? 'right-[2px]' : 'left-[2px]'}`}
+          />
         </button>
       </div>
       {isOn && (

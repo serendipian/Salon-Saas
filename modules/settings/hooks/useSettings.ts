@@ -33,11 +33,7 @@ export const useSettings = () => {
   const { data: salonSettings, isLoading: isLoadingSettings } = useQuery({
     queryKey: ['salon_settings', salonId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('salons')
-        .select('*')
-        .eq('id', salonId)
-        .single();
+      const { data, error } = await supabase.from('salons').select('*').eq('id', salonId).single();
       if (error) throw error;
       return toSalonSettings(data as any);
     },
@@ -56,10 +52,14 @@ export const useSettings = () => {
     onSuccess: (settings) => {
       queryClient.invalidateQueries({ queryKey: ['salon_settings', salonId] });
       // Sync AuthContext so sidebar/header reflect updated name etc.
-      refreshActiveSalon({ name: settings.name, currency: settings.currency, logo_url: settings.logoUrl });
+      refreshActiveSalon({
+        name: settings.name,
+        currency: settings.currency,
+        logo_url: settings.logoUrl,
+      });
       toastOnSuccess('Paramètres enregistrés')();
     },
-    onError: toastOnError("Impossible de modifier les paramètres du salon"),
+    onError: toastOnError('Impossible de modifier les paramètres du salon'),
   });
 
   // --- Expense Categories ---
@@ -88,11 +88,11 @@ export const useSettings = () => {
         .is('deleted_at', null);
       if (fetchErr) throw fetchErr;
 
-      const existingIds = new Set((existing ?? []).map(c => c.id));
-      const newIds = new Set(categories.map(c => c.id));
+      const existingIds = new Set((existing ?? []).map((c) => c.id));
+      const newIds = new Set(categories.map((c) => c.id));
 
       // Soft-delete removed categories
-      const toDelete = [...existingIds].filter(id => !newIds.has(id));
+      const toDelete = [...existingIds].filter((id) => !newIds.has(id));
       if (toDelete.length > 0) {
         const { error } = await supabase
           .from('expense_categories')
@@ -114,9 +114,7 @@ export const useSettings = () => {
             .eq('salon_id', salonId);
           if (error) throw error;
         } else {
-          const { error } = await supabase
-            .from('expense_categories')
-            .insert(row);
+          const { error } = await supabase.from('expense_categories').insert(row);
           if (error) throw error;
         }
       }
@@ -124,7 +122,7 @@ export const useSettings = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expense_categories', salonId] });
     },
-    onError: toastOnError("Impossible de modifier les catégories de dépenses"),
+    onError: toastOnError('Impossible de modifier les catégories de dépenses'),
   });
 
   // --- Recurring Expenses ---
@@ -153,11 +151,11 @@ export const useSettings = () => {
         .is('deleted_at', null);
       if (fetchErr) throw fetchErr;
 
-      const existingIds = new Set((existing ?? []).map(e => e.id));
-      const newIds = new Set(expenses.map(e => e.id));
+      const existingIds = new Set((existing ?? []).map((e) => e.id));
+      const newIds = new Set(expenses.map((e) => e.id));
 
       // Soft-delete removed
-      const toDelete = [...existingIds].filter(id => !newIds.has(id));
+      const toDelete = [...existingIds].filter((id) => !newIds.has(id));
       if (toDelete.length > 0) {
         const { error } = await supabase
           .from('recurring_expenses')
@@ -173,14 +171,17 @@ export const useSettings = () => {
         if (existingIds.has(expense.id)) {
           const { error } = await supabase
             .from('recurring_expenses')
-            .update({ name: row.name, amount: row.amount, frequency: row.frequency, next_date: row.next_date })
+            .update({
+              name: row.name,
+              amount: row.amount,
+              frequency: row.frequency,
+              next_date: row.next_date,
+            })
             .eq('id', expense.id)
             .eq('salon_id', salonId);
           if (error) throw error;
         } else {
-          const { error } = await supabase
-            .from('recurring_expenses')
-            .insert(row);
+          const { error } = await supabase.from('recurring_expenses').insert(row);
           if (error) throw error;
         }
       }
@@ -188,7 +189,7 @@ export const useSettings = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recurring_expenses', salonId] });
     },
-    onError: toastOnError("Impossible de modifier les dépenses récurrentes"),
+    onError: toastOnError('Impossible de modifier les dépenses récurrentes'),
   });
 
   // Default settings fallback while loading

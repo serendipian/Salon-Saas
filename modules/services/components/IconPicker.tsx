@@ -40,7 +40,10 @@ export function IconPicker({ selectedIcon, onSelect }: IconPickerProps) {
             <button
               key={icon.name}
               type="button"
-              onClick={() => { onSelect(icon.name); setOpen(false); }}
+              onClick={() => {
+                onSelect(icon.name);
+                setOpen(false);
+              }}
               title={icon.label}
               className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
                 selectedIcon === icon.name

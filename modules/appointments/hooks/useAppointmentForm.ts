@@ -159,7 +159,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
   // Service blocks — mark existing blocks with items as staff-confirmed for edit mode
   const [serviceBlocks, setServiceBlocks] = useState<ServiceBlockState[]>(() => {
     const blocks = initialData?.serviceBlocks ?? [createEmptyBlock()];
-    return blocks.map((b) => b.items.length > 0 ? { ...b, staffConfirmed: true } : b);
+    return blocks.map((b) => (b.items.length > 0 ? { ...b, staffConfirmed: true } : b));
   });
   const [activeBlockIndex, setActiveBlockIndex] = useState(0);
 
@@ -265,7 +265,13 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
       }
 
       // Reset downstream selections when services change
-      const resetDownstream = { staffId: null, staffConfirmed: false, date: null, hour: null, minute: 0 };
+      const resetDownstream = {
+        staffId: null,
+        staffConfirmed: false,
+        date: null,
+        hour: null,
+        minute: 0,
+      };
 
       setServiceBlocks((prev) =>
         prev.map((b, i) => {
@@ -275,7 +281,11 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
             const existing = b.items[existingIdx];
             if (existing.variantId === variantId) {
               // Same service + same variant → remove
-              return { ...b, ...resetDownstream, items: b.items.filter((_, idx) => idx !== existingIdx) };
+              return {
+                ...b,
+                ...resetDownstream,
+                items: b.items.filter((_, idx) => idx !== existingIdx),
+              };
             }
             // Same service, different variant → replace variant (category unchanged by definition)
             const nextItems = b.items.slice();
@@ -288,7 +298,11 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
           if (b.items.length > 0) {
             const lockedSvc = services.find((s) => s.id === b.items[0].serviceId);
             const candidateSvc = services.find((s) => s.id === serviceId);
-            if (lockedSvc?.categoryId && candidateSvc?.categoryId && lockedSvc.categoryId !== candidateSvc.categoryId) {
+            if (
+              lockedSvc?.categoryId &&
+              candidateSvc?.categoryId &&
+              lockedSvc.categoryId !== candidateSvc.categoryId
+            ) {
               return b;
             }
           }
@@ -303,7 +317,16 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     setServiceBlocks((prev) =>
       prev.map((b, i) => {
         if (i !== index) return b;
-        return { ...b, items: [], staffId: null, staffConfirmed: false, date: null, hour: null, minute: 0, packId: null };
+        return {
+          ...b,
+          items: [],
+          staffId: null,
+          staffConfirmed: false,
+          date: null,
+          hour: null,
+          minute: 0,
+          packId: null,
+        };
       }),
     );
   }, []);
@@ -340,8 +363,8 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     if (totalOriginal === 0 || pack.items.length === 0) return;
 
     // Compute pro-rata prices with rounding fix
-    const proRataPrices = pack.items.map((item) =>
-      Math.round((item.originalPrice / totalOriginal) * pack.price * 100) / 100
+    const proRataPrices = pack.items.map(
+      (item) => Math.round((item.originalPrice / totalOriginal) * pack.price * 100) / 100,
     );
     const roundedSum = proRataPrices.reduce((s, p) => s + p, 0);
     const diff = Math.round((pack.price - roundedSum) * 100) / 100;
@@ -398,9 +421,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
       // Capture existing pack block's ID before filtering, so we can reuse it
       // (prevents remount → preserves user's active tab, e.g. Favoris).
       const existingPackBlock = prev.find((b) => !!b.packId);
-      const base = hasLoneEmpty
-        ? []
-        : prev.filter((b) => !b.packId);
+      const base = hasLoneEmpty ? [] : prev.filter((b) => !b.packId);
 
       const lastBlock = hasLoneEmpty ? prev[0] : base[base.length - 1];
       const lastDate = lastBlock?.date ?? null;
@@ -519,7 +540,8 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     if (hasMissing) {
       addToast({
         type: 'error',
-        message: 'Une prestation référence un service ou une variante supprimé. Retirez-la avant de sauvegarder.',
+        message:
+          'Une prestation référence un service ou une variante supprimé. Retirez-la avant de sauvegarder.',
       });
       return;
     }
@@ -577,7 +599,17 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     } finally {
       setIsSaving(false);
     }
-  }, [newClient, clientId, serviceBlocks, status, notes, reminderMinutes, validate, services, onSave]);
+  }, [
+    newClient,
+    clientId,
+    serviceBlocks,
+    status,
+    notes,
+    reminderMinutes,
+    validate,
+    services,
+    onSave,
+  ]);
 
   return {
     // State

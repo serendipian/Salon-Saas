@@ -9,7 +9,11 @@ interface SupplierTableProps {
   onEdit: (id: string) => void;
 }
 
-export const SupplierTable: React.FC<SupplierTableProps> = ({ suppliers, categories = [], onEdit }) => {
+export const SupplierTable: React.FC<SupplierTableProps> = ({
+  suppliers,
+  categories = [],
+  onEdit,
+}) => {
   if (suppliers.length === 0) {
     return (
       <EmptyState
@@ -41,32 +45,38 @@ export const SupplierTable: React.FC<SupplierTableProps> = ({ suppliers, categor
             >
               <td className="px-6 py-4 align-top">
                 <div className="flex items-start gap-3">
-                   <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200 shrink-0">
-                      <Truck size={20} />
-                   </div>
-                   <div>
-                      <div className="font-semibold text-slate-900 text-sm">{supplier.name}</div>
-                      {supplier.website && (
-                        <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5 hover:text-brand-600">
-                           <Globe size={10} />
-                           {supplier.website}
-                        </div>
-                      )}
-                   </div>
+                  <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200 shrink-0">
+                    <Truck size={20} />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-slate-900 text-sm">{supplier.name}</div>
+                    {supplier.website && (
+                      <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5 hover:text-brand-600">
+                        <Globe size={10} />
+                        {supplier.website}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </td>
               <td className="px-6 py-4 align-top hidden md:table-cell">
                 <div className="text-sm font-medium text-slate-700">{supplier.contactName}</div>
                 <div className="text-xs text-slate-500 flex flex-col gap-0.5 mt-1">
-                   <span className="flex items-center gap-1"><Mail size={10}/> {supplier.email}</span>
-                   <span className="flex items-center gap-1"><Phone size={10}/> {supplier.phone}</span>
+                  <span className="flex items-center gap-1">
+                    <Mail size={10} /> {supplier.email}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Phone size={10} /> {supplier.phone}
+                  </span>
                 </div>
               </td>
               <td className="px-6 py-4 align-top hidden lg:table-cell">
                 {(() => {
-                  const cat = categories.find(c => c.id === supplier.categoryId);
+                  const cat = categories.find((c) => c.id === supplier.categoryId);
                   return cat ? (
-                    <span className={`inline-flex px-2.5 py-0.5 rounded border text-xs font-medium ${cat.color}`}>
+                    <span
+                      className={`inline-flex px-2.5 py-0.5 rounded border text-xs font-medium ${cat.color}`}
+                    >
                       {cat.name}
                     </span>
                   ) : (

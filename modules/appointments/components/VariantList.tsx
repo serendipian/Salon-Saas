@@ -24,10 +24,20 @@ export default function VariantList({ variants, selectedVariantId, onSelect }: V
                 : 'bg-slate-50 border border-slate-200 hover:border-blue-200 hover:bg-blue-50/30'
             }`}
           >
-            <span className={`w-3 h-3 rounded-full flex-shrink-0 transition-colors ${isSelected ? 'bg-blue-500 shadow-sm' : 'border-2 border-slate-300'}`} />
-            <span className={`text-[11px] flex-1 ${isSelected ? 'text-slate-900 font-medium' : 'text-slate-700'}`}>{v.name}</span>
+            <span
+              className={`w-3 h-3 rounded-full flex-shrink-0 transition-colors ${isSelected ? 'bg-blue-500 shadow-sm' : 'border-2 border-slate-300'}`}
+            />
+            <span
+              className={`text-[11px] flex-1 ${isSelected ? 'text-slate-900 font-medium' : 'text-slate-700'}`}
+            >
+              {v.name}
+            </span>
             <span className="text-slate-400 text-[10px]">{v.durationMinutes}m</span>
-            <span className={`text-[10px] font-semibold ${isSelected ? 'text-blue-600' : 'text-slate-400'}`}>{formatPrice(v.price)}</span>
+            <span
+              className={`text-[10px] font-semibold ${isSelected ? 'text-blue-600' : 'text-slate-400'}`}
+            >
+              {formatPrice(v.price)}
+            </span>
           </button>
         );
       })}

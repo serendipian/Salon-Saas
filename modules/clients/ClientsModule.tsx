@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
@@ -79,7 +78,7 @@ export const ClientsModule: React.FC = () => {
     }
   };
 
-  const selectedClient = clients.find(c => c.id === selectedClientId);
+  const selectedClient = clients.find((c) => c.id === selectedClientId);
 
   if (isLoading) {
     return (
@@ -101,7 +100,7 @@ export const ClientsModule: React.FC = () => {
           onDelete={canDelete ? handleDelete : undefined}
         />
       )}
-      
+
       {view === 'DETAILS' && selectedClient && (
         <ClientDetails
           client={selectedClient}
@@ -115,8 +114,12 @@ export const ClientsModule: React.FC = () => {
         <ClientForm
           existingClient={view === 'EDIT' ? selectedClient : undefined}
           onSave={handleSave}
-          onCancel={() => view === 'EDIT' ? setView('DETAILS') : setView('LIST')}
-          onDelete={view === 'EDIT' && selectedClient && canDelete ? () => handleDelete(selectedClient.id) : undefined}
+          onCancel={() => (view === 'EDIT' ? setView('DETAILS') : setView('LIST'))}
+          onDelete={
+            view === 'EDIT' && selectedClient && canDelete
+              ? () => handleDelete(selectedClient.id)
+              : undefined
+          }
         />
       )}
 
@@ -127,11 +130,21 @@ export const ClientsModule: React.FC = () => {
         confirmLabel="Supprimer"
         isLoading={isDeleting}
         onConfirm={handleConfirmDelete}
-        onClose={() => { if (!isDeleting) setPendingDeleteId(null); }}
+        onClose={() => {
+          if (!isDeleting) setPendingDeleteId(null);
+        }}
         message={
-          pendingDeleteClient
-            ? <>Cette action est irréversible. <strong>{pendingDeleteClient.firstName} {pendingDeleteClient.lastName}</strong> et tout son historique seront définitivement supprimés.</>
-            : 'Cette action est irréversible.'
+          pendingDeleteClient ? (
+            <>
+              Cette action est irréversible.{' '}
+              <strong>
+                {pendingDeleteClient.firstName} {pendingDeleteClient.lastName}
+              </strong>{' '}
+              et tout son historique seront définitivement supprimés.
+            </>
+          ) : (
+            'Cette action est irréversible.'
+          )
         }
       />
     </div>

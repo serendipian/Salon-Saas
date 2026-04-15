@@ -77,7 +77,7 @@ export const useSuppliers = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers', salonId] });
     },
-    onError: toastOnError("Impossible de modifier le fournisseur"),
+    onError: toastOnError('Impossible de modifier le fournisseur'),
   });
 
   const deleteSupplierMutation = useMutation({
@@ -117,15 +117,15 @@ export const useSuppliers = () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers', salonId] });
       toastOnSuccess('Catégories enregistrées')();
     },
-    onError: toastOnError("Impossible de modifier les catégories de fournisseurs"),
+    onError: toastOnError('Impossible de modifier les catégories de fournisseurs'),
   });
 
   const filteredSuppliers = useMemo(() => {
     if (!searchTerm) return suppliers;
     const term = searchTerm.toLowerCase();
-    return suppliers.filter(s =>
-      s.name.toLowerCase().includes(term) ||
-      (s.contactName ?? '').toLowerCase().includes(term)
+    return suppliers.filter(
+      (s) =>
+        s.name.toLowerCase().includes(term) || (s.contactName ?? '').toLowerCase().includes(term),
     );
   }, [suppliers, searchTerm]);
 

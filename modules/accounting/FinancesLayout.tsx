@@ -11,11 +11,20 @@ export const FinancesLayout: React.FC = () => {
 
   const path = location.pathname;
   let pageTitle = 'Finances';
-  let pageSubtitle = 'Vue d\'ensemble financière';
-  if (path.includes('/revenus')) { pageTitle = 'Revenus'; pageSubtitle = 'Analyse des revenus par service et produit'; }
-  else if (path.includes('/depenses')) { pageTitle = 'Dépenses'; pageSubtitle = 'Suivi des dépenses courantes et récurrentes'; }
-  else if (path.includes('/journal')) { pageTitle = 'Journal'; pageSubtitle = 'Historique complet des écritures'; }
-  else if (path.includes('/annulations')) { pageTitle = 'Annulations & Remboursements'; pageSubtitle = 'Suivi des annulations et remboursements'; }
+  let pageSubtitle = "Vue d'ensemble financière";
+  if (path.includes('/revenus')) {
+    pageTitle = 'Revenus';
+    pageSubtitle = 'Analyse des revenus par service et produit';
+  } else if (path.includes('/depenses')) {
+    pageTitle = 'Dépenses';
+    pageSubtitle = 'Suivi des dépenses courantes et récurrentes';
+  } else if (path.includes('/journal')) {
+    pageTitle = 'Journal';
+    pageSubtitle = 'Historique complet des écritures';
+  } else if (path.includes('/annulations')) {
+    pageTitle = 'Annulations & Remboursements';
+    pageSubtitle = 'Suivi des annulations et remboursements';
+  }
 
   return (
     <div className="w-full relative">

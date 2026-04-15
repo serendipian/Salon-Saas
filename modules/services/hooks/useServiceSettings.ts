@@ -29,10 +29,18 @@ export function useServiceSettings() {
       const raw = data?.service_settings as Record<string, unknown> | null;
       if (!raw || Object.keys(raw).length === 0) return DEFAULTS;
       return {
-        defaultDuration: typeof raw.defaultDuration === 'number' ? raw.defaultDuration : DEFAULTS.defaultDuration,
-        defaultVariantName: typeof raw.defaultVariantName === 'string' ? raw.defaultVariantName : DEFAULTS.defaultVariantName,
-        showCostsInList: typeof raw.showCostsInList === 'boolean' ? raw.showCostsInList : DEFAULTS.showCostsInList,
-        defaultView: raw.defaultView === 'card' || raw.defaultView === 'table' ? raw.defaultView : DEFAULTS.defaultView,
+        defaultDuration:
+          typeof raw.defaultDuration === 'number' ? raw.defaultDuration : DEFAULTS.defaultDuration,
+        defaultVariantName:
+          typeof raw.defaultVariantName === 'string'
+            ? raw.defaultVariantName
+            : DEFAULTS.defaultVariantName,
+        showCostsInList:
+          typeof raw.showCostsInList === 'boolean' ? raw.showCostsInList : DEFAULTS.showCostsInList,
+        defaultView:
+          raw.defaultView === 'card' || raw.defaultView === 'table'
+            ? raw.defaultView
+            : DEFAULTS.defaultView,
       } satisfies ServiceSettings;
     },
     enabled: !!salonId,

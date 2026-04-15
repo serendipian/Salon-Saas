@@ -5,7 +5,14 @@ import { Input, Select } from '../../../components/FormElements';
 import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
 import { useServices } from '../../services/hooks/useServices';
 import { useToast } from '../../../context/ToastContext';
-import { Field, SectionHeader, DAY_LABELS, ORDERED_DAYS, CONTRACT_LABELS, formatDate } from './profile-shared';
+import {
+  Field,
+  SectionHeader,
+  DAY_LABELS,
+  ORDERED_DAYS,
+  CONTRACT_LABELS,
+  formatDate,
+} from './profile-shared';
 
 interface ProfileContractSectionProps {
   staff: StaffMember;
@@ -13,7 +20,11 @@ interface ProfileContractSectionProps {
   isSaving: boolean;
 }
 
-export const ProfileContractSection: React.FC<ProfileContractSectionProps> = ({ staff, onSave, isSaving }) => {
+export const ProfileContractSection: React.FC<ProfileContractSectionProps> = ({
+  staff,
+  onSave,
+  isSaving,
+}) => {
   const { serviceCategories } = useServices();
   const { addToast } = useToast();
   const [editing, setEditing] = useState(false);
@@ -47,17 +58,17 @@ export const ProfileContractSection: React.FC<ProfileContractSectionProps> = ({ 
   };
 
   const getCategoryName = (id: string) => {
-    const cat = serviceCategories.find(c => c.id === id);
+    const cat = serviceCategories.find((c) => c.id === id);
     return cat?.name ?? id;
   };
 
   const toggleSkill = (categoryId: string) => {
-    setDraft(prev => {
+    setDraft((prev) => {
       const current = (prev.skills as string[]) || [];
       const has = current.includes(categoryId);
       return {
         ...prev,
-        skills: has ? current.filter(id => id !== categoryId) : [...current, categoryId],
+        skills: has ? current.filter((id) => id !== categoryId) : [...current, categoryId],
       };
     });
   };
@@ -79,7 +90,9 @@ export const ProfileContractSection: React.FC<ProfileContractSectionProps> = ({ 
             <Select
               label="Type de contrat"
               value={draft.contractType ?? ''}
-              onChange={val => setDraft({ ...draft, contractType: val as StaffMember['contractType'] })}
+              onChange={(val) =>
+                setDraft({ ...draft, contractType: val as StaffMember['contractType'] })
+              }
               options={[
                 { value: 'CDI', label: 'CDI' },
                 { value: 'CDD', label: 'CDD' },
@@ -92,15 +105,22 @@ export const ProfileContractSection: React.FC<ProfileContractSectionProps> = ({ 
               label="Heures / semaine"
               type="number"
               value={draft.weeklyHours ?? ''}
-              onChange={e => setDraft({ ...draft, weeklyHours: e.target.value ? parseFloat(e.target.value) : undefined })}
+              onChange={(e) =>
+                setDraft({
+                  ...draft,
+                  weeklyHours: e.target.value ? parseFloat(e.target.value) : undefined,
+                })
+              }
             />
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Date de debut</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Date de debut
+              </label>
               <input
                 type="date"
                 className="w-full bg-white border border-slate-300 rounded-lg text-sm shadow-sm px-3 py-2.5 min-h-[44px] focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none"
                 value={draft.startDate ?? ''}
-                onChange={e => setDraft({ ...draft, startDate: e.target.value })}
+                onChange={(e) => setDraft({ ...draft, startDate: e.target.value })}
               />
             </div>
             <div>
@@ -109,7 +129,7 @@ export const ProfileContractSection: React.FC<ProfileContractSectionProps> = ({ 
                 type="date"
                 className="w-full bg-white border border-slate-300 rounded-lg text-sm shadow-sm px-3 py-2.5 min-h-[44px] focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none"
                 value={draft.endDate ?? ''}
-                onChange={e => setDraft({ ...draft, endDate: e.target.value })}
+                onChange={(e) => setDraft({ ...draft, endDate: e.target.value })}
               />
             </div>
           </div>
@@ -118,7 +138,7 @@ export const ProfileContractSection: React.FC<ProfileContractSectionProps> = ({ 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Competences</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {serviceCategories.map(category => {
+              {serviceCategories.map((category) => {
                 const isSelected = ((draft.skills as string[]) || []).includes(category.id);
                 return (
                   <button
@@ -127,14 +147,17 @@ export const ProfileContractSection: React.FC<ProfileContractSectionProps> = ({ 
                     onClick={() => toggleSkill(category.id)}
                     className={`
                       flex items-center justify-between p-3 rounded-xl border text-sm font-medium transition-all
-                      ${isSelected
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                      ${
+                        isSelected
+                          ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                       }
                     `}
                   >
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-white' : category.color.split(' ')[0]}`} />
+                      <div
+                        className={`w-2 h-2 rounded-full ${isSelected ? 'bg-white' : category.color.split(' ')[0]}`}
+                      />
                       {category.name}
                     </div>
                     {isSelected && <Check size={14} />}
@@ -151,20 +174,35 @@ export const ProfileContractSection: React.FC<ProfileContractSectionProps> = ({ 
 
           {/* Schedule editor */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Horaires de travail</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Horaires de travail
+            </label>
             <WorkScheduleEditor
               value={(draft.schedule as WorkSchedule) ?? staff.schedule}
-              onChange={schedule => setDraft({ ...draft, schedule })}
+              onChange={(schedule) => setDraft({ ...draft, schedule })}
             />
           </div>
         </div>
       ) : (
         <div className="space-y-5">
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Type de contrat" value={staff.contractType ? CONTRACT_LABELS[staff.contractType] ?? staff.contractType : undefined} />
-            <Field label="Heures / semaine" value={staff.weeklyHours != null ? `${staff.weeklyHours}h` : undefined} />
+            <Field
+              label="Type de contrat"
+              value={
+                staff.contractType
+                  ? (CONTRACT_LABELS[staff.contractType] ?? staff.contractType)
+                  : undefined
+              }
+            />
+            <Field
+              label="Heures / semaine"
+              value={staff.weeklyHours != null ? `${staff.weeklyHours}h` : undefined}
+            />
             <Field label="Date de debut" value={formatDate(staff.startDate)} />
-            <Field label="Date de fin" value={staff.endDate ? formatDate(staff.endDate) : 'Non definie'} />
+            <Field
+              label="Date de fin"
+              value={staff.endDate ? formatDate(staff.endDate) : 'Non definie'}
+            />
           </dl>
 
           {/* Skills read-only */}
@@ -172,8 +210,11 @@ export const ProfileContractSection: React.FC<ProfileContractSectionProps> = ({ 
             <dt className="text-sm text-slate-500 mb-2">Competences</dt>
             <div className="flex flex-wrap gap-2">
               {staff.skills.length > 0 ? (
-                staff.skills.map(id => (
-                  <span key={id} className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-medium">
+                staff.skills.map((id) => (
+                  <span
+                    key={id}
+                    className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-medium"
+                  >
                     {getCategoryName(id)}
                   </span>
                 ))
@@ -187,11 +228,13 @@ export const ProfileContractSection: React.FC<ProfileContractSectionProps> = ({ 
           <div>
             <dt className="text-sm text-slate-500 mb-2">Horaires de travail</dt>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-              {ORDERED_DAYS.map(day => {
+              {ORDERED_DAYS.map((day) => {
                 const d = staff.schedule[day];
                 return (
                   <div key={day} className="flex items-center justify-between text-sm py-1">
-                    <span className={`font-medium ${d.isOpen ? 'text-slate-900' : 'text-slate-400'}`}>
+                    <span
+                      className={`font-medium ${d.isOpen ? 'text-slate-900' : 'text-slate-400'}`}
+                    >
                       {DAY_LABELS[day]}
                     </span>
                     <span className={d.isOpen ? 'text-slate-700' : 'text-slate-400'}>

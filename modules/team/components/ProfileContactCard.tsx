@@ -10,7 +10,11 @@ interface ProfileContactCardProps {
   isSaving: boolean;
 }
 
-export const ProfileContactCard: React.FC<ProfileContactCardProps> = ({ staff, onSave, isSaving }) => {
+export const ProfileContactCard: React.FC<ProfileContactCardProps> = ({
+  staff,
+  onSave,
+  isSaving,
+}) => {
   const { addToast } = useToast();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<StaffMember>>({});
@@ -41,15 +45,26 @@ export const ProfileContactCard: React.FC<ProfileContactCardProps> = ({ staff, o
         <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide">Coordonnées</h3>
         {editing ? (
           <div className="flex items-center gap-1.5">
-            <button onClick={cancelEdit} disabled={isSaving} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+            <button
+              onClick={cancelEdit}
+              disabled={isSaving}
+              className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            >
               <X size={14} />
             </button>
-            <button onClick={saveSection} disabled={isSaving} className="p-1.5 text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50">
+            <button
+              onClick={saveSection}
+              disabled={isSaving}
+              className="p-1.5 text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50"
+            >
               {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
             </button>
           </div>
         ) : (
-          <button onClick={startEdit} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+          <button
+            onClick={startEdit}
+            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+          >
             <Pencil size={14} />
           </button>
         )}
@@ -57,8 +72,18 @@ export const ProfileContactCard: React.FC<ProfileContactCardProps> = ({ staff, o
 
       {editing ? (
         <div className="space-y-3">
-          <Input label="Email" type="email" value={draft.email ?? ''} onChange={e => setDraft({ ...draft, email: e.target.value })} />
-          <Input label="Téléphone" type="tel" value={draft.phone ?? ''} onChange={e => setDraft({ ...draft, phone: e.target.value })} />
+          <Input
+            label="Email"
+            type="email"
+            value={draft.email ?? ''}
+            onChange={(e) => setDraft({ ...draft, email: e.target.value })}
+          />
+          <Input
+            label="Téléphone"
+            type="tel"
+            value={draft.phone ?? ''}
+            onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
+          />
         </div>
       ) : (
         <ul className="space-y-3">
@@ -76,7 +101,9 @@ export const ProfileContactCard: React.FC<ProfileContactCardProps> = ({ staff, o
               <Mail size={14} />
             </div>
             <div className="overflow-hidden">
-              <div className="text-sm font-medium text-slate-900 truncate">{staff.email || '—'}</div>
+              <div className="text-sm font-medium text-slate-900 truncate">
+                {staff.email || '—'}
+              </div>
               <div className="text-xs text-slate-500">Email</div>
             </div>
           </li>
