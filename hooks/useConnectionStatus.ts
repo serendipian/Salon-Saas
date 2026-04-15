@@ -145,11 +145,95 @@ function classifyProbeError(err: unknown): 'network' | 'auth' {
   return 'network';
 }
 
+interface StoredSession {
+  access_token: string;
+  refresh_token?: string;
+  expires_at?: number;
+  expires_in?: number;
+  token_type?: string;
+  user?: unknown;
+}
+
+function readStoredSession(storageKey: string | null): StoredSession | null {
+  if (!storageKey) return null;
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredSession;
+    if (!parsed?.access_token) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Refresh the session via raw fetch, bypassing the Supabase SDK. Writes the
+ * new tokens to localStorage so the SDK picks them up on its next read.
+ * Returns the fresh session on success, or a failure reason.
+ */
+async function refreshSessionRaw(
+  supabaseUrl: string,
+  anonKey: string,
+  storageKey: string,
+  refreshToken: string,
+  signal: AbortSignal,
+): Promise<StoredSession | 'auth' | 'network'> {
+  let response: Response;
+  try {
+    response = await fetch(
+      `${supabaseUrl}/auth/v1/token?grant_type=refresh_token`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: anonKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+        signal,
+      },
+    );
+  } catch (err) {
+    return classifyProbeError(err) === 'auth' ? 'auth' : 'network';
+  }
+
+  // 400/401 from /token means the refresh_token is invalid/expired/rotated.
+  if (
+    response.status === 400 ||
+    response.status === 401 ||
+    response.status === 403
+  ) {
+    return 'auth';
+  }
+  if (!response.ok) return 'network';
+
+  const fresh = (await response.json()) as StoredSession;
+  if (!fresh.access_token) return 'network';
+
+  const existingRaw = localStorage.getItem(storageKey);
+  const existing = existingRaw
+    ? (JSON.parse(existingRaw) as StoredSession)
+    : ({} as StoredSession);
+
+  const merged: StoredSession = {
+    ...existing,
+    access_token: fresh.access_token,
+    refresh_token: fresh.refresh_token ?? existing.refresh_token,
+    expires_in: fresh.expires_in,
+    expires_at: fresh.expires_at,
+    token_type: fresh.token_type ?? existing.token_type,
+    user: fresh.user ?? existing.user,
+  };
+  localStorage.setItem(storageKey, JSON.stringify(merged));
+  return merged;
+}
+
 /**
  * Raw-fetch auth probe. Bypasses the Supabase SDK entirely because the SDK
  * can deadlock on its internal locks after Chrome's background-tab throttling
  * releases (even with a no-op lock override, ordering assumptions break).
- * We read the session straight from localStorage, then hit /auth/v1/user with
+ * Reads the session straight from localStorage, proactively refreshes if the
+ * access_token is expired or close to expiring, then hits /auth/v1/user with
  * a cold AbortController so the timeout is authoritative.
  */
 async function probeAuth(): Promise<'ok' | 'signed-out' | 'network' | 'auth'> {
@@ -158,18 +242,8 @@ async function probeAuth(): Promise<'ok' | 'signed-out' | 'network' | 'auth'> {
   const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\./)?.[1];
   const storageKey = projectRef ? `sb-${projectRef}-auth-token` : null;
 
-  let accessToken: string | null = null;
-  try {
-    const raw = storageKey ? localStorage.getItem(storageKey) : null;
-    if (raw) {
-      const parsed = JSON.parse(raw) as { access_token?: string };
-      accessToken = parsed.access_token ?? null;
-    }
-  } catch {
-    // fall through — treat as signed-out below
-  }
-
-  if (!accessToken) return 'signed-out';
+  let session = readStoredSession(storageKey);
+  if (!session) return 'signed-out';
 
   const controller = new AbortController();
   const timeoutId = setTimeout(
@@ -178,16 +252,50 @@ async function probeAuth(): Promise<'ok' | 'signed-out' | 'network' | 'auth'> {
   );
 
   try {
+    // Refresh proactively if the access_token is expired or within 30s of
+    // expiring. This keeps idle-returning sessions signed in across the 1h
+    // access_token lifetime, the way users expect from major SaaS apps.
+    const nowSec = Math.floor(Date.now() / 1000);
+    const expiresAt = session.expires_at ?? 0;
+    if (expiresAt && expiresAt - nowSec < 30 && session.refresh_token && storageKey) {
+      const refreshed = await refreshSessionRaw(
+        supabaseUrl,
+        anonKey,
+        storageKey,
+        session.refresh_token,
+        controller.signal,
+      );
+      if (refreshed === 'auth' || refreshed === 'network') return refreshed;
+      session = refreshed;
+    }
+
     const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
       method: 'GET',
       headers: {
         apikey: anonKey,
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${session.access_token}`,
       },
       signal: controller.signal,
     });
 
-    if (response.status === 401 || response.status === 403) return 'auth';
+    // Server says the access token is dead. It may just be expired — try
+    // refreshing once before giving up. Only classify as 'auth' if the
+    // refresh itself is rejected.
+    if (response.status === 401) {
+      if (!session.refresh_token || !storageKey) return 'auth';
+      const refreshed = await refreshSessionRaw(
+        supabaseUrl,
+        anonKey,
+        storageKey,
+        session.refresh_token,
+        controller.signal,
+      );
+      if (refreshed === 'auth') return 'auth';
+      if (refreshed === 'network') return 'network';
+      return 'ok';
+    }
+
+    if (response.status === 403) return 'auth';
     if (!response.ok) return 'network';
     return 'ok';
   } catch (err) {
