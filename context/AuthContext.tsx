@@ -202,7 +202,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Listen for auth state changes
   useEffect(() => {
-    initializeAuth();
+    void initializeAuth();
 
     const {
       data: { subscription },

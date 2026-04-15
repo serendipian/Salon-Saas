@@ -1,6 +1,7 @@
 import { Loader2 } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
+import { ConfirmModal } from '../../components/ConfirmModal';
 import { useToast } from '../../context/ToastContext';
 import type { Product, ViewState } from '../../types';
 import { useBilling } from '../billing/hooks/useBilling';
@@ -26,6 +27,7 @@ export const ProductsModule: React.FC = () => {
 
   const [view, setView] = useState<ViewState>('LIST');
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const handleAdd = () => {
     if (!canAddProduct(allProducts.length)) {
@@ -83,16 +85,26 @@ export const ProductsModule: React.FC = () => {
           onCancel={() => setView('LIST')}
           onDelete={
             view === 'EDIT' && selectedProductId
-              ? () => {
-                  if (window.confirm('Supprimer ce produit ? Cette action est irréversible.')) {
-                    deleteProduct(selectedProductId);
-                    setView('LIST');
-                  }
-                }
+              ? () => setPendingDeleteId(selectedProductId)
               : undefined
           }
         />
       )}
+      <ConfirmModal
+        isOpen={pendingDeleteId !== null}
+        title="Supprimer ce produit"
+        message="Cette action est irréversible."
+        confirmLabel="Supprimer"
+        tone="danger"
+        onConfirm={() => {
+          if (pendingDeleteId) {
+            deleteProduct(pendingDeleteId);
+            setPendingDeleteId(null);
+            setView('LIST');
+          }
+        }}
+        onClose={() => setPendingDeleteId(null)}
+      />
     </div>
   );
 };

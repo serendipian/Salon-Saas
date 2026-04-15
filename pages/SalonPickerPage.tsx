@@ -40,8 +40,8 @@ export const SalonPickerPage: React.FC = () => {
   }
 
   const handleSelect = (salonId: string) => {
-    switchSalon(salonId);
-    navigate('/dashboard');
+    void switchSalon(salonId);
+    void navigate('/dashboard');
   };
 
   return (

@@ -39,7 +39,7 @@ export const ClientsModule: React.FC = () => {
   };
 
   const handleSchedule = (id: string) => {
-    navigate(`/calendar/new?clientId=${id}`);
+    void navigate(`/calendar/new?clientId=${id}`);
   };
 
   const handleDelete = (id: string) => {

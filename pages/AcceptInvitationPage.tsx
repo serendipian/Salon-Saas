@@ -99,7 +99,7 @@ export const AcceptInvitationPage: React.FC = () => {
     };
 
     if (!authLoading) {
-      fetchInfo();
+      void fetchInfo();
     }
   }, [token, authLoading, isAuthenticated, user, acceptDirectly]);
 

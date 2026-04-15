@@ -34,7 +34,7 @@ export const InvitationModal: React.FC<InvitationModalProps> = ({
         if (!cancelled) setIsGenerating(false);
       }
     };
-    generate();
+    void generate();
     return () => {
       cancelled = true;
     };

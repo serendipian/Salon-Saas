@@ -836,11 +836,11 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
           onClose={() => setPopover(null)}
           onViewDetails={() => {
             setPopover(null);
-            navigate(`/calendar/${popover.appointment.id}`);
+            void navigate(`/calendar/${popover.appointment.id}`);
           }}
           onEdit={() => {
             setPopover(null);
-            navigate(`/calendar/${popover.appointment.id}/edit`);
+            void navigate(`/calendar/${popover.appointment.id}/edit`);
           }}
         />
       )}

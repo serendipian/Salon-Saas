@@ -2,6 +2,7 @@ import { ArrowLeft, Save, Settings, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ConfirmModal } from '../../../components/ConfirmModal';
 import { Input, Section, Select, TextArea } from '../../../components/FormElements';
 import { PhoneInput } from '../../../components/PhoneInput';
 import { useFormValidation } from '../../../hooks/useFormValidation';
@@ -42,6 +43,7 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({
       notes: '',
     },
   );
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,13 +149,7 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({
             {existingSupplier && onDelete && (
               <button
                 type="button"
-                onClick={() => {
-                  if (
-                    window.confirm('Supprimer ce bénéficiaire ? Cette action est irréversible.')
-                  ) {
-                    onDelete(existingSupplier.id);
-                  }
-                }}
+                onClick={() => setShowDeleteConfirm(true)}
                 className="w-full py-2.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg font-medium transition-all text-sm flex justify-center items-center gap-2"
               >
                 <Trash2 size={16} />
@@ -218,6 +214,20 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({
           </Section>
         </div>
       </form>
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        title="Supprimer ce bénéficiaire"
+        message="Cette action est irréversible."
+        confirmLabel="Supprimer"
+        tone="danger"
+        onConfirm={() => {
+          if (existingSupplier && onDelete) {
+            onDelete(existingSupplier.id);
+            setShowDeleteConfirm(false);
+          }
+        }}
+        onClose={() => setShowDeleteConfirm(false)}
+      />
     </div>
   );
 };
