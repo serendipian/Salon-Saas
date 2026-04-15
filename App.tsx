@@ -188,44 +188,52 @@ const AppContent = () => {
 
 export default function App() {
   return (
-    <MediaQueryProvider>
-      <AuthProvider>
-        <ToastProvider>
-          <BrowserRouter>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+    <ErrorBoundary moduleName="Application">
+      <MediaQueryProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <BrowserRouter>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
 
-              {/* Auth-required, no-salon routes */}
-              <Route path="/create-salon" element={<AuthRequired><CreateSalonPage /></AuthRequired>} />
-              <Route path="/select-salon" element={<AuthRequired><SalonPickerPage /></AuthRequired>} />
+                {/* Auth-required, no-salon routes */}
+                <Route path="/create-salon" element={<AuthRequired><CreateSalonPage /></AuthRequired>} />
+                <Route path="/select-salon" element={<AuthRequired><SalonPickerPage /></AuthRequired>} />
 
-              {/* Admin routes — own layout, own guard, outside salon Layout */}
-              <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="accounts" element={<AdminAccountList />} />
-                <Route path="accounts/:id" element={<AdminAccountDetail />} />
-                <Route path="trials" element={<AdminTrialsPipeline />} />
-                <Route path="billing" element={<AdminFailedPayments />} />
-                <Route path="signups" element={<AdminRecentSignups />} />
-                <Route path="churn" element={<AdminChurnLog />} />
-              </Route>
+                {/* Admin routes — own layout, own guard, outside salon Layout */}
+                <Route path="/admin" element={
+                  <AdminRoute>
+                    <ErrorBoundary moduleName="Admin">
+                      <AdminLayout />
+                    </ErrorBoundary>
+                  </AdminRoute>
+                }>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="accounts" element={<AdminAccountList />} />
+                  <Route path="accounts/:id" element={<AdminAccountDetail />} />
+                  <Route path="trials" element={<AdminTrialsPipeline />} />
+                  <Route path="billing" element={<AdminFailedPayments />} />
+                  <Route path="signups" element={<AdminRecentSignups />} />
+                  <Route path="churn" element={<AdminChurnLog />} />
+                </Route>
 
-              {/* Protected app routes */}
-              <Route path="/*" element={
-                <ProtectedRoute>
-                  <AppContent />
-                </ProtectedRoute>
-              } />
-            </Routes>
-          </BrowserRouter>
-          <ToastContainer />
-        </ToastProvider>
-      </AuthProvider>
-    </MediaQueryProvider>
+                {/* Protected app routes */}
+                <Route path="/*" element={
+                  <ProtectedRoute>
+                    <AppContent />
+                  </ProtectedRoute>
+                } />
+              </Routes>
+            </BrowserRouter>
+            <ToastContainer />
+          </ToastProvider>
+        </AuthProvider>
+      </MediaQueryProvider>
+    </ErrorBoundary>
   );
 }
