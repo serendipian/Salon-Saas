@@ -17,8 +17,11 @@ export type ConnectionState =
 const TIMINGS = {
   /** Tab must be hidden this long before return-to-visible triggers recovery. */
   IDLE_RECOVERY_THRESHOLD_MS: 30_000,
-  /** supabase.auth.getUser() race timeout during recovery. */
-  AUTH_PROBE_TIMEOUT_MS: 5_000,
+  /** supabase.auth.getUser() race timeout during recovery. Background-tab
+   *  throttling can delay the SDK by several seconds once a tab returns to
+   *  foreground, so we give the probe a generous window before falling back
+   *  to offline. */
+  AUTH_PROBE_TIMEOUT_MS: 15_000,
   /** Wait for transient probe channel to hit SUBSCRIBED. */
   REALTIME_PROBE_TIMEOUT_MS: 10_000,
   /** Minimum gap between recovery attempts. */
