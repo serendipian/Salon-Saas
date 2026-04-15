@@ -3,6 +3,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './src/index.css';
 import App from './App';
+import { initSentry } from './lib/sentry';
+
+initSentry();
 
 const queryClient = new QueryClient({
   defaultOptions: {
