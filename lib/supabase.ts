@@ -42,5 +42,8 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
+    // Bypass Navigator LockManager — some browsers return null locks,
+    // causing auth operations to hang indefinitely.
+    lock: async (_name, _acquireTimeout, fn) => fn(),
   },
 });
