@@ -1,0 +1,31 @@
+name: Types drift
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - 'lib/database.types.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify types reflect latest migration
+        run: |
+          types_ts=$(git log -1 --format=%ct -- lib/database.types.ts)
+          mig_ts=$(git log -1 --format=%ct -- supabase/migrations/)
+          if [ -z "$types_ts" ] || [ -z "$mig_ts" ]; then
+            echo "::error::Could not read commit timestamps"
+            exit 1
+          fi
+          if [ "$mig_ts" -gt "$types_ts" ]; then
+            echo "::error::A migration was committed after lib/database.types.ts was last regenerated."
+            echo "::error::Run: npx supabase gen types typescript --project-id izsycdmrwscdnxebptsx > lib/database.types.ts"
+            exit 1
+          fi
+          echo "Types up-to-date."
