@@ -97,13 +97,15 @@ Deno.serve(async (req) => {
           .eq('stripe_price_id_monthly', sub.items.data[0].price.id)
           .single();
 
+        if (!plan) throw new PermanentError('Plan not found for price id (subscription.updated)');
+
         const PLAN_TIER: Record<string, string> = { premium: 'premium', pro: 'pro' };
-        const tier = PLAN_TIER[plan?.name?.toLowerCase() ?? ''] ?? 'premium';
+        const tier = PLAN_TIER[plan.name.toLowerCase()] ?? 'premium';
 
         await supabase.from('subscriptions').update({
           status: sub.status === 'past_due' ? 'past_due' : 'active',
           stripe_price_id: sub.items.data[0].price.id,
-          plan_id: plan?.id,
+          plan_id: plan.id,
           current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
         }).eq('stripe_subscription_id', sub.id);
 
