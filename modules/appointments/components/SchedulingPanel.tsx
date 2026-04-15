@@ -1,4 +1,4 @@
-import React from 'react';
+
 import type { AppointmentStatus } from '../../../types';
 import InlineCalendar from './InlineCalendar';
 import ReminderToggle from './ReminderToggle';

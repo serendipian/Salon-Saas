@@ -135,7 +135,7 @@ export const Select: React.FC<SelectProps> = ({
   const filteredOptions = options.filter(
     (opt) =>
       opt.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (opt.subtitle && opt.subtitle.toLowerCase().includes(searchTerm.toLowerCase())),
+      (opt.subtitle?.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   return (

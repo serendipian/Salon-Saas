@@ -178,7 +178,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const formatDateDisplay = (dateStr?: string) => {
     if (!dateStr) return placeholder;
     const date = parseDate(dateStr);
-    if (isNaN(date.getTime())) return 'Date invalide';
+    if (Number.isNaN(date.getTime())) return 'Date invalide';
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 

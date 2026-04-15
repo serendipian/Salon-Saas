@@ -125,7 +125,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
         </thead>
         <tbody>
           {grouped.map(({ dayKey, clientGroups }) => {
-            const dayDate = new Date(dayKey + 'T00:00:00');
+            const dayDate = new Date(`${dayKey}T00:00:00`);
             const dayLabel = dayDate.toLocaleDateString('fr-FR', {
               weekday: 'long',
               day: 'numeric',

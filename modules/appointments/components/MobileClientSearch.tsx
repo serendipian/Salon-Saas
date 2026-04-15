@@ -50,7 +50,7 @@ export const MobileClientSearch: React.FC<MobileClientSearchProps> = ({
         (c) =>
           c.firstName.toLowerCase().includes(term) ||
           c.lastName.toLowerCase().includes(term) ||
-          (c.phone && c.phone.toLowerCase().includes(term)),
+          (c.phone?.toLowerCase().includes(term)),
       )
       .slice(0, 30);
   }, [clients, search]);

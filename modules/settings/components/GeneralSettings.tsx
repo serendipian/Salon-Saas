@@ -18,7 +18,7 @@ export const GeneralSettings: React.FC = () => {
   const { addToast } = useToast();
   const [formData, setFormData] = useState(salonSettings);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [_isSaving, setIsSaving] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Sync form state when real data arrives (initial load returns defaults)

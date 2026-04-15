@@ -182,7 +182,7 @@ export function useTeamSettings() {
           salon_id: salonId!,
           role,
           token,
-          invited_by: profile!.id,
+          invited_by: profile?.id,
           expires_at: expiresAt.toISOString(),
         })
         .select('token')

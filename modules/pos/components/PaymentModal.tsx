@@ -42,7 +42,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     } else {
       setCurrentAmount('');
     }
-  }, [totalPaid, isComplete, total]);
+  }, [isComplete, remaining.toFixed]);
 
   // Body scroll lock + Escape key on mobile
   useEffect(() => {
@@ -61,7 +61,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   const handleAddPayment = (method: string) => {
     const amount = Math.round(parseFloat(currentAmount) * 100) / 100;
-    if (isNaN(amount) || amount <= 0) return;
+    if (Number.isNaN(amount) || amount <= 0) return;
 
     const newPayment: PaymentEntry = {
       id: crypto.randomUUID(),
@@ -160,7 +160,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 onChange={(e) => setCurrentAmount(e.target.value)}
                 className="w-full text-4xl font-bold text-slate-800 bg-transparent border-b-2 border-slate-200 focus:border-slate-900 outline-none py-2 placeholder:text-slate-300 transition-colors"
                 placeholder="0.00"
-                autoFocus
               />
               <span className="absolute right-0 bottom-3 text-xl text-slate-400 font-medium">
                 {currencySymbol}
@@ -364,7 +363,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 onChange={(e) => setCurrentAmount(e.target.value)}
                 className="w-full text-5xl font-bold text-slate-800 bg-transparent border-b-2 border-slate-200 focus:border-slate-900 outline-none py-2 placeholder:text-slate-300 transition-colors"
                 placeholder="0.00"
-                autoFocus
               />
               <span className="absolute right-0 bottom-4 text-2xl text-slate-400 font-medium">
                 {currencySymbol}

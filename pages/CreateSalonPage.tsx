@@ -48,7 +48,7 @@ export const CreateSalonPage: React.FC = () => {
     if (createError) {
       setError(createError);
     } else {
-      navigate('/dashboard');
+      await navigate('/dashboard');
     }
     setIsSubmitting(false);
   };

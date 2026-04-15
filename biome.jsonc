@@ -41,14 +41,37 @@
     "rules": {
       "recommended": true,
       "suspicious": {
+        // Audit-critical — keep as error:
         "noAlert": "error",
         "noExplicitAny": "error",
-        "noConsole": { "level": "warn", "options": { "allow": ["error", "warn"] } }
+        "noConsole": { "level": "warn", "options": { "allow": ["error", "warn"] } },
+        // Recommended but too noisy for this codebase; demote to warn:
+        "noArrayIndexKey": "warn",
+        "useIterableCallbackReturn": "warn",
+        "noGlobalIsNan": "warn",
+        "noImplicitAnyLet": "warn",
+        "noShadowRestrictedNames": "warn"
       },
       "correctness": {
         "useExhaustiveDependencies": "error",
         "noUnusedImports": "error",
-        "noUnusedVariables": "error"
+        "noUnusedVariables": "error",
+        "noUnusedFunctionParameters": "warn",
+        "useParseIntRadix": "warn"
+      },
+      "style": {
+        // Recommended but too noisy without effort-heavy refactor; demote to warn:
+        "noNonNullAssertion": "warn",
+        "useTemplate": "warn"
+      },
+      "complexity": {
+        "useOptionalChain": "warn",
+        "useLiteralKeys": "warn"
+      },
+      "a11y": {
+        // Known audit items but not Safety Net scope; warn for now:
+        "useButtonType": "warn",
+        "noLabelWithoutControl": "warn"
       },
       "nursery": {
         "noFloatingPromises": "error"

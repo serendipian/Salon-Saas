@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   activeSalonRef.current = activeSalon;
   roleRef.current = role;
 
-  const epoch = useRealtimeEpoch();
+  const _epoch = useRealtimeEpoch();
 
   // Sync global currency for formatPrice()
   useEffect(() => {
@@ -296,7 +296,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activeSalon?.id, epoch]);
+  }, [activeSalon?.id, activeSalon]);
 
   // Real-time membership tracking (detect revocation / role changes)
   useEffect(() => {
@@ -347,7 +347,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, fetchMemberships, epoch]);
+  }, [user, fetchMemberships]);
 
   // --- Auth Actions ---
 
@@ -371,7 +371,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error ? sanitizeAuthError(error.message) : null };
-  }, []);
+  }, [sanitizeAuthError]);
 
   const signUp = useCallback(
     async (email: string, password: string, firstName: string, lastName: string) => {
@@ -384,20 +384,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       return { error: error ? sanitizeAuthError(error.message) : null };
     },
-    [],
+    [sanitizeAuthError],
   );
 
   const signInWithMagicLink = useCallback(async (email: string) => {
     const { error } = await supabase.auth.signInWithOtp({ email });
     return { error: error ? sanitizeAuthError(error.message) : null };
-  }, []);
+  }, [sanitizeAuthError]);
 
   const resetPassword = useCallback(async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     return { error: error ? sanitizeAuthError(error.message) : null };
-  }, []);
+  }, [sanitizeAuthError]);
 
   const updatePassword = useCallback(async (newPassword: string, currentPassword?: string) => {
     // Raw fetch — supabase.auth.updateUser() can hang indefinitely after
@@ -458,7 +458,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       clearTimeout(timeoutId);
     }
-  }, []);
+  }, [sanitizeAuthError]);
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();

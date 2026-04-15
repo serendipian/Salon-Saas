@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTransactions } from '../../../hooks/useTransactions';
-import {
-  type Appointment,
-  type CartItem,
-  type Client,
-  type PaymentEntry,
-  Product,
-  Service,
+import type {
+  Appointment,
+  CartItem,
+  Client,
+  PaymentEntry,
 } from '../../../types';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
 import { useClients } from '../../clients/hooks/useClients';
@@ -162,7 +160,7 @@ export const usePOS = () => {
       });
     }
     return [];
-  }, [viewMode, searchTerm, selectedCategory, services, products, favorites]);
+  }, [viewMode, searchTerm, selectedCategory, services, products]);
 
   const pendingAppointments = useMemo(() => {
     const now = new Date();

@@ -34,7 +34,6 @@ export function getRealtimeEpoch(): number {
 
 export function resetAllChannels(): void {
   epoch++;
-  console.log('[recovery] realtime reset, epoch=', epoch);
   notify();
 }
 

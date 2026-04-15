@@ -1,5 +1,5 @@
 import { Save } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { SupplierSettings } from '../../../types';
 import { useSupplierSettings } from '../hooks/useSupplierSettings';
 
@@ -70,7 +70,7 @@ export function SupplierGeneralTab() {
               type="number"
               min={1}
               value={form.poNextNumber}
-              onChange={(e) => setForm({ ...form, poNextNumber: parseInt(e.target.value) || 1 })}
+              onChange={(e) => setForm({ ...form, poNextNumber: parseInt(e.target.value, 10) || 1 })}
               className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm min-h-[44px]"
             />
             <p className="text-xs text-slate-500 mt-1">

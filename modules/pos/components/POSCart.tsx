@@ -291,7 +291,6 @@ export const POSCart: React.FC<POSCartProps> = ({
           <div className="absolute top-full left-0 w-full bg-white shadow-xl border-b border-x border-slate-200 rounded-b-xl z-50 max-h-64 overflow-y-auto">
             <div className="p-2 sticky top-0 bg-white border-b border-slate-100">
               <input
-                autoFocus
                 value={clientSearch}
                 onChange={(e) => setClientSearch(e.target.value)}
                 className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-slate-400 placeholder:text-slate-400"

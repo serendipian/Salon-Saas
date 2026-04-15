@@ -2,7 +2,6 @@ import type React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import { useClients } from '../../clients/hooks/useClients';
 import { useServices } from '../../services/hooks/useServices';
 import { useTeam } from '../../team/hooks/useTeam';
 import { AppointmentList } from '../components/AppointmentList';

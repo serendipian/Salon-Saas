@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ICON_PICKER_LIST, RegistryIcon } from '../../../lib/categoryIcons';
 
 interface IconPickerProps {

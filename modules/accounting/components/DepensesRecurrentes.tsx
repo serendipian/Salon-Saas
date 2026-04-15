@@ -1,4 +1,4 @@
-import { CheckCircle, Info, Plus, RefreshCw, Trash2, Zap } from 'lucide-react';
+import { CheckCircle, Plus, RefreshCw, Trash2, Zap } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { Input, Select } from '../../../components/FormElements';

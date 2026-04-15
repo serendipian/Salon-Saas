@@ -8,7 +8,7 @@ import {
   Search,
   Trash2,
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Supplier, SupplierCategory } from '../../../types';
 import { ColorPicker } from '../../services/components/ColorPicker';
 import { useSuppliers } from '../hooks/useSuppliers';

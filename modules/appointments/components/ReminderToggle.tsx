@@ -1,5 +1,4 @@
 import { Bell } from 'lucide-react';
-import React from 'react';
 
 interface ReminderToggleProps {
   value: number | null;

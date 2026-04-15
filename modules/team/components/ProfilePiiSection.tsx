@@ -134,7 +134,7 @@ export const ProfilePiiSection: React.FC<ProfilePiiSectionProps> = ({
             </div>
             <div className="overflow-hidden">
               <div className="text-sm font-medium text-slate-900">
-                {staff.iban ? '••••' + staff.iban.slice(-4) : '—'}
+                {staff.iban ? `••••${staff.iban.slice(-4)}` : '—'}
               </div>
               <div className="text-xs text-slate-500">IBAN</div>
             </div>
@@ -145,7 +145,7 @@ export const ProfilePiiSection: React.FC<ProfilePiiSectionProps> = ({
             </div>
             <div className="overflow-hidden">
               <div className="text-sm font-medium text-slate-900">
-                {staff.socialSecurityNumber ? '••••' + staff.socialSecurityNumber.slice(-4) : '—'}
+                {staff.socialSecurityNumber ? `••••${staff.socialSecurityNumber.slice(-4)}` : '—'}
               </div>
               <div className="text-xs text-slate-500">N° Sécurité Sociale</div>
             </div>

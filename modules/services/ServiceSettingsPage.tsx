@@ -1,5 +1,5 @@
 import { ArrowLeft, Layers, Package, Settings, Star } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CategoriesTab } from './components/CategoriesTab';
 import { FavoritesTab } from './components/FavoritesTab';

@@ -1,5 +1,5 @@
 import { Calendar, Clock, Gift, Star, X } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import { formatDuration, formatPrice } from '../../../lib/format';
 import type {
@@ -141,7 +141,7 @@ export default function ServiceBlock({
     day: 'numeric',
     month: 'short',
   });
-  const formatBlockDate = (dateStr: string) => dateFmt.format(new Date(dateStr + 'T00:00:00'));
+  const formatBlockDate = (dateStr: string) => dateFmt.format(new Date(`${dateStr}T00:00:00`));
 
   const timeRange = useMemo(() => {
     if (block.hour === null || blockDuration === 0) return null;

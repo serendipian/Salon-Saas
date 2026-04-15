@@ -56,17 +56,17 @@ export const BillingModule: React.FC = () => {
         supabase
           .from('staff_members')
           .select('id', { count: 'exact', head: true })
-          .eq('salon_id', activeSalon!.id)
+          .eq('salon_id', activeSalon?.id)
           .is('deleted_at', null),
         supabase
           .from('clients')
           .select('id', { count: 'exact', head: true })
-          .eq('salon_id', activeSalon!.id)
+          .eq('salon_id', activeSalon?.id)
           .is('deleted_at', null),
         supabase
           .from('products')
           .select('id', { count: 'exact', head: true })
-          .eq('salon_id', activeSalon!.id)
+          .eq('salon_id', activeSalon?.id)
           .is('deleted_at', null),
       ]);
       return {

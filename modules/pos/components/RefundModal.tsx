@@ -1,4 +1,4 @@
-import { ArrowLeft, Package, RotateCcw, X } from 'lucide-react';
+import { ArrowLeft, Package, X } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';

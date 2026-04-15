@@ -38,7 +38,7 @@ export const InvitationModal: React.FC<InvitationModalProps> = ({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [staffRole, onCreateInvitation]);
 
   const handleCopy = async () => {
     if (!invitationLink) return;

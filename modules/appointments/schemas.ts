@@ -8,7 +8,7 @@ export const appointmentSchema = z.object({
   date: z
     .string()
     .min(1, 'La date est requise')
-    .refine((val) => !isNaN(Date.parse(val)), { message: "La date n'est pas valide" }),
+    .refine((val) => !Number.isNaN(Date.parse(val)), { message: "La date n'est pas valide" }),
 });
 
 export const newClientSchema = z.object({

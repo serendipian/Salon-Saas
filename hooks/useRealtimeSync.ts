@@ -83,7 +83,7 @@ export function useRealtimeSync(tableName: string, options?: RealtimeSyncOptions
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
-  const epoch = useRealtimeEpoch();
+  const _epoch = useRealtimeEpoch();
 
   // Store onEvent in a ref so we always call the latest version
   const onEventRef = useRef(options?.onEvent);
@@ -103,5 +103,5 @@ export function useRealtimeSync(tableName: string, options?: RealtimeSyncOptions
 
     return subscribe(tableName, salonId, stableHandler, options?.filterOverride);
     // epoch is in deps so a resetAllChannels() bump tears down and resubscribes.
-  }, [tableName, salonId, stableHandler, options?.filterOverride, epoch]);
+  }, [tableName, salonId, stableHandler, options?.filterOverride]);
 }

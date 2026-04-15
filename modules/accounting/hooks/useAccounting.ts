@@ -336,7 +336,7 @@ export const useAccounting = () => {
     });
 
     return Array.from(map.values()).sort((a, b) => a.sortKey - b.sortKey);
-  }, [transactions, expenses, dateRange, chartRange]);
+  }, [transactions, expenses, chartRange]);
 
   // Separate highlight index set — kept out of chart data to avoid confusing Recharts
   const chartHighlight = useMemo(() => {

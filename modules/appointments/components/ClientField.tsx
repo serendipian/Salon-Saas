@@ -1,5 +1,5 @@
 import { Search, UserCheck, UserPlus, X } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PhoneInput } from '../../../components/PhoneInput';
 import type { Client } from '../../../types';
 
@@ -40,7 +40,7 @@ export default function ClientField({
     if (!selectedClientId && !newClientData && !showExistingSearch) {
       onNewClientChange({ firstName: '', lastName: '', phone: '' });
     }
-  }, [selectedClientId, showExistingSearch]);
+  }, [selectedClientId, showExistingSearch, onNewClientChange, newClientData]);
 
   const filteredClients = useMemo(() => {
     const term = searchTerm.toLowerCase().trim();
@@ -62,7 +62,7 @@ export default function ClientField({
     return clients
       .filter((c) => {
         const clientPhone = (c.phone ?? '').replace(/[\s+]/g, '');
-        return clientPhone && clientPhone.startsWith(phone);
+        return clientPhone?.startsWith(phone);
       })
       .slice(0, 5);
   }, [clients, newClientData?.phone]);

@@ -107,7 +107,7 @@ export const StaffDetailPage: React.FC = () => {
 
   const handleArchive = async () => {
     await archive();
-    navigate('/team');
+    await navigate('/team');
   };
 
   return (

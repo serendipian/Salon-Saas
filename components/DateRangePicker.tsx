@@ -98,7 +98,7 @@ const PRESETS = [
 ];
 
 const getDaysInMonth = (date: Date) => {
-  if (isNaN(date.getTime())) return [];
+  if (Number.isNaN(date.getTime())) return [];
   const year = date.getFullYear();
   const month = date.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -112,7 +112,7 @@ const getDaysInMonth = (date: Date) => {
 };
 
 const formatDateDisplay = (date: Date) => {
-  if (!date || isNaN(new Date(date).getTime())) return '-';
+  if (!date || Number.isNaN(new Date(date).getTime())) return '-';
   return new Date(date).toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'short',

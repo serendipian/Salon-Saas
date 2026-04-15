@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, Plus, Save, Trash2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Brand } from '../../../types';
 import { ColorPicker } from '../../services/components/ColorPicker';
 import { useSuppliers } from '../../suppliers/hooks/useSuppliers';

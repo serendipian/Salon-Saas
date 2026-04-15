@@ -22,7 +22,7 @@ export const useStaffCompensation = (
       from: periodStart.toISOString(),
       to: periodEnd.toISOString(),
     }),
-    [periodStart.getTime(), periodEnd.getTime()],
+    [periodStart.toISOString, periodEnd.toISOString],
   );
 
   const { transactions } = useTransactions(compRange);
@@ -49,5 +49,5 @@ export const useStaffCompensation = (
       totalExpected: base + commissionEarned + bonusEarned,
       periodRevenue,
     };
-  }, [transactions, staff, periodStart.getTime(), periodEnd.getTime(), baseSalary]);
+  }, [transactions, staff, baseSalary]);
 };

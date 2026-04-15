@@ -148,7 +148,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 type="number"
                 value={formData.stock}
                 onChange={(e) => {
-                  setFormData({ ...formData, stock: parseInt(e.target.value) || 0 });
+                  setFormData({ ...formData, stock: parseInt(e.target.value, 10) || 0 });
                   clearFieldError('stock');
                 }}
                 className="w-32"

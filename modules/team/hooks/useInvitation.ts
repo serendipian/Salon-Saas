@@ -56,7 +56,7 @@ export const useInvitation = (staffId: string) => {
           salon_id: salonId!,
           role: ROLE_MAP[role as StaffMember['role']] || 'stylist',
           token,
-          invited_by: profile!.id,
+          invited_by: profile?.id,
           expires_at: expiresAt.toISOString(),
           staff_member_id: staffId,
         })

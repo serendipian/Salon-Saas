@@ -32,7 +32,7 @@ export const OpeningHoursSettings: React.FC = () => {
   const handleSave = async () => {
     try {
       await updateSalonSettings({ ...salonSettings, schedule });
-      navigate('/settings');
+      await navigate('/settings');
     } catch {
       // Error toast handled by mutation's onError
     }

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { formatPrice } from '../../../lib/format';
 import type { ServiceVariant } from '../../../types';
 

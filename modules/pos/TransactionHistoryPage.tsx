@@ -641,7 +641,7 @@ export const TransactionHistoryPage: React.FC = () => {
                           {trx.payments.map((p, idx) => {
                             const PIcon = PAYMENT_ICONS[p.method] || CreditCard;
                             return (
-                              <span key={idx} className={TAG + ' flex items-center gap-1'}>
+                              <span key={idx} className={`${TAG} flex items-center gap-1`}>
                                 <PIcon size={11} />
                                 {PAYMENT_METHOD_SHORT[p.method] || p.method}
                               </span>

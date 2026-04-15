@@ -281,7 +281,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                 <SidebarItem
                   icon={item.icon}
                   label={item.label}
-                  active={activeModule === item.id || activeModule.startsWith(item.id + '/')}
+                  active={activeModule === item.id || activeModule.startsWith(`${item.id}/`)}
                   onClick={() => onNavigate(item.id)}
                   collapsed={collapsed}
                 />

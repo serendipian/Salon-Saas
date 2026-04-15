@@ -1,5 +1,4 @@
 import { Calendar, Clock, Play, StickyNote, User, UserCircle } from 'lucide-react';
-import React from 'react';
 import { formatDuration, formatPrice } from '../../../lib/format';
 import type { Client, Pack, Service, ServiceBlockItem, StaffMember } from '../../../types';
 
@@ -44,7 +43,7 @@ const dateFmt = new Intl.DateTimeFormat('fr-FR', {
 });
 
 function formatBlockDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00');
+  const d = new Date(`${dateStr}T00:00:00`);
   return dateFmt.format(d);
 }
 

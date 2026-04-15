@@ -21,7 +21,7 @@ export const AppointmentDetailPage: React.FC = () => {
   const handleDelete = async (apptId: string) => {
     try {
       await deleteAppointment(apptId);
-      navigate('/calendar');
+      await navigate('/calendar');
     } catch {
       // Error toast handled by mutation's onError
     }

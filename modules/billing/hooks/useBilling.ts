@@ -32,7 +32,7 @@ export function useBilling() {
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('salon_id', activeSalon!.id)
+        .eq('salon_id', activeSalon?.id)
         .single();
       if (error) throw error;
       return data as Subscription;
@@ -79,7 +79,7 @@ export function useBilling() {
     setIsLoadingCheckout(true);
     try {
       const data = await invokeWithErrorHandling('create-checkout-session', {
-        salon_id: activeSalon!.id,
+        salon_id: activeSalon?.id,
         plan_id: planId,
       });
       if (data?.url) window.location.href = data.url;
@@ -97,7 +97,7 @@ export function useBilling() {
     setIsLoadingPortal(true);
     try {
       const data = await invokeWithErrorHandling('create-portal-session', {
-        salon_id: activeSalon!.id,
+        salon_id: activeSalon?.id,
       });
       if (data?.url) window.location.href = data.url;
     } catch (err) {

@@ -5,7 +5,6 @@ import {
   CreditCard,
   ExternalLink,
   Gift,
-  Receipt,
   RotateCcw,
   Scissors,
   ShoppingBag,
@@ -63,7 +62,7 @@ export const ItemEditorModal: React.FC<{
   };
 
   const handleSave = () => {
-    const safePrice = isNaN(price) || price < 0 ? 0 : price;
+    const safePrice = Number.isNaN(price) || price < 0 ? 0 : price;
     onSave({
       ...item,
       price: safePrice,
@@ -839,7 +838,7 @@ export const TransactionDetailModal: React.FC<{
         <div className="flex gap-2 pt-2">
           {showVoid && (
             <button
-              onClick={() => onVoidClick!(transaction)}
+              onClick={() => onVoidClick?.(transaction)}
               className="flex-1 py-2.5 rounded-lg text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors flex items-center justify-center gap-2 min-h-[44px]"
             >
               <Ban size={16} /> Annuler
@@ -847,7 +846,7 @@ export const TransactionDetailModal: React.FC<{
           )}
           {showRefund && (
             <button
-              onClick={() => onRefundClick!(transaction)}
+              onClick={() => onRefundClick?.(transaction)}
               className="flex-1 py-2.5 rounded-lg text-sm font-medium text-orange-600 border border-orange-200 hover:bg-orange-50 transition-colors flex items-center justify-center gap-2 min-h-[44px]"
             >
               <RotateCcw size={16} /> Rembourser

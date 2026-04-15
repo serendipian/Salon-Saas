@@ -14,7 +14,6 @@ import {
   MapPin,
   MessageCircle,
   Phone,
-  Shield,
   ShoppingBag,
   Star,
   Trash2,

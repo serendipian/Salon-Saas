@@ -197,7 +197,6 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
           </div>
           <div className="p-3 border-b border-slate-100 shrink-0">
             <input
-              autoFocus
               value={clientSearch}
               onChange={(e) => setClientSearch(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-slate-400 focus:bg-white placeholder:text-slate-400 min-h-[44px]"

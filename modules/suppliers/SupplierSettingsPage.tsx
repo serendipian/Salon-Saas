@@ -1,5 +1,5 @@
 import { ArrowLeft, Layers, Settings } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SupplierCategoriesTab } from './components/SupplierCategoriesTab';
 import { SupplierGeneralTab } from './components/SupplierGeneralTab';

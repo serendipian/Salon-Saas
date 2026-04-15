@@ -76,7 +76,7 @@ export const AcceptInvitationPage: React.FC = () => {
     if (!authLoading) {
       fetchInfo();
     }
-  }, [token, authLoading, isAuthenticated, user]);
+  }, [token, authLoading, isAuthenticated, user, acceptDirectly]);
 
   // Accept invitation for already-authenticated users (existing accounts)
   const acceptDirectly = async () => {
@@ -91,7 +91,7 @@ export const AcceptInvitationPage: React.FC = () => {
             ? 'Cette invitation a expiré. Demandez une nouvelle invitation.'
             : error.message.includes('already')
               ? 'Vous êtes déjà membre de ce salon.'
-              : 'Une erreur est survenue: ' + error.message,
+              : `Une erreur est survenue: ${error.message}`,
         );
       } else {
         acceptedRef.current = true;
@@ -249,7 +249,6 @@ export const AcceptInvitationPage: React.FC = () => {
                         className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
                         required
                         minLength={8}
-                        autoFocus
                       />
                       <button
                         type="button"

@@ -93,7 +93,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   };
 
   const renderItem = (item: DrawerNavItem) => {
-    const isActive = activeModule === item.id || activeModule.startsWith(item.id + '/');
+    const isActive = activeModule === item.id || activeModule.startsWith(`${item.id}/`);
     return (
       <button
         key={item.id}

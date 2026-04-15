@@ -20,7 +20,7 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 // Scope annotations — shown instead of a checkmark when access is restricted
-const SCOPE_NOTES: Record<string, Record<string, string>> = {
+const _SCOPE_NOTES: Record<string, Record<string, string>> = {
   dashboard: { stylist: 'Ses stats', receptionist: 'Résumé' },
   appointments: { stylist: 'Ses rdv' },
   clients: { stylist: 'Assignés' },

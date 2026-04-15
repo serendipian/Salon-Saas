@@ -188,13 +188,13 @@ export const AppointmentEditPage: React.FC = () => {
       oldAppointmentId: id!,
       ...payload,
     });
-    navigate('/calendar');
+    await navigate('/calendar');
   };
 
   const handleDelete = async () => {
     try {
       await deleteAppointment(id!);
-      navigate('/calendar');
+      await navigate('/calendar');
     } catch {
       // Error toast handled by mutation's onError
     }

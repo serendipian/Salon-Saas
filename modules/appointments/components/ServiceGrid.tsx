@@ -1,5 +1,5 @@
 import { Check, Gift } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import { formatDuration, formatPrice } from '../../../lib/format';
 import type {

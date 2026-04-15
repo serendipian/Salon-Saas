@@ -177,7 +177,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                           updateVariant(
                             variant.id,
                             'durationMinutes',
-                            parseInt(e.target.value) || 0,
+                            parseInt(e.target.value, 10) || 0,
                           )
                         }
                       />

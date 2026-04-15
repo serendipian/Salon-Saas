@@ -56,7 +56,7 @@ import { useAppointments } from '../appointments/hooks/useAppointments';
 import { useClients } from '../clients/hooks/useClients';
 import { useServices } from '../services/hooks/useServices';
 import { useTeam } from '../team/hooks/useTeam';
-import { calcBonus, calcCommission } from '../team/utils';
+import { calcBonus, } from '../team/utils';
 
 import { TodayCalendarCard } from './components/TodayCalendarCard';
 
@@ -1188,7 +1188,7 @@ export const DashboardModule: React.FC = () => {
                     {(upcomingExpanded
                       ? upcomingAppointments
                       : upcomingAppointments.slice(0, 3)
-                    ).map((apt, i) => {
+                    ).map((apt, _i) => {
                       const date = new Date(apt.date);
                       const endDate = new Date(date.getTime() + apt.durationMinutes * 60000);
                       const timeStr = date.toLocaleTimeString('fr-FR', {

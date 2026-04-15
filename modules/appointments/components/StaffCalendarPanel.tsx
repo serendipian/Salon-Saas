@@ -1,5 +1,5 @@
 import { Bell, Users } from 'lucide-react';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import type { Service, ServiceBlockState, StaffMember } from '../../../types';
 import InlineCalendar from './InlineCalendar';
 import StaffPills from './StaffPills';

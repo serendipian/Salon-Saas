@@ -25,7 +25,7 @@ const INVOICE_STATUS_BADGE: Record<string, { color: string; bg: string }> = {
 
 export const AdminAccountDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { data: account, isLoading, isError } = useAdminAccount(id!);
 
   const extendTrial = useAdminExtendTrial(id!);

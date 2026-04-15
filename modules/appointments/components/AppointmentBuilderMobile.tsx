@@ -1,5 +1,5 @@
 import { ArrowLeft, ChevronRight, Plus, Search, Trash2, X } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { formatDuration, formatPrice } from '../../../lib/format';
 import type { AppointmentStatus } from '../../../types';
 import { type UseAppointmentFormProps, useAppointmentForm } from '../hooks/useAppointmentForm';

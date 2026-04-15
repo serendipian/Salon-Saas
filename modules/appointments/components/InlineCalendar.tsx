@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 interface InlineCalendarProps {
   value: string | null;
@@ -40,7 +40,7 @@ export default function InlineCalendar({ value, onChange, disabledDates }: Inlin
   const today = new Date();
   const todayStr = formatDateStr(today.getFullYear(), today.getMonth(), today.getDate());
 
-  const initial = value ? new Date(value + 'T00:00:00') : today;
+  const initial = value ? new Date(`${value}T00:00:00`) : today;
   const [viewYear, setViewYear] = useState(initial.getFullYear());
   const [viewMonth, setViewMonth] = useState(initial.getMonth());
 

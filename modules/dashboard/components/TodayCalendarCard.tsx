@@ -723,7 +723,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                       }`}
                       style={{
                         top: ghostInfo.topPx + 1,
-                        height: Math.max((drag!.appointment.durationMinutes / 60) * ROW_H - 2, 20),
+                        height: Math.max((drag?.appointment.durationMinutes / 60) * ROW_H - 2, 20),
                       }}
                     >
                       <span

@@ -1,5 +1,5 @@
 import { ArrowLeft, Plus, Save, Trash2, Users } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { FavoriteItem } from '../../../types';
 import type { UseAppointmentFormProps } from '../hooks/useAppointmentForm';
 import { useAppointmentForm } from '../hooks/useAppointmentForm';

@@ -48,7 +48,7 @@ export const AppointmentNewPage: React.FC = () => {
       payload.clientId = newClientRow.id;
     }
     await addAppointmentGroup(payload);
-    navigate('/calendar');
+    await navigate('/calendar');
   };
 
   const preselectedClientId = searchParams.get('clientId');

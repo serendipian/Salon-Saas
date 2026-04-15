@@ -9,7 +9,6 @@ import {
   toBrand,
   toProduct,
   toProductCategory,
-  toProductCategoryInsert,
   toProductInsert,
 } from '../mappers';
 

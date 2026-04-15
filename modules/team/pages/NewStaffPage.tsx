@@ -26,9 +26,9 @@ export const NewStaffPage: React.FC = () => {
         });
       }
       if (result?.slug) {
-        navigate(`/team/${result.slug}`);
+        await navigate(`/team/${result.slug}`);
       } else if (result?.id) {
-        navigate(`/team/${result.id}`);
+        await navigate(`/team/${result.id}`);
       }
     } catch {
       // Error toast is handled by the mutation's onError callback

@@ -46,7 +46,7 @@ export function useAvatarUpload() {
       if (profileError) throw new Error(profileError);
 
       addToast({ type: 'success', message: 'Photo mise à jour' });
-    } catch (err) {
+    } catch (_err) {
       addToast({ type: 'error', message: 'Impossible de mettre à jour la photo' });
     } finally {
       setIsUploading(false);

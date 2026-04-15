@@ -96,7 +96,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
       ...prev,
       permissions: {
         ...prev.permissions!,
-        [key]: !prev.permissions![key],
+        [key]: !prev.permissions?.[key],
       },
     }));
   };

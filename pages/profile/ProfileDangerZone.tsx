@@ -10,7 +10,7 @@ import { supabase } from '../../lib/supabase';
 export const ProfileDangerZone: React.FC = () => {
   const { activeSalon, memberships, user } = useAuth();
   const { addToast } = useToast();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 

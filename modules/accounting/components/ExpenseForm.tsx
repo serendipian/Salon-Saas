@@ -173,7 +173,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
     };
 
     if (isEdit && onUpdate) {
-      onUpdate({ ...expenseData, id: existingExpense!.id });
+      onUpdate({ ...expenseData, id: existingExpense?.id });
     } else {
       onSave(expenseData);
     }
@@ -512,7 +512,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
           confirmLabel="Supprimer"
           isLoading={isPending}
           onConfirm={() => {
-            onDelete(existingExpense!.id);
+            onDelete(existingExpense?.id);
             setShowDeleteConfirm(false);
           }}
           onClose={() => setShowDeleteConfirm(false)}

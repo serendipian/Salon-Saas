@@ -20,7 +20,7 @@ export const AccountingSettings: React.FC = () => {
 
   const saveVatRate = () => {
     const val = parseFloat(localVatRate);
-    if (!isNaN(val) && val !== salonSettings.vatRate) {
+    if (!Number.isNaN(val) && val !== salonSettings.vatRate) {
       updateSalonSettings({ ...salonSettings, vatRate: val });
     }
   };

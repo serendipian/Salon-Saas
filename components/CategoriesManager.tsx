@@ -21,7 +21,7 @@ import {
   Search,
   Trash2,
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ColorPicker } from '../modules/services/components/ColorPicker';
 import { IconPicker } from '../modules/services/components/IconPicker';
 

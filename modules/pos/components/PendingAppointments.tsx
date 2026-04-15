@@ -35,7 +35,7 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
   appointments.forEach((appt) => {
     const key = appt.groupId ?? appt.id;
     if (!grouped.has(key)) grouped.set(key, []);
-    grouped.get(key)!.push(appt);
+    grouped.get(key)?.push(appt);
   });
 
   return (

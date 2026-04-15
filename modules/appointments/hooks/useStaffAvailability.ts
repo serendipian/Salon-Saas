@@ -49,7 +49,7 @@ export function useStaffAvailability(
     const schedule = staffMember.schedule?.[dayKey];
 
     // If staff doesn't work this day, all hours in the salon range are unavailable
-    if (!schedule || !schedule.isOpen) {
+    if (!schedule?.isOpen) {
       for (let h = minHour; h <= maxHour; h++) unavailable.add(h);
       return unavailable;
     }

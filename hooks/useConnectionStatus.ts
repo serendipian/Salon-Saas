@@ -307,29 +307,24 @@ async function probeRealtime(): Promise<boolean> {
   });
 }
 
-async function triggerRecovery(reason: 'visibility' | 'ws'): Promise<void> {
+async function triggerRecovery(_reason: 'visibility' | 'ws'): Promise<void> {
   if (!isRecoveryEnabled()) {
-    console.log('[recovery] skip reason=', reason, 'flag=off');
     return;
   }
   if (recoveryInFlight) {
-    console.log('[recovery] skip reason=', reason, 'already-in-flight');
     return;
   }
   if (Date.now() - lastRecoveryAt < TIMINGS.RECOVERY_RATE_LIMIT_MS) {
-    console.log('[recovery] skip reason=', reason, 'rate-limited');
     return;
   }
 
   recoveryInFlight = true;
-  const startedAt = Date.now();
-  console.log('[recovery] start reason=', reason);
+  const _startedAt = Date.now();
   setState('recovering');
 
   try {
     // Auth probe
     const authResult = await probeAuth();
-    console.log('[recovery] auth', authResult);
 
     if (authResult === 'signed-out') {
       // User was signed out elsewhere; AuthContext will handle the redirect.
@@ -373,12 +368,10 @@ async function triggerRecovery(reason: 'visibility' | 'ws'): Promise<void> {
     stopMonitoring();
     startMonitoring();
     const realtimeOk = await probeRealtime();
-    console.log('[recovery] probe', realtimeOk ? 'subscribed' : 'timeout');
 
     // Query invalidation.
     if (lastQueryClient) {
       lastQueryClient.invalidateQueries({ refetchType: 'active' });
-      console.log('[recovery] queries invalidated');
     }
 
     // Final state — only promote to connected if realtime probe succeeded.
@@ -393,7 +386,6 @@ async function triggerRecovery(reason: 'visibility' | 'ws'): Promise<void> {
   } finally {
     recoveryInFlight = false;
     lastRecoveryAt = Date.now();
-    console.log('[recovery] done state=', currentState, 'ms=', Date.now() - startedAt);
   }
 }
 

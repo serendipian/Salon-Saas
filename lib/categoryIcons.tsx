@@ -208,7 +208,7 @@ export const CategoryIcon: React.FC<CategoryIconProps> = ({
   className,
 }) => {
   const name = resolveIconName(categoryName, iconName);
-  const entry = ICON_REGISTRY[name] ?? ICON_REGISTRY['Layers'];
+  const entry = ICON_REGISTRY[name] ?? ICON_REGISTRY.Layers;
   return renderIcon(entry, size, className);
 };
 

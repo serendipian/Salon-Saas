@@ -28,7 +28,7 @@ export const AdminLayout: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/login');
+    await navigate('/login');
   };
 
   const displayName = profile?.first_name
