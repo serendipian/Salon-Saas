@@ -12,7 +12,6 @@ Salon management SaaS application for beauty salons. Built with React 19, TypeSc
 - **Charts**: Recharts 3
 - **Icons**: Lucide React
 - **Routing**: React Router DOM 7 (BrowserRouter, with Vercel catch-all rewrite)
-- **AI**: Google Gemini API (via @google/genai) for service description generation
 
 ## Architecture
 
@@ -346,7 +345,6 @@ All 4 Edge Functions perform their own auth internally. Deploy via:
 1. ~~No data persistence~~ DONE — all modules on Supabase
 2. ~~Tailwind via CDN~~ DONE — Tailwind CSS 4 via @tailwindcss/vite plugin
 3. ~~Import maps in index.html~~ DONE — removed, clean index.html
-4. ~~Gemini API key exposed client-side~~ DONE — uses VITE_GEMINI_API_KEY env var; for production, move to Supabase Edge Function
 5. ~~No authentication system~~ DONE — Plan 1B
 6. ~~Appointment form hardcoded staff~~ DONE — uses useTeam() hook for live data
 7. ~~Dashboard KPI trends hardcoded~~ DONE — computed dynamically via calcTrend()
@@ -358,7 +356,8 @@ All 4 Edge Functions perform their own auth internally. Deploy via:
 ## Environment Variables
 
 ```
-VITE_GEMINI_API_KEY=           # Google Gemini API key (in .env.local, optional)
 VITE_SUPABASE_URL=             # Supabase API URL (in .env.local)
 VITE_SUPABASE_ANON_KEY=        # Supabase anon key (in .env.local)
+VITE_SENTRY_DSN=               # Sentry DSN for prod error reporting (optional)
+VITE_SENTRY_RELEASE=           # Release tag for Sentry (optional)
 ```
