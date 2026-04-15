@@ -46,7 +46,6 @@ export const POSModule: React.FC = () => {
     services,
     serviceCategories,
     favorites,
-    products,
     productCategories,
     transactions,
     clients,

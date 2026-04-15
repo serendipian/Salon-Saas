@@ -7,7 +7,7 @@ import { AccountingLedger } from './AccountingLedger';
 import { MiniKpiRow } from './MiniKpiRow';
 
 export const JournalPage: React.FC = () => {
-  const { ledgerData, financials } = useOutletContext<FinancesOutletContext>();
+  const { ledgerData } = useOutletContext<FinancesOutletContext>();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');

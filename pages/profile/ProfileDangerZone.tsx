@@ -8,7 +8,7 @@ import { useToast } from '../../context/ToastContext';
 import { supabase } from '../../lib/supabase';
 
 export const ProfileDangerZone: React.FC = () => {
-  const { activeSalon, memberships, user } = useAuth();
+  const { activeSalon, memberships } = useAuth();
   const { addToast } = useToast();
   const _navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);

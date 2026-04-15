@@ -1,6 +1,6 @@
 import { CheckCircle2, Eye, EyeOff, Loader2, XCircle } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -50,6 +50,31 @@ export const AcceptInvitationPage: React.FC = () => {
     return () => clearTimeout(timeout);
   }, [status, memberships]);
 
+  // Accept invitation for already-authenticated users (existing accounts)
+  const acceptDirectly = useCallback(async () => {
+    if (acceptedRef.current) return;
+    setStatus('processing');
+    try {
+      const { error } = await supabase.rpc('accept_invitation', { p_token: token! });
+      if (error) {
+        setStatus('error');
+        setErrorMessage(
+          error.message.includes('expired')
+            ? 'Cette invitation a expiré. Demandez une nouvelle invitation.'
+            : error.message.includes('already')
+              ? 'Vous êtes déjà membre de ce salon.'
+              : `Une erreur est survenue: ${error.message}`,
+        );
+      } else {
+        acceptedRef.current = true;
+        setStatus('success');
+      }
+    } catch {
+      setStatus('error');
+      setErrorMessage('Une erreur est survenue. Veuillez réessayer.');
+    }
+  }, [token]);
+
   // Fetch invitation info (works without auth)
   useEffect(() => {
     if (!token || acceptedRef.current) return;
@@ -77,31 +102,6 @@ export const AcceptInvitationPage: React.FC = () => {
       fetchInfo();
     }
   }, [token, authLoading, isAuthenticated, user, acceptDirectly]);
-
-  // Accept invitation for already-authenticated users (existing accounts)
-  const acceptDirectly = async () => {
-    if (acceptedRef.current) return;
-    setStatus('processing');
-    try {
-      const { error } = await supabase.rpc('accept_invitation', { p_token: token! });
-      if (error) {
-        setStatus('error');
-        setErrorMessage(
-          error.message.includes('expired')
-            ? 'Cette invitation a expiré. Demandez une nouvelle invitation.'
-            : error.message.includes('already')
-              ? 'Vous êtes déjà membre de ce salon.'
-              : `Une erreur est survenue: ${error.message}`,
-        );
-      } else {
-        acceptedRef.current = true;
-        setStatus('success');
-      }
-    } catch {
-      setStatus('error');
-      setErrorMessage('Une erreur est survenue. Veuillez réessayer.');
-    }
-  };
 
   // Handle password-only signup for new users
   const handleSubmit = async (e: React.FormEvent) => {
