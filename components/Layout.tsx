@@ -224,7 +224,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                       <button
                         key={m.id}
                         onClick={() => {
-                          switchSalon(m.salon_id);
+                          void switchSalon(m.salon_id);
                           setShowSalonMenu(false);
                         }}
                         className={`w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-3 ${
@@ -457,7 +457,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                       </div>
                       <button
                         onClick={() => {
-                          navigate('/profile');
+                          void navigate('/profile');
                           setShowProfileMenu(false);
                         }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-all"
@@ -468,7 +468,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                       <div className="my-1 border-t border-slate-100" />
                       <button
                         onClick={() => {
-                          signOut();
+                          void signOut();
                           setShowProfileMenu(false);
                         }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-all"

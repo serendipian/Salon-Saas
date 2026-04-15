@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useState } from 'react';
+import { ConfirmModal } from '../../../components/ConfirmModal';
 import { formatPrice } from '../../../lib/format';
 import type { Pack, PackGroup } from '../../../types';
 import {
@@ -120,13 +121,7 @@ const PackRow: React.FC<{
             <Edit3 size={16} className="text-slate-500" />
           </button>
           <button
-            onClick={() => {
-              if (
-                window.confirm(`Supprimer le pack "${pack.name}" ? Cette action est irréversible.`)
-              ) {
-                onDelete(pack.id);
-              }
-            }}
+            onClick={() => onDelete(pack.id)}
             className="p-2 rounded-lg hover:bg-red-50 transition-colors"
           >
             <Trash2 size={16} className="text-slate-400 hover:text-red-500" />
@@ -160,6 +155,16 @@ export const PackList: React.FC<PackListProps> = ({
   onToggleGroupActive,
 }) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [pendingDeletePack, setPendingDeletePack] = useState<Pack | null>(null);
+  const [pendingDeleteGroup, setPendingDeleteGroup] = useState<PackGroup | null>(null);
+  const deletePack = (id: string) => {
+    const found = packs.find((p) => p.id === id);
+    if (found) setPendingDeletePack(found);
+  };
+  const deleteGroup = (id: string) => {
+    const found = packGroups.find((g) => g.id === id);
+    if (found) setPendingDeleteGroup(found);
+  };
 
   const packsByGroup = useMemo(() => {
     const map = new Map<string | null, Pack[]>();
@@ -240,7 +245,7 @@ export const PackList: React.FC<PackListProps> = ({
                     key={pack.id}
                     pack={pack}
                     onEdit={onEdit}
-                    onDelete={onDelete}
+                    onDelete={deletePack}
                     onToggleActive={onToggleActive}
                     onToggleFavorite={onToggleFavorite}
                   />
@@ -307,15 +312,7 @@ export const PackList: React.FC<PackListProps> = ({
                     )}
                     {onDeleteGroup && (
                       <button
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              `Supprimer le groupe "${group.name}" ? Les packs de ce groupe seront simplement dégroupés.`,
-                            )
-                          ) {
-                            onDeleteGroup(group.id);
-                          }
-                        }}
+                        onClick={() => deleteGroup(group.id)}
                         className="p-2 rounded-lg hover:bg-red-50 transition-colors"
                       >
                         <Trash2 size={16} className="text-slate-400 hover:text-red-500" />
@@ -350,7 +347,7 @@ export const PackList: React.FC<PackListProps> = ({
                           key={pack.id}
                           pack={pack}
                           onEdit={onEdit}
-                          onDelete={onDelete}
+                          onDelete={deletePack}
                           onToggleActive={onToggleActive}
                           onToggleFavorite={onToggleFavorite}
                         />
@@ -363,6 +360,42 @@ export const PackList: React.FC<PackListProps> = ({
           })}
         </div>
       )}
+      <ConfirmModal
+        isOpen={pendingDeletePack !== null}
+        title="Supprimer le pack"
+        message={
+          pendingDeletePack
+            ? `Supprimer le pack "${pendingDeletePack.name}" ? Cette action est irréversible.`
+            : ''
+        }
+        confirmLabel="Supprimer"
+        tone="danger"
+        onConfirm={() => {
+          if (pendingDeletePack) {
+            onDelete(pendingDeletePack.id);
+            setPendingDeletePack(null);
+          }
+        }}
+        onClose={() => setPendingDeletePack(null)}
+      />
+      <ConfirmModal
+        isOpen={pendingDeleteGroup !== null}
+        title="Supprimer le groupe"
+        message={
+          pendingDeleteGroup
+            ? `Supprimer le groupe "${pendingDeleteGroup.name}" ? Les packs de ce groupe seront simplement dégroupés.`
+            : ''
+        }
+        confirmLabel="Supprimer"
+        tone="warning"
+        onConfirm={() => {
+          if (pendingDeleteGroup && onDeleteGroup) {
+            onDeleteGroup(pendingDeleteGroup.id);
+            setPendingDeleteGroup(null);
+          }
+        }}
+        onClose={() => setPendingDeleteGroup(null)}
+      />
     </div>
   );
 };

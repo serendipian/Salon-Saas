@@ -33,7 +33,7 @@ export const GeneralSettings: React.FC = () => {
     setIsSaving(true);
     try {
       await updateSalonSettings(formData);
-      navigate('/settings');
+      void navigate('/settings');
     } catch {
       // Error toast handled by mutation's onError
     } finally {
@@ -145,7 +145,7 @@ export const GeneralSettings: React.FC = () => {
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) handleLogoUpload(file);
+                    if (file) void handleLogoUpload(file);
                     e.target.value = '';
                   }}
                 />

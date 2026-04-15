@@ -1,6 +1,7 @@
 import { ArrowLeft, Clock, Save, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
+import { ConfirmModal } from '../../../components/ConfirmModal';
 import { Input, Section, Select, TextArea } from '../../../components/FormElements';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import type { Service, ServiceCategory, ServiceVariant } from '../../../types';
@@ -50,6 +51,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   );
 
   const { errors, validate, clearFieldError } = useFormValidation(serviceSchema);
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Helper for dynamic currency display
   const currencySymbol = salonSettings.currency === 'USD' ? '$' : '€';
@@ -270,11 +273,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
             </button>
             {existingService && onDelete && (
               <button
-                onClick={() => {
-                  if (window.confirm('Supprimer ce service ? Cette action est irréversible.')) {
-                    onDelete(existingService.id);
-                  }
-                }}
+                onClick={() => setShowDeleteConfirm(true)}
                 className="w-full py-2.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg font-medium transition-all text-sm flex justify-center items-center gap-2"
               >
                 <Trash2 size={16} />
@@ -284,6 +283,20 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           </div>
         </div>
       </div>
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        title="Supprimer ce service"
+        message="Cette action est irréversible."
+        confirmLabel="Supprimer"
+        tone="danger"
+        onConfirm={() => {
+          if (existingService && onDelete) {
+            onDelete(existingService.id);
+            setShowDeleteConfirm(false);
+          }
+        }}
+        onClose={() => setShowDeleteConfirm(false)}
+      />
     </div>
   );
 };

@@ -65,7 +65,7 @@ export const UpgradeSuccess: React.FC<UpgradeSuccessProps> = ({ plan, planName }
   const features = plan ? buildFeatures(plan) : null;
 
   const handleContinue = () => {
-    navigate('/dashboard', { replace: true });
+    void navigate('/dashboard', { replace: true });
   };
 
   return (
