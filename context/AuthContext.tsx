@@ -161,6 +161,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [memberships],
   );
 
+  // Wrap a promise with a timeout so hanging Supabase calls can't freeze the UI.
+  const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> =>
+    Promise.race([
+      promise,
+      new Promise<T>((_, reject) =>
+        setTimeout(() => reject(new Error(`${label} timed out`)), ms),
+      ),
+    ]);
+
+  // Clear local auth state — used when a session exists but profile fetch hangs/fails,
+  // so the user is sent to /login instead of seeing an infinite spinner.
+  const clearAuthState = useCallback(() => {
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    setActiveSalon(null);
+    setRole(null);
+    setMemberships([]);
+    localStorage.removeItem('lastSalonId');
+  }, []);
+
   // Initialize auth state on mount
   const initializeAuth = useCallback(async () => {
     try {
@@ -183,10 +204,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(currentSession);
       setUser(currentSession.user);
 
-      const [userProfile, userMemberships] = await Promise.all([
-        fetchProfile(currentSession.user.id),
-        fetchMemberships(currentSession.user.id),
-      ]);
+      const [userProfile, userMemberships] = await withTimeout(
+        Promise.all([
+          fetchProfile(currentSession.user.id),
+          fetchMemberships(currentSession.user.id),
+        ]),
+        10000,
+        'Profile fetch',
+      );
+
+      if (!userProfile) {
+        // Session exists but profile row missing or fetch failed — treat as signed out
+        // so the UI proceeds to /login instead of spinning on a null profile.
+        clearAuthState();
+        return;
+      }
 
       setProfile(userProfile);
       setMemberships(userMemberships);
@@ -210,10 +242,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (err) {
       console.error('Auth initialization failed:', err);
+      // Hanging / failed profile fetch — clear session so the user lands on /login.
+      clearAuthState();
     } finally {
       setIsLoading(false);
     }
-  }, [fetchProfile, fetchMemberships]);
+  }, [fetchProfile, fetchMemberships, clearAuthState]);
 
   // Listen for auth state changes
   useEffect(() => {
@@ -226,10 +260,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (event === 'SIGNED_IN' && newSession) {
           setSession(newSession);
           setUser(newSession.user);
-          const [userProfile, userMemberships] = await Promise.all([
-            fetchProfile(newSession.user.id),
-            fetchMemberships(newSession.user.id),
-          ]);
+          let userProfile: Profile | null = null;
+          let userMemberships: SalonMembership[] = [];
+          try {
+            [userProfile, userMemberships] = await withTimeout(
+              Promise.all([
+                fetchProfile(newSession.user.id),
+                fetchMemberships(newSession.user.id),
+              ]),
+              10000,
+              'Profile fetch',
+            );
+          } catch (err) {
+            console.error('Profile fetch on SIGNED_IN failed:', err);
+            clearAuthState();
+            return;
+          }
+          if (!userProfile) {
+            clearAuthState();
+            return;
+          }
           setProfile(userProfile);
           setMemberships(userMemberships);
 
