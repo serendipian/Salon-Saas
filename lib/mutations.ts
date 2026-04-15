@@ -18,10 +18,36 @@
  * DO NOT double-wrap. Inner wrapping breaks outer signal propagation.
  */
 
+import { Sentry } from './sentry';
+import { supabase } from './supabase';
+
 export class TimeoutError extends Error {
   constructor(public readonly timeoutMs: number) {
     super(`Mutation exceeded ${timeoutMs}ms`);
     this.name = 'TimeoutError';
+  }
+}
+
+async function recordTimeoutBreadcrumb(timeoutMs: number): Promise<void> {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const session = data.session;
+    const expiresAt = session?.expires_at;
+    const nowSec = Math.floor(Date.now() / 1000);
+    Sentry.addBreadcrumb({
+      category: 'mutation',
+      level: 'warning',
+      message: 'mutation-timeout',
+      data: {
+        timeoutMs,
+        hasSession: Boolean(session),
+        expiresInSec: typeof expiresAt === 'number' ? expiresAt - nowSec : null,
+        visibility: typeof document !== 'undefined' ? document.visibilityState : null,
+        online: typeof navigator !== 'undefined' ? navigator.onLine : null,
+      },
+    });
+  } catch {
+    // best-effort; never throw from breadcrumb collection
   }
 }
 
@@ -39,6 +65,7 @@ export function withMutationTimeout<TInput, TOutput>(
       timeoutId = setTimeout(() => {
         controller.abort();
         console.warn('[mutation-timeout] ms=', timeoutMs);
+        void recordTimeoutBreadcrumb(timeoutMs);
         reject(new TimeoutError(timeoutMs));
       }, timeoutMs);
     });

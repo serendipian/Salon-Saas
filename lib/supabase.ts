@@ -42,8 +42,13 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    // Bypass Navigator LockManager — some browsers return null locks,
-    // causing auth operations to hang indefinitely.
-    lock: async (_name, _acquireTimeout, fn) => fn(),
+    // Use supabase-js's default navigator.locks-based lock when available
+    // (required for cross-tab token refresh coordination — without it,
+    // concurrent refreshes in multiple tabs invalidate each other's
+    // refresh tokens and stall in-flight requests). Fall back to a no-op
+    // only in environments where navigator.locks is missing.
+    ...(typeof navigator !== 'undefined' && navigator.locks
+      ? {}
+      : { lock: async (_name, _acquireTimeout, fn) => fn() }),
   },
 });

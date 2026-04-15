@@ -2,6 +2,7 @@
 import { useCallback } from 'react';
 import { useToast } from '../context/ToastContext';
 import { TimeoutError } from '../lib/mutations';
+import { Sentry } from '../lib/sentry';
 
 // Known Supabase / PostgREST error codes
 const KNOWN_ERRORS: Record<string, string> = {
@@ -50,6 +51,16 @@ export function useMutationToast() {
       }
 
       addToast({ type: 'error', message });
+
+      const code = getErrorCode(error);
+      const isExpected =
+        isTimeoutError(error) || isNetworkError(error) || (code && code in KNOWN_ERRORS);
+      if (!isExpected) {
+        Sentry.captureException(error, {
+          tags: { source: 'mutation' },
+          extra: { fallbackMessage },
+        });
+      }
     },
     [addToast],
   );
