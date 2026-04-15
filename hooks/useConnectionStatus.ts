@@ -145,21 +145,55 @@ function classifyProbeError(err: unknown): 'network' | 'auth' {
   return 'network';
 }
 
+/**
+ * Raw-fetch auth probe. Bypasses the Supabase SDK entirely because the SDK
+ * can deadlock on its internal locks after Chrome's background-tab throttling
+ * releases (even with a no-op lock override, ordering assumptions break).
+ * We read the session straight from localStorage, then hit /auth/v1/user with
+ * a cold AbortController so the timeout is authoritative.
+ */
 async function probeAuth(): Promise<'ok' | 'signed-out' | 'network' | 'auth'> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+  const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\./)?.[1];
+  const storageKey = projectRef ? `sb-${projectRef}-auth-token` : null;
+
+  let accessToken: string | null = null;
   try {
-    const result = await Promise.race([
-      supabase.auth.getUser(),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('AbortError')), TIMINGS.AUTH_PROBE_TIMEOUT_MS),
-      ),
-    ]);
-    if (result.error) {
-      return classifyProbeError(result.error);
+    const raw = storageKey ? localStorage.getItem(storageKey) : null;
+    if (raw) {
+      const parsed = JSON.parse(raw) as { access_token?: string };
+      accessToken = parsed.access_token ?? null;
     }
-    if (!result.data.user) return 'signed-out';
+  } catch {
+    // fall through — treat as signed-out below
+  }
+
+  if (!accessToken) return 'signed-out';
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    TIMINGS.AUTH_PROBE_TIMEOUT_MS,
+  );
+
+  try {
+    const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      method: 'GET',
+      headers: {
+        apikey: anonKey,
+        Authorization: `Bearer ${accessToken}`,
+      },
+      signal: controller.signal,
+    });
+
+    if (response.status === 401 || response.status === 403) return 'auth';
+    if (!response.ok) return 'network';
     return 'ok';
   } catch (err) {
     return classifyProbeError(err);
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
