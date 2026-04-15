@@ -2,6 +2,7 @@
 
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 import React from 'react';
+import { Sentry } from '../lib/sentry';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -31,6 +32,10 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       error,
       errorInfo,
     );
+    Sentry.captureException(error, {
+      tags: { module: this.props.moduleName ?? 'unknown' },
+      extra: { componentStack: errorInfo.componentStack },
+    });
   }
 
   handleReset = () => {
