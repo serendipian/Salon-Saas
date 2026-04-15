@@ -130,7 +130,11 @@ function classifyProbeError(err: unknown): 'network' | 'auth' {
     const status = (err as { status?: number }).status;
     if (status === 401 || status === 403) return 'auth';
     const msg = String((err as { message?: string }).message || '');
-    if (msg.includes('invalid_grant') || msg.includes('refresh_token_not_found')) {
+    if (
+      msg.includes('invalid_grant') ||
+      msg.includes('refresh_token_not_found') ||
+      msg.includes('Auth session missing')
+    ) {
       return 'auth';
     }
   }
