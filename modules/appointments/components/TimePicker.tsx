@@ -1,5 +1,3 @@
-
-
 interface TimePickerProps {
   hour: number | null;
   minute: number;

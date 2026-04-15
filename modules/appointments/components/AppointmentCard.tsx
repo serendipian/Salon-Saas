@@ -2,7 +2,7 @@ import { Scissors, Trash2, User } from 'lucide-react';
 import type React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
 import { formatPrice } from '../../../lib/format';
-import type { Appointment, } from '../../../types';
+import type { Appointment } from '../../../types';
 import { StatusBadge } from './StatusBadge';
 
 interface AppointmentCardListProps {

@@ -245,7 +245,9 @@ export const StaffPerformanceTab: React.FC<StaffPerformanceTabProps> = ({ staffI
                 />
                 <YAxis hide />
                 <Tooltip
-                  formatter={(v) => [formatPrice(typeof v === 'number' ? v : Number(v)), 'CA'] as [string, string]}
+                  formatter={(v) =>
+                    [formatPrice(typeof v === 'number' ? v : Number(v)), 'CA'] as [string, string]
+                  }
                   contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}
                 />
                 <Bar dataKey="ca" radius={[3, 3, 0, 0]} animationDuration={600}>

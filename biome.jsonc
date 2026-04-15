@@ -18,7 +18,8 @@
       "!**/lib/database.types.ts",
       "!**/supabase/migrations",
       "!**/supabase/functions/**/*.ts",
-      "!**/package-lock.json"
+      "!**/package-lock.json",
+      "!**/*.css"
     ]
   },
   "formatter": {
@@ -37,12 +38,20 @@
     }
   },
   "css": {
-    "parser": {
-      "cssModules": false,
-      "allowWrongLineComments": false
-    },
     "linter": {
       "enabled": false
+    },
+    "formatter": {
+      "enabled": false
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        // organizeImports runs as safe-fix only; don't fail CI on unsorted imports.
+        "organizeImports": "off"
+      }
     }
   },
   "linter": {

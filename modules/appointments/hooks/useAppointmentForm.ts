@@ -599,15 +599,16 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
       setIsSaving(false);
     }
   }, [
-    newClient, 
-    clientId, 
-    serviceBlocks, 
-    status, 
-    notes, 
-    reminderMinutes, 
-    validate, 
-    services, 
-    onSave, addToast
+    newClient,
+    clientId,
+    serviceBlocks,
+    status,
+    notes,
+    reminderMinutes,
+    validate,
+    services,
+    onSave,
+    addToast,
   ]);
 
   return {

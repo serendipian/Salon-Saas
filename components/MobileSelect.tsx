@@ -77,7 +77,7 @@ export const MobileSelect: React.FC<MobileSelectProps> = ({
   const filteredOptions = options.filter(
     (opt) =>
       opt.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (opt.subtitle?.toLowerCase().includes(searchTerm.toLowerCase())),
+      opt.subtitle?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleSelect = (optValue: string | number) => {

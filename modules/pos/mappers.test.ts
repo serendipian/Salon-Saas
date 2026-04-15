@@ -36,9 +36,7 @@ describe('toTransaction', () => {
           pack_name: null,
         },
       ],
-      transaction_payments: [
-        { id: 'tp1', method: 'CASH', amount: 300 },
-      ],
+      transaction_payments: [{ id: 'tp1', method: 'CASH', amount: 300 }],
       profiles: { first_name: 'Admin', last_name: 'User' },
     };
     const t = toTransaction(row);

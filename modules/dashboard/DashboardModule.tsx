@@ -56,7 +56,7 @@ import { useAppointments } from '../appointments/hooks/useAppointments';
 import { useClients } from '../clients/hooks/useClients';
 import { useServices } from '../services/hooks/useServices';
 import { useTeam } from '../team/hooks/useTeam';
-import { calcBonus, } from '../team/utils';
+import { calcBonus } from '../team/utils';
 
 import { TodayCalendarCard } from './components/TodayCalendarCard';
 
@@ -1335,7 +1335,12 @@ export const DashboardModule: React.FC = () => {
                       boxShadow: '0 4px 12px rgb(0 0 0 / 0.08)',
                       fontSize: 12,
                     }}
-                    formatter={(value) => [`${typeof value === 'number' ? value : Number(value)} rdv`, ''] as [string, string]}
+                    formatter={(value) =>
+                      [`${typeof value === 'number' ? value : Number(value)} rdv`, ''] as [
+                        string,
+                        string,
+                      ]
+                    }
                     labelStyle={{ fontWeight: 600, color: '#1e293b', marginBottom: 2 }}
                   />
                   <Bar
@@ -1401,7 +1406,12 @@ export const DashboardModule: React.FC = () => {
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)',
                   }}
                   cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
-                  formatter={(value) => [formatPrice(typeof value === 'number' ? value : Number(value)), 'Ventes'] as [string, string]}
+                  formatter={(value) =>
+                    [formatPrice(typeof value === 'number' ? value : Number(value)), 'Ventes'] as [
+                      string,
+                      string,
+                    ]
+                  }
                 />
                 <Area
                   type="monotone"

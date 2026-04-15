@@ -1,4 +1,4 @@
-import { ChevronRight, Plus, } from 'lucide-react';
+import { ChevronRight, Plus } from 'lucide-react';
 import type React from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';

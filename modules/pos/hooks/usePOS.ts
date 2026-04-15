@@ -1,11 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTransactions } from '../../../hooks/useTransactions';
-import type {
-  Appointment,
-  CartItem,
-  Client,
-  PaymentEntry,
-} from '../../../types';
+import type { Appointment, CartItem, Client, PaymentEntry } from '../../../types';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
 import { useClients } from '../../clients/hooks/useClients';
 import { useProducts } from '../../products/hooks/useProducts';

@@ -5,12 +5,7 @@ import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { supabase } from '../../../lib/supabase';
 import type { Brand, Product, ProductCategory } from '../../../types';
-import {
-  toBrand,
-  toProduct,
-  toProductCategory,
-  toProductInsert,
-} from '../mappers';
+import { toBrand, toProduct, toProductCategory, toProductInsert } from '../mappers';
 
 export interface CategoryUpdatePayload {
   categories: ProductCategory[];
