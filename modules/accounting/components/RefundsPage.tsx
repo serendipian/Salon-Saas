@@ -103,7 +103,7 @@ export const RefundsPage: React.FC = () => {
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: number) => formatPrice(v)} />
+                  <Tooltip formatter={(v) => formatPrice(typeof v === 'number' ? v : Number(v))} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="mt-3 space-y-1">

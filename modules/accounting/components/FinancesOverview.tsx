@@ -219,7 +219,7 @@ export const FinancesOverview: React.FC = () => {
                 <Tooltip
                   contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0' }}
                   cursor={{ fill: '#f8fafc' }}
-                  formatter={(value: number) => formatPrice(value)}
+                  formatter={(value) => formatPrice(typeof value === 'number' ? value : Number(value))}
                 />
                 <Bar dataKey="sales" fill="#cbd5e1" radius={[4, 4, 0, 0]} barSize={30}>
                   {chartData.map((_entry, i) => (
@@ -254,7 +254,7 @@ export const FinancesOverview: React.FC = () => {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number) => formatPrice(value)}
+                    formatter={(value) => formatPrice(typeof value === 'number' ? value : Number(value))}
                     contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0' }}
                   />
                   <Legend
@@ -286,7 +286,7 @@ export const FinancesOverview: React.FC = () => {
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
                 <Tooltip
                   contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0' }}
-                  formatter={(value: number) => formatPrice(value)}
+                  formatter={(value) => formatPrice(typeof value === 'number' ? value : Number(value))}
                 />
                 <Line
                   type="monotone"
