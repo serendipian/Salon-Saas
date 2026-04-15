@@ -363,8 +363,22 @@ async function triggerRecovery(reason: 'visibility' | 'ws'): Promise<void> {
       return;
     }
     if (authResult === 'auth') {
-      await supabase.auth.signOut();
-      // AuthContext.onAuthStateChange → SIGNED_OUT → ProtectedRoute redirect.
+      // Hard sign-out: SDK signOut() can hang on background-tab lock issues
+      // (same reason we replaced getUser() with raw fetch). If it hangs, the
+      // recovery finally block never runs and the app wedges. So we clear
+      // session storage ourselves, fire-and-forget the SDK call, and force
+      // a redirect to /login so AuthContext re-initializes cleanly.
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+        const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\./)?.[1];
+        if (projectRef) localStorage.removeItem(`sb-${projectRef}-auth-token`);
+      } catch {
+        // best effort — redirect anyway
+      }
+      void supabase.auth.signOut().catch(() => {});
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
       return;
     }
 
