@@ -7,6 +7,7 @@ import type { Appointment } from '../../../types';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useToast } from '../../../context/ToastContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import { withMutationTimeout } from '../../../lib/mutations';
 
 export const useAppointments = (showDeleted = false) => {
   const { activeSalon } = useAuth();
@@ -47,18 +48,18 @@ export const useAppointments = (showDeleted = false) => {
   });
 
   const addAppointmentMutation = useMutation({
-    mutationFn: async (appt: Appointment) => {
+    mutationFn: withMutationTimeout(async (appt: Appointment, signal: AbortSignal) => {
       const { error } = await supabase
         .from('appointments')
-        .insert(toAppointmentInsert(appt, salonId));
+        .insert(toAppointmentInsert(appt, salonId))
+        .abortSignal(signal);
       if (error) {
-        // Surface double-booking constraint violation
         if (error.code === '23P01') {
           throw new Error('Ce créneau est déjà occupé pour ce praticien. Veuillez choisir un autre horaire.');
         }
         throw error;
       }
-    },
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
     },
@@ -66,20 +67,21 @@ export const useAppointments = (showDeleted = false) => {
   });
 
   const updateAppointmentMutation = useMutation({
-    mutationFn: async (appt: Appointment) => {
+    mutationFn: withMutationTimeout(async (appt: Appointment, signal: AbortSignal) => {
       const { id, salon_id, ...updateData } = toAppointmentInsert(appt, salonId);
       const { error } = await supabase
         .from('appointments')
         .update(updateData)
         .eq('id', appt.id)
-        .eq('salon_id', salonId);
+        .eq('salon_id', salonId)
+        .abortSignal(signal);
       if (error) {
         if (error.code === '23P01') {
           throw new Error('Ce créneau est déjà occupé pour ce praticien. Veuillez choisir un autre horaire.');
         }
         throw error;
       }
-    },
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
     },
@@ -87,7 +89,7 @@ export const useAppointments = (showDeleted = false) => {
   });
 
   const addAppointmentGroupMutation = useMutation({
-    mutationFn: async (payload: {
+    mutationFn: withMutationTimeout(async (payload: {
       clientId: string;
       notes: string;
       reminderMinutes: number | null;
@@ -100,12 +102,13 @@ export const useAppointments = (showDeleted = false) => {
         durationMinutes: number;
         price: number;
       }>;
-    }) => {
+    }, signal: AbortSignal) => {
       // 1. Insert the group
       const { data: group, error: groupError } = await supabase
         .from('appointment_groups')
         .insert(toAppointmentGroupInsert(payload, salonId))
         .select('id')
+        .abortSignal(signal)
         .single();
 
       if (groupError) throw groupError;
@@ -127,12 +130,13 @@ export const useAppointments = (showDeleted = false) => {
 
       const { error: apptError } = await supabase
         .from('appointments')
-        .insert(appointmentRows);
+        .insert(appointmentRows)
+        .abortSignal(signal);
 
       if (apptError) throw apptError;
 
       return group.id;
-    },
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
       addToast({ type: 'success', message: 'Rendez-vous créé' });
@@ -141,14 +145,15 @@ export const useAppointments = (showDeleted = false) => {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ appointmentId, status }: { appointmentId: string; status: string }) => {
+    mutationFn: withMutationTimeout(async ({ appointmentId, status }: { appointmentId: string; status: string }, signal: AbortSignal) => {
       const { error } = await supabase
         .from('appointments')
         .update({ status })
         .eq('id', appointmentId)
-        .eq('salon_id', salonId);
+        .eq('salon_id', salonId)
+        .abortSignal(signal);
       if (error) throw error;
-    },
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
     },
@@ -156,7 +161,7 @@ export const useAppointments = (showDeleted = false) => {
   });
 
   const editAppointmentGroupMutation = useMutation({
-    mutationFn: async (payload: {
+    mutationFn: withMutationTimeout(async (payload: {
       oldAppointmentId: string;
       clientId: string;
       notes: string;
@@ -170,7 +175,7 @@ export const useAppointments = (showDeleted = false) => {
         durationMinutes: number;
         price: number;
       }>;
-    }) => {
+    }, signal: AbortSignal) => {
       const { data, error } = await supabase.rpc('edit_appointment_group', {
         p_old_appointment_id: payload.oldAppointmentId,
         p_salon_id: salonId,
@@ -186,7 +191,7 @@ export const useAppointments = (showDeleted = false) => {
           duration_minutes: b.durationMinutes,
           price: b.price,
         })),
-      });
+      }).abortSignal(signal);
       if (error) {
         if (error.code === '23P01') {
           throw new Error('Ce créneau est déjà occupé pour ce praticien. Veuillez choisir un autre horaire.');
@@ -194,7 +199,7 @@ export const useAppointments = (showDeleted = false) => {
         throw error;
       }
       return data;
-    },
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
       addToast({ type: 'success', message: 'Rendez-vous modifié' });
@@ -203,12 +208,12 @@ export const useAppointments = (showDeleted = false) => {
   });
 
   const deleteAppointmentMutation = useMutation({
-    mutationFn: async (appointmentId: string) => {
+    mutationFn: withMutationTimeout(async (appointmentId: string, signal: AbortSignal) => {
       const { error } = await supabase.rpc('soft_delete_appointment', {
         p_appointment_id: appointmentId,
-      });
+      }).abortSignal(signal);
       if (error) throw error;
-    },
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
       addToast({ type: 'success', message: 'Rendez-vous supprimé' });

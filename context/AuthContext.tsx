@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import type { Session, User, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { setSalonCurrency } from '../lib/format';
+import { useRealtimeEpoch } from '../lib/realtimeReset';
 import type {
   Role,
   Profile,
@@ -58,6 +59,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const roleRef = useRef(role);
   activeSalonRef.current = activeSalon;
   roleRef.current = role;
+
+  const epoch = useRealtimeEpoch();
 
   // Sync global currency for formatPrice()
   useEffect(() => {
@@ -266,7 +269,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activeSalon?.id]);
+  }, [activeSalon?.id, epoch]);
 
   // Real-time membership tracking (detect revocation / role changes)
   useEffect(() => {
@@ -317,7 +320,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, fetchMemberships]);
+  }, [user, fetchMemberships, epoch]);
 
   // --- Auth Actions ---
 
@@ -367,8 +370,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const updatePassword = useCallback(async (newPassword: string) => {
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    return { error: error ? sanitizeAuthError(error.message) : null };
+    // Raw fetch — supabase.auth.updateUser() can hang indefinitely after
+    // background-tab throttling (same SDK lock issue as getUser/signOut).
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+    const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\./)?.[1];
+    const storageKey = projectRef ? `sb-${projectRef}-auth-token` : null;
+
+    let accessToken: string | null = null;
+    try {
+      const raw = storageKey ? localStorage.getItem(storageKey) : null;
+      if (raw) {
+        const parsed = JSON.parse(raw) as { access_token?: string };
+        accessToken = parsed.access_token ?? null;
+      }
+    } catch {
+      // fall through
+    }
+    if (!accessToken) {
+      return { error: 'Session introuvable, veuillez vous reconnecter.' };
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    try {
+      const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
+        method: 'PUT',
+        headers: {
+          apikey: anonKey,
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password: newPassword }),
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        let message = `HTTP ${response.status}`;
+        try {
+          const body = (await response.json()) as { msg?: string; message?: string };
+          message = body.msg ?? body.message ?? message;
+        } catch {
+          // ignore
+        }
+        return { error: sanitizeAuthError(message) };
+      }
+      // Notify SDK so in-memory state + onAuthStateChange listeners catch up.
+      // Fire-and-forget — if the SDK hangs, the password was already changed.
+      void supabase.auth.refreshSession().catch(() => {});
+      return { error: null };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return { error: sanitizeAuthError(msg) };
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }, []);
 
   const signOut = useCallback(async () => {

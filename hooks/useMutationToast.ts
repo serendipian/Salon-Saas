@@ -1,6 +1,7 @@
 // hooks/useMutationToast.ts
 import { useCallback } from 'react';
 import { useToast } from '../context/ToastContext';
+import { TimeoutError } from '../lib/mutations';
 
 // Known Supabase / PostgREST error codes
 const KNOWN_ERRORS: Record<string, string> = {
@@ -9,6 +10,15 @@ const KNOWN_ERRORS: Record<string, string> = {
   '23503': 'Cet élément est référencé ailleurs et ne peut pas être modifié',
   '23P01': 'Ce créneau est déjà occupé',
 };
+
+const TIMEOUT_MESSAGE =
+  "Connexion instable. Votre demande n'est peut-être pas arrivée — vérifiez avant de réessayer.";
+
+function isTimeoutError(error: unknown): boolean {
+  if (error instanceof TimeoutError) return true;
+  if (error instanceof Error && error.message.includes('La requête a expiré')) return true;
+  return false;
+}
 
 function isNetworkError(error: unknown): boolean {
   if (error instanceof TypeError && error.message === 'Failed to fetch') return true;
@@ -30,7 +40,9 @@ export function useMutationToast() {
     (fallbackMessage: string) => (error: unknown) => {
       let message: string;
 
-      if (isNetworkError(error)) {
+      if (isTimeoutError(error)) {
+        message = TIMEOUT_MESSAGE;
+      } else if (isNetworkError(error)) {
         message = 'Problème de connexion, veuillez réessayer';
       } else {
         const code = getErrorCode(error);

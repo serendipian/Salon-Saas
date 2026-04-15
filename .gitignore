@@ -32,3 +32,6 @@ supabase/.temp
 
 # Worktrees
 .worktrees/
+
+# MCP tooling artifacts
+.playwright-mcp/

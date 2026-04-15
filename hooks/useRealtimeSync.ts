@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useRealtimeEpoch } from '../lib/realtimeReset';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 type EventPayload = RealtimePostgresChangesPayload<Record<string, unknown>>;
@@ -82,6 +83,7 @@ export function useRealtimeSync(tableName: string, options?: RealtimeSyncOptions
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const queryClient = useQueryClient();
+  const epoch = useRealtimeEpoch();
 
   // Store onEvent in a ref so we always call the latest version
   const onEventRef = useRef(options?.onEvent);
@@ -97,5 +99,6 @@ export function useRealtimeSync(tableName: string, options?: RealtimeSyncOptions
     if (!salonId) return;
 
     return subscribe(tableName, salonId, stableHandler, options?.filterOverride);
-  }, [tableName, salonId, stableHandler, options?.filterOverride]);
+    // epoch is in deps so a resetAllChannels() bump tears down and resubscribes.
+  }, [tableName, salonId, stableHandler, options?.filterOverride, epoch]);
 }

@@ -6,6 +6,7 @@ import { toTransaction, toTransactionRpcPayload, TransactionRow } from '../modul
 import type { CartItem, PaymentEntry } from '../types';
 import { useRealtimeSync } from './useRealtimeSync';
 import { useMutationToast } from './useMutationToast';
+import { withMutationTimeout } from '../lib/mutations';
 
 export interface TransactionQueryOptions {
   from?: string; // ISO date string
@@ -42,7 +43,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
   });
 
   const addTransactionMutation = useMutation({
-    mutationFn: async ({
+    mutationFn: withMutationTimeout(async ({
       items,
       payments,
       clientId,
@@ -52,13 +53,11 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
       payments: PaymentEntry[];
       clientId?: string;
       appointmentId?: string;
-    }) => {
+    }, signal: AbortSignal) => {
       const payload = toTransactionRpcPayload(items, payments, clientId, salonId, appointmentId);
-
-      // Global fetch timeout in lib/supabase.ts protects against indefinite hangs
-      const { error } = await supabase.rpc('create_transaction', payload);
+      const { error } = await supabase.rpc('create_transaction', payload).abortSignal(signal);
       if (error) throw error;
-    },
+    }),
     onSuccess: () => {
       // Prefix match: invalidates ALL ['transactions', salonId, ...] regardless of date params
       queryClient.invalidateQueries({ queryKey: ['transactions', salonId] });
@@ -71,7 +70,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
   });
 
   const voidMutation = useMutation({
-    mutationFn: async ({
+    mutationFn: withMutationTimeout(async ({
       transactionId,
       reasonCategory,
       reasonNote,
@@ -79,15 +78,15 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
       transactionId: string;
       reasonCategory: string;
       reasonNote: string;
-    }) => {
+    }, signal: AbortSignal) => {
       const { error } = await supabase.rpc('void_transaction', {
         p_transaction_id: transactionId,
         p_salon_id: salonId,
         p_reason_category: reasonCategory,
         p_reason_note: reasonNote,
-      });
+      }).abortSignal(signal);
       if (error) throw error;
-    },
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions', salonId] });
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
@@ -97,7 +96,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
   });
 
   const refundMutation = useMutation({
-    mutationFn: async ({
+    mutationFn: withMutationTimeout(async ({
       transactionId,
       items,
       payments,
@@ -111,7 +110,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
       reasonCategory: string;
       reasonNote: string;
       restock: boolean;
-    }) => {
+    }, signal: AbortSignal) => {
       const { error } = await supabase.rpc('refund_transaction', {
         p_transaction_id: transactionId,
         p_salon_id: salonId,
@@ -120,9 +119,9 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
         p_reason_category: reasonCategory,
         p_reason_note: reasonNote,
         p_restock: restock,
-      });
+      }).abortSignal(signal);
       if (error) throw error;
-    },
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions', salonId] });
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
