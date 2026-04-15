@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { Banknote, CheckCircle, ChevronDown, CreditCard, Gift, Tag, Trash2, X } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Trash2, CreditCard, Banknote, Gift, Tag, CheckCircle, ChevronDown } from 'lucide-react';
-import { PaymentEntry, CartItem } from '../../../types';
-import { useSettings } from '../../settings/hooks/useSettings';
-import { formatPrice } from '../../../lib/format';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { formatPrice } from '../../../lib/format';
+import type { CartItem, PaymentEntry } from '../../../types';
+import { useSettings } from '../../settings/hooks/useSettings';
 
 interface PaymentModalProps {
   total: number;

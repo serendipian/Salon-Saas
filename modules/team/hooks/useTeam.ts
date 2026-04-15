@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { toStaffMember, toStaffMemberInsert } from '../mappers';
-import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { supabase } from '../../../lib/supabase';
 import type { StaffMember } from '../../../types';
+import { toStaffMember, toStaffMemberInsert } from '../mappers';
 
 export const useTeam = (includeArchived = false) => {
   const { activeSalon } = useAuth();

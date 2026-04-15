@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
+import type React from 'react';
 import { formatPrice } from '../../../lib/format';
 
 export interface KpiItem {

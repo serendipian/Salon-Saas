@@ -1,30 +1,30 @@
-import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   CalendarClock,
   Check,
   Clock,
-  User,
-  Scissors,
-  Tag,
-  X,
-  StickyNote,
   Filter,
+  Scissors,
+  StickyNote,
+  Tag,
+  User,
+  X,
 } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { StaffAvatar } from '../../../components/StaffAvatar';
+import { useToast } from '../../../context/ToastContext';
+import { formatPrice } from '../../../lib/format';
+import { getSalonHourRange } from '../../../lib/scheduleHours';
 import {
-  Appointment,
+  type Appointment,
   AppointmentStatus,
-  Service,
-  ServiceCategory,
-  StaffMember,
+  type Service,
+  type ServiceCategory,
+  type StaffMember,
 } from '../../../types';
 import { isSameDay } from '../../appointments/components/calendarUtils';
 import { StatusBadge } from '../../appointments/components/StatusBadge';
-import { StaffAvatar } from '../../../components/StaffAvatar';
-import { formatPrice } from '../../../lib/format';
-import { useToast } from '../../../context/ToastContext';
 import { useSettings } from '../../settings/hooks/useSettings';
-import { getSalonHourRange } from '../../../lib/scheduleHours';
 
 // --- Constants ---
 const ROW_H = 48;

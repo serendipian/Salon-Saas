@@ -1,6 +1,6 @@
-import React from 'react';
-import { LayoutDashboard, Calendar, CreditCard, Users, Menu } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { Calendar, CreditCard, LayoutDashboard, Menu, Users } from 'lucide-react';
+import type React from 'react';
 import type { AuthResource } from '../lib/auth.types';
 
 interface TabItem {

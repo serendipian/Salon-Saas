@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { CheckCircle, Loader2, Lock } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Lock, Loader2, CheckCircle } from 'lucide-react';
 
 export const ResetPasswordPage: React.FC = () => {
   const { updatePassword } = useAuth();

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Save, AlertTriangle } from 'lucide-react';
-import { Product, ProductCategory, UsageType } from '../../../types';
-import { Section, Input, Select, TextArea } from '../../../components/FormElements';
+import { AlertTriangle, ArrowLeft, Save } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { Input, Section, Select, TextArea } from '../../../components/FormElements';
+import { useFormValidation } from '../../../hooks/useFormValidation';
+import type { Product, ProductCategory, UsageType } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
 import { useProducts } from '../hooks/useProducts';
-import { useFormValidation } from '../../../hooks/useFormValidation';
 import { productSchema } from '../schemas';
 
 interface ProductFormProps {

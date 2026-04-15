@@ -1,7 +1,7 @@
-import React from 'react';
 import { ChevronRight, Users } from 'lucide-react';
-import { StaffMember, Appointment, ServiceCategory } from '../../../types';
+import type React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
+import type { Appointment, ServiceCategory, StaffMember } from '../../../types';
 
 interface TeamTableProps {
   team: StaffMember[];

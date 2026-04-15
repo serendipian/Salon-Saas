@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Loader2 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useAvatarUpload } from '../../hooks/useAvatarUpload';
-import { useToast } from '../../context/ToastContext';
-import { Input, TextArea, Section } from '../../components/FormElements';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Input, Section, TextArea } from '../../components/FormElements';
 import { PhoneInput } from '../../components/PhoneInput';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { useAvatarUpload } from '../../hooks/useAvatarUpload';
 
 export const ProfileIdentity: React.FC = () => {
   const { profile, updateProfile } = useAuth();

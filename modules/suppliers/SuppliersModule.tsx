@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Supplier, ViewState } from '../../types';
-import { useSuppliers } from './hooks/useSuppliers';
-import { SupplierList } from './components/SupplierList';
+import type React from 'react';
+import { useState } from 'react';
+import type { Supplier, ViewState } from '../../types';
 import { SupplierForm } from './components/SupplierForm';
+import { SupplierList } from './components/SupplierList';
+import { useSuppliers } from './hooks/useSuppliers';
 
 export const SuppliersModule: React.FC = () => {
   const {

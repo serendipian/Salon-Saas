@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Shield, Lock } from 'lucide-react';
+import { Lock, Shield } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { Input, Section } from '../../components/FormElements';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { Input, Section } from '../../components/FormElements';
 
 export const ProfileSecurity: React.FC = () => {
   const { updatePassword } = useAuth();

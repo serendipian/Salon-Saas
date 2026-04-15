@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppointments } from '../hooks/useAppointments';
+import { useAuth } from '../../../context/AuthContext';
 import { useClients } from '../../clients/hooks/useClients';
 import { useServices } from '../../services/hooks/useServices';
 import { useTeam } from '../../team/hooks/useTeam';
-import { useAuth } from '../../../context/AuthContext';
 import { AppointmentList } from '../components/AppointmentList';
+import { useAppointments } from '../hooks/useAppointments';
 
 export const AppointmentListPage: React.FC = () => {
   const navigate = useNavigate();

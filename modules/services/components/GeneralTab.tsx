@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
-import { useServiceSettings } from '../hooks/useServiceSettings';
+import React, { useEffect, useState } from 'react';
 import type { ServiceSettings } from '../../../types';
+import { useServiceSettings } from '../hooks/useServiceSettings';
 
 export function GeneralTab() {
   const { serviceSettings, updateServiceSettings } = useServiceSettings();

@@ -1,6 +1,7 @@
 // modules/billing/components/TrialBanner.tsx
-import React from 'react';
+
 import { Sparkles } from 'lucide-react';
+import type React from 'react';
 
 interface TrialBannerProps {
   // L-low (TrialBanner silent failure): allow `null` so the parent can render

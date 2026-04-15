@@ -1,6 +1,6 @@
-import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { CalendarViewMode } from './useCalendar';
+import type React from 'react';
+import type { CalendarViewMode } from './useCalendar';
 
 interface CalendarHeaderProps {
   currentDate: Date;

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Mail, Phone, Pencil, Save, X, Loader2 } from 'lucide-react';
-import type { StaffMember } from '../../../types';
+import { Loader2, Mail, Pencil, Phone, Save, X } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Input } from '../../../components/FormElements';
 import { useToast } from '../../../context/ToastContext';
+import type { StaffMember } from '../../../types';
 
 interface ProfileContactCardProps {
   staff: StaffMember;

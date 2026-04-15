@@ -1,9 +1,9 @@
 // modules/clients/hooks/useClientAppointments.ts
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { toAppointment } from '../../appointments/mappers';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { supabase } from '../../../lib/supabase';
+import { toAppointment } from '../../appointments/mappers';
 
 export const useClientAppointments = (clientId: string) => {
   const { activeSalon } = useAuth();

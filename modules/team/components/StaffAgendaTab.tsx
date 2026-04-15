@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
 import { Calendar, Clock, TrendingUp, User } from 'lucide-react';
-import { StaffMember, WorkSchedule } from '../../../types';
+import type React from 'react';
+import { useMemo } from 'react';
+import type { StaffMember, WorkSchedule } from '../../../types';
 import { useStaffAppointments } from '../hooks/useStaffAppointments';
 
 const DAY_LABELS: Record<keyof WorkSchedule, string> = {

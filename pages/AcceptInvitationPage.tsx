@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams, Navigate, useNavigate } from 'react-router-dom';
+import { CheckCircle2, Eye, EyeOff, Loader2, XCircle } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Loader2, CheckCircle2, XCircle, Eye, EyeOff } from 'lucide-react';
 
 interface InvitationInfo {
   staff_first_name: string | null;

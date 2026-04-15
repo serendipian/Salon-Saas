@@ -1,6 +1,6 @@
-import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Smartphone } from 'lucide-react';
+import type React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const sectionTitles: Record<string, string> = {
   locations: 'Lieux',

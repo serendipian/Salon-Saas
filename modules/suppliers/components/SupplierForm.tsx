@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Save, Trash2, Settings } from 'lucide-react';
+import { ArrowLeft, Save, Settings, Trash2 } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Supplier, SupplierCategory } from '../../../types';
-import { Section, Input, TextArea, Select } from '../../../components/FormElements';
+import { Input, Section, Select, TextArea } from '../../../components/FormElements';
 import { PhoneInput } from '../../../components/PhoneInput';
 import { useFormValidation } from '../../../hooks/useFormValidation';
+import type { Supplier, SupplierCategory } from '../../../types';
 import { useSupplierSettings } from '../hooks/useSupplierSettings';
 import { supplierSchema } from '../schemas';
 

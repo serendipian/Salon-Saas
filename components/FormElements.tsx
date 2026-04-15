@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { LucideIcon, ChevronDown, Check, Search } from 'lucide-react';
+import { Check, ChevronDown, type LucideIcon, Search } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMediaQuery } from '../context/MediaQueryContext';
 import { MobileSelect } from './MobileSelect';
 

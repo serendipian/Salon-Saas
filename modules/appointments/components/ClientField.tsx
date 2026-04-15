@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import type { Client } from '../../../types';
+import { Search, UserCheck, UserPlus, X } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { PhoneInput } from '../../../components/PhoneInput';
-import { Search, UserPlus, X, UserCheck } from 'lucide-react';
+import type { Client } from '../../../types';
 
 interface ClientFieldProps {
   clients: Client[];

@@ -1,13 +1,13 @@
-import { useState, useMemo, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { toAppointment, toAppointmentInsert, toAppointmentGroupInsert } from '../mappers';
-import type { Appointment } from '../../../types';
-import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useToast } from '../../../context/ToastContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { withMutationTimeout } from '../../../lib/mutations';
+import { supabase } from '../../../lib/supabase';
+import type { Appointment } from '../../../types';
+import { toAppointment, toAppointmentGroupInsert, toAppointmentInsert } from '../mappers';
 
 export const useAppointments = (showDeleted = false) => {
   const { activeSalon } = useAuth();

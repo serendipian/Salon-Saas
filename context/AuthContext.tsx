@@ -1,15 +1,16 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import type { Session, User, AuthChangeEvent } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
-import { setSalonCurrency } from '../lib/format';
-import { useRealtimeEpoch } from '../lib/realtimeReset';
+import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
+import type React from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type {
-  Role,
-  Profile,
-  SalonMembership,
   ActiveSalon,
+  Profile,
+  Role,
+  SalonMembership,
   SubscriptionTier,
 } from '../lib/auth.types';
+import { setSalonCurrency } from '../lib/format';
+import { useRealtimeEpoch } from '../lib/realtimeReset';
+import { supabase } from '../lib/supabase';
 
 export type ProfileUpdates = Omit<
   Partial<Profile>,

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { ArrowLeft, Loader2, Mail } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Loader2, ArrowLeft } from 'lucide-react';
 
 export const ForgotPasswordPage: React.FC = () => {
   const { resetPassword } = useAuth();

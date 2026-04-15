@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Clock, Save } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Clock } from 'lucide-react';
-import { useSettings } from '../hooks/useSettings';
-import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
 import { Section } from '../../../components/FormElements';
-import { WorkSchedule } from '../../../types';
+import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
+import type { WorkSchedule } from '../../../types';
+import { useSettings } from '../hooks/useSettings';
 
 // Default fallback if not set
 const DEFAULT_SCHEDULE: WorkSchedule = {

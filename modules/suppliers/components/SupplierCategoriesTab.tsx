@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
 import {
-  Plus,
-  Trash2,
+  ArrowDown,
+  ArrowUp,
   ChevronDown,
   ChevronRight,
-  ArrowUp,
-  ArrowDown,
+  Plus,
   Save,
   Search,
+  Trash2,
 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import type { Supplier, SupplierCategory } from '../../../types';
 import { ColorPicker } from '../../services/components/ColorPicker';
 import { useSuppliers } from '../hooks/useSuppliers';
-import type { SupplierCategory, Supplier } from '../../../types';
 
 export function SupplierCategoriesTab() {
   const { allSuppliers, supplierCategories, updateSupplierCategories } = useSuppliers();

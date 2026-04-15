@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Loader2, Lock, CreditCard, Shield, Pencil, Save, X } from 'lucide-react';
-import type { StaffMember } from '../../../types';
+import { CreditCard, Loader2, Lock, Pencil, Save, Shield, X } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Input } from '../../../components/FormElements';
 import { useToast } from '../../../context/ToastContext';
+import type { StaffMember } from '../../../types';
 
 interface ProfilePiiSectionProps {
   staff: StaffMember;

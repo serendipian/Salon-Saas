@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Modal } from '../../../components/Modal';
 import type { MemberRow } from '../hooks/useTeamSettings';
 

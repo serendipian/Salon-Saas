@@ -1,10 +1,10 @@
 // components/ProtectedRoute.tsx
-import React from 'react';
+import type React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
-import { SuspendedPage } from '../pages/SuspendedPage';
 import type { AuthAction, AuthResource } from '../lib/auth.types';
+import { SuspendedPage } from '../pages/SuspendedPage';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;

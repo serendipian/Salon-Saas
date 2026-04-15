@@ -1,5 +1,5 @@
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import React, { useState } from 'react';
-import { ChevronRight, ChevronDown } from 'lucide-react';
 import { formatPrice } from '../../../lib/format';
 
 interface CategoryRow {

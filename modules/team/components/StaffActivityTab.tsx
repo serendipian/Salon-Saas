@@ -1,7 +1,7 @@
-import React from 'react';
-import { CheckCircle2, XCircle, AlertCircle, ShoppingBag, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, ShoppingBag, XCircle } from 'lucide-react';
+import type React from 'react';
+import type { StaffActivityEvent } from '../../../types';
 import { useStaffActivity } from '../hooks/useStaffActivity';
-import { StaffActivityEvent } from '../../../types';
 
 interface StaffActivityTabProps {
   staffId: string;

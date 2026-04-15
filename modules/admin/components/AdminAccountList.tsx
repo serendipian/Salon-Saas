@@ -1,10 +1,12 @@
 // modules/admin/components/AdminAccountList.tsx
-import React, { useState } from 'react';
+
+import { ChevronRight, Search } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronRight } from 'lucide-react';
-import { useAdminAccounts, type AdminAccount } from '../hooks/useAdmin';
-import { TIER_BADGE, ADMIN_FONT } from '../constants';
-import { AdminLoadingState, AdminErrorState, AdminTableFooter } from './AdminShared';
+import { ADMIN_FONT, TIER_BADGE } from '../constants';
+import { type AdminAccount, useAdminAccounts } from '../hooks/useAdmin';
+import { AdminErrorState, AdminLoadingState, AdminTableFooter } from './AdminShared';
 
 export const AdminAccountList: React.FC = () => {
   const { data: accounts = [], isLoading, isError } = useAdminAccounts();

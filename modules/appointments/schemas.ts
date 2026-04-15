@@ -28,11 +28,9 @@ export const serviceBlockSchema = z.object({
   staffId: z.string().nullable(),
   date: z.string().min(1, 'La date est requise'),
   hour: z.number().min(0, "L'heure est requise").max(23, "L'heure doit être entre 0 et 23"),
-  minute: z
-    .number()
-    .refine((m) => [0, 15, 30, 45].includes(m), {
-      message: 'Les minutes doivent être 00, 15, 30 ou 45',
-    }),
+  minute: z.number().refine((m) => [0, 15, 30, 45].includes(m), {
+    message: 'Les minutes doivent être 00, 15, 30 ou 45',
+  }),
 });
 
 export const appointmentGroupSchema = z.object({

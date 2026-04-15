@@ -1,56 +1,62 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
-  BarChart,
-  Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-} from 'recharts';
-import {
-  ArrowUpRight,
   ArrowDownRight,
-  Minus,
+  ArrowRightLeft,
+  ArrowUpRight,
+  Banknote,
   Calendar,
-  Users,
-  DollarSign,
-  ShoppingBag,
-  XCircle,
-  ChevronRight,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   Clock,
-  Crown,
-  TrendingUp,
-  Scissors,
-  Plus,
-  Banknote,
   CreditCard,
-  ArrowRightLeft,
+  Crown,
+  DollarSign,
   FileText,
-  Receipt,
   Gift,
+  Minus,
+  Plus,
+  Receipt,
+  Scissors,
+  ShoppingBag,
+  TrendingUp,
+  Users,
   Wallet,
+  XCircle,
 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../../lib/supabase';
-import { useTransactions } from '../../hooks/useTransactions';
+import type React from 'react';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import { DateRangePicker } from '../../components/DateRangePicker';
+import { useAuth } from '../../context/AuthContext';
 import { useRealtimeSync } from '../../hooks/useRealtimeSync';
-import { useClients } from '../clients/hooks/useClients';
+import { useTransactions } from '../../hooks/useTransactions';
+import { formatPrice } from '../../lib/format';
+import { supabase } from '../../lib/supabase';
+import {
+  AppointmentStatus,
+  type DateRange,
+  type PaymentEntry,
+  type Transaction,
+} from '../../types';
+import { type ExpenseRow, toExpense } from '../accounting/mappers';
 import { useAppointments } from '../appointments/hooks/useAppointments';
+import { useClients } from '../clients/hooks/useClients';
 import { useServices } from '../services/hooks/useServices';
 import { useTeam } from '../team/hooks/useTeam';
-import { useAuth } from '../../context/AuthContext';
-import { formatPrice } from '../../lib/format';
-import { DateRange, AppointmentStatus, PaymentEntry, Transaction } from '../../types';
-import { toExpense, ExpenseRow } from '../accounting/mappers';
 import { calcBonus, calcCommission } from '../team/utils';
-import { DateRangePicker } from '../../components/DateRangePicker';
 
 import { TodayCalendarCard } from './components/TodayCalendarCard';
 

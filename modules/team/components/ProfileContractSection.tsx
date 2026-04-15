@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
 import { Check } from 'lucide-react';
-import type { StaffMember, WorkSchedule } from '../../../types';
+import type React from 'react';
+import { useState } from 'react';
 import { Input, Select } from '../../../components/FormElements';
 import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
-import { useServices } from '../../services/hooks/useServices';
 import { useToast } from '../../../context/ToastContext';
+import type { StaffMember, WorkSchedule } from '../../../types';
+import { useServices } from '../../services/hooks/useServices';
 import {
-  Field,
-  SectionHeader,
-  DAY_LABELS,
-  ORDERED_DAYS,
   CONTRACT_LABELS,
+  DAY_LABELS,
+  Field,
   formatDate,
+  ORDERED_DAYS,
+  SectionHeader,
 } from './profile-shared';
 
 interface ProfileContractSectionProps {

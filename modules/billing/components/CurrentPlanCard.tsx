@@ -1,5 +1,5 @@
 // modules/billing/components/CurrentPlanCard.tsx
-import React from 'react';
+import type React from 'react';
 import type { Subscription, SubscriptionTier } from '../../../lib/auth.types';
 import type { PLAN_LIMITS } from '../hooks/useBilling';
 

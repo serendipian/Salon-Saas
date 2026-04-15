@@ -1,32 +1,30 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { MediaQueryProvider } from './context/MediaQueryContext';
-import { AuthProvider } from './context/AuthContext';
-import { ToastProvider } from './context/ToastContext';
-import { ToastContainer } from './components/Toast';
+import type React from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { AdminLayout } from './components/AdminLayout';
+import { AdminRoute } from './components/AdminRoute';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { ErrorBoundary } from './components/ErrorBoundary';
-
-// Auth pages
-import { LoginPage } from './pages/LoginPage';
-import { SignupPage } from './pages/SignupPage';
-import { CreateSalonPage } from './pages/CreateSalonPage';
-import { SalonPickerPage } from './pages/SalonPickerPage';
-import { AcceptInvitationPage } from './pages/AcceptInvitationPage';
-import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
-import { ResetPasswordPage } from './pages/ResetPasswordPage';
-import { ProfilePage } from './pages/ProfilePage';
-import { useAuth } from './context/AuthContext';
-import { AdminRoute } from './components/AdminRoute';
-import { AdminLayout } from './components/AdminLayout';
-import { AdminDashboard } from './modules/admin/components/AdminDashboard';
-import { AdminAccountList } from './modules/admin/components/AdminAccountList';
+import { ToastContainer } from './components/Toast';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { MediaQueryProvider } from './context/MediaQueryContext';
+import { ToastProvider } from './context/ToastContext';
 import { AdminAccountDetail } from './modules/admin/components/AdminAccountDetail';
-import { AdminTrialsPipeline } from './modules/admin/components/AdminTrialsPipeline';
+import { AdminAccountList } from './modules/admin/components/AdminAccountList';
+import { AdminChurnLog } from './modules/admin/components/AdminChurnLog';
+import { AdminDashboard } from './modules/admin/components/AdminDashboard';
 import { AdminFailedPayments } from './modules/admin/components/AdminFailedPayments';
 import { AdminRecentSignups } from './modules/admin/components/AdminRecentSignups';
-import { AdminChurnLog } from './modules/admin/components/AdminChurnLog';
+import { AdminTrialsPipeline } from './modules/admin/components/AdminTrialsPipeline';
+import { AcceptInvitationPage } from './pages/AcceptInvitationPage';
+import { CreateSalonPage } from './pages/CreateSalonPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+// Auth pages
+import { LoginPage } from './pages/LoginPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { SalonPickerPage } from './pages/SalonPickerPage';
+import { SignupPage } from './pages/SignupPage';
 
 // Lightweight auth guard — requires authentication but not an active salon
 const AuthRequired: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -36,40 +34,40 @@ const AuthRequired: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   return <>{children}</>;
 };
 
-// Module imports (unchanged)
-import { DashboardModule } from './modules/dashboard/DashboardModule';
-import { ServicesModule } from './modules/services/ServicesModule';
-import { ServiceSettingsPage } from './modules/services/ServiceSettingsPage';
-import { ClientsModule } from './modules/clients/ClientsModule';
-import { TeamModule } from './modules/team/TeamModule';
-import { TeamListPage } from './modules/team/pages/TeamListPage';
-import { NewStaffPage } from './modules/team/pages/NewStaffPage';
-import { StaffDetailPage } from './modules/team/pages/StaffDetailPage';
-import { ProductsModule } from './modules/products/ProductsModule';
-import { ProductSettingsPage } from './modules/products/ProductSettingsPage';
-import { AppointmentsModule } from './modules/appointments/AppointmentsModule';
-import { AppointmentListPage } from './modules/appointments/pages/AppointmentListPage';
-import { AppointmentDetailPage } from './modules/appointments/pages/AppointmentDetailPage';
-import { AppointmentEditPage } from './modules/appointments/pages/AppointmentEditPage';
-import { AppointmentNewPage } from './modules/appointments/pages/AppointmentNewPage';
-import { SuppliersModule } from './modules/suppliers/SuppliersModule';
-import { SupplierSettingsPage } from './modules/suppliers/SupplierSettingsPage';
-import { SettingsModule } from './modules/settings/SettingsModule';
-import { SettingsIndexPage } from './modules/settings/pages/SettingsIndexPage';
-import { SettingsPlaceholderPage } from './modules/settings/pages/SettingsPlaceholderPage';
-import { GeneralSettings } from './modules/settings/components/GeneralSettings';
-import { AccountingSettings } from './modules/settings/components/AccountingSettings';
-import { OpeningHoursSettings } from './modules/settings/components/OpeningHoursSettings';
-import { TeamPermissionsSettings } from './modules/settings/components/TeamPermissionsSettings';
-import { BillingModule } from './modules/billing/BillingModule';
-import { POSModule } from './modules/pos/POSModule';
-import { TransactionHistoryPage } from './modules/pos/TransactionHistoryPage';
-import { FinancesLayout } from './modules/accounting/FinancesLayout';
-import { FinancesOverview } from './modules/accounting/components/FinancesOverview';
-import { RevenuesPage } from './modules/accounting/components/RevenuesPage';
 import { DepensesPage } from './modules/accounting/components/DepensesPage';
+import { FinancesOverview } from './modules/accounting/components/FinancesOverview';
 import { JournalPage } from './modules/accounting/components/JournalPage';
 import { RefundsPage } from './modules/accounting/components/RefundsPage';
+import { RevenuesPage } from './modules/accounting/components/RevenuesPage';
+import { FinancesLayout } from './modules/accounting/FinancesLayout';
+import { AppointmentsModule } from './modules/appointments/AppointmentsModule';
+import { AppointmentDetailPage } from './modules/appointments/pages/AppointmentDetailPage';
+import { AppointmentEditPage } from './modules/appointments/pages/AppointmentEditPage';
+import { AppointmentListPage } from './modules/appointments/pages/AppointmentListPage';
+import { AppointmentNewPage } from './modules/appointments/pages/AppointmentNewPage';
+import { BillingModule } from './modules/billing/BillingModule';
+import { ClientsModule } from './modules/clients/ClientsModule';
+// Module imports (unchanged)
+import { DashboardModule } from './modules/dashboard/DashboardModule';
+import { POSModule } from './modules/pos/POSModule';
+import { TransactionHistoryPage } from './modules/pos/TransactionHistoryPage';
+import { ProductSettingsPage } from './modules/products/ProductSettingsPage';
+import { ProductsModule } from './modules/products/ProductsModule';
+import { ServiceSettingsPage } from './modules/services/ServiceSettingsPage';
+import { ServicesModule } from './modules/services/ServicesModule';
+import { AccountingSettings } from './modules/settings/components/AccountingSettings';
+import { GeneralSettings } from './modules/settings/components/GeneralSettings';
+import { OpeningHoursSettings } from './modules/settings/components/OpeningHoursSettings';
+import { TeamPermissionsSettings } from './modules/settings/components/TeamPermissionsSettings';
+import { SettingsIndexPage } from './modules/settings/pages/SettingsIndexPage';
+import { SettingsPlaceholderPage } from './modules/settings/pages/SettingsPlaceholderPage';
+import { SettingsModule } from './modules/settings/SettingsModule';
+import { SupplierSettingsPage } from './modules/suppliers/SupplierSettingsPage';
+import { SuppliersModule } from './modules/suppliers/SuppliersModule';
+import { NewStaffPage } from './modules/team/pages/NewStaffPage';
+import { StaffDetailPage } from './modules/team/pages/StaffDetailPage';
+import { TeamListPage } from './modules/team/pages/TeamListPage';
+import { TeamModule } from './modules/team/TeamModule';
 
 const AppContent = () => {
   const location = useLocation();

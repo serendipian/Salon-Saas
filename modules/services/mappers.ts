@@ -1,4 +1,4 @@
-import type { Service, ServiceVariant, ServiceCategory } from '../../types';
+import type { Service, ServiceCategory, ServiceVariant } from '../../types';
 
 interface ServiceVariantRow {
   id: string;

@@ -1,4 +1,4 @@
-import { Appointment, AppointmentStatus } from '../../../types';
+import { type Appointment, AppointmentStatus } from '../../../types';
 
 export function isSameDay(d1: Date, d2: Date): boolean {
   return (

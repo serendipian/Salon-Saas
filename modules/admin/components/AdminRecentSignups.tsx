@@ -1,10 +1,12 @@
 // modules/admin/components/AdminRecentSignups.tsx
-import React, { useState } from 'react';
+
+import { ChevronRight, Search, UserPlus } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, ChevronRight, Search } from 'lucide-react';
+import { ADMIN_FONT, TIER_BADGE } from '../constants';
 import { useAdminRecentSignups } from '../hooks/useAdmin';
-import { TIER_BADGE, ADMIN_FONT } from '../constants';
-import { AdminLoadingState, AdminErrorState, AdminTableFooter } from './AdminShared';
+import { AdminErrorState, AdminLoadingState, AdminTableFooter } from './AdminShared';
 
 export const AdminRecentSignups: React.FC = () => {
   const { data: signups = [], isLoading, isError } = useAdminRecentSignups();

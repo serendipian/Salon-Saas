@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { toSupplier, toSupplierInsert, toSupplierCategory } from '../mappers';
-import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { supabase } from '../../../lib/supabase';
 import type { Supplier, SupplierCategory } from '../../../types';
+import { toSupplier, toSupplierCategory, toSupplierInsert } from '../mappers';
 
 export interface SupplierCategoryUpdatePayload {
   categories: SupplierCategory[];

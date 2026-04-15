@@ -1,17 +1,17 @@
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
+import { useMutationToast } from '../../../hooks/useMutationToast';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { supabase } from '../../../lib/supabase';
+import type { Brand, Product, ProductCategory } from '../../../types';
 import {
+  toBrand,
   toProduct,
-  toProductInsert,
   toProductCategory,
   toProductCategoryInsert,
-  toBrand,
+  toProductInsert,
 } from '../mappers';
-import type { Product, ProductCategory, Brand } from '../../../types';
-import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
-import { useMutationToast } from '../../../hooks/useMutationToast';
 
 export interface CategoryUpdatePayload {
   categories: ProductCategory[];

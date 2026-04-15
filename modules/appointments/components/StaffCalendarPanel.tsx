@@ -1,10 +1,9 @@
+import { Bell, Users } from 'lucide-react';
 import React, { useMemo } from 'react';
-import type { ServiceBlockState } from '../../../types';
-import type { StaffMember, Service } from '../../../types';
-import StaffPills from './StaffPills';
+import type { Service, ServiceBlockState, StaffMember } from '../../../types';
 import InlineCalendar from './InlineCalendar';
+import StaffPills from './StaffPills';
 import TimePicker from './TimePicker';
-import { Users, Bell } from 'lucide-react';
 
 interface StaffCalendarPanelProps {
   activeBlock: ServiceBlockState | undefined;

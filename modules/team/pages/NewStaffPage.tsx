@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import { TeamForm } from '../components/TeamForm';
-import { useTeam } from '../hooks/useTeam';
+import type React from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../../context/ToastContext';
 import type { StaffMember } from '../../../types';
+import { TeamForm } from '../components/TeamForm';
+import { useTeam } from '../hooks/useTeam';
 
 export const NewStaffPage: React.FC = () => {
   const navigate = useNavigate();

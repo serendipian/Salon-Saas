@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { ChevronDown, Search, Grid3X3, Delete } from 'lucide-react';
+import { ChevronDown, Delete, Grid3X3, Search } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface CountryCode {
   code: string;

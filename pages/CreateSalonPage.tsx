@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { Banknote, Globe, Loader2, Store } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Store, Loader2, Globe, Banknote } from 'lucide-react';
 
 export const CreateSalonPage: React.FC = () => {
   const { isAuthenticated, isLoading, memberships, activeSalon, createSalon, signOut, profile } =

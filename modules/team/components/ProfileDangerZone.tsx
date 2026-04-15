@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
 import { AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import type { StaffMember } from '../../../types';
 
 interface ProfileDangerZoneProps {

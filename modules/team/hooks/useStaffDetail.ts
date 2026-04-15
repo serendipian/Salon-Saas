@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
-import { toStaffMember, toStaffMemberInsert } from '../mappers';
-import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { supabase } from '../../../lib/supabase';
 import type { StaffMember } from '../../../types';
+import { toStaffMember, toStaffMemberInsert } from '../mappers';
 
 export const useStaffDetail = (slug: string) => {
   const { activeSalon } = useAuth();

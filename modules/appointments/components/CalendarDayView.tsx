@@ -1,13 +1,13 @@
-import React from 'react';
-import { Appointment, ServiceCategory } from '../../../types';
+import type React from 'react';
+import type { Appointment, ServiceCategory } from '../../../types';
 import { CalendarEventBlock } from './CalendarEventBlock';
 import {
+  formatHourLabel,
+  HOURS,
   isSameDay,
   isToday,
-  formatHourLabel,
   layoutDayEvents,
   mergeAppointmentGroups,
-  HOURS,
   ROW_HEIGHT,
 } from './calendarUtils';
 

@@ -1,36 +1,36 @@
-import React, { useState, useEffect, useRef } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard,
-  Users,
-  Scissors,
-  Calendar,
-  ShoppingBag,
-  CreditCard,
   BarChart3,
-  Search,
-  Settings,
-  Truck,
-  Smile,
+  Bell,
+  Calendar,
+  ChevronDown,
+  CreditCard,
+  LayoutDashboard,
+  LogOut,
+  Menu,
   PanelLeftClose,
   PanelLeftOpen,
-  Bell,
-  LogOut,
-  ChevronDown,
-  Menu,
+  Scissors,
+  Search,
+  Settings,
+  ShoppingBag,
+  Smile,
+  Truck,
   UserCircle,
+  Users,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { usePermissions } from '../hooks/usePermissions';
 import { useMediaQuery } from '../context/MediaQueryContext';
+import { usePermissions } from '../hooks/usePermissions';
 import { useSidebar } from '../hooks/useSidebar';
-import { ConnectionStatusDot, ConnectionBanner } from './ConnectionStatus';
-import { BottomTabBar } from './BottomTabBar';
-import { MobileDrawer } from './MobileDrawer';
 import type { AuthResource } from '../lib/auth.types';
-import { useBilling } from '../modules/billing/hooks/useBilling';
 import { PastDueBanner } from '../modules/billing/components/PastDueBanner';
+import { useBilling } from '../modules/billing/hooks/useBilling';
+import { BottomTabBar } from './BottomTabBar';
+import { ConnectionBanner, ConnectionStatusDot } from './ConnectionStatus';
+import { MobileDrawer } from './MobileDrawer';
 
 const PastDueBannerConnected: React.FC = () => {
   const { createPortalSession, isLoadingPortal } = useBilling();

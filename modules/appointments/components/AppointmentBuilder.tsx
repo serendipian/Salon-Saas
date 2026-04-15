@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import { ArrowLeft, Plus, Save, Trash2, Users } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import type { FavoriteItem } from '../../../types';
 import type { UseAppointmentFormProps } from '../hooks/useAppointmentForm';
 import { useAppointmentForm } from '../hooks/useAppointmentForm';
-import type { FavoriteItem } from '../../../types';
+import AppointmentSummary from './AppointmentSummary';
 import ClientField from './ClientField';
 import ServiceBlock from './ServiceBlock';
 import StaffCalendarPanel from './StaffCalendarPanel';
-import AppointmentSummary from './AppointmentSummary';
-import { ArrowLeft, Save, Trash2, Plus, Users } from 'lucide-react';
 
 interface AppointmentBuilderProps extends UseAppointmentFormProps {
   onCancel: () => void;

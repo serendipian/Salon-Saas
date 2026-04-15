@@ -1,35 +1,36 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { History } from 'lucide-react';
-import { usePOS } from './hooks/usePOS';
-import { POSCatalog } from './components/POSCatalog';
-import { POSCart } from './components/POSCart';
-import { PaymentModal } from './components/PaymentModal';
-import {
-  ItemEditorModal,
-  ServiceVariantModal,
-  ReceiptModal,
-  TransactionDetailModal,
-} from './components/POSModals';
-import { VoidModal } from './components/VoidModal';
-import { RefundModal } from './components/RefundModal';
-import {
-  Service,
+import type React from 'react';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { useMediaQuery } from '../../context/MediaQueryContext';
+import { usePermissions } from '../../hooks/usePermissions';
+import type {
+  CartItem,
+  FavoriteItem,
+  Pack,
+  PaymentEntry,
   Product,
+  Service,
   ServiceVariant,
   Transaction,
-  CartItem,
-  PaymentEntry,
-  Pack,
-  FavoriteItem,
 } from '../../types';
 import { usePacks } from '../services/hooks/usePacks';
 import { expandPack } from '../services/utils/packExpansion';
-import { useMediaQuery } from '../../context/MediaQueryContext';
-import { MiniCartBar } from './components/MiniCartBar';
 import { CartBottomSheet } from './components/CartBottomSheet';
-import { usePermissions } from '../../hooks/usePermissions';
-import { useAuth } from '../../context/AuthContext';
+import { MiniCartBar } from './components/MiniCartBar';
+import { PaymentModal } from './components/PaymentModal';
+import { POSCart } from './components/POSCart';
+import { POSCatalog } from './components/POSCatalog';
+import {
+  ItemEditorModal,
+  ReceiptModal,
+  ServiceVariantModal,
+  TransactionDetailModal,
+} from './components/POSModals';
+import { RefundModal } from './components/RefundModal';
+import { VoidModal } from './components/VoidModal';
+import { usePOS } from './hooks/usePOS';
 
 export const POSModule: React.FC = () => {
   const {

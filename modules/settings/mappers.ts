@@ -1,8 +1,8 @@
 import type {
-  SalonSettings,
-  WorkSchedule,
   ExpenseCategorySetting,
   RecurringExpense,
+  SalonSettings,
+  WorkSchedule,
 } from '../../types';
 
 // --- Salon Settings (reads from salons table row) ---

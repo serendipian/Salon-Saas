@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Calendar, User, Scissors, Trash2 } from 'lucide-react';
-import { Appointment, AppointmentStatus } from '../../../types';
+import { ArrowLeft, Calendar, Scissors, Trash2, User } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { formatPrice } from '../../../lib/format';
+import { type Appointment, AppointmentStatus } from '../../../types';
 import { StatusBadge } from './StatusBadge';
 
 interface AppointmentDetailsProps {

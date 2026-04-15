@@ -1,15 +1,16 @@
 // components/AdminLayout.tsx
-import React from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+
 import {
-  LayoutDashboard,
-  Users,
   Clock,
   CreditCard,
-  UserPlus,
-  TrendingDown,
+  LayoutDashboard,
   LogOut,
+  TrendingDown,
+  UserPlus,
+  Users,
 } from 'lucide-react';
+import type React from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const NAV_ITEMS = [

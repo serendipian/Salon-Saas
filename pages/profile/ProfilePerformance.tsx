@@ -1,10 +1,10 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { CalendarCheck, TrendingUp } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../context/AuthContext';
+import type React from 'react';
 import { Section } from '../../components/FormElements';
+import { useAuth } from '../../context/AuthContext';
 import { formatPrice } from '../../lib/format';
+import { supabase } from '../../lib/supabase';
 import type { StaffMember } from '../../types';
 
 interface ProfilePerformanceProps {

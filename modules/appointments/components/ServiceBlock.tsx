@@ -1,11 +1,16 @@
+import { Calendar, Clock, Gift, Star, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import type { Service, ServiceCategory, FavoriteItem, Pack } from '../../../types';
-import type { ServiceBlockState } from '../../../types';
-import { formatPrice, formatDuration } from '../../../lib/format';
 import { CategoryIcon } from '../../../lib/categoryIcons';
-import { getPackDiscount, formatPackItemCount } from '../../services/utils/packExpansion';
+import { formatDuration, formatPrice } from '../../../lib/format';
+import type {
+  FavoriteItem,
+  Pack,
+  Service,
+  ServiceBlockState,
+  ServiceCategory,
+} from '../../../types';
+import { formatPackItemCount, getPackDiscount } from '../../services/utils/packExpansion';
 import ServiceGrid from './ServiceGrid';
-import { X, Clock, Calendar, Star, Gift } from 'lucide-react';
 
 interface ServiceBlockProps {
   block: ServiceBlockState;

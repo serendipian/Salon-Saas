@@ -1,5 +1,5 @@
 // modules/pos/mappers.ts
-import { CartItem, PaymentEntry, Transaction } from '../../types';
+import type { CartItem, PaymentEntry, Transaction } from '../../types';
 
 // --- Row interfaces matching Supabase JOIN result ---
 

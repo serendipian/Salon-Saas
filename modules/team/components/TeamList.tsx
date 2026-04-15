@@ -1,10 +1,10 @@
-import React from 'react';
-import { Plus, Search, Users, BarChart2 } from 'lucide-react';
-import { StaffMember, Appointment, ServiceCategory } from '../../../types';
-import { useViewMode } from '../../../hooks/useViewMode';
+import { BarChart2, Plus, Search, Users } from 'lucide-react';
+import type React from 'react';
 import { ViewToggle } from '../../../components/ViewToggle';
-import { TeamTable } from './TeamTable';
+import { useViewMode } from '../../../hooks/useViewMode';
+import type { Appointment, ServiceCategory, StaffMember } from '../../../types';
 import { TeamCard } from './TeamCard';
+import { TeamTable } from './TeamTable';
 
 type Tab = 'members' | 'performance';
 

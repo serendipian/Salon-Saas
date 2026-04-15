@@ -1,6 +1,7 @@
 // modules/admin/components/AdminShared.tsx
-import React from 'react';
+
 import { Plus } from 'lucide-react';
+import type React from 'react';
 
 // Reusable filter chip (visual only — for use as search filters)
 export const FilterChip: React.FC<{ label: string; onClick?: () => void }> = ({

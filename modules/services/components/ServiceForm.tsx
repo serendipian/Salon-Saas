@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Save, Clock, Trash2 } from 'lucide-react';
-import { Service, ServiceCategory, ServiceVariant } from '../../../types';
-import { Section, Input, Select, TextArea } from '../../../components/FormElements';
+import { ArrowLeft, Clock, Save, Trash2 } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { Input, Section, Select, TextArea } from '../../../components/FormElements';
+import { useFormValidation } from '../../../hooks/useFormValidation';
+import type { Service, ServiceCategory, ServiceVariant } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useServiceSettings } from '../hooks/useServiceSettings';
-import { useFormValidation } from '../../../hooks/useFormValidation';
 import { serviceSchema } from '../schemas';
 
 interface ServiceFormProps {

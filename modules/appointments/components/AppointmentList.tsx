@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
-import { Plus, Search, List, CalendarDays, Trash2 } from 'lucide-react';
-import {
-  Appointment,
-  AppointmentStatus,
-  ServiceCategory,
-  StaffMember,
-  Service,
-} from '../../../types';
-import { useViewMode } from '../../../hooks/useViewMode';
+import { CalendarDays, List, Plus, Search, Trash2 } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { ViewToggle } from '../../../components/ViewToggle';
-import { AppointmentTable } from './AppointmentTable';
+import { useViewMode } from '../../../hooks/useViewMode';
+import {
+  type Appointment,
+  AppointmentStatus,
+  type Service,
+  type ServiceCategory,
+  type StaffMember,
+} from '../../../types';
 import { AppointmentCardList } from './AppointmentCard';
+import { AppointmentTable } from './AppointmentTable';
 import { CalendarView } from './CalendarView';
 
 interface AppointmentListProps {

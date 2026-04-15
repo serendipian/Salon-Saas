@@ -1,15 +1,15 @@
-import React from 'react';
 import {
   Activity,
-  CheckCircle2,
-  XCircle,
   AlertCircle,
-  ShoppingBag,
-  Loader2,
   ArrowRight,
+  CheckCircle2,
+  Loader2,
+  ShoppingBag,
+  XCircle,
 } from 'lucide-react';
-import { useStaffActivity } from '../hooks/useStaffActivity';
+import type React from 'react';
 import type { StaffActivityEvent } from '../../../types';
+import { useStaffActivity } from '../hooks/useStaffActivity';
 
 interface ProfileActivityPreviewProps {
   staffId: string;

@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
-import { useTransactions } from '../../../hooks/useTransactions';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import type { StaffMember, DateRange, Transaction, CartItem } from '../../../types';
-import { countWorkingDays, calcBonus } from '../utils';
+import { useTransactions } from '../../../hooks/useTransactions';
+import { supabase } from '../../../lib/supabase';
+import type { CartItem, DateRange, StaffMember, Transaction } from '../../../types';
+import { calcBonus, countWorkingDays } from '../utils';
 
 export interface StaffPerformance {
   staff: StaffMember;

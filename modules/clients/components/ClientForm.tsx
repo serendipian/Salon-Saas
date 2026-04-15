@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Save, User, AlertCircle, Instagram, Trash2 } from 'lucide-react';
-import { PhoneInput } from '../../../components/PhoneInput';
-import { Client, ClientPermissions } from '../../../types';
-import { useTeam } from '../../team/hooks/useTeam';
-import { Section, Input, Select, TextArea } from '../../../components/FormElements';
+import { AlertCircle, ArrowLeft, Instagram, Save, Trash2, User } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { DatePicker } from '../../../components/DatePicker';
+import { Input, Section, Select, TextArea } from '../../../components/FormElements';
+import { PhoneInput } from '../../../components/PhoneInput';
 import { useFormValidation } from '../../../hooks/useFormValidation';
+import type { Client, ClientPermissions } from '../../../types';
+import { useTeam } from '../../team/hooks/useTeam';
 import { clientSchema } from '../schemas';
 
 interface ClientFormProps {

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { MiniKpiRow } from './MiniKpiRow';
-import { AccountingExpenses } from './AccountingExpenses';
-import { ExpenseForm } from './ExpenseForm';
-import { DepensesRecurrentes } from './DepensesRecurrentes';
 import type { FinancesOutletContext } from '../FinancesLayout';
+import { AccountingExpenses } from './AccountingExpenses';
+import { DepensesRecurrentes } from './DepensesRecurrentes';
+import { ExpenseForm } from './ExpenseForm';
+import { MiniKpiRow } from './MiniKpiRow';
 
 type Tab = 'COURANTES' | 'RECURRENTES';
 

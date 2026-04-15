@@ -1,16 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import {
+  ArrowRight,
   Calendar as CalendarIcon,
+  Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
-  ArrowRight,
-  Check,
   X,
 } from 'lucide-react';
-import { DateRange } from '../types';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useMediaQuery } from '../context/MediaQueryContext';
+import type { DateRange } from '../types';
 
 interface DateRangePickerProps {
   dateRange: DateRange;

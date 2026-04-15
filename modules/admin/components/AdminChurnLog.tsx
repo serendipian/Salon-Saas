@@ -1,10 +1,11 @@
 // modules/admin/components/AdminChurnLog.tsx
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { TrendingDown } from 'lucide-react';
-import { useAdminChurn } from '../hooks/useAdmin';
+import type React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ADMIN_FONT } from '../constants';
-import { AdminLoadingState, AdminErrorState, AdminTableFooter } from './AdminShared';
+import { useAdminChurn } from '../hooks/useAdmin';
+import { AdminErrorState, AdminLoadingState, AdminTableFooter } from './AdminShared';
 
 export const AdminChurnLog: React.FC = () => {
   const { data: churn = [], isLoading, isError } = useAdminChurn();

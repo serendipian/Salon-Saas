@@ -1,12 +1,19 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTransactions } from '../../../hooks/useTransactions';
+import {
+  type Appointment,
+  type CartItem,
+  type Client,
+  type PaymentEntry,
+  Product,
+  Service,
+} from '../../../types';
+import { useAppointments } from '../../appointments/hooks/useAppointments';
+import { useClients } from '../../clients/hooks/useClients';
 import { useProducts } from '../../products/hooks/useProducts';
 import { useServices } from '../../services/hooks/useServices';
-import { useClients } from '../../clients/hooks/useClients';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useTeam } from '../../team/hooks/useTeam';
-import { useAppointments } from '../../appointments/hooks/useAppointments';
-import { CartItem, Client, Service, Product, PaymentEntry, Appointment } from '../../../types';
 
 export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'APPOINTMENTS';
 

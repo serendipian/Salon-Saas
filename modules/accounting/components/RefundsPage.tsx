@@ -1,11 +1,12 @@
-import React, { useMemo } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Ban, RotateCcw } from 'lucide-react';
+import type React from 'react';
+import { useMemo } from 'react';
+import { useOutletContext } from 'react-router-dom';
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { formatPrice } from '../../../lib/format';
-import { VOID_CATEGORIES, REFUND_CATEGORIES } from '../../pos/constants';
-import type { FinancesOutletContext } from '../FinancesLayout';
 import type { Transaction } from '../../../types';
+import { REFUND_CATEGORIES, VOID_CATEGORIES } from '../../pos/constants';
+import type { FinancesOutletContext } from '../FinancesLayout';
 
 const CHART_COLORS = ['#0f172a', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
 

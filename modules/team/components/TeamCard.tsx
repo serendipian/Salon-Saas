@@ -1,9 +1,9 @@
-import React from 'react';
 import { Calendar, Clock, Users } from 'lucide-react';
-import { StaffMember, Appointment, ServiceCategory } from '../../../types';
+import type React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
+import type { Appointment, ServiceCategory, StaffMember } from '../../../types';
 // L-22: shared contract chip labels + colors (was duplicated here).
-import { CONTRACT_LABELS, CONTRACT_COLORS } from './profile-shared';
+import { CONTRACT_COLORS, CONTRACT_LABELS } from './profile-shared';
 
 interface TeamCardProps {
   team: StaffMember[];

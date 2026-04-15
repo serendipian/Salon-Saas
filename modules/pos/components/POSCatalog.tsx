@@ -1,20 +1,20 @@
-import React from 'react';
-import { Search, Scissors, ShoppingBag, Plus, Calendar, Star, Package } from 'lucide-react';
-import {
-  Service,
-  Product,
-  ServiceCategory,
-  ProductCategory,
+import { Calendar, Package, Plus, Scissors, Search, ShoppingBag, Star } from 'lucide-react';
+import type React from 'react';
+import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { CategoryIcon } from '../../../lib/categoryIcons';
+import { formatPrice } from '../../../lib/format';
+import type {
   Appointment,
   FavoriteItem,
   Pack,
+  Product,
+  ProductCategory,
+  Service,
+  ServiceCategory,
 } from '../../../types';
-import { getPackDiscount, formatPackItemCount } from '../../services/utils/packExpansion';
+import { formatPackItemCount, getPackDiscount } from '../../services/utils/packExpansion';
+import type { POSViewMode } from '../hooks/usePOS';
 import { PendingAppointments } from './PendingAppointments';
-import { POSViewMode } from '../hooks/usePOS';
-import { formatPrice } from '../../../lib/format';
-import { useMediaQuery } from '../../../context/MediaQueryContext';
-import { CategoryIcon } from '../../../lib/categoryIcons';
 
 interface POSCatalogProps {
   viewMode: POSViewMode;

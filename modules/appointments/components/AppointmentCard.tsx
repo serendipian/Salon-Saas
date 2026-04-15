@@ -1,8 +1,8 @@
-import React from 'react';
 import { Scissors, Trash2, User } from 'lucide-react';
-import { Appointment, AppointmentStatus } from '../../../types';
-import { formatPrice } from '../../../lib/format';
+import type React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
+import { formatPrice } from '../../../lib/format';
+import { type Appointment, AppointmentStatus } from '../../../types';
 import { StatusBadge } from './StatusBadge';
 
 interface AppointmentCardListProps {

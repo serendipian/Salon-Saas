@@ -1,6 +1,7 @@
 // pages/SuspendedPage.tsx
-import React from 'react';
+
 import { ShieldOff } from 'lucide-react';
+import type React from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export const SuspendedPage: React.FC = () => {

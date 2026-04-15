@@ -1,8 +1,8 @@
-import React from 'react';
+import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
+import type React from 'react';
 import { createPortal } from 'react-dom';
-import { CheckCircle, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
-import { useToastState, useToast } from '../context/ToastContext';
 import type { ToastType } from '../context/ToastContext';
+import { useToast, useToastState } from '../context/ToastContext';
 
 const TOAST_STYLES: Record<ToastType, { border: string; icon: string; bg: string }> = {
   success: { border: 'border-l-emerald-500', icon: 'text-emerald-500', bg: 'bg-white' },

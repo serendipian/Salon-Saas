@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
 import { Plus, Search } from 'lucide-react';
-import { Client } from '../../../types';
-import { useViewMode } from '../../../hooks/useViewMode';
+import type React from 'react';
+import { useState } from 'react';
 import { ViewToggle } from '../../../components/ViewToggle';
-import { ClientTable } from './ClientTable';
+import { useViewMode } from '../../../hooks/useViewMode';
+import type { Client } from '../../../types';
 import { ClientCard } from './ClientCard';
+import { ClientTable } from './ClientTable';
 
 interface ClientListProps {
   clients: Client[];

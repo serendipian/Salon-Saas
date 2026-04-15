@@ -1,9 +1,9 @@
-import { useEffect, useRef, useCallback } from 'react';
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { useCallback, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useRealtimeEpoch } from '../lib/realtimeReset';
-import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 
 type EventPayload = RealtimePostgresChangesPayload<Record<string, unknown>>;
 type EventHandler = (payload: EventPayload) => void;

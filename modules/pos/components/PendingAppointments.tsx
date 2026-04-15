@@ -1,8 +1,8 @@
-import React from 'react';
-import { Calendar, Clock, User, AlertTriangle } from 'lucide-react';
-import type { Appointment } from '../../../types';
-import { formatPrice } from '../../../lib/format';
+import { AlertTriangle, Calendar, Clock, User } from 'lucide-react';
+import type React from 'react';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { formatPrice } from '../../../lib/format';
+import type { Appointment } from '../../../types';
 
 interface PendingAppointmentsProps {
   appointments: Appointment[];

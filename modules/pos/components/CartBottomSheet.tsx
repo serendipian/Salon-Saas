@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { CreditCard, Edit3, Minus, Plus, ShoppingBag, Tag, Trash2, User, X } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ShoppingBag, Minus, Plus, Trash2, Edit3, Tag, CreditCard, User } from 'lucide-react';
-import { CartItem, Client, Service } from '../../../types';
-import type { StaffMember } from '../../../types';
 import { formatPrice } from '../../../lib/format';
-import { StaffSelector } from './StaffSelector';
+import type { CartItem, Client, Service, StaffMember } from '../../../types';
 import { resolveCartItemCategoryId } from '../utils/resolveCartItemCategoryId';
+import { StaffSelector } from './StaffSelector';
 
 interface CartBottomSheetProps {
   isOpen: boolean;

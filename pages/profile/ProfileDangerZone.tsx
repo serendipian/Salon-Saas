@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { AlertTriangle, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../../lib/supabase';
+import { AlertTriangle, LogOut } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { supabase } from '../../lib/supabase';
 
 export const ProfileDangerZone: React.FC = () => {
   const { activeSalon, memberships, user } = useAuth();

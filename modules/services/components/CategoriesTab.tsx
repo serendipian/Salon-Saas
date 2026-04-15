@@ -4,8 +4,8 @@
 
 import React from 'react';
 import { CategoriesManager } from '../../../components/CategoriesManager';
-import { useServices } from '../hooks/useServices';
 import type { ServiceCategory } from '../../../types';
+import { useServices } from '../hooks/useServices';
 
 export function CategoriesTab() {
   const { allServices, serviceCategories, updateServiceCategories } = useServices();

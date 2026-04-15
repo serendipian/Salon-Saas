@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { User, ChevronDown, X } from 'lucide-react';
+import { ChevronDown, User, X } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { StaffMember } from '../../../types';
 
 interface StaffSelectorProps {

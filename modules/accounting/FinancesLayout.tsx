@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { DateRangePicker } from '../../components/DateRangePicker';
 import { useAccounting } from './hooks/useAccounting';

@@ -11,19 +11,19 @@
 // Constraints are minimal — anything with `id`, `name`, `color` (and optional
 // `icon`) on the category side, and `id`, `name`, `categoryId` on the item side.
 
-import React, { useState, useEffect } from 'react';
 import {
-  Plus,
-  Trash2,
+  ArrowDown,
+  ArrowUp,
   ChevronDown,
   ChevronRight,
-  ArrowUp,
-  ArrowDown,
+  Plus,
   Save,
   Search,
+  Trash2,
 } from 'lucide-react';
-import { IconPicker } from '../modules/services/components/IconPicker';
+import React, { useEffect, useState } from 'react';
 import { ColorPicker } from '../modules/services/components/ColorPicker';
+import { IconPicker } from '../modules/services/components/IconPicker';
 
 export interface ManagedCategory {
   id: string;

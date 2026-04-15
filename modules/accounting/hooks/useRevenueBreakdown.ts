@@ -15,8 +15,8 @@
 
 import { useMemo } from 'react';
 import type { CartItem, Transaction } from '../../../types';
-import { useServices } from '../../services/hooks/useServices';
 import { useProducts } from '../../products/hooks/useProducts';
+import { useServices } from '../../services/hooks/useServices';
 import { useTeam } from '../../team/hooks/useTeam';
 import { calcBonus, calcCommission } from '../../team/utils';
 

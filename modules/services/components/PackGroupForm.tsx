@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { useFormValidation } from '../../../hooks/useFormValidation';
 import type { PackGroup } from '../../../types';
 import { packGroupSchema } from '../packSchemas';
-import { useFormValidation } from '../../../hooks/useFormValidation';
 
 interface PackGroupFormProps {
   existingGroup?: PackGroup;

@@ -1,15 +1,15 @@
-import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Trash2, Search, X, Plus, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Plus, Search, Trash2, X } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { formatDuration, formatPrice } from '../../../lib/format';
 import type { AppointmentStatus } from '../../../types';
-import { UseAppointmentFormProps, useAppointmentForm } from '../hooks/useAppointmentForm';
-import { formatPrice, formatDuration } from '../../../lib/format';
+import { type UseAppointmentFormProps, useAppointmentForm } from '../hooks/useAppointmentForm';
+import InlineCalendar from './InlineCalendar';
 import { MobileBottomSheet } from './MobileBottomSheet';
 import { MobileClientSearch } from './MobileClientSearch';
 import { MobileServicePicker } from './MobileServicePicker';
-import StaffPills from './StaffPills';
-import InlineCalendar from './InlineCalendar';
-import TimePicker from './TimePicker';
 import ReminderToggle from './ReminderToggle';
+import StaffPills from './StaffPills';
+import TimePicker from './TimePicker';
 
 interface AppointmentBuilderMobileProps extends UseAppointmentFormProps {
   onCancel: () => void;

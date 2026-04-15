@@ -1,5 +1,5 @@
-import React from 'react';
 import { AlertTriangle, Info, Loader2 } from 'lucide-react';
+import type React from 'react';
 import { Modal } from './Modal';
 
 export type ConfirmTone = 'danger' | 'warning' | 'info';

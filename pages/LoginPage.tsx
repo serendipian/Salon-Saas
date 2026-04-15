@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { Loader2, Lock, Mail, Sparkles } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, Loader2, Sparkles } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const {

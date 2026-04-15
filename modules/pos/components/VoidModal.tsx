@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { AlertTriangle, X } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, AlertTriangle } from 'lucide-react';
-import { Transaction } from '../../../types';
-import { formatPrice } from '../../../lib/format';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { formatPrice } from '../../../lib/format';
+import type { Transaction } from '../../../types';
 import { VOID_CATEGORIES } from '../constants';
 
 interface VoidModalProps {

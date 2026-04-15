@@ -1,16 +1,16 @@
-import React, { useMemo, useState } from 'react';
-import type {
-  Service,
-  ServiceCategory,
-  FavoriteItem,
-  ServiceBlockItem,
-  Pack,
-} from '../../../types';
-import { formatPrice, formatDuration } from '../../../lib/format';
-import { getPackDiscount, formatPackItemCount } from '../../services/utils/packExpansion';
-import { CategoryIcon } from '../../../lib/categoryIcons';
-import VariantList from './VariantList';
 import { Check, Gift } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { CategoryIcon } from '../../../lib/categoryIcons';
+import { formatDuration, formatPrice } from '../../../lib/format';
+import type {
+  FavoriteItem,
+  Pack,
+  Service,
+  ServiceBlockItem,
+  ServiceCategory,
+} from '../../../types';
+import { formatPackItemCount, getPackDiscount } from '../../services/utils/packExpansion';
+import VariantList from './VariantList';
 
 interface ServiceGridProps {
   services: Service[];

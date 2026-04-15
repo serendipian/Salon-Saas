@@ -1,8 +1,8 @@
-import React from 'react';
-import { Phone, Mail, Eye, Edit, Calendar, Users, Trash2 } from 'lucide-react';
-import { Client } from '../../../types';
-import { formatPrice } from '../../../lib/format';
+import { Calendar, Edit, Eye, Mail, Phone, Trash2, Users } from 'lucide-react';
+import type React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
+import { formatPrice } from '../../../lib/format';
+import type { Client } from '../../../types';
 
 interface ClientCardProps {
   clients: Client[];

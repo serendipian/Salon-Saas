@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
-import { useProductSettings } from '../hooks/useProductSettings';
+import React, { useEffect, useState } from 'react';
 import type { ProductSettings } from '../../../types';
+import { useProductSettings } from '../hooks/useProductSettings';
 
 export function ProductGeneralTab() {
   const { productSettings, updateProductSettings } = useProductSettings();

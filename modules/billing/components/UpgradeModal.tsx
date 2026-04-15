@@ -1,6 +1,8 @@
 // modules/billing/components/UpgradeModal.tsx
-import React, { useEffect } from 'react';
+
 import { X } from 'lucide-react';
+import type React from 'react';
+import { useEffect } from 'react';
 
 // L-low (UpgradeModal staff hardcode): The Premium staff cap is now read
 // from plan data via the optional `maxStaff` prop instead of hardcoding "10

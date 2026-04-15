@@ -1,34 +1,34 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
-  History,
+  ArrowDown,
+  ArrowLeft,
+  ArrowUp,
+  ArrowUpDown,
+  Ban,
+  Banknote,
   ChevronLeft,
   ChevronRight,
-  ArrowLeft,
-  Eye,
-  Receipt,
-  Ban,
-  RotateCcw,
-  Search,
-  Scissors,
-  ShoppingBag,
   CreditCard,
-  TrendingUp,
-  Banknote,
+  Eye,
   Gift,
-  ArrowUpDown,
-  ArrowDown,
-  ArrowUp,
+  History,
+  Receipt,
+  RotateCcw,
+  Scissors,
+  Search,
+  ShoppingBag,
+  TrendingUp,
 } from 'lucide-react';
-import { useTransactions } from '../../hooks/useTransactions';
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
+import { useTransactions } from '../../hooks/useTransactions';
 import { formatPrice } from '../../lib/format';
-import { getTransactionStatus, TransactionStatus } from './mappers';
-import { Transaction } from '../../types';
+import type { Transaction } from '../../types';
 import { ReceiptModal, TransactionDetailModal } from './components/POSModals';
-import { VoidModal } from './components/VoidModal';
 import { RefundModal } from './components/RefundModal';
+import { VoidModal } from './components/VoidModal';
+import { getTransactionStatus, type TransactionStatus } from './mappers';
 
 const ALL_PAYMENT_METHODS = ['Espèces', 'Carte Bancaire', 'Carte Cadeau'] as const;
 

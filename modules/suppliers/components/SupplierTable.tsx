@@ -1,7 +1,7 @@
-import React from 'react';
-import { Truck, Globe, Mail, Phone, ChevronRight } from 'lucide-react';
-import { Supplier, SupplierCategory } from '../../../types';
+import { ChevronRight, Globe, Mail, Phone, Truck } from 'lucide-react';
+import type React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
+import type { Supplier, SupplierCategory } from '../../../types';
 
 interface SupplierTableProps {
   suppliers: Supplier[];

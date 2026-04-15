@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Role, AuthAction, AuthResource, AccessLevel } from '../lib/auth.types';
+import type { AccessLevel, AuthAction, AuthResource, Role } from '../lib/auth.types';
 
 interface PermissionResult {
   can: (action: AuthAction, resource: AuthResource) => boolean;

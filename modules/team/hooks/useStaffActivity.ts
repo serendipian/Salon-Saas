@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { StaffActivityEvent } from '../../../types';
+import { supabase } from '../../../lib/supabase';
+import type { StaffActivityEvent } from '../../../types';
 
 const PAGE_SIZE = 20;
 

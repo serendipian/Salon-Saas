@@ -1,17 +1,18 @@
 // modules/admin/components/AdminDashboard.tsx
-import React from 'react';
-import { Link } from 'react-router-dom';
+
 import { Info } from 'lucide-react';
-import { AreaChart, Area, ResponsiveContainer, Tooltip, type TooltipProps } from 'recharts';
+import type React from 'react';
+import { Link } from 'react-router-dom';
+import { Area, AreaChart, ResponsiveContainer, Tooltip, type TooltipProps } from 'recharts';
+import { ADMIN_FONT } from '../constants';
 import {
+  type AdminHistoryPoint,
+  useAdminFailedPayments,
   useAdminMRR,
   useAdminMRRHistory,
   useAdminSignupsHistory,
   useAdminTrialsHistory,
-  useAdminFailedPayments,
-  type AdminHistoryPoint,
 } from '../hooks/useAdmin';
-import { ADMIN_FONT } from '../constants';
 import { AdminErrorState } from './AdminShared';
 
 const SparkTooltip: React.FC<any> = ({ active, payload, isCurrency }) => {

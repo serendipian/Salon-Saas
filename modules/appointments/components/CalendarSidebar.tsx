@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
-import { ServiceCategory, StaffMember } from '../../../types';
-import InlineCalendar from './InlineCalendar';
-import { getCategoryCalendarColors } from './calendarColors';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { CategoryIcon } from '../../../lib/categoryIcons';
+import type { ServiceCategory, StaffMember } from '../../../types';
+import { getCategoryCalendarColors } from './calendarColors';
+import InlineCalendar from './InlineCalendar';
 
 interface CalendarSidebarProps {
   currentDate: Date;

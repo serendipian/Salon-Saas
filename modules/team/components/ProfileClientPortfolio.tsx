@@ -1,7 +1,7 @@
-import React from 'react';
-import { Users, Loader2 } from 'lucide-react';
-import { useStaffClients } from '../hooks/useStaffClients';
+import { Loader2, Users } from 'lucide-react';
+import type React from 'react';
 import { formatPrice } from '../../../lib/format';
+import { useStaffClients } from '../hooks/useStaffClients';
 
 interface ProfileClientPortfolioProps {
   staffId: string;

@@ -1,4 +1,4 @@
-import type { Product, ProductCategory, Brand, UsageType } from '../../types';
+import type { Brand, Product, ProductCategory, UsageType } from '../../types';
 
 interface ProductRow {
   id: string;

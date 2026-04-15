@@ -1,7 +1,7 @@
-import React from 'react';
-import { Trash2, Plus } from 'lucide-react';
-import { BonusTier } from '../types';
+import { Plus, Trash2 } from 'lucide-react';
+import type React from 'react';
 import { useMediaQuery } from '../context/MediaQueryContext';
+import type { BonusTier } from '../types';
 
 interface BonusSystemEditorProps {
   tiers: BonusTier[];

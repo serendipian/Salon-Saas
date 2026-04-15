@@ -1,10 +1,10 @@
 // modules/billing/hooks/useBilling.ts
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import type { Subscription, SubscriptionTier } from '../../../lib/auth.types';
+import { supabase } from '../../../lib/supabase';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;

@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Search, UserPlus, UserCheck } from 'lucide-react';
-import { Client } from '../../../types';
+import { Search, UserCheck, UserPlus } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { PhoneInput } from '../../../components/PhoneInput';
+import type { Client } from '../../../types';
 
 interface MobileClientSearchProps {
   clients: Client[];

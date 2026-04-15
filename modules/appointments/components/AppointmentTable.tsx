@@ -1,16 +1,16 @@
-import React, { useMemo } from 'react';
 import { Pencil, Trash2, User } from 'lucide-react';
-import {
-  Appointment,
-  AppointmentStatus,
-  StaffMember,
-  Service,
-  ServiceCategory,
-} from '../../../types';
-import { formatPrice, formatDuration } from '../../../lib/format';
-import { CategoryIcon } from '../../../lib/categoryIcons';
+import React, { useMemo } from 'react';
 import { EmptyState } from '../../../components/EmptyState';
 import { StaffAvatar } from '../../../components/StaffAvatar';
+import { CategoryIcon } from '../../../lib/categoryIcons';
+import { formatDuration, formatPrice } from '../../../lib/format';
+import type {
+  Appointment,
+  AppointmentStatus,
+  Service,
+  ServiceCategory,
+  StaffMember,
+} from '../../../types';
 import { StatusBadge } from './StatusBadge';
 
 const ClientAvatar: React.FC<{ name: string }> = ({ name }) => {

@@ -1,20 +1,22 @@
 // modules/team/components/StaffPerformanceTab.tsx
-import React, { useState, useMemo } from 'react';
+
 import {
-  TrendingUp,
-  ShoppingBag,
-  Scissors,
   BarChart2,
   CalendarCheck,
   CalendarX,
+  Scissors,
+  ShoppingBag,
+  TrendingUp,
   UserX,
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import type React from 'react';
+import { useMemo, useState } from 'react';
+import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { DateRangePicker } from '../../../components/DateRangePicker';
-import { formatPrice } from '../../../lib/format';
 import { useTransactions } from '../../../hooks/useTransactions';
+import { formatPrice } from '../../../lib/format';
+import type { CartItem, DateRange, Transaction } from '../../../types';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
-import type { DateRange, Transaction, CartItem } from '../../../types';
 
 interface StaffPerformanceTabProps {
   staffId: string;

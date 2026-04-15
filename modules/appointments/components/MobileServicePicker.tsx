@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
-import { Check, Star, Package } from 'lucide-react';
+import { Check, Package, Star } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { CategoryIcon } from '../../../lib/categoryIcons';
+import { formatDuration, formatPrice } from '../../../lib/format';
 import type {
-  Service,
-  ServiceCategory,
   FavoriteItem,
   Pack,
+  Service,
   ServiceBlockItem,
+  ServiceCategory,
 } from '../../../types';
-import { formatPrice, formatDuration } from '../../../lib/format';
-import { CategoryIcon } from '../../../lib/categoryIcons';
-import { getPackDiscount, formatPackItemCount } from '../../services/utils/packExpansion';
+import { formatPackItemCount, getPackDiscount } from '../../services/utils/packExpansion';
 
 interface MobileServicePickerProps {
   services: Service[];

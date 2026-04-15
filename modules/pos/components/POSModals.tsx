@@ -1,28 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import {
-  X,
+  Ban,
+  Banknote,
   Clock,
+  CreditCard,
+  ExternalLink,
+  Gift,
   Receipt,
-  User,
+  RotateCcw,
   Scissors,
   ShoppingBag,
-  StickyNote,
-  CreditCard,
-  Banknote,
   Smartphone,
-  Gift,
-  Ban,
-  RotateCcw,
-  ExternalLink,
+  StickyNote,
+  User,
+  X,
 } from 'lucide-react';
-import { CartItem, Service, ServiceVariant, Transaction } from '../../../types';
-import { useSettings } from '../../settings/hooks/useSettings';
-import { formatPrice } from '../../../lib/format';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Input } from '../../../components/FormElements';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { formatPrice } from '../../../lib/format';
+import type { CartItem, Service, ServiceVariant, Transaction } from '../../../types';
+import { useSettings } from '../../settings/hooks/useSettings';
+import { REFUND_CATEGORIES, VOID_CATEGORIES } from '../constants';
 import { getTransactionStatus } from '../mappers';
-import { VOID_CATEGORIES, REFUND_CATEGORIES } from '../constants';
 
 // Shared hook for mobile fullscreen modal accessibility
 function useMobileModalA11y(isMobile: boolean, onClose: () => void) {

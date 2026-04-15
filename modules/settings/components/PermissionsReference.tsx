@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, ChevronRight, Check, Minus } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, ChevronUp, Minus } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 
 const ROLES = ['owner', 'manager', 'stylist', 'receptionist'] as const;
 

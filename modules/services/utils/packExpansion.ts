@@ -1,4 +1,4 @@
-import type { Pack, PackGroup, CartItem } from '../../../types';
+import type { CartItem, Pack, PackGroup } from '../../../types';
 
 /**
  * Expands a pack into individual CartItems with pro-rata discounted prices.

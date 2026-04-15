@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
 import { Building2, Clock } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import type React from 'react';
+import { useMemo } from 'react';
 import { Section } from '../../components/FormElements';
+import { useAuth } from '../../context/AuthContext';
 import type { Role } from '../../lib/auth.types';
 
 const ROLE_LABELS: Record<Role, string> = {

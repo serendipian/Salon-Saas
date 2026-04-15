@@ -1,11 +1,12 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { Filter, X, Download } from 'lucide-react';
-import { Expense, PaymentMethod } from '../../../types';
-import { useViewMode } from '../../../hooks/useViewMode';
-import { useSettings } from '../../settings/hooks/useSettings';
+import { Download, Filter, X } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ViewToggle } from '../../../components/ViewToggle';
-import { ExpenseTable } from './ExpenseTable';
+import { useViewMode } from '../../../hooks/useViewMode';
+import type { Expense, PaymentMethod } from '../../../types';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { ExpenseCard } from './ExpenseCard';
+import { ExpenseTable } from './ExpenseTable';
 
 const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: 'especes', label: 'Espèces' },

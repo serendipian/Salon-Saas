@@ -1,15 +1,16 @@
 // modules/accounting/hooks/useAccounting.ts
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { useTransactions } from '../../../hooks/useTransactions';
-import { useNewClientCount } from './useNewClientCount';
-import { useSettings } from '../../settings/hooks/useSettings';
-import { toExpense, toExpenseInsert, ExpenseRow } from '../mappers';
-import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
-import type { Expense, LedgerEntry, DateRange, Transaction, CartItem } from '../../../types';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { useTransactions } from '../../../hooks/useTransactions';
+import { supabase } from '../../../lib/supabase';
+import type { CartItem, DateRange, Expense, LedgerEntry, Transaction } from '../../../types';
+import { useSettings } from '../../settings/hooks/useSettings';
+import { type ExpenseRow, toExpense, toExpenseInsert } from '../mappers';
+import { useNewClientCount } from './useNewClientCount';
 
 export const calcTrend = (curr: number, prev: number) =>
   prev === 0 ? (curr > 0 ? 100 : 0) : ((curr - prev) / Math.abs(prev)) * 100;

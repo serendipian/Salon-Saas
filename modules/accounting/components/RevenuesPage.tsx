@@ -1,12 +1,12 @@
+import { ChevronDown, ChevronRight, Users } from 'lucide-react';
 import React, { useState } from 'react';
-import { Users, ChevronRight, ChevronDown } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
-import { MiniKpiRow } from './MiniKpiRow';
-import { RevenueCategoryTable } from './RevenueCategoryTable';
 import { formatPrice } from '../../../lib/format';
+import type { FinancesOutletContext } from '../FinancesLayout';
 import { calcTrend } from '../hooks/useAccounting';
 import { useRevenueBreakdown } from '../hooks/useRevenueBreakdown';
-import type { FinancesOutletContext } from '../FinancesLayout';
+import { MiniKpiRow } from './MiniKpiRow';
+import { RevenueCategoryTable } from './RevenueCategoryTable';
 
 type MainTab = 'SERVICES' | 'PRODUCTS';
 type ServiceSubTab = 'PAR_CATEGORIE' | 'PAR_EQUIPE';

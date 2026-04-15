@@ -1,16 +1,16 @@
-import React from 'react';
+import type React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAppointments } from '../hooks/useAppointments';
+import { useAuth } from '../../../context/AuthContext';
+import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { useToast } from '../../../context/ToastContext';
+import { supabase } from '../../../lib/supabase';
 import { useClients } from '../../clients/hooks/useClients';
+import { usePacks } from '../../services/hooks/usePacks';
 import { useServices } from '../../services/hooks/useServices';
 import { useTeam } from '../../team/hooks/useTeam';
-import { usePacks } from '../../services/hooks/usePacks';
-import { useAuth } from '../../../context/AuthContext';
-import { useToast } from '../../../context/ToastContext';
-import { useMediaQuery } from '../../../context/MediaQueryContext';
-import { supabase } from '../../../lib/supabase';
 import AppointmentBuilder from '../components/AppointmentBuilder';
 import AppointmentBuilderMobile from '../components/AppointmentBuilderMobile';
+import { useAppointments } from '../hooks/useAppointments';
 
 export const AppointmentNewPage: React.FC = () => {
   const navigate = useNavigate();

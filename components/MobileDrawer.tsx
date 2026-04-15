@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { X, UserCircle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { UserCircle, X } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
 
 interface DrawerNavItem {
   id: string;

@@ -1,9 +1,9 @@
-import React from 'react';
 import { Layers, Star } from 'lucide-react';
-import { Service, ServiceCategory } from '../../../types';
-import { formatPrice } from '../../../lib/format';
-import { CategoryIcon } from '../../../lib/categoryIcons';
+import type React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
+import { CategoryIcon } from '../../../lib/categoryIcons';
+import { formatPrice } from '../../../lib/format';
+import type { Service, ServiceCategory } from '../../../types';
 
 interface ServiceCardProps {
   services: Service[];

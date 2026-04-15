@@ -1,4 +1,5 @@
-import React, { createContext, useCallback, useContext, useReducer, useRef } from 'react';
+import type React from 'react';
+import { createContext, useCallback, useContext, useReducer, useRef } from 'react';
 
 // --- Types ---
 

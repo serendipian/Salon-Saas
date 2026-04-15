@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import type { PayoutType } from '../../../types';
 import type { CreatePayoutInput } from '../hooks/useStaffPayouts';
 

@@ -1,21 +1,21 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useToast } from '../../../context/ToastContext';
+import { useFormValidation } from '../../../hooks/useFormValidation';
+import { formatDuration, formatPrice } from '../../../lib/format';
 import type {
   Appointment,
   AppointmentStatus,
-  ServiceBlockState,
-  ServiceBlockItem,
-  Service,
-  ServiceCategory,
-  StaffMember,
   Client,
   FavoriteItem,
   Pack,
+  Service,
+  ServiceBlockItem,
+  ServiceBlockState,
+  ServiceCategory,
+  StaffMember,
 } from '../../../types';
 import { appointmentGroupSchema, newClientSchema } from '../schemas';
-import { useFormValidation } from '../../../hooks/useFormValidation';
 import { useStaffAvailability } from './useStaffAvailability';
-import { useToast } from '../../../context/ToastContext';
-import { formatPrice, formatDuration } from '../../../lib/format';
 
 export interface UseAppointmentFormProps {
   services: Service[];

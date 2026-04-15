@@ -1,6 +1,7 @@
 // modules/billing/components/StripePortalSection.tsx
-import React from 'react';
+
 import { CreditCard } from 'lucide-react';
+import type React from 'react';
 
 interface StripePortalSectionProps {
   onOpenPortal: () => void;

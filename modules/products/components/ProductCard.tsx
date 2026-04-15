@@ -1,8 +1,8 @@
-import React from 'react';
 import { Package } from 'lucide-react';
-import { Product, ProductCategory, Brand } from '../../../types';
-import { formatPrice } from '../../../lib/format';
+import type React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
+import { formatPrice } from '../../../lib/format';
+import type { Brand, Product, ProductCategory } from '../../../types';
 import { useProductSettings } from '../hooks/useProductSettings';
 import { UsageTypeBadge } from './UsageTypeBadge';
 

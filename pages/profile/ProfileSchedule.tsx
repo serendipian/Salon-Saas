@@ -1,9 +1,8 @@
-import React from 'react';
 import { Calendar } from 'lucide-react';
+import type React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Section } from '../../components/FormElements';
-import type { StaffMember } from '../../types';
-import type { WorkSchedule } from '../../types';
+import type { StaffMember, WorkSchedule } from '../../types';
 
 const DAY_LABELS: Record<keyof WorkSchedule, string> = {
   monday: 'Lundi',

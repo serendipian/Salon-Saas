@@ -1,9 +1,9 @@
-import { useEffect, useRef, useSyncExternalStore } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import type { QueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { useToast } from '../context/ToastContext';
 import { resetAllChannels } from '../lib/realtimeReset';
+import { supabase } from '../lib/supabase';
 
 export type ConnectionState =
   | 'connected'

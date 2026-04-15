@@ -1,49 +1,50 @@
-import React, { useEffect, useState, useMemo } from 'react';
 import {
-  ArrowLeft,
-  Save,
-  Trash2,
-  Banknote,
-  CreditCard,
-  Building2,
-  FileCheck,
-  ArrowRightLeft,
-  Info,
-  Upload,
-  X,
-  Image,
-  FileText,
-  Loader2,
-  CheckCircle2,
-  Home,
-  Users,
-  ShoppingCart,
-  Megaphone,
-  Layers,
-  Zap,
-  Wifi,
-  Shield,
-  Landmark,
-  SprayCan,
-  Wrench,
-  Truck,
-  Calculator,
-  Receipt,
-  Monitor,
   Armchair,
+  ArrowLeft,
+  ArrowRightLeft,
+  Banknote,
+  Building2,
+  Calculator,
   CreditCard as CardIcon,
+  CheckCircle2,
+  CreditCard,
+  FileCheck,
+  FileText,
+  Home,
+  Image,
+  Info,
+  Landmark,
+  Layers,
+  Loader2,
+  Megaphone,
+  Monitor,
+  Receipt,
+  Save,
+  Shield,
+  ShoppingCart,
+  SprayCan,
   Tag,
+  Trash2,
+  Truck,
+  Upload,
+  Users,
+  Wifi,
+  Wrench,
+  X,
+  Zap,
 } from 'lucide-react';
-import { Expense, ExpenseCategory, PaymentMethod } from '../../../types';
-import { Section, Input, Select } from '../../../components/FormElements';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ConfirmModal } from '../../../components/ConfirmModal';
-import { useSettings } from '../../settings/hooks/useSettings';
-import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
-import { useFormValidation } from '../../../hooks/useFormValidation';
-import { expenseSchema } from '../schemas';
-import { supabase } from '../../../lib/supabase';
+import { Input, Section, Select } from '../../../components/FormElements';
 import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
+import { useFormValidation } from '../../../hooks/useFormValidation';
+import { supabase } from '../../../lib/supabase';
+import type { Expense, ExpenseCategory, PaymentMethod } from '../../../types';
+import { useSettings } from '../../settings/hooks/useSettings';
+import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
+import { expenseSchema } from '../schemas';
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   loyer: <Home size={14} />,

@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { AppointmentStatus } from '../../../types';
 import { Check } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { AppointmentStatus } from '../../../types';
 
 const STATUS_CONFIG = {
   [AppointmentStatus.SCHEDULED]: {

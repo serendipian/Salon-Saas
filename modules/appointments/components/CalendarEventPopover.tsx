@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react';
-import { Clock, User, Scissors, Tag } from 'lucide-react';
-import { Appointment } from '../../../types';
-import { StatusBadge } from './StatusBadge';
+import { Clock, Scissors, Tag, User } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useRef } from 'react';
 import { formatPrice } from '../../../lib/format';
+import type { Appointment } from '../../../types';
+import { StatusBadge } from './StatusBadge';
 
 interface CalendarEventPopoverProps {
   appointment: Appointment;

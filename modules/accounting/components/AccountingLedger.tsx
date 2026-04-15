@@ -1,8 +1,8 @@
-import React from 'react';
-import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { LedgerEntry } from '../../../types';
-import { useSettings } from '../../settings/hooks/useSettings';
+import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
+import type React from 'react';
 import { formatPrice } from '../../../lib/format';
+import type { LedgerEntry } from '../../../types';
+import { useSettings } from '../../settings/hooks/useSettings';
 
 export const AccountingLedger: React.FC<{ data: LedgerEntry[] }> = ({ data }) => {
   const { expenseCategories } = useSettings();

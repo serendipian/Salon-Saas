@@ -1,8 +1,8 @@
 import React from 'react';
 import type { AppointmentStatus } from '../../../types';
 import InlineCalendar from './InlineCalendar';
-import TimePicker from './TimePicker';
 import ReminderToggle from './ReminderToggle';
+import TimePicker from './TimePicker';
 
 interface SchedulingPanelProps {
   activeDate: string | null;

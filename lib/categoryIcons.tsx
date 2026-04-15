@@ -1,49 +1,48 @@
-import React from 'react';
 import { Icon as IconifyIcon } from '@iconify/react';
 import type { IconifyIcon as IconifyIconData } from '@iconify/types';
-import {
-  Scissors,
-  Sparkles,
-  Droplets,
-  Zap,
-  Heart,
-  Sun,
-  Eye,
-  Flower2,
-  Layers,
-  SprayCan,
-  Crown,
-  Gem,
-  Feather,
-  Shell,
-  Ribbon,
-  Star,
-  Palette,
-  Flame,
-  Wind,
-  Bath,
-  ShowerHead,
-  WandSparkles,
-  HandHeart,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-
 // Offline-bundled @iconify icons (Icon Park Outline for beauty, Phosphor for extras)
 import combIcon from '@iconify-icons/icon-park-outline/comb';
-import nailPolishIcon from '@iconify-icons/icon-park-outline/nail-polish';
-import hairDryerIcon from '@iconify-icons/icon-park-outline/hair-dryer';
-import lipstickIcon from '@iconify-icons/icon-park-outline/lipstick';
-import mascaraIcon from '@iconify-icons/icon-park-outline/mascara';
-import perfumeIcon from '@iconify-icons/icon-park-outline/perfume';
 import cosmeticBrushIcon from '@iconify-icons/icon-park-outline/cosmetic-brush';
-import facialCleanserIcon from '@iconify-icons/icon-park-outline/facial-cleanser';
 import eyebrowIcon from '@iconify-icons/icon-park-outline/eyebrow';
-import lotionIcon from '@iconify-icons/icon-park-outline/lotion';
-import mirrorIcon from '@iconify-icons/icon-park-outline/mirror';
+import facialCleanserIcon from '@iconify-icons/icon-park-outline/facial-cleanser';
+import hairDryerIcon from '@iconify-icons/icon-park-outline/hair-dryer';
 import handCreamIcon from '@iconify-icons/icon-park-outline/hand-cream';
+import lipstickIcon from '@iconify-icons/icon-park-outline/lipstick';
+import lotionIcon from '@iconify-icons/icon-park-outline/lotion';
+import mascaraIcon from '@iconify-icons/icon-park-outline/mascara';
+import mirrorIcon from '@iconify-icons/icon-park-outline/mirror';
+import nailPolishIcon from '@iconify-icons/icon-park-outline/nail-polish';
+import perfumeIcon from '@iconify-icons/icon-park-outline/perfume';
 import towelIcon from '@iconify-icons/icon-park-outline/towel';
-import faceMaskIcon from '@iconify-icons/ph/face-mask';
 import spaIcon from '@iconify-icons/mdi/spa';
+import faceMaskIcon from '@iconify-icons/ph/face-mask';
+import type { LucideIcon } from 'lucide-react';
+import {
+  Bath,
+  Crown,
+  Droplets,
+  Eye,
+  Feather,
+  Flame,
+  Flower2,
+  Gem,
+  HandHeart,
+  Heart,
+  Layers,
+  Palette,
+  Ribbon,
+  Scissors,
+  Shell,
+  ShowerHead,
+  Sparkles,
+  SprayCan,
+  Star,
+  Sun,
+  WandSparkles,
+  Wind,
+  Zap,
+} from 'lucide-react';
+import type React from 'react';
 
 // ── Icon registry ──────────────────────────────────────────────
 // Each entry is either a Lucide component or an @iconify data object.

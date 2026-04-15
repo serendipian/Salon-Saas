@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useMediaQuery } from '../context/MediaQueryContext';
 
 export type ViewMode = 'card' | 'table';

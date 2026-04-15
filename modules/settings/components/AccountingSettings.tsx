@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Calculator, Info, Trash2, Users } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calculator, Users, ArrowLeft, Trash2, Info } from 'lucide-react';
-import { useSettings } from '../hooks/useSettings';
 import { Input } from '../../../components/FormElements';
+import { useSettings } from '../hooks/useSettings';
 
 export const AccountingSettings: React.FC = () => {
   const navigate = useNavigate();

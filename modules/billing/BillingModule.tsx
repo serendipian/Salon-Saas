@@ -1,17 +1,19 @@
 // modules/billing/BillingModule.tsx
-import React, { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+
 import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
-import { useBilling } from './hooks/useBilling';
-import { TrialBanner } from './components/TrialBanner';
+import { supabase } from '../../lib/supabase';
 import { CurrentPlanCard } from './components/CurrentPlanCard';
 import { PlanCards } from './components/PlanCards';
 import { StripePortalSection } from './components/StripePortalSection';
+import { TrialBanner } from './components/TrialBanner';
 import { UpgradeModal } from './components/UpgradeModal';
 import { UpgradeSuccess } from './components/UpgradeSuccess';
+import { useBilling } from './hooks/useBilling';
 
 export const BillingModule: React.FC = () => {
   const navigate = useNavigate();

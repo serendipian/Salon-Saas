@@ -1,25 +1,25 @@
-import React from 'react';
-import { useOutletContext, Link } from 'react-router-dom';
+import { Info } from 'lucide-react';
+import type React from 'react';
+import { Link, useOutletContext } from 'react-router-dom';
 import {
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
 } from 'recharts';
-import { Info } from 'lucide-react';
 import { formatPrice } from '../../../lib/format';
-import { MiniKpiRow } from './MiniKpiRow';
-import { useRevenueBreakdown } from '../hooks/useRevenueBreakdown';
 import type { FinancesOutletContext } from '../FinancesLayout';
+import { useRevenueBreakdown } from '../hooks/useRevenueBreakdown';
+import { MiniKpiRow } from './MiniKpiRow';
 
 const CATEGORY_COLORS = [
   '#0f172a',

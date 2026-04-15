@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useMediaQuery } from '../context/MediaQueryContext';
 
 export type SidebarMode = 'drawer' | 'collapsed' | 'expanded';

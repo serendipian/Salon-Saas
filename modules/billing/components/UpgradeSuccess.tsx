@@ -1,5 +1,5 @@
 // modules/billing/components/UpgradeSuccess.tsx
-import React from 'react';
+import type React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface PlanDetails {

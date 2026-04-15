@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
 import { useMediaQuery } from '../context/MediaQueryContext';
 
 interface DatePickerProps {

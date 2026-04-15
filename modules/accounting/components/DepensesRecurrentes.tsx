@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, RefreshCw, Zap, Info, CheckCircle } from 'lucide-react';
-import { useSettings } from '../../settings/hooks/useSettings';
+import { CheckCircle, Info, Plus, RefreshCw, Trash2, Zap } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Input, Select } from '../../../components/FormElements';
-import { MiniKpiRow } from './MiniKpiRow';
-import { formatPrice } from '../../../lib/format';
 import { useToast } from '../../../context/ToastContext';
-import type { RecurringExpense, Expense } from '../../../types';
+import { formatPrice } from '../../../lib/format';
+import type { Expense, RecurringExpense } from '../../../types';
+import { useSettings } from '../../settings/hooks/useSettings';
+import { MiniKpiRow } from './MiniKpiRow';
 
 function advanceDate(date: string, frequency: RecurringExpense['frequency']): string {
   const d = new Date(date);

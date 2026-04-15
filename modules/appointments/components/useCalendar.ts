@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
-import { Appointment, ServiceCategory, StaffMember } from '../../../types';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { Appointment, ServiceCategory, StaffMember } from '../../../types';
 
 export type CalendarViewMode = 'day' | 'week' | 'month';
 

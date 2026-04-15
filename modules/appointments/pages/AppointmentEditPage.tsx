@@ -1,17 +1,18 @@
-import React, { useEffect, useMemo, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAppointments } from '../hooks/useAppointments';
-import { useClients } from '../../clients/hooks/useClients';
-import { useServices } from '../../services/hooks/useServices';
-import { useTeam } from '../../team/hooks/useTeam';
-import { usePacks } from '../../services/hooks/usePacks';
+import type React from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import { useToast } from '../../../context/ToastContext';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { useToast } from '../../../context/ToastContext';
 import { supabase } from '../../../lib/supabase';
 import type { ServiceBlockState } from '../../../types';
+import { useClients } from '../../clients/hooks/useClients';
+import { usePacks } from '../../services/hooks/usePacks';
+import { useServices } from '../../services/hooks/useServices';
+import { useTeam } from '../../team/hooks/useTeam';
 import AppointmentBuilder from '../components/AppointmentBuilder';
 import AppointmentBuilderMobile from '../components/AppointmentBuilderMobile';
+import { useAppointments } from '../hooks/useAppointments';
 
 export const AppointmentEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Pencil, DollarSign, TrendingUp, Award, Wallet } from 'lucide-react';
-import type { StaffMember, BonusTier } from '../../../types';
-import { supabase } from '../../../lib/supabase';
+import { Award, DollarSign, Pencil, TrendingUp, Wallet } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { BonusSystemEditor } from '../../../components/BonusSystemEditor';
 import { useAuth } from '../../../context/AuthContext';
 import { formatPrice } from '../../../lib/format';
-import { BonusSystemEditor } from '../../../components/BonusSystemEditor';
+import { supabase } from '../../../lib/supabase';
+import type { BonusTier, StaffMember } from '../../../types';
 import { useStaffCompensation } from '../hooks/useStaffCompensation';
 import { useStaffPayouts } from '../hooks/useStaffPayouts';
 import { PayoutForm } from './PayoutForm';

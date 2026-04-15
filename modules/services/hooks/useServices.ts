@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { toService, toServiceInsert, toVariantInsert, toServiceCategory } from '../mappers';
-import type { Service, ServiceCategory, FavoriteItem } from '../../../types';
-import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { supabase } from '../../../lib/supabase';
+import type { FavoriteItem, Service, ServiceCategory } from '../../../types';
+import { toService, toServiceCategory, toServiceInsert, toVariantInsert } from '../mappers';
 
 export interface CategoryUpdatePayload {
   categories: ServiceCategory[];

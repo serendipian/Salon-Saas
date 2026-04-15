@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { X, Copy, Check, Loader2 } from 'lucide-react';
+import { Check, Copy, Loader2, X } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 interface InvitationModalProps {
   staffRole: string;

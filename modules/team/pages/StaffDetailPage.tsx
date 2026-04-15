@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, User, TrendingUp, Wallet, CalendarDays, Activity } from 'lucide-react';
-import { useStaffDetail } from '../hooks/useStaffDetail';
-import { useInvitation } from '../hooks/useInvitation';
+import { Activity, CalendarDays, ChevronLeft, TrendingUp, User, Wallet } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTransactions } from '../../../hooks/useTransactions';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
 import { useSettings } from '../../settings/hooks/useSettings';
-import { StaffHeader } from '../components/StaffHeader';
-import { StaffProfileTab } from '../components/StaffProfileTab';
-import { StaffPerformanceTab } from '../components/StaffPerformanceTab';
-import { StaffRemunerationTab } from '../components/StaffRemunerationTab';
-import { StaffAgendaTab } from '../components/StaffAgendaTab';
-import { StaffActivityTab } from '../components/StaffActivityTab';
 import { InvitationModal } from '../components/InvitationModal';
+import { StaffActivityTab } from '../components/StaffActivityTab';
+import { StaffAgendaTab } from '../components/StaffAgendaTab';
+import { StaffHeader } from '../components/StaffHeader';
+import { StaffPerformanceTab } from '../components/StaffPerformanceTab';
+import { StaffProfileTab } from '../components/StaffProfileTab';
+import { StaffRemunerationTab } from '../components/StaffRemunerationTab';
+import { useInvitation } from '../hooks/useInvitation';
+import { useStaffDetail } from '../hooks/useStaffDetail';
 
 const TABS = [
   { key: 'profil', label: 'Profil', icon: User },

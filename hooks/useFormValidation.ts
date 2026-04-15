@@ -1,6 +1,6 @@
 // hooks/useFormValidation.ts
-import { useState, useCallback } from 'react';
-import { ZodSchema, ZodError } from 'zod';
+import { useCallback, useState } from 'react';
+import { ZodError, type ZodSchema } from 'zod';
 
 interface ValidationResult<T> {
   errors: Record<string, string>;

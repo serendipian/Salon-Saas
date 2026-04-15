@@ -1,8 +1,8 @@
-import React from 'react';
 import { Mail, MessageSquare } from 'lucide-react';
+import type React from 'react';
+import { Section, Select } from '../../components/FormElements';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { Section, Select } from '../../components/FormElements';
 
 const LANGUAGE_OPTIONS = [
   { value: 'fr', label: 'Français' },

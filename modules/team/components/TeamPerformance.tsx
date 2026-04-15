@@ -1,11 +1,11 @@
-import React from 'react';
+import { Award, BarChart2, ChevronRight, TrendingUp, Wallet } from 'lucide-react';
+import type React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TrendingUp, Award, Wallet, BarChart2, ChevronRight } from 'lucide-react';
-import { StaffAvatar } from '../../../components/StaffAvatar';
 import { DateRangePicker } from '../../../components/DateRangePicker';
+import { StaffAvatar } from '../../../components/StaffAvatar';
 import { formatPrice } from '../../../lib/format';
 import type { StaffMember } from '../../../types';
-import { useTeamPerformance, StaffPerformance } from '../hooks/useTeamPerformance';
+import { type StaffPerformance, useTeamPerformance } from '../hooks/useTeamPerformance';
 
 interface TeamPerformanceProps {
   staff: StaffMember[];

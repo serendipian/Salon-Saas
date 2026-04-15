@@ -1,9 +1,9 @@
-import React from 'react';
 import { ChevronRight, Layers } from 'lucide-react';
-import { Service, ServiceCategory } from '../../../types';
-import { formatPrice } from '../../../lib/format';
-import { CategoryIcon } from '../../../lib/categoryIcons';
+import React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
+import { CategoryIcon } from '../../../lib/categoryIcons';
+import { formatPrice } from '../../../lib/format';
+import type { Service, ServiceCategory } from '../../../types';
 import { useServiceSettings } from '../hooks/useServiceSettings';
 
 interface ServiceTableProps {

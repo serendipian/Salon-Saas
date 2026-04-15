@@ -1,20 +1,20 @@
-import React from 'react';
 import {
-  Mail,
-  Phone,
-  Clock,
-  UserCheck,
-  Send,
-  RotateCcw,
-  XCircle,
-  CalendarDays,
-  TrendingUp,
-  Percent,
   Award,
+  CalendarDays,
+  Clock,
+  Mail,
+  Percent,
+  Phone,
+  RotateCcw,
+  Send,
+  TrendingUp,
+  UserCheck,
+  XCircle,
 } from 'lucide-react';
-import { StaffMember } from '../../../types';
-import { formatPrice } from '../../../lib/format';
+import type React from 'react';
 import { StaffAvatar } from '../../../components/StaffAvatar';
+import { formatPrice } from '../../../lib/format';
+import type { StaffMember } from '../../../types';
 
 interface StaffHeaderProps {
   staff: StaffMember;

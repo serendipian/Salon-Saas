@@ -1,4 +1,4 @@
-import type { WorkSchedule, BonusTier } from '../../types';
+import type { BonusTier, WorkSchedule } from '../../types';
 
 const DAY_KEYS: (keyof WorkSchedule)[] = [
   'sunday',

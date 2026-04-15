@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Camera, Loader2, Save, Store } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Store, Camera, Loader2 } from 'lucide-react';
-import { useSettings } from '../hooks/useSettings';
-import { Section, Input, Select } from '../../../components/FormElements';
-import { supabase } from '../../../lib/supabase';
+import { Input, Section, Select } from '../../../components/FormElements';
 import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
+import { supabase } from '../../../lib/supabase';
+import { useSettings } from '../hooks/useSettings';
 
 const MAX_LOGO_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];

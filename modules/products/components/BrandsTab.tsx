@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, ArrowUp, ArrowDown, Save } from 'lucide-react';
-import { ColorPicker } from '../../services/components/ColorPicker';
-import { useProducts } from '../hooks/useProducts';
-import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
+import { ArrowDown, ArrowUp, Plus, Save, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import type { Brand } from '../../../types';
+import { ColorPicker } from '../../services/components/ColorPicker';
+import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
+import { useProducts } from '../hooks/useProducts';
 
 export function BrandsTab() {
   const { brands, updateBrands } = useProducts();

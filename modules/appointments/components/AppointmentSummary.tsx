@@ -1,7 +1,7 @@
+import { Calendar, Clock, Play, StickyNote, User, UserCircle } from 'lucide-react';
 import React from 'react';
-import { formatPrice, formatDuration } from '../../../lib/format';
-import type { Service, ServiceBlockItem, StaffMember, Client, Pack } from '../../../types';
-import { Play, User, Clock, Calendar, UserCircle, StickyNote } from 'lucide-react';
+import { formatDuration, formatPrice } from '../../../lib/format';
+import type { Client, Pack, Service, ServiceBlockItem, StaffMember } from '../../../types';
 
 interface ServiceBlockSummary {
   items: ServiceBlockItem[];

@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import { User, Building2, Shield, Settings2 } from 'lucide-react';
+import { Building2, Settings2, Shield, User } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLinkedStaffMember } from '../hooks/useLinkedStaffMember';
+import { ProfileDangerZone } from './profile/ProfileDangerZone';
 import { ProfileIdentity } from './profile/ProfileIdentity';
+import { ProfilePerformance } from './profile/ProfilePerformance';
+import { ProfilePreferences } from './profile/ProfilePreferences';
 import { ProfileSalonRole } from './profile/ProfileSalonRole';
 import { ProfileSchedule } from './profile/ProfileSchedule';
-import { ProfilePerformance } from './profile/ProfilePerformance';
 import { ProfileSecurity } from './profile/ProfileSecurity';
-import { ProfilePreferences } from './profile/ProfilePreferences';
-import { ProfileDangerZone } from './profile/ProfileDangerZone';
 
 type TabId = 'personal' | 'salon' | 'security' | 'preferences';
 

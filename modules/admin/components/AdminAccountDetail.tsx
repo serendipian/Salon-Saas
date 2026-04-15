@@ -1,16 +1,18 @@
 // modules/admin/components/AdminAccountDetail.tsx
-import React, { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+
 import { ChevronRight, ExternalLink } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ADMIN_FONT, TIER_BADGE } from '../constants';
 import {
   useAdminAccount,
+  useAdminCancelSubscription,
   useAdminExtendTrial,
+  useAdminReactivate,
   useAdminSetPlan,
   useAdminSuspend,
-  useAdminReactivate,
-  useAdminCancelSubscription,
 } from '../hooks/useAdmin';
-import { TIER_BADGE, ADMIN_FONT } from '../constants';
 import { AdminErrorState, ConfirmModal } from './AdminShared';
 
 const INVOICE_STATUS_BADGE: Record<string, { color: string; bg: string }> = {

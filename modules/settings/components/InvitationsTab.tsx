@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Plus, Copy, Check, X, Loader2, Link as LinkIcon } from 'lucide-react';
-import { type InvitationRow, INVITATION_EXPIRY_DAYS } from '../hooks/useTeamSettings';
+import { Check, Copy, Link as LinkIcon, Loader2, Plus, X } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { useToast } from '../../../context/ToastContext';
+import { INVITATION_EXPIRY_DAYS, type InvitationRow } from '../hooks/useTeamSettings';
 
 const ROLE_LABELS: Record<string, string> = {
   manager: 'Manager',

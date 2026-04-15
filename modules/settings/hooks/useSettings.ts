@@ -1,19 +1,20 @@
 // modules/settings/hooks/useSettings.ts
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useMutationToast } from '../../../hooks/useMutationToast';
+import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { supabase } from '../../../lib/supabase';
+import type { ExpenseCategorySetting, RecurringExpense, SalonSettings } from '../../../types';
 import {
-  toSalonSettings,
-  toSalonUpdate,
   toExpenseCategory,
   toExpenseCategoryInsert,
   toRecurringExpense,
   toRecurringExpenseInsert,
+  toSalonSettings,
+  toSalonUpdate,
 } from '../mappers';
-import type { SalonSettings, ExpenseCategorySetting, RecurringExpense } from '../../../types';
 
 export const useSettings = () => {
   const { activeSalon, refreshActiveSalon } = useAuth();

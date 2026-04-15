@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Star, GripVertical, ChevronDown, ChevronRight, Save, Package } from 'lucide-react';
-import { useServices } from '../hooks/useServices';
-import { usePacks } from '../hooks/usePacks';
+import { ChevronDown, ChevronRight, GripVertical, Package, Save, Star } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import type { FavoriteItem } from '../../../types';
+import { usePacks } from '../hooks/usePacks';
+import { useServices } from '../hooks/useServices';
 
 export function FavoritesTab() {
   const { allServices, serviceCategories, favorites, toggleFavorite, reorderFavorites } =

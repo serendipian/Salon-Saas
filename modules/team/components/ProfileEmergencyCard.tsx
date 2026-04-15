@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { AlertCircle, User, Phone, Pencil, Save, X, Loader2 } from 'lucide-react';
-import type { StaffMember } from '../../../types';
+import { AlertCircle, Loader2, Pencil, Phone, Save, User, X } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Input } from '../../../components/FormElements';
 import { useToast } from '../../../context/ToastContext';
+import type { StaffMember } from '../../../types';
 
 interface ProfileEmergencyCardProps {
   staff: StaffMember;

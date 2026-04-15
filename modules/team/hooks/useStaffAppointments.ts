@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { WorkSchedule } from '../../../types';
+import { supabase } from '../../../lib/supabase';
+import type { WorkSchedule } from '../../../types';
 import { countWorkingDays } from '../utils';
 
 export const useStaffAppointments = (staffId: string, schedule?: WorkSchedule) => {

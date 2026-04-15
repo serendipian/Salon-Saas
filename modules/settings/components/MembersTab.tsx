@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
 import { Shield, UserMinus } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { useAuth } from '../../../context/AuthContext';
 import type { Role } from '../../../lib/auth.types';
 import type { MemberRow } from '../hooks/useTeamSettings';
 import { RevokeAccessModal } from './RevokeAccessModal';
 import { TransferOwnershipModal } from './TransferOwnershipModal';
-import { useAuth } from '../../../context/AuthContext';
 
 const ROLE_LABELS: Record<string, string> = {
   owner: 'Propriétaire',

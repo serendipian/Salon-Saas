@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import type { UsageType } from '../../../types';
 
 const USAGE_STYLES: Record<UsageType, { label: string; className: string }> = {

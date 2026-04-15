@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { ViewState, Product } from '../../types';
-import { useProducts } from './hooks/useProducts';
-import { useBilling } from '../billing/hooks/useBilling';
+import type React from 'react';
+import { useState } from 'react';
 import { useToast } from '../../context/ToastContext';
-import { ProductList } from './components/ProductList';
+import type { Product, ViewState } from '../../types';
+import { useBilling } from '../billing/hooks/useBilling';
 import { ProductForm } from './components/ProductForm';
+import { ProductList } from './components/ProductList';
+import { useProducts } from './hooks/useProducts';
 
 export const ProductsModule: React.FC = () => {
   const {

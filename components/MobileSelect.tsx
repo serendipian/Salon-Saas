@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { Check, Search, X } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Search, Check } from 'lucide-react';
 import type { SelectOption } from './FormElements';
 
 interface MobileSelectProps {

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
 import { WifiOff } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import type { ConnectionState } from '../hooks/useConnectionStatus';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { supabase } from '../lib/supabase';
-import type { ConnectionState } from '../hooks/useConnectionStatus';
 
 const DOT_STYLES: Record<ConnectionState, string> = {
   connected: 'bg-emerald-500',

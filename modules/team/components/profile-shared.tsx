@@ -1,5 +1,5 @@
-import React from 'react';
-import { Pencil, Save, X, Loader2 } from 'lucide-react';
+import { Loader2, Pencil, Save, X } from 'lucide-react';
+import type React from 'react';
 import type { WorkSchedule } from '../../../types';
 
 // --- Read-only field display ---

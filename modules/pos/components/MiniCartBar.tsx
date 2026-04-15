@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingBag, ChevronRight } from 'lucide-react';
+import { ChevronRight, ShoppingBag } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { formatPrice } from '../../../lib/format';
 
 interface MiniCartBarProps {

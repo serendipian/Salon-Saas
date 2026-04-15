@@ -1,8 +1,8 @@
-import React from 'react';
-import { Tag, Banknote, CreditCard, Building2, FileCheck, ArrowRightLeft } from 'lucide-react';
-import { Expense, PaymentMethod } from '../../../types';
-import { formatPrice } from '../../../lib/format';
+import { ArrowRightLeft, Banknote, Building2, CreditCard, FileCheck, Tag } from 'lucide-react';
+import type React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
+import { formatPrice } from '../../../lib/format';
+import type { Expense, PaymentMethod } from '../../../types';
 
 const PAYMENT_METHOD_LABELS: Record<PaymentMethod, { label: string; icon: React.ReactNode }> = {
   especes: { label: 'Espèces', icon: <Banknote size={12} /> },

@@ -1,9 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { ArrowLeft, Package, RotateCcw, X } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ArrowLeft, RotateCcw, Package } from 'lucide-react';
-import { Transaction, CartItem } from '../../../types';
-import { formatPrice } from '../../../lib/format';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { formatPrice } from '../../../lib/format';
+import type { CartItem, Transaction } from '../../../types';
 import { REFUND_CATEGORIES } from '../constants';
 import { getRefundedAmount } from '../mappers';
 

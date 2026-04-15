@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
-import { ArrowLeft, AlertTriangle, Plus, Minus } from 'lucide-react';
-import type { Pack, PackGroup, Service, ServiceCategory } from '../../../types';
-import { formatPrice, formatDuration } from '../../../lib/format';
-import { packSchema } from '../packSchemas';
+import { AlertTriangle, ArrowLeft, Minus, Plus } from 'lucide-react';
+import type React from 'react';
+import { useMemo, useState } from 'react';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import { CategoryIcon } from '../../../lib/categoryIcons';
+import { formatDuration, formatPrice } from '../../../lib/format';
+import type { Pack, PackGroup, Service, ServiceCategory } from '../../../types';
+import { packSchema } from '../packSchemas';
 
 interface PackFormProps {
   existingPack?: Pack;

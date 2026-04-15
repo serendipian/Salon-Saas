@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { StaffClient } from '../../../types';
+import { supabase } from '../../../lib/supabase';
+import type { StaffClient } from '../../../types';
 
 export const useStaffClients = (staffId: string) => {
   const { activeSalon } = useAuth();

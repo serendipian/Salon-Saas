@@ -1,7 +1,7 @@
-import React from 'react';
+import { ChevronRight, Plus, Store } from 'lucide-react';
+import type React from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Store, ChevronRight, Plus } from 'lucide-react';
 
 const ROLE_LABELS: Record<string, string> = {
   owner: 'Propriétaire',

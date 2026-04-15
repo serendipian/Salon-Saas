@@ -1,7 +1,7 @@
-import React from 'react';
 import { Check, X } from 'lucide-react';
-import type { StaffPayout } from '../../../types';
+import type React from 'react';
 import { formatPrice } from '../../../lib/format';
+import type { StaffPayout } from '../../../types';
 
 interface PayoutHistoryProps {
   payouts: StaffPayout[];

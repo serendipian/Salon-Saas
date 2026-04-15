@@ -1,6 +1,6 @@
-import React from 'react';
 import { Clock, Copy, RefreshCw } from 'lucide-react';
-import { WorkSchedule, WorkDay } from '../types';
+import type React from 'react';
+import type { WorkDay, WorkSchedule } from '../types';
 
 interface WorkScheduleEditorProps {
   value: WorkSchedule;

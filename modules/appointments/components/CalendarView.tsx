@@ -1,12 +1,13 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { Appointment, ServiceCategory, StaffMember, Service } from '../../../types';
-import { useCalendar } from './useCalendar';
-import { CalendarHeader } from './CalendarHeader';
-import { CalendarSidebar } from './CalendarSidebar';
+import type React from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import type { Appointment, Service, ServiceCategory, StaffMember } from '../../../types';
 import { CalendarDayView } from './CalendarDayView';
-import { CalendarWeekView } from './CalendarWeekView';
-import { CalendarMonthView } from './CalendarMonthView';
 import { CalendarEventPopover } from './CalendarEventPopover';
+import { CalendarHeader } from './CalendarHeader';
+import { CalendarMonthView } from './CalendarMonthView';
+import { CalendarSidebar } from './CalendarSidebar';
+import { CalendarWeekView } from './CalendarWeekView';
+import { useCalendar } from './useCalendar';
 
 interface CalendarViewProps {
   allAppointments: Appointment[];

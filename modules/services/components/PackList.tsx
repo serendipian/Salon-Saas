@@ -1,23 +1,24 @@
-import React, { useMemo, useState } from 'react';
 import {
-  Plus,
-  Package,
   AlertTriangle,
-  Star,
-  Trash2,
-  Edit3,
-  FolderPlus,
+  Calendar,
   ChevronDown,
   ChevronRight,
-  Calendar,
+  Edit3,
+  FolderPlus,
+  Package,
+  Plus,
+  Star,
+  Trash2,
 } from 'lucide-react';
-import type { Pack, PackGroup } from '../../../types';
+import type React from 'react';
+import { useMemo, useState } from 'react';
 import { formatPrice } from '../../../lib/format';
+import type { Pack, PackGroup } from '../../../types';
 import {
-  isPackValid,
-  getPackDiscount,
   formatPackItemCount,
+  getPackDiscount,
   isPackGroupLive,
+  isPackValid,
 } from '../utils/packExpansion';
 
 interface PackListProps {

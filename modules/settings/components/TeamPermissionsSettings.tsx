@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { ArrowLeft, Mail, Users } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, Mail } from 'lucide-react';
 import { useTeamSettings } from '../hooks/useTeamSettings';
-import { MembersTab } from './MembersTab';
 import { InvitationsTab } from './InvitationsTab';
+import { MembersTab } from './MembersTab';
 import { PermissionsReference } from './PermissionsReference';
 
 const tabs = [

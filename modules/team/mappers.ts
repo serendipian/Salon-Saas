@@ -1,4 +1,4 @@
-import type { StaffMember, WorkSchedule, BonusTier } from '../../types';
+import type { BonusTier, StaffMember, WorkSchedule } from '../../types';
 
 interface StaffMemberRow {
   id: string;

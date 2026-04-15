@@ -1,14 +1,16 @@
 // modules/admin/components/AdminFailedPayments.tsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { AlertCircle } from 'lucide-react';
-import {
-  useAdminFailedPayments,
-  useAdminCancelSubscription,
-  type AdminFailedPayment,
-} from '../hooks/useAdmin';
+import type React from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ADMIN_FONT } from '../constants';
-import { AdminLoadingState, AdminErrorState, AdminTableFooter, ConfirmModal } from './AdminShared';
+import {
+  type AdminFailedPayment,
+  useAdminCancelSubscription,
+  useAdminFailedPayments,
+} from '../hooks/useAdmin';
+import { AdminErrorState, AdminLoadingState, AdminTableFooter, ConfirmModal } from './AdminShared';
 
 const FailedPaymentRow: React.FC<{ payment: AdminFailedPayment }> = ({ payment }) => {
   const navigate = useNavigate();

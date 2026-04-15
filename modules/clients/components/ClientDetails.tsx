@@ -1,32 +1,32 @@
-import React from 'react';
 import {
-  MapPin,
-  ArrowLeft,
-  Phone,
-  Mail,
   AlertCircle,
-  MessageCircle,
-  Instagram,
-  Globe,
-  Star,
-  Shield,
-  Check,
-  X as XIcon,
+  ArrowLeft,
   Briefcase,
   Building2,
-  UserPlus,
   Calendar,
   CalendarDays,
-  Edit,
-  Trash2,
+  Check,
   Clock,
+  Edit,
+  Globe,
+  Instagram,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Shield,
   ShoppingBag,
+  Star,
+  Trash2,
   User,
+  UserPlus,
+  X as XIcon,
 } from 'lucide-react';
-import { Client, AppointmentStatus } from '../../../types';
-import { useClientAppointments } from '../hooks/useClientAppointments';
-import { useTeam } from '../../team/hooks/useTeam';
+import type React from 'react';
 import { formatPrice } from '../../../lib/format';
+import { AppointmentStatus, type Client } from '../../../types';
+import { useTeam } from '../../team/hooks/useTeam';
+import { useClientAppointments } from '../hooks/useClientAppointments';
 
 interface ClientDetailsProps {
   client: Client;

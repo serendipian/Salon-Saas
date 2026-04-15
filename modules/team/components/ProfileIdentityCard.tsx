@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
-import { Camera, User, Loader2, Pencil, Save, X } from 'lucide-react';
-import type { StaffMember } from '../../../types';
+import { Camera, Loader2, Pencil, Save, User, X } from 'lucide-react';
+import type React from 'react';
+import { useRef, useState } from 'react';
 import { Input, Select, TextArea } from '../../../components/FormElements';
-import { useStaffPhotoUpload } from '../hooks/useStaffPhotoUpload';
-import { useToast } from '../../../context/ToastContext';
 import { StaffAvatar } from '../../../components/StaffAvatar';
+import { useToast } from '../../../context/ToastContext';
+import type { StaffMember } from '../../../types';
+import { useStaffPhotoUpload } from '../hooks/useStaffPhotoUpload';
 
 interface ProfileIdentityCardProps {
   staff: StaffMember;

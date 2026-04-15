@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
 import { Plus, Search, Settings } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Supplier, SupplierCategory } from '../../../types';
+import { ViewToggle } from '../../../components/ViewToggle';
 import { useAuth } from '../../../context/AuthContext';
 import { usePermissions } from '../../../hooks/usePermissions';
 import { useViewMode } from '../../../hooks/useViewMode';
+import type { Supplier, SupplierCategory } from '../../../types';
 import { useSupplierSettings } from '../hooks/useSupplierSettings';
-import { ViewToggle } from '../../../components/ViewToggle';
-import { SupplierTable } from './SupplierTable';
 import { SupplierCard } from './SupplierCard';
+import { SupplierTable } from './SupplierTable';
 
 interface SupplierListProps {
   suppliers: Supplier[];

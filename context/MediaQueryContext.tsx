@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useMemo, useRef, useSyncExternalStore } from 'react';
+import type React from 'react';
+import { createContext, useContext, useMemo, useRef, useSyncExternalStore } from 'react';
 
 interface MediaQueryState {
   isMobile: boolean;

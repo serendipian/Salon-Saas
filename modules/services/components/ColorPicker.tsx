@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const COLOR_PRESETS = [
   { value: 'bg-slate-100 text-slate-800 border-slate-200', dot: 'bg-slate-400' },

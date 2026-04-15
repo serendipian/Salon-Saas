@@ -1,9 +1,11 @@
 // modules/admin/components/AdminTrialsPipeline.tsx
-import React, { useState } from 'react';
+
 import { Clock } from 'lucide-react';
-import { useAdminTrials, useAdminExtendTrial, type AdminTrial } from '../hooks/useAdmin';
+import type React from 'react';
+import { useState } from 'react';
 import { ADMIN_FONT } from '../constants';
-import { AdminLoadingState, AdminErrorState, AdminTableFooter } from './AdminShared';
+import { type AdminTrial, useAdminExtendTrial, useAdminTrials } from '../hooks/useAdmin';
+import { AdminErrorState, AdminLoadingState, AdminTableFooter } from './AdminShared';
 
 const DaysChip: React.FC<{ days: number }> = ({ days }) => {
   const color = days <= 3 ? '#df1b41' : days <= 7 ? '#b45309' : '#1565c0';

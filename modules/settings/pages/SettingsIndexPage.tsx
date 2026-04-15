@@ -1,18 +1,18 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
-  Store,
-  Users,
-  MapPin,
   Bell,
-  CreditCard,
-  Shield,
-  Globe,
   Calculator,
   ChevronRight,
-  Smartphone,
   Clock,
+  CreditCard,
+  Globe,
+  MapPin,
+  Shield,
+  Smartphone,
+  Store,
+  Users,
 } from 'lucide-react';
+import type React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const SettingCard = ({
   icon: Icon,

@@ -1,5 +1,5 @@
 // modules/billing/components/PlanCards.tsx
-import React from 'react';
+import type React from 'react';
 import type { SubscriptionTier } from '../../../lib/auth.types';
 
 interface Plan {

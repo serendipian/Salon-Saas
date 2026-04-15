@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
+import { getSalonHourRange } from '../../../lib/scheduleHours';
 import type { Appointment, StaffMember, WorkSchedule } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
-import { getSalonHourRange } from '../../../lib/scheduleHours';
 
 const DAY_KEYS: (keyof WorkSchedule)[] = [
   'sunday',

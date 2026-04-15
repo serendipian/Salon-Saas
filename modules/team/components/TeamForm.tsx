@@ -1,26 +1,27 @@
-import React, { useState, useRef } from 'react';
 import {
   ArrowLeft,
-  Save,
-  User,
   Camera,
   Check,
   CreditCard,
   FileText,
   HeartPulse,
   Loader2,
+  Save,
+  User,
 } from 'lucide-react';
-import { StaffMember, WorkSchedule } from '../../../types';
-import { Section, Input, Select, TextArea } from '../../../components/FormElements';
-import { PhoneInput } from '../../../components/PhoneInput';
-import { DatePicker } from '../../../components/DatePicker';
-import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
+import type React from 'react';
+import { useRef, useState } from 'react';
 import { BonusSystemEditor } from '../../../components/BonusSystemEditor';
+import { DatePicker } from '../../../components/DatePicker';
+import { Input, Section, Select, TextArea } from '../../../components/FormElements';
+import { PhoneInput } from '../../../components/PhoneInput';
+import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
+import { useFormValidation } from '../../../hooks/useFormValidation';
+import type { StaffMember, WorkSchedule } from '../../../types';
 import { useServices } from '../../services/hooks/useServices';
 import { useSettings } from '../../settings/hooks/useSettings';
-import { useFormValidation } from '../../../hooks/useFormValidation';
-import { staffMemberSchema } from '../schemas';
 import { useStaffPhotoUpload } from '../hooks/useStaffPhotoUpload';
+import { staffMemberSchema } from '../schemas';
 
 interface TeamFormProps {
   existingMember?: StaffMember;

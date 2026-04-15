@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import type { StaffMember } from '../../../types';
 import { StaffAvatar } from '../../../components/StaffAvatar';
+import type { StaffMember } from '../../../types';
 
 interface StaffPillsProps {
   team: StaffMember[];

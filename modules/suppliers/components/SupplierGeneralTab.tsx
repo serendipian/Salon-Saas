@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
-import { useSupplierSettings } from '../hooks/useSupplierSettings';
+import React, { useEffect, useState } from 'react';
 import type { SupplierSettings } from '../../../types';
+import { useSupplierSettings } from '../hooks/useSupplierSettings';
 
 const PAYMENT_TERMS_OPTIONS = [
   { value: 'Comptant', label: 'Comptant' },

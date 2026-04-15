@@ -1,6 +1,6 @@
 import React from 'react';
-import type { ServiceVariant } from '../../../types';
 import { formatPrice } from '../../../lib/format';
+import type { ServiceVariant } from '../../../types';
 
 interface VariantListProps {
   variants: ServiceVariant[];

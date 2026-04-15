@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { Client, ViewState } from '../../types';
-import { useClients } from './hooks/useClients';
+import type React from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ConfirmModal } from '../../components/ConfirmModal';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
-import { ClientList } from './components/ClientList';
+import type { Client, ViewState } from '../../types';
 import { ClientDetails } from './components/ClientDetails';
 import { ClientForm } from './components/ClientForm';
-import { ConfirmModal } from '../../components/ConfirmModal';
+import { ClientList } from './components/ClientList';
+import { useClients } from './hooks/useClients';
 
 export const ClientsModule: React.FC = () => {
   const { clients, isLoading, addClient, updateClient, deleteClient } = useClients();

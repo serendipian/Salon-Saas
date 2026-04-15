@@ -1,12 +1,16 @@
 // hooks/useTransactions.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { toTransaction, toTransactionRpcPayload, TransactionRow } from '../modules/pos/mappers';
-import type { CartItem, PaymentEntry } from '../types';
-import { useRealtimeSync } from './useRealtimeSync';
-import { useMutationToast } from './useMutationToast';
 import { withMutationTimeout } from '../lib/mutations';
+import { supabase } from '../lib/supabase';
+import {
+  type TransactionRow,
+  toTransaction,
+  toTransactionRpcPayload,
+} from '../modules/pos/mappers';
+import type { CartItem, PaymentEntry } from '../types';
+import { useMutationToast } from './useMutationToast';
+import { useRealtimeSync } from './useRealtimeSync';
 
 export interface TransactionQueryOptions {
   from?: string; // ISO date string
