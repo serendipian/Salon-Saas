@@ -18,7 +18,6 @@ import { AdminRecentSignups } from './modules/admin/components/AdminRecentSignup
 import { AdminTrialsPipeline } from './modules/admin/components/AdminTrialsPipeline';
 import { AcceptInvitationPage } from './pages/AcceptInvitationPage';
 import { CreateSalonPage } from './pages/CreateSalonPage';
-import DebugSentryPage from './pages/DebugSentryPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 // Auth pages
 import { LoginPage } from './pages/LoginPage';
@@ -271,7 +270,6 @@ export default function App() {
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
-                <Route path="/debug/sentry" element={<DebugSentryPage />} />
 
                 {/* Auth-required, no-salon routes */}
                 <Route

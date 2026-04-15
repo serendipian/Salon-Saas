@@ -10,6 +10,7 @@ import type {
 } from '../lib/auth.types';
 import { setSalonCurrency } from '../lib/format';
 import { useRealtimeEpoch } from '../lib/realtimeReset';
+import { Sentry } from '../lib/sentry';
 import { supabase } from '../lib/supabase';
 
 export type ProfileUpdates = Omit<
@@ -84,6 +85,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSalonCurrency(activeSalon.currency);
     }
   }, [activeSalon?.currency]);
+
+  // Sync user + salon identity to Sentry for error attribution
+  useEffect(() => {
+    if (user) {
+      Sentry.setUser({ id: user.id, email: user.email });
+    } else {
+      Sentry.setUser(null);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    Sentry.setTag('salon_id', activeSalon?.id ?? null);
+    Sentry.setTag('role', role ?? null);
+  }, [activeSalon?.id, role]);
 
   // Fetch profile from public.profiles
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
