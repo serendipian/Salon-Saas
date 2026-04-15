@@ -31,7 +31,8 @@ export const useSuppliers = () => {
         .is('deleted_at', null)
         .order('name');
       if (error) throw error;
-      return (data ?? []).map(toSupplier);
+      // biome-ignore lint/suspicious/noExplicitAny: hand-written Row alias narrower than generated types
+      return (data ?? []).map((row: any) => toSupplier(row));
     },
     enabled: !!salonId,
   });

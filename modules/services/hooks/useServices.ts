@@ -33,7 +33,8 @@ export const useServices = () => {
         .is('deleted_at', null)
         .order('name');
       if (error) throw error;
-      return (data ?? []).map(toService);
+      // biome-ignore lint/suspicious/noExplicitAny: hand-written Row alias narrower than generated types
+      return (data ?? []).map((row: any) => toService(row));
     },
     enabled: !!salonId,
   });
@@ -49,7 +50,8 @@ export const useServices = () => {
         .is('deleted_at', null)
         .order('sort_order', { ascending: true, nullsFirst: false });
       if (error) throw error;
-      return (data ?? []).map(toServiceCategory);
+      // biome-ignore lint/suspicious/noExplicitAny: hand-written Row alias narrower than generated types
+      return (data ?? []).map((row: any) => toServiceCategory(row));
     },
     enabled: !!salonId,
   });

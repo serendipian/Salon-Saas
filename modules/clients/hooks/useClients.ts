@@ -32,7 +32,11 @@ export const useClients = () => {
 
       const statsMap = new Map((statsRes.data ?? []).map((s) => [s.client_id, s]));
 
-      return (clientsRes.data ?? []).map((row) => toClient(row, statsMap.get(row.id) ?? null));
+      // biome-ignore lint/suspicious/noExplicitAny: hand-written Row aliases narrower than generated types
+      return (clientsRes.data ?? []).map((row: any) =>
+        // biome-ignore lint/suspicious/noExplicitAny: stats row also narrower than generated
+        toClient(row, (statsMap.get(row.id) ?? null) as any),
+      );
     },
     enabled: !!salonId,
   });

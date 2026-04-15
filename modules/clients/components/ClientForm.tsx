@@ -331,7 +331,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
               <PhoneInput
                 label="Téléphone"
                 required
-                value={formData.phone}
+                value={formData.phone ?? ''}
                 onChange={(phone) => setFormData({ ...formData, phone })}
               />
 
@@ -350,7 +350,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
               <PhoneInput
                 label="WhatsApp"
-                value={formData.whatsapp}
+                value={formData.whatsapp ?? ''}
                 onChange={(whatsapp) => setFormData({ ...formData, whatsapp })}
                 placeholder="Optionnel"
               />

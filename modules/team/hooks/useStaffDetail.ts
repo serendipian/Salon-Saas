@@ -53,9 +53,9 @@ export const useStaffDetail = (slug: string) => {
   const savePiiFields = async (id: string, member: Partial<StaffMember>) => {
     const { error } = await supabase.rpc('update_staff_pii', {
       p_staff_id: id,
-      p_base_salary: member.baseSalary != null ? String(member.baseSalary) : null,
-      p_iban: member.iban || null,
-      p_social_security_number: member.socialSecurityNumber || null,
+      p_base_salary: member.baseSalary != null ? String(member.baseSalary) : undefined,
+      p_iban: member.iban || undefined,
+      p_social_security_number: member.socialSecurityNumber || undefined,
       p_clear_base_salary: member.baseSalary == null,
       p_clear_iban: !member.iban,
       p_clear_ssn: !member.socialSecurityNumber,

@@ -200,12 +200,13 @@ export const useAppointments = (showDeleted = false) => {
         signal: AbortSignal,
       ) => {
         const { data, error } = await supabase
+          // biome-ignore lint/suspicious/noExplicitAny: RPC accepts nullable via coercion but TS narrows incorrectly
           .rpc('edit_appointment_group', {
             p_old_appointment_id: payload.oldAppointmentId,
             p_salon_id: salonId,
-            p_client_id: payload.clientId || null,
-            p_notes: payload.notes || null,
-            p_reminder_minutes: payload.reminderMinutes,
+            p_client_id: (payload.clientId || null) as any,
+            p_notes: (payload.notes || null) as any,
+            p_reminder_minutes: (payload.reminderMinutes ?? null) as any,
             p_status: payload.status,
             p_service_blocks: payload.serviceBlocks.map((b) => ({
               service_id: b.serviceId || null,

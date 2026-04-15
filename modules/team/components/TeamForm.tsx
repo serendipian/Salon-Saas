@@ -460,7 +460,7 @@ export const TeamForm: React.FC<TeamFormProps> = ({
               </div>
               <PhoneInput
                 label="Téléphone d'urgence"
-                value={formData.emergencyContactPhone}
+                value={formData.emergencyContactPhone ?? ''}
                 onChange={(emergencyContactPhone) =>
                   setFormData({ ...formData, emergencyContactPhone })
                 }

@@ -32,7 +32,7 @@ export function useBilling() {
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('salon_id', activeSalon?.id)
+        .eq('salon_id', activeSalon?.id ?? '')
         .single();
       if (error) throw error;
       return data as Subscription;

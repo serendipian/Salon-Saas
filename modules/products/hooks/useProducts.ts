@@ -38,7 +38,8 @@ export const useProducts = () => {
         .is('deleted_at', null)
         .order('name');
       if (error) throw error;
-      return (data ?? []).map(toProduct);
+      // biome-ignore lint/suspicious/noExplicitAny: hand-written Row alias narrower than generated types
+      return (data ?? []).map((row: any) => toProduct(row));
     },
     enabled: !!salonId,
   });
@@ -54,7 +55,8 @@ export const useProducts = () => {
         .is('deleted_at', null)
         .order('sort_order', { ascending: true, nullsFirst: false });
       if (error) throw error;
-      return (data ?? []).map(toProductCategory);
+      // biome-ignore lint/suspicious/noExplicitAny: hand-written Row alias narrower than generated types
+      return (data ?? []).map((row: any) => toProductCategory(row));
     },
     enabled: !!salonId,
   });

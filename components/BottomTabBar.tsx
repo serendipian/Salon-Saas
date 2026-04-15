@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import { Calendar, CreditCard, LayoutDashboard, Menu, Users } from 'lucide-react';
 import type React from 'react';
-import type { AuthResource } from '../lib/auth.types';
+import type { AuthAction, AuthResource } from '../lib/auth.types';
 
 interface TabItem {
   id: string;
@@ -21,7 +21,7 @@ interface BottomTabBarProps {
   activeModule: string;
   onNavigate: (module: string) => void;
   onMorePress: () => void;
-  can: (action: string, resource: string) => boolean;
+  can: (action: AuthAction, resource: AuthResource) => boolean;
 }
 
 export const BottomTabBar: React.FC<BottomTabBarProps> = ({

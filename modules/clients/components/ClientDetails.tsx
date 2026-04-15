@@ -31,7 +31,7 @@ interface ClientDetailsProps {
   client: Client;
   onBack: () => void;
   onEdit: () => void;
-  onDelete: () => void;
+  onDelete?: () => void;
 }
 
 export const ClientDetails: React.FC<ClientDetailsProps> = ({

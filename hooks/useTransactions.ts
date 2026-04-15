@@ -65,7 +65,10 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
         signal: AbortSignal,
       ) => {
         const payload = toTransactionRpcPayload(items, payments, clientId, salonId, appointmentId);
-        const { error } = await supabase.rpc('create_transaction', payload).abortSignal(signal);
+        // biome-ignore lint/suspicious/noExplicitAny: payload helper produces nullable fields that RPC accepts but TS narrows incorrectly
+        const { error } = await supabase
+          .rpc('create_transaction', payload as any)
+          .abortSignal(signal);
         if (error) throw error;
       },
     ),
