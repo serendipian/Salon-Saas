@@ -29,7 +29,8 @@ interface AuthContextType {
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: string | null }>;
   signInWithMagicLink: (email: string) => Promise<{ error: string | null }>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
-  updatePassword: (newPassword: string) => Promise<{ error: string | null }>;
+  reauthenticate: () => Promise<{ error: string | null }>;
+  updatePassword: (newPassword: string, nonce?: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 
   // Profile actions
@@ -369,7 +370,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error: error ? sanitizeAuthError(error.message) : null };
   }, []);
 
-  const updatePassword = useCallback(async (newPassword: string) => {
+  // Sends an email OTP that the user must provide back via updatePassword(..., nonce)
+  // to complete a password change. Required when the project has
+  // "Require current password when changing" enabled in Supabase Auth.
+  const reauthenticate = useCallback(async () => {
+    const { error } = await supabase.auth.reauthenticate();
+    return { error: error ? sanitizeAuthError(error.message) : null };
+  }, []);
+
+  const updatePassword = useCallback(async (newPassword: string, nonce?: string) => {
     // Raw fetch — supabase.auth.updateUser() can hang indefinitely after
     // background-tab throttling (same SDK lock issue as getUser/signOut).
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
@@ -401,7 +410,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ password: newPassword }),
+        body: JSON.stringify(nonce ? { password: newPassword, nonce } : { password: newPassword }),
         signal: controller.signal,
       });
       if (!response.ok) {
@@ -497,6 +506,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUp,
     signInWithMagicLink,
     resetPassword,
+    reauthenticate,
     updatePassword,
     signOut,
     updateProfile,
