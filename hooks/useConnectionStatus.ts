@@ -438,10 +438,27 @@ export function useConnectionStatus(): ConnectionState {
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    // Focus listener: covers window/app switching where the tab stays visible
+    // (visibilitychange doesn't fire). Debounced to avoid spamming recovery on
+    // rapid alt-tab clicks.
+    let focusDebounce: ReturnType<typeof setTimeout> | null = null;
+    const handleFocus = () => {
+      if (focusDebounce) clearTimeout(focusDebounce);
+      focusDebounce = setTimeout(() => {
+        focusDebounce = null;
+        if (!recoveryInFlight && Date.now() - lastRecoveryAt > TIMINGS.RECOVERY_RATE_LIMIT_MS) {
+          void triggerRecovery('visibility');
+        }
+      }, 500);
+    };
+    window.addEventListener('focus', handleFocus);
+
     return () => {
       subscriberCount--;
       clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      if (focusDebounce) clearTimeout(focusDebounce);
       if (subscriberCount === 0) {
         stopMonitoring();
         if (offlineRetryTimer) {

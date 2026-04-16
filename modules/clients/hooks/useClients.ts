@@ -41,19 +41,39 @@ export const useClients = () => {
     enabled: !!salonId,
   });
 
-  const addClientMutation = useMutation({
-    mutationFn: async (client: Client) => {
+  type ClientsSnapshot = Array<[readonly unknown[], Client[] | undefined]>;
+  const restoreSnapshot = (snapshot: ClientsSnapshot | undefined) => {
+    if (!snapshot) return;
+    for (const [key, data] of snapshot) queryClient.setQueryData(key, data);
+  };
+
+  const addClientMutation = useMutation<void, Error, Client, { snapshot: ClientsSnapshot }>({
+    mutationFn: async (client) => {
       const { error } = await supabase.from('clients').insert(toClientInsert(client, salonId));
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: async (client) => {
+      await queryClient.cancelQueries({ queryKey: ['clients', salonId] });
+      const snapshot = queryClient.getQueriesData<Client[]>({
+        queryKey: ['clients', salonId],
+      });
+      queryClient.setQueriesData<Client[]>(
+        { queryKey: ['clients', salonId] },
+        (old) => [client, ...(old ?? [])],
+      );
+      return { snapshot };
+    },
+    onError: (err, _vars, context) => {
+      restoreSnapshot(context?.snapshot);
+      toastOnError("Impossible d'ajouter le client")(err);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['clients', salonId] });
     },
-    onError: toastOnError("Impossible d'ajouter le client"),
   });
 
-  const updateClientMutation = useMutation({
-    mutationFn: async (client: Client) => {
+  const updateClientMutation = useMutation<void, Error, Client, { snapshot: ClientsSnapshot }>({
+    mutationFn: async (client) => {
       const { error } = await supabase
         .from('clients')
         .update(toClientInsert(client, salonId))
@@ -61,23 +81,49 @@ export const useClients = () => {
         .eq('salon_id', salonId);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: async (client) => {
+      await queryClient.cancelQueries({ queryKey: ['clients', salonId] });
+      const snapshot = queryClient.getQueriesData<Client[]>({
+        queryKey: ['clients', salonId],
+      });
+      queryClient.setQueriesData<Client[]>({ queryKey: ['clients', salonId] }, (old) =>
+        old?.map((c) => (c.id === client.id ? { ...c, ...client } : c)),
+      );
+      return { snapshot };
+    },
+    onError: (err, _vars, context) => {
+      restoreSnapshot(context?.snapshot);
+      toastOnError('Impossible de modifier le client')(err);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['clients', salonId] });
     },
-    onError: toastOnError('Impossible de modifier le client'),
   });
 
-  const deleteClientMutation = useMutation({
-    mutationFn: async (id: string) => {
+  const deleteClientMutation = useMutation<void, Error, string, { snapshot: ClientsSnapshot }>({
+    mutationFn: async (id) => {
       const { error } = await supabase.rpc('soft_delete_client', {
         p_client_id: id,
       });
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['clients', salonId] });
+      const snapshot = queryClient.getQueriesData<Client[]>({
+        queryKey: ['clients', salonId],
+      });
+      queryClient.setQueriesData<Client[]>({ queryKey: ['clients', salonId] }, (old) =>
+        old?.filter((c) => c.id !== id),
+      );
+      return { snapshot };
+    },
+    onError: (err, _vars, context) => {
+      restoreSnapshot(context?.snapshot);
+      toastOnError('Impossible de supprimer le client')(err);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['clients', salonId] });
     },
-    onError: toastOnError('Impossible de supprimer le client'),
   });
 
   return {

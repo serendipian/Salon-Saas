@@ -161,17 +161,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [memberships],
   );
 
-  // Wrap a promise with a timeout so hanging Supabase calls can't freeze the UI.
-  const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> =>
-    Promise.race([
-      promise,
-      new Promise<T>((_, reject) =>
-        setTimeout(() => reject(new Error(`${label} timed out`)), ms),
-      ),
-    ]);
-
-  // Clear local auth state — used when a session exists but profile fetch hangs/fails,
-  // so the user is sent to /login instead of seeing an infinite spinner.
   const clearAuthState = useCallback(() => {
     setUser(null);
     setSession(null);
@@ -182,76 +171,98 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('lastSalonId');
   }, []);
 
-  // Initialize auth state on mount
-  const initializeAuth = useCallback(async () => {
-    try {
-      // Timeout to prevent infinite loading if getSession() hangs
-      const sessionResult = await Promise.race([
-        supabase.auth.getSession(),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Session fetch timed out')), 5000),
-        ),
-      ]);
-      const {
-        data: { session: currentSession },
-      } = sessionResult;
+  // Hydrate user-scoped state (profile + memberships + active salon) from a session.
+  // Runs under a ref guard so concurrent auth events can't double-fetch or race.
+  // Retries transient failures (e.g. token still propagating after refresh) before
+  // giving up — if all retries fail, clear auth so the user lands on /login
+  // rather than staring at an infinite spinner.
+  const hydratingFor = useRef<string | null>(null);
+  const hydrateFromSession = useCallback(
+    async (newSession: Session) => {
+      if (hydratingFor.current === newSession.user.id) return;
+      hydratingFor.current = newSession.user.id;
 
-      if (!currentSession?.user) {
-        setIsLoading(false);
-        return;
-      }
+      const delays = [0, 800, 2000]; // ms between attempts
+      let userProfile: Profile | null = null;
+      let userMemberships: SalonMembership[] = [];
+      let lastError: unknown = null;
 
-      setSession(currentSession);
-      setUser(currentSession.user);
-
-      const [userProfile, userMemberships] = await withTimeout(
-        Promise.all([
-          fetchProfile(currentSession.user.id),
-          fetchMemberships(currentSession.user.id),
-        ]),
-        10000,
-        'Profile fetch',
-      );
-
-      if (!userProfile) {
-        // Session exists but profile row missing or fetch failed — treat as signed out
-        // so the UI proceeds to /login instead of spinning on a null profile.
-        clearAuthState();
-        return;
-      }
-
-      setProfile(userProfile);
-      setMemberships(userMemberships);
-
-      // Auto-select salon
-      if (userMemberships.length === 1) {
-        const m = userMemberships[0];
-        setActiveSalon(m.salon);
-        setRole(m.role);
-      } else if (userMemberships.length > 1) {
-        // Try to restore last salon
-        const lastSalonId = localStorage.getItem('lastSalonId');
-        const lastMembership = lastSalonId
-          ? userMemberships.find((m) => m.salon_id === lastSalonId)
-          : null;
-        if (lastMembership) {
-          setActiveSalon(lastMembership.salon);
-          setRole(lastMembership.role);
+      try {
+        for (let attempt = 0; attempt < delays.length; attempt++) {
+          if (delays[attempt] > 0) {
+            await new Promise((r) => setTimeout(r, delays[attempt]));
+          }
+          try {
+            [userProfile, userMemberships] = await Promise.all([
+              fetchProfile(newSession.user.id),
+              fetchMemberships(newSession.user.id),
+            ]);
+            if (userProfile) break; // success
+          } catch (err) {
+            lastError = err;
+          }
         }
-        // If no last salon, user will be shown the salon picker
+
+        if (!userProfile) {
+          if (lastError) console.error('Profile hydration failed after retries:', lastError);
+          else console.error('Profile row missing for user', newSession.user.id);
+          clearAuthState();
+          return;
+        }
+
+        setProfile(userProfile);
+        setMemberships(userMemberships);
+
+        if (userMemberships.length === 1) {
+          const m = userMemberships[0];
+          setActiveSalon(m.salon);
+          setRole(m.role);
+        } else if (userMemberships.length > 1) {
+          const lastSalonId = localStorage.getItem('lastSalonId');
+          const lastMembership = lastSalonId
+            ? userMemberships.find((m) => m.salon_id === lastSalonId)
+            : null;
+          if (lastMembership) {
+            setActiveSalon(lastMembership.salon);
+            setRole(lastMembership.role);
+          }
+        }
+      } finally {
+        hydratingFor.current = null;
+      }
+    },
+    [fetchProfile, fetchMemberships, clearAuthState],
+  );
+
+  // Initial load: read the persisted session directly from localStorage.
+  // supabase.auth.getSession() awaits the client's internal init lock, which
+  // can stall for many seconds if a background token-refresh network call is
+  // slow. We don't need to wait for that — the session payload is already in
+  // localStorage and ready to use. The onAuthStateChange listener below will
+  // reconcile state once init completes (token refreshed, user updated, etc.).
+  useEffect(() => {
+    let cancelled = false;
+
+    const storageKey = `sb-${new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split('.')[0]}-auth-token`;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Session | null;
+        // Accept the session if it has the required fields and isn't expired.
+        // If expired, supabase-js will refresh it and fire TOKEN_REFRESHED.
+        if (parsed?.access_token && parsed.user) {
+          const notExpired = !parsed.expires_at || parsed.expires_at * 1000 > Date.now();
+          if (notExpired) {
+            setSession(parsed);
+            setUser(parsed.user);
+            void hydrateFromSession(parsed);
+          }
+        }
       }
     } catch (err) {
-      console.error('Auth initialization failed:', err);
-      // Hanging / failed profile fetch — clear session so the user lands on /login.
-      clearAuthState();
-    } finally {
-      setIsLoading(false);
+      console.error('Failed to read persisted session:', err);
     }
-  }, [fetchProfile, fetchMemberships, clearAuthState]);
-
-  // Listen for auth state changes
-  useEffect(() => {
-    void initializeAuth();
+    if (!cancelled) setIsLoading(false);
 
     const {
       data: { subscription },
@@ -260,62 +271,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (event === 'SIGNED_IN' && newSession) {
           setSession(newSession);
           setUser(newSession.user);
-          let userProfile: Profile | null = null;
-          let userMemberships: SalonMembership[] = [];
-          try {
-            [userProfile, userMemberships] = await withTimeout(
-              Promise.all([
-                fetchProfile(newSession.user.id),
-                fetchMemberships(newSession.user.id),
-              ]),
-              10000,
-              'Profile fetch',
-            );
-          } catch (err) {
-            console.error('Profile fetch on SIGNED_IN failed:', err);
-            clearAuthState();
-            return;
-          }
-          if (!userProfile) {
-            clearAuthState();
-            return;
-          }
-          setProfile(userProfile);
-          setMemberships(userMemberships);
-
-          if (userMemberships.length === 1) {
-            const m = userMemberships[0];
-            setActiveSalon(m.salon);
-            setRole(m.role);
-          } else if (userMemberships.length > 1) {
-            // Try to restore last salon (same logic as initializeAuth)
-            const lastSalonId = localStorage.getItem('lastSalonId');
-            const lastMembership = lastSalonId
-              ? userMemberships.find((m) => m.salon_id === lastSalonId)
-              : null;
-            if (lastMembership) {
-              setActiveSalon(lastMembership.salon);
-              setRole(lastMembership.role);
-            }
-          }
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setSession(null);
-          setProfile(null);
-          setActiveSalon(null);
-          setRole(null);
-          setMemberships([]);
-          localStorage.removeItem('lastSalonId');
+          await hydrateFromSession(newSession);
         } else if (event === 'TOKEN_REFRESHED' && newSession) {
           setSession(newSession);
+        } else if (event === 'USER_UPDATED' && newSession) {
+          setSession(newSession);
+          setUser(newSession.user);
+        } else if (event === 'SIGNED_OUT') {
+          clearAuthState();
         }
       },
     );
 
     return () => {
+      cancelled = true;
       subscription.unsubscribe();
     };
-  }, [initializeAuth, fetchProfile, fetchMemberships]);
+  }, [hydrateFromSession, clearAuthState]);
 
   // Real-time salon tracking (detect subscription_tier changes pushed by Stripe webhook)
   useEffect(() => {

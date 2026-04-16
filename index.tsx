@@ -17,7 +17,19 @@ const queryClient = new QueryClient({
       refetchOnReconnect: true,
     },
     mutations: {
-      retry: 0,
+      retry: (failureCount, error) => {
+        if (failureCount >= 1) return false;
+        const msg = error instanceof Error ? error.message : String(error);
+        return (
+          msg.includes('401') ||
+          msg.includes('JWTExpired') ||
+          msg.includes('JWT expired') ||
+          msg.includes('network') ||
+          msg.includes('fetch') ||
+          msg.includes('Failed to fetch')
+        );
+      },
+      retryDelay: 1000,
     },
   },
 });

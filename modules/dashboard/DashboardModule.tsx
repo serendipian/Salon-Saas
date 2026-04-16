@@ -34,12 +34,12 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
 import { DateRangePicker } from '../../components/DateRangePicker';
+import { SafeResponsiveContainer as ResponsiveContainer } from '../../components/SafeResponsiveContainer';
 import { useAuth } from '../../context/AuthContext';
 import { useRealtimeSync } from '../../hooks/useRealtimeSync';
 import { useTransactions } from '../../hooks/useTransactions';
@@ -126,26 +126,11 @@ const MetricCard = ({
   );
 };
 
-// Payment method icon mapping
-const PAYMENT_METHOD_ICONS: Record<
-  string,
-  React.ComponentType<{ size?: number; className?: string }>
-> = {
-  Espèces: Banknote,
-  'Carte Bancaire': CreditCard,
-  'Carte Cadeau': Gift,
-  Autre: Wallet,
-};
-
-const PAYMENT_METHOD_COLORS: Record<string, string> = {
-  Espèces: 'bg-blue-50 text-blue-700',
-  'Carte Bancaire': 'bg-blue-50 text-blue-600',
-  'Carte Cadeau': 'bg-blue-50 text-blue-500',
-  Autre: 'bg-slate-50 text-slate-500',
-};
-
-// All known payment methods for revenue (matching POS options, idle ones show too)
-const ALL_REVENUE_METHODS = ['Espèces', 'Carte Bancaire', 'Carte Cadeau', 'Autre'] as const;
+import {
+  ALL_REVENUE_METHODS,
+  PAYMENT_METHOD_COLORS,
+  PAYMENT_METHOD_ICONS,
+} from '../accounting/components/paymentMethodConstants';
 
 const ALL_EXPENSE_METHODS = ['especes', 'carte', 'virement', 'cheque', 'prelevement'] as const;
 
@@ -1303,7 +1288,7 @@ export const DashboardModule: React.FC = () => {
               </button>
             </div>
             <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <BarChart data={chartData} barCategoryGap="25%">
                   <defs>
                     <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
@@ -1348,7 +1333,7 @@ export const DashboardModule: React.FC = () => {
                     fill="#cbd5e1"
                     radius={[6, 6, 0, 0]}
                     maxBarSize={24}
-                    animationDuration={800}
+                    isAnimationActive={false}
                   >
                     {chartData.map((_entry, i) => (
                       <Cell key={`rdv-${i}`} fill={chartHighlight.has(i) ? '#3b82f6' : '#cbd5e1'} />
@@ -1374,7 +1359,7 @@ export const DashboardModule: React.FC = () => {
               Détails <ChevronRight size={12} />
             </button>
           </div>
-          <div className="h-64 w-full flex-1">
+          <div className="min-h-[16rem] w-full flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
@@ -1396,8 +1381,14 @@ export const DashboardModule: React.FC = () => {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: '#64748b', fontSize: 10 }}
-                  tickFormatter={(value) => formatPrice(value)}
-                  width={70}
+                  tickFormatter={(value) => {
+                    if (value === 0) return '0';
+                    const abs = Math.abs(value);
+                    if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+                    if (abs >= 1_000) return `${Math.round(value / 1000)}k`;
+                    return String(value);
+                  }}
+                  width={40}
                 />
                 <Tooltip
                   contentStyle={{

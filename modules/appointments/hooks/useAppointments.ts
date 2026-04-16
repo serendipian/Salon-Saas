@@ -158,12 +158,11 @@ export const useAppointments = (showDeleted = false) => {
     onError: toastOnError('Erreur lors de la création du rendez-vous'),
   });
 
-  const updateStatusMutation = useMutation({
-    mutationFn: withMutationTimeout(
-      async (
-        { appointmentId, status }: { appointmentId: string; status: string },
-        signal: AbortSignal,
-      ) => {
+  type UpdateStatusVars = { appointmentId: string; status: string };
+  type OptimisticContext = { snapshot: Array<[readonly unknown[], Appointment[] | undefined]> };
+  const updateStatusMutation = useMutation<void, Error, UpdateStatusVars, OptimisticContext>({
+    mutationFn: withMutationTimeout<UpdateStatusVars, void>(
+      async ({ appointmentId, status }, signal) => {
         const { error } = await supabase
           .from('appointments')
           .update({ status })
@@ -173,10 +172,29 @@ export const useAppointments = (showDeleted = false) => {
         if (error) throw error;
       },
     ),
-    onSuccess: () => {
+    onMutate: async ({ appointmentId, status }) => {
+      await queryClient.cancelQueries({ queryKey: ['appointments', salonId] });
+      const snapshot = queryClient.getQueriesData<Appointment[]>({
+        queryKey: ['appointments', salonId],
+      });
+      queryClient.setQueriesData<Appointment[]>(
+        { queryKey: ['appointments', salonId] },
+        (old) =>
+          old?.map((a) =>
+            a.id === appointmentId ? { ...a, status: status as Appointment['status'] } : a,
+          ),
+      );
+      return { snapshot };
+    },
+    onError: (err, _vars, context) => {
+      if (context?.snapshot) {
+        for (const [key, data] of context.snapshot) queryClient.setQueryData(key, data);
+      }
+      toastOnError('Impossible de modifier le statut')(err);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
     },
-    onError: toastOnError('Impossible de modifier le statut'),
   });
 
   const editAppointmentGroupMutation = useMutation({
@@ -236,8 +254,8 @@ export const useAppointments = (showDeleted = false) => {
     onError: toastOnError('Erreur lors de la modification du rendez-vous'),
   });
 
-  const deleteAppointmentMutation = useMutation({
-    mutationFn: withMutationTimeout(async (appointmentId: string, signal: AbortSignal) => {
+  const deleteAppointmentMutation = useMutation<void, Error, string, OptimisticContext>({
+    mutationFn: withMutationTimeout<string, void>(async (appointmentId, signal) => {
       const { error } = await supabase
         .rpc('soft_delete_appointment', {
           p_appointment_id: appointmentId,
@@ -245,11 +263,29 @@ export const useAppointments = (showDeleted = false) => {
         .abortSignal(signal);
       if (error) throw error;
     }),
+    onMutate: async (appointmentId) => {
+      await queryClient.cancelQueries({ queryKey: ['appointments', salonId] });
+      const snapshot = queryClient.getQueriesData<Appointment[]>({
+        queryKey: ['appointments', salonId],
+      });
+      queryClient.setQueriesData<Appointment[]>(
+        { queryKey: ['appointments', salonId] },
+        (old) => old?.filter((a) => a.id !== appointmentId),
+      );
+      return { snapshot };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
       addToast({ type: 'success', message: 'Rendez-vous supprimé' });
     },
-    onError: toastOnError('Erreur lors de la suppression du rendez-vous'),
+    onError: (err, _vars, context) => {
+      if (context?.snapshot) {
+        for (const [key, data] of context.snapshot) queryClient.setQueryData(key, data);
+      }
+      toastOnError('Erreur lors de la suppression du rendez-vous')(err);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
+    },
   });
 
   const filteredAppointments = useMemo(() => {

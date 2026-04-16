@@ -11,11 +11,11 @@ import {
   LineChart,
   Pie,
   PieChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
+import { SafeResponsiveContainer as ResponsiveContainer } from '../../../components/SafeResponsiveContainer';
 import { formatPrice } from '../../../lib/format';
 import type { FinancesOutletContext } from '../FinancesLayout';
 import { useRevenueBreakdown } from '../hooks/useRevenueBreakdown';

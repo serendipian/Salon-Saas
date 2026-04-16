@@ -228,8 +228,8 @@ const MonthGrid: React.FC<{
   return (
     <div className="w-full">
       <div className="grid grid-cols-7 gap-0 mb-2 text-center">
-        {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d) => (
-          <div key={d} className="text-xs font-medium text-slate-400 py-1">
+        {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => (
+          <div key={`${d}-${i}`} className="text-xs font-medium text-slate-400 py-1">
             {d}
           </div>
         ))}

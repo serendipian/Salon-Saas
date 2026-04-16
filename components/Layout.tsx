@@ -392,7 +392,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                     strokeWidth={1.5}
                   />
                   <input
-                    type="text"
+                    type="search"
+                    name="global-search"
+                    aria-label="Rechercher dans l'application"
                     placeholder="Rechercher (Clients, Services, Factures...)"
                     className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm outline-none ring-1 ring-transparent focus:ring-slate-200 focus:bg-white transition-all placeholder:text-slate-400"
                   />

@@ -3,7 +3,8 @@
 import { Info } from 'lucide-react';
 import type React from 'react';
 import { Link } from 'react-router-dom';
-import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { Area, AreaChart, Tooltip } from 'recharts';
+import { SafeResponsiveContainer as ResponsiveContainer } from '../../../components/SafeResponsiveContainer';
 import { ADMIN_FONT } from '../constants';
 import {
   type AdminHistoryPoint,

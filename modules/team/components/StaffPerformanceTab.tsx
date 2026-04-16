@@ -11,8 +11,9 @@ import {
 } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useState } from 'react';
-import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, Cell, Tooltip, XAxis, YAxis } from 'recharts';
 import { DateRangePicker } from '../../../components/DateRangePicker';
+import { SafeResponsiveContainer as ResponsiveContainer } from '../../../components/SafeResponsiveContainer';
 import { useTransactions } from '../../../hooks/useTransactions';
 import { formatPrice } from '../../../lib/format';
 import type { CartItem, DateRange, Transaction } from '../../../types';

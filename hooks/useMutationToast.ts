@@ -27,6 +27,12 @@ function isNetworkError(error: unknown): boolean {
   return false;
 }
 
+function isAuthError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const msg = error.message;
+  return msg.includes('401') || msg.includes('JWTExpired') || msg.includes('JWT expired');
+}
+
 function getErrorCode(error: unknown): string | undefined {
   if (error && typeof error === 'object' && 'code' in error) {
     return (error as { code: string }).code;
@@ -43,6 +49,8 @@ export function useMutationToast() {
 
       if (isTimeoutError(error)) {
         message = TIMEOUT_MESSAGE;
+      } else if (isAuthError(error)) {
+        message = 'Session expirée, veuillez réessayer';
       } else if (isNetworkError(error)) {
         message = 'Problème de connexion, veuillez réessayer';
       } else {
@@ -54,7 +62,10 @@ export function useMutationToast() {
 
       const code = getErrorCode(error);
       const isExpected =
-        isTimeoutError(error) || isNetworkError(error) || (code && code in KNOWN_ERRORS);
+        isTimeoutError(error) ||
+        isAuthError(error) ||
+        isNetworkError(error) ||
+        (code && code in KNOWN_ERRORS);
       if (!isExpected) {
         Sentry.captureException(error, {
           tags: { source: 'mutation' },
