@@ -1,8 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useSyncExternalStore } from 'react';
-import type { AddToastInput } from '../context/ToastContext';
-import { useToast } from '../context/ToastContext';
 import { resetAllChannels } from '../lib/realtimeReset';
 import { supabase } from '../lib/supabase';
 
@@ -55,7 +53,6 @@ let recoveryInFlight = false;
 let lastRecoveryAt = 0;
 let offlineRetryTimer: ReturnType<typeof setTimeout> | null = null;
 let lastQueryClient: QueryClient | null = null;
-let lastAddToast: ((t: AddToastInput) => void) | null = null;
 const listeners = new Set<() => void>();
 
 function notifyListeners() {
@@ -67,13 +64,9 @@ function setState(next: ConnectionState) {
   const prev = currentState;
   currentState = next;
 
-  // Fire toasts once at module level (not per hook instance).
+  // Refetch queries on reconnect (user-visible feedback handled inline in ConnectionStatusDot).
   if (prev !== 'connected' && next === 'connected') {
     lastQueryClient?.invalidateQueries({ refetchType: 'active' });
-    lastAddToast?.({ type: 'success', message: 'Connexion rétablie' });
-  }
-  if (prev !== 'offline' && next === 'offline') {
-    lastAddToast?.({ type: 'warning', message: 'Hors ligne, vérifiez votre connexion.' });
   }
 
   notifyListeners();
@@ -419,11 +412,9 @@ function handleVisibilityChange() {
 
 export function useConnectionStatus(): ConnectionState {
   const queryClient = useQueryClient();
-  const { addToast } = useToast();
 
-  // Stash references for module-level setState / recovery sequence.
+  // Stash reference for module-level setState / recovery sequence.
   lastQueryClient = queryClient;
-  lastAddToast = addToast;
 
   const state = useSyncExternalStore(
     (cb) => {

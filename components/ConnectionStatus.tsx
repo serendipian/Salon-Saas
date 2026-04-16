@@ -1,6 +1,6 @@
 import { WifiOff } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ConnectionState } from '../hooks/useConnectionStatus';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { supabase } from '../lib/supabase';
@@ -21,12 +21,63 @@ const TOOLTIP: Record<ConnectionState, string> = {
   offline: 'Hors ligne',
 };
 
+interface TransitionFlash {
+  message: string;
+  tone: 'success' | 'warning';
+}
+
 export const ConnectionStatusDot: React.FC = () => {
   const status = useConnectionStatus();
+  const [flash, setFlash] = useState<TransitionFlash | null>(null);
+  const [visible, setVisible] = useState(false);
+  const prevStatusRef = useRef<ConnectionState>(status);
+
+  useEffect(() => {
+    const prev = prevStatusRef.current;
+    prevStatusRef.current = status;
+
+    if (prev === status) return;
+
+    let next: TransitionFlash | null = null;
+    if (prev !== 'connected' && status === 'connected') {
+      next = { message: 'Connexion rétablie', tone: 'success' };
+    } else if (prev !== 'offline' && status === 'offline') {
+      next = { message: 'Hors ligne', tone: 'warning' };
+    }
+    if (!next) return;
+
+    setFlash(next);
+    // Paint the opacity-0 state first, then animate to opacity-100.
+    const showFrame = requestAnimationFrame(() => setVisible(true));
+    const hideTimer = setTimeout(() => setVisible(false), 2500);
+    const clearTimer = setTimeout(() => setFlash(null), 2800);
+
+    return () => {
+      cancelAnimationFrame(showFrame);
+      clearTimeout(hideTimer);
+      clearTimeout(clearTimer);
+    };
+  }, [status]);
+
+  const toneClass =
+    flash?.tone === 'success' ? 'text-emerald-600' : 'text-amber-600';
 
   return (
-    <div className="relative group" title={TOOLTIP[status]}>
-      <div className={`w-2 h-2 rounded-full ${DOT_STYLES[status]}`} />
+    <div className="flex items-center gap-1.5">
+      <div
+        title={TOOLTIP[status]}
+        className={`w-2 h-2 rounded-full shrink-0 ${DOT_STYLES[status]}`}
+      />
+      {flash && (
+        <span
+          className={`text-xs font-medium whitespace-nowrap transition-all duration-300 ease-out ${toneClass} ${
+            visible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-1'
+          }`}
+          aria-live="polite"
+        >
+          {flash.message}
+        </span>
+      )}
     </div>
   );
 };
