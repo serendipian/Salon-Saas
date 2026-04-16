@@ -40,7 +40,7 @@ export const ClientList: React.FC<ClientListProps> = ({
         <h1 className="text-2xl font-bold text-slate-900">Clients</h1>
         <button
           onClick={onAdd}
-          className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
         >
           <Plus size={16} />
           Nouveau Client

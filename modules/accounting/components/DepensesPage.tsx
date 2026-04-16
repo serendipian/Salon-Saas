@@ -94,7 +94,7 @@ export const DepensesPage: React.FC = () => {
         {activeTab === 'COURANTES' && (
           <button
             onClick={() => setShowForm(true)}
-            className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
           >
             <Plus size={16} /> Nouvelle D{'\u00e9'}pense
           </button>

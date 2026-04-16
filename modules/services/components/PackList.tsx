@@ -213,7 +213,7 @@ export const PackList: React.FC<PackListProps> = ({
           )}
           <button
             onClick={onAdd}
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-sm font-medium"
           >
             <Plus size={16} />
             Nouveau Pack
