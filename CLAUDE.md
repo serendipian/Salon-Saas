@@ -61,6 +61,7 @@ components/
   StaffAvatar.tsx         # Staff member avatar display
   EmptyState.tsx          # Empty list placeholder
   PhoneInput.tsx          # Country code selector + tel input (numpad hidden on mobile/tablet via lg: breakpoint)
+  SafeResponsiveContainer.tsx  # Drop-in recharts ResponsiveContainer replacement (avoids width(-1) dev warnings)
 ```
 
 ### Auth Pages
@@ -138,6 +139,21 @@ modules/{module}/
 - Subscription manager avoids duplicate channels when multiple components sync the same table
 - Optional `onEvent` callback for per-module reactions (e.g., toast on new appointment)
 
+### Cross-Tab Sync
+- `lib/crossTabSync.ts` — wraps `queryClient.invalidateQueries` to broadcast query keys via BroadcastChannel
+- All tabs on the same origin share invalidations automatically (no per-module wiring needed)
+- When Tab A mutates data → invalidation broadcasts → Tab B refetches affected queries instantly
+- Loop prevention: `isBroadcastReplay` flag + BroadcastChannel spec (sender never receives own messages)
+- Blanket invalidations (no `queryKey`, e.g. from recovery) are excluded from broadcasting
+- Graceful degradation: no-op if BroadcastChannel is unavailable
+- Wired in `index.tsx` via `setupCrossTabSync(queryClient)` before app mounts
+
+### Optimistic UI
+- Appointment status update + delete: instant local cache update with rollback on error
+- Client add/update/delete: instant local cache update with rollback on error
+- Pattern: `onMutate` (cancel queries, snapshot, patch cache) → `onError` (restore snapshot) → `onSettled` (invalidate for server reconciliation)
+- Explicitly typed mutations: `useMutation<TData, Error, TVariables, { snapshot: ... }>`
+
 ### Toast Notifications
 - `context/ToastContext.tsx` — split dispatch/state contexts (prevents consumer re-renders)
 - `components/Toast.tsx` — portal-rendered to `#toast-root`, top-right position
@@ -145,11 +161,15 @@ modules/{module}/
 - Types: success (green), error (red), warning (amber), info (blue)
 - Errors don't auto-dismiss; all others dismiss after 5s
 
-### Connection Status
+### Connection Status & Idle-Tab Recovery
 - `hooks/useConnectionStatus.ts` — monitors Supabase Realtime WebSocket state
 - `components/ConnectionStatus.tsx` — dot indicator in top bar + disconnect banner
 - States: connected (green), reconnecting (orange), disconnected after 30s (red + banner)
 - On reconnect: invalidates active queries, shows "Connexion rétablie" toast
+- `visibilitychange` listener: triggers recovery (auth probe + channel reset + query invalidation) after ≥30s hidden
+- `focus` listener (debounced 500ms): triggers recovery on window/app switching (covers cases where visibilitychange doesn't fire)
+- `probeAuth()`: raw fetch token refresh bypassing SDK lock — handles expired tokens after idle
+- Global mutation retry: 1 retry with 1s delay on 401/JWT/network errors (bridges race between recovery and user click)
 
 ### Form Validation
 - `hooks/useFormValidation.ts` — generic hook wrapping Zod schema validation
@@ -162,7 +182,7 @@ modules/{module}/
 - `hooks/useMutationToast.ts` — callback factory for mutation `onError`
 - `toastOnError(fallbackMessage)` — inspects Supabase error codes, falls back to provided French message
 - `toastOnSuccess(message)` — returns callback for `onSuccess` with French message
-- Known codes: RLS violation, unique constraint, network error, plan limit exceeded
+- Known codes: RLS violation, unique constraint, network error, plan limit exceeded, 401/JWT expired ("Session expirée, veuillez réessayer")
 - All mutations use toastOnError; service/product/category/settings mutations also use toastOnSuccess
 
 ### Error Boundaries
@@ -245,7 +265,7 @@ npm run preview      # Preview production build
 - **Access Hook**: `useAuth()` — access auth state from any component
 - **Permissions**: `hooks/usePermissions.ts` — static role-based permission matrix (UX only, RLS is authoritative)
 - **Route Guards**: `components/ProtectedRoute.tsx` — redirects unauthorized users
-- **Supabase Client**: `lib/supabase.ts` — typed singleton, uses `Database` from `lib/database.types.ts`
+- **Supabase Client**: `lib/supabase.ts` — typed singleton, uses `Database` from `lib/database.types.ts`, custom `authLock` (navigator.locks + in-memory fallback)
 - **Auth Types**: `lib/auth.types.ts` — Role, Profile (with phone/bio/language/notifications), SalonMembership (with created_at), permission types
 
 ### Password Policy
@@ -256,6 +276,13 @@ npm run preview      # Preview production build
 2. Authenticated, no salon → `/create-salon`
 3. Authenticated, multiple salons → `/select-salon`
 4. Authenticated + active salon → main app (Layout + modules)
+
+### Auth Boot (Session Initialization)
+- Session is read directly from localStorage on mount (avoids `supabase.auth.getSession()` which stalls behind SDK internal lock on slow token refreshes)
+- `onAuthStateChange` listener handles SIGNED_IN, TOKEN_REFRESHED, USER_UPDATED, SIGNED_OUT events
+- Profile hydration (`hydrateFromSession`) uses bounded retry (0ms / 800ms / 2000ms backoff) — clears auth state only after all retries fail
+- `hydratingFor` ref guard prevents concurrent profile fetches from racing events
+- DO NOT use `supabase.auth.getSession()` for boot — it awaits `_initialize` which can hang behind the auth lock for 15+ seconds on background-tab wake
 
 ### Role-Based Sidebar Visibility
 - **owner/manager**: All items visible
@@ -327,7 +354,13 @@ All 4 Edge Functions perform their own auth internally. Deploy via:
 
 ### Token Auth for Edge Functions
 `useBilling.ts` uses raw `fetch` (not `supabase.functions.invoke`) with an explicit `Authorization` header. Always call `supabase.auth.getSession()` first to ensure a fresh token.
-`lib/supabase.ts` has a JS mutex for the `auth.lock` option to serialize token refreshes safely in environments without Web Locks API.
+
+### Custom Auth Lock (`lib/supabase.ts`)
+- Custom `authLock` replaces supabase-js default `navigator.locks` usage
+- Uses `navigator.locks` for cross-tab coordination when browser returns a valid lock
+- Silently falls back to in-memory mutex when Chromium returns null (known spec violation — eliminates the "LockManager returned a null lock" console spam)
+- Respects `acquireTimeout` parameter (AbortController-based for positive timeouts)
+- DO NOT revert to supabase-js default lock — it produces 10+ console warnings per page load
 
 ## Code Conventions
 
