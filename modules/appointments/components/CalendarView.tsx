@@ -61,22 +61,21 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   );
 
   return (
-    <div
-      className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col"
-      style={{ height: 'calc(100vh - 140px)' }}
-    >
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[calc(100dvh-220px)] md:h-[calc(100vh-140px)]">
       <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar */}
-        <CalendarSidebar
-          currentDate={calendar.currentDate}
-          onDateSelect={calendar.goToDate}
-          serviceCategories={serviceCategories}
-          allStaff={allStaff}
-          categoryFilters={calendar.categoryFilters}
-          staffFilters={calendar.staffFilters}
-          onToggleCategory={calendar.toggleCategory}
-          onToggleStaff={calendar.toggleStaff}
-        />
+        {/* Left sidebar — desktop only; mobile users get filters via list view */}
+        <div className="hidden md:block">
+          <CalendarSidebar
+            currentDate={calendar.currentDate}
+            onDateSelect={calendar.goToDate}
+            serviceCategories={serviceCategories}
+            allStaff={allStaff}
+            categoryFilters={calendar.categoryFilters}
+            staffFilters={calendar.staffFilters}
+            onToggleCategory={calendar.toggleCategory}
+            onToggleStaff={calendar.toggleStaff}
+          />
+        </div>
 
         {/* Main calendar area */}
         <div className="flex-1 flex flex-col overflow-hidden">
