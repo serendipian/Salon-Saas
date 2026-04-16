@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './src/index.css';
 import App from './App';
+import { setupCrossTabSync } from './lib/crossTabSync';
 import { initSentry } from './lib/sentry';
 
 initSentry();
@@ -33,6 +34,8 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+setupCrossTabSync(queryClient);
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
