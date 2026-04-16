@@ -206,6 +206,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
               appointments={appointments}
               onDetails={onDetails}
               onDelete={showDeleted ? undefined : onDelete}
+              onStatusChange={showDeleted ? undefined : onStatusChange}
             />
           )}
         </div>

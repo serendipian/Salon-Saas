@@ -11,6 +11,7 @@ import type {
   ServiceCategory,
   StaffMember,
 } from '../../../types';
+import { groupByDayAndClient } from './groupAppointments';
 import { StatusBadge } from './StatusBadge';
 
 const ClientAvatar: React.FC<{ name: string }> = ({ name }) => {
@@ -40,44 +41,6 @@ interface AppointmentTableProps {
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   onStatusChange?: (id: string, status: AppointmentStatus) => void;
-}
-
-/** Group appointments by day, then by client within each day */
-function groupByDayAndClient(appointments: Appointment[]) {
-  const dayMap = new Map<string, Appointment[]>();
-
-  for (const appt of appointments) {
-    const d = new Date(appt.date);
-    const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    const list = dayMap.get(dayKey) ?? [];
-    list.push(appt);
-    dayMap.set(dayKey, list);
-  }
-
-  // Sort days descending
-  const sortedDays = [...dayMap.entries()].sort((a, b) => b[0].localeCompare(a[0]));
-
-  return sortedDays.map(([dayKey, dayAppts]) => {
-    // Group by client within the day
-    const clientMap = new Map<string, Appointment[]>();
-    for (const appt of dayAppts) {
-      const clientKey = appt.clientId || appt.id; // ungrouped if no client
-      const list = clientMap.get(clientKey) ?? [];
-      list.push(appt);
-      clientMap.set(clientKey, list);
-    }
-
-    // Sort appointments within each client group by time
-    const clientGroups = [...clientMap.values()].map((group) => {
-      group.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      return group;
-    });
-
-    // Sort client groups by earliest appointment time
-    clientGroups.sort((a, b) => new Date(a[0].date).getTime() - new Date(b[0].date).getTime());
-
-    return { dayKey, dayAppts, clientGroups };
-  });
 }
 
 const COL_COUNT = 10; // Date, Heure, Client, Service, Variante, Durée, Prix, Staff, Statut, Actions
