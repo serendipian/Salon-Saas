@@ -43,12 +43,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in">
       <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Fournisseurs & Bénéficiaires</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Fournisseurs produits, prestataires, charges fixes...
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold text-slate-900">Fournisseurs & Bénéficiaires</h1>
         <div className="flex gap-3">
           {canEditSuppliers && (
             <button

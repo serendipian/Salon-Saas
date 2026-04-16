@@ -32,6 +32,8 @@ export const RevenueCategoryTable: React.FC<RevenueCategoryTableProps> = ({
     });
   };
 
+  const totalCount = data.reduce((sum, cat) => sum + cat.count, 0);
+
   if (data.length === 0) {
     return (
       <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-sm text-slate-400">
@@ -48,8 +50,10 @@ export const RevenueCategoryTable: React.FC<RevenueCategoryTableProps> = ({
             <th className="px-4 py-3 w-8"></th>
             <th className="px-4 py-3">Catégorie</th>
             <th className="px-4 py-3 text-right">Nb {itemLabel}</th>
+            <th className="px-4 py-3 text-right">% {itemLabel}</th>
             <th className="px-4 py-3 text-right">CA</th>
-            <th className="px-4 py-3 text-right">% du total</th>
+            <th className="px-4 py-3 text-right">% du CA</th>
+            <th className="px-4 py-3 text-right">Panier Moyen</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -67,11 +71,17 @@ export const RevenueCategoryTable: React.FC<RevenueCategoryTableProps> = ({
                     {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                   </td>
                   <td className="px-4 py-3 font-semibold text-slate-900">{cat.categoryName}</td>
-                  <td className="px-4 py-3 text-right text-slate-600">{cat.count}</td>
+                  <td className="px-4 py-3 text-right font-medium text-slate-900">{cat.count}</td>
+                  <td className="px-4 py-3 text-right text-slate-500">
+                    {totalCount > 0 ? ((cat.count / totalCount) * 100).toFixed(1) : '0.0'}%
+                  </td>
                   <td className="px-4 py-3 text-right font-medium text-slate-900">
                     {formatPrice(cat.revenue)}
                   </td>
                   <td className="px-4 py-3 text-right text-slate-500">{percent.toFixed(1)}%</td>
+                  <td className="px-4 py-3 text-right font-medium text-slate-900">
+                    {cat.count > 0 ? formatPrice(cat.revenue / cat.count) : '—'}
+                  </td>
                 </tr>
                 {isExpanded &&
                   cat.items.map((item, idx) => (
@@ -83,7 +93,10 @@ export const RevenueCategoryTable: React.FC<RevenueCategoryTableProps> = ({
                           <span className="text-slate-400 text-xs ml-1">({item.variantName})</span>
                         )}
                       </td>
-                      <td className="px-4 py-2 text-right text-slate-500">{item.count}</td>
+                      <td className="px-4 py-2 text-right font-medium text-slate-600">{item.count}</td>
+                      <td className="px-4 py-2 text-right text-slate-400">
+                        {totalCount > 0 ? ((item.count / totalCount) * 100).toFixed(1) : '0.0'}%
+                      </td>
                       <td className="px-4 py-2 text-right text-slate-600">
                         {formatPrice(item.revenue)}
                       </td>
@@ -92,6 +105,9 @@ export const RevenueCategoryTable: React.FC<RevenueCategoryTableProps> = ({
                           ? ((item.revenue / totalRevenue) * 100).toFixed(1)
                           : '0.0'}
                         %
+                      </td>
+                      <td className="px-4 py-2 text-right font-medium text-slate-600">
+                        {item.count > 0 ? formatPrice(item.revenue / item.count) : '—'}
                       </td>
                     </tr>
                   ))}

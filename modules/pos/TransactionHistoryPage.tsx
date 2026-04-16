@@ -1,6 +1,7 @@
 import {
   ArrowDown,
   ArrowLeft,
+  ArrowRightLeft,
   ArrowUp,
   ArrowUpDown,
   Ban,
@@ -30,11 +31,12 @@ import { RefundModal } from './components/RefundModal';
 import { VoidModal } from './components/VoidModal';
 import { getTransactionStatus, type TransactionStatus } from './mappers';
 
-const ALL_PAYMENT_METHODS = ['Espèces', 'Carte Bancaire', 'Carte Cadeau'] as const;
+const ALL_PAYMENT_METHODS = ['Espèces', 'Carte Bancaire', 'Virement', 'Carte Cadeau'] as const;
 
 const PAYMENT_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   Espèces: Banknote,
   'Carte Bancaire': CreditCard,
+  Virement: ArrowRightLeft,
   'Carte Cadeau': Gift,
 };
 
@@ -246,6 +248,7 @@ export const TransactionHistoryPage: React.FC = () => {
   const PAYMENT_METHOD_SHORT: Record<string, string> = {
     'Carte Bancaire': 'Carte',
     'Carte Cadeau': 'Cadeau',
+    Virement: 'Virement',
   };
 
   const dailySummary = React.useMemo(() => {

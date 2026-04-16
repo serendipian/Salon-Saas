@@ -1,4 +1,14 @@
-import { Banknote, CheckCircle, ChevronDown, CreditCard, Gift, Tag, Trash2, X } from 'lucide-react';
+import {
+  ArrowRightLeft,
+  Banknote,
+  CheckCircle,
+  ChevronDown,
+  CreditCard,
+  Gift,
+  Tag,
+  Trash2,
+  X,
+} from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -86,6 +96,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const getIcon = (method: string) => {
     if (method.includes('Carte Bancaire')) return CreditCard;
     if (method.includes('Espèces')) return Banknote;
+    if (method.includes('Virement')) return ArrowRightLeft;
     if (method.includes('Cadeau')) return Gift;
     return Tag;
   };
@@ -167,13 +178,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </div>
           </div>
 
-          {/* Payment methods 2x2 */}
+          {/* Payment methods — primary (2 per row) */}
           <div className="grid grid-cols-2 gap-3">
             {[
-              { method: 'Carte Bancaire', Icon: CreditCard },
               { method: 'Espèces', Icon: Banknote },
-              { method: 'Carte Cadeau', Icon: Gift },
-              { method: 'Autre', Icon: Tag },
+              { method: 'Carte Bancaire', Icon: CreditCard },
             ].map(({ method, Icon }) => (
               <button
                 key={method}
@@ -183,6 +192,27 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               >
                 <Icon size={28} className="text-slate-400 group-hover:text-slate-900" />
                 <span className="font-bold text-sm text-slate-700 group-hover:text-slate-900">
+                  {method}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Payment methods — secondary (3 per row) */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { method: 'Virement', Icon: ArrowRightLeft },
+              { method: 'Carte Cadeau', Icon: Gift },
+              { method: 'Autre', Icon: Tag },
+            ].map(({ method, Icon }) => (
+              <button
+                key={method}
+                onClick={() => handleAddPayment(method)}
+                disabled={remaining <= 0}
+                className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              >
+                <Icon size={22} className="text-slate-400 group-hover:text-slate-900" />
+                <span className="font-bold text-xs text-slate-700 group-hover:text-slate-900">
                   {method}
                 </span>
               </button>
@@ -370,47 +400,43 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </div>
           </div>
 
-          {/* Payment Methods Grid */}
-          <div className="grid grid-cols-2 gap-4 mb-auto">
-            <button
-              onClick={() => handleAddPayment('Carte Bancaire')}
-              disabled={remaining <= 0}
-              className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-            >
-              <CreditCard size={32} className="text-slate-400 group-hover:text-slate-900" />
-              <span className="font-bold text-slate-700 group-hover:text-slate-900">
-                Carte Bancaire
-              </span>
-            </button>
+          {/* Payment Methods — primary (2 per row) */}
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { method: 'Espèces', Icon: Banknote },
+              { method: 'Carte Bancaire', Icon: CreditCard },
+            ].map(({ method, Icon }) => (
+              <button
+                key={method}
+                onClick={() => handleAddPayment(method)}
+                disabled={remaining <= 0}
+                className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              >
+                <Icon size={32} className="text-slate-400 group-hover:text-slate-900" />
+                <span className="font-bold text-slate-700 group-hover:text-slate-900">{method}</span>
+              </button>
+            ))}
+          </div>
 
-            <button
-              onClick={() => handleAddPayment('Espèces')}
-              disabled={remaining <= 0}
-              className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-            >
-              <Banknote size={32} className="text-slate-400 group-hover:text-slate-900" />
-              <span className="font-bold text-slate-700 group-hover:text-slate-900">Espèces</span>
-            </button>
-
-            <button
-              onClick={() => handleAddPayment('Carte Cadeau')}
-              disabled={remaining <= 0}
-              className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-            >
-              <Gift size={32} className="text-slate-400 group-hover:text-slate-900" />
-              <span className="font-bold text-slate-700 group-hover:text-slate-900">
-                Carte Cadeau
-              </span>
-            </button>
-
-            <button
-              onClick={() => handleAddPayment('Autre')}
-              disabled={remaining <= 0}
-              className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-            >
-              <Tag size={32} className="text-slate-400 group-hover:text-slate-900" />
-              <span className="font-bold text-slate-700 group-hover:text-slate-900">Autre</span>
-            </button>
+          {/* Payment Methods — secondary (3 per row) */}
+          <div className="grid grid-cols-3 gap-3 mt-3 mb-auto">
+            {[
+              { method: 'Virement', Icon: ArrowRightLeft },
+              { method: 'Carte Cadeau', Icon: Gift },
+              { method: 'Autre', Icon: Tag },
+            ].map(({ method, Icon }) => (
+              <button
+                key={method}
+                onClick={() => handleAddPayment(method)}
+                disabled={remaining <= 0}
+                className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              >
+                <Icon size={24} className="text-slate-400 group-hover:text-slate-900" />
+                <span className="font-bold text-xs text-slate-700 group-hover:text-slate-900">
+                  {method}
+                </span>
+              </button>
+            ))}
           </div>
 
           {/* Validation */}

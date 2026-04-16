@@ -97,7 +97,6 @@ export const SettingsIndexPage: React.FC = () => {
     <div className="w-full pb-10 animate-in fade-in duration-500">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900">Réglages</h1>
-        <p className="text-slate-500 mt-1">Gérez les préférences de votre établissement</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -114,10 +114,7 @@ export const BillingModule: React.FC = () => {
         >
           <ArrowLeft size={20} />
         </button>
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">Abonnement & Facturation</h1>
-          <p className="text-sm text-slate-500">Gérez votre plan et votre facturation</p>
-        </div>
+        <h1 className="text-2xl font-bold text-slate-900">Abonnement & Facturation</h1>
       </div>
 
       <div className="space-y-6">
