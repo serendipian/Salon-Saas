@@ -1,4 +1,4 @@
-import { ArrowLeft, Clock, Save } from 'lucide-react';
+import { ArrowLeft, Clock, Loader2, Save } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -24,17 +24,21 @@ export const OpeningHoursSettings: React.FC = () => {
   const [schedule, setSchedule] = useState<WorkSchedule>(
     salonSettings.schedule || DEFAULT_SCHEDULE,
   );
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setSchedule(salonSettings.schedule || DEFAULT_SCHEDULE);
   }, [salonSettings.schedule]);
 
   const handleSave = async () => {
+    setIsSaving(true);
     try {
       await updateSalonSettings({ ...salonSettings, schedule });
-      await navigate('/settings');
+      void navigate('/settings');
     } catch {
       // Error toast handled by mutation's onError
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -51,10 +55,11 @@ export const OpeningHoursSettings: React.FC = () => {
         <div className="ml-auto">
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
+            disabled={isSaving}
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
           >
-            <Save size={16} />
-            Enregistrer
+            {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+            {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </button>
         </div>
       </div>
