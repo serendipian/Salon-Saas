@@ -75,8 +75,8 @@ export const RevenueActivityChart: React.FC<RevenueActivityChartProps> = ({
           <Tooltip
             contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 12 }}
             cursor={{ fill: '#f8fafc' }}
-            formatter={(value: number) => [formatPrice(value), 'CA']}
-            labelFormatter={(label: string) => label}
+            formatter={(value) => [formatPrice(Number(value)), 'CA']}
+            labelFormatter={(label) => String(label ?? '')}
           />
           <Bar dataKey="revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={20} minPointSize={0}>
             {highlightIndex !== undefined &&
