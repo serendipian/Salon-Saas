@@ -156,9 +156,12 @@ export const useAccounting = () => {
     const prevTo = from - 1;
     const prevFrom = prevTo - duration;
 
+    // Bucket a stored ISO timestamp to the *local* calendar day, not the UTC day.
+    // Splitting on 'T' would pull the UTC date portion, which misfiles records
+    // created close to midnight (e.g. 00:55 local = previous day UTC).
     const parseLocalDate = (dateStr: string): number => {
-      const parts = (dateStr as string).split('T')[0].split('-');
-      return new Date(+parts[0], +parts[1] - 1, +parts[2]).getTime();
+      const d = new Date(dateStr);
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
     };
 
     const filterRange = <T extends object>(
