@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
+import type { AddToastInput } from '../context/ToastContext';
 import { useToast } from '../context/ToastContext';
 import { resetAllChannels } from '../lib/realtimeReset';
 import { supabase } from '../lib/supabase';
@@ -54,6 +55,7 @@ let recoveryInFlight = false;
 let lastRecoveryAt = 0;
 let offlineRetryTimer: ReturnType<typeof setTimeout> | null = null;
 let lastQueryClient: QueryClient | null = null;
+let lastAddToast: ((t: AddToastInput) => void) | null = null;
 const listeners = new Set<() => void>();
 
 function notifyListeners() {
@@ -62,7 +64,18 @@ function notifyListeners() {
 
 function setState(next: ConnectionState) {
   if (currentState === next) return;
+  const prev = currentState;
   currentState = next;
+
+  // Fire toasts once at module level (not per hook instance).
+  if (prev !== 'connected' && next === 'connected') {
+    lastQueryClient?.invalidateQueries({ refetchType: 'active' });
+    lastAddToast?.({ type: 'success', message: 'Connexion rétablie' });
+  }
+  if (prev !== 'offline' && next === 'offline') {
+    lastAddToast?.({ type: 'warning', message: 'Hors ligne, vérifiez votre connexion.' });
+  }
+
   notifyListeners();
 }
 
@@ -369,12 +382,8 @@ async function triggerRecovery(_reason: 'visibility' | 'ws'): Promise<void> {
     startMonitoring();
     const realtimeOk = await probeRealtime();
 
-    // Query invalidation.
-    if (lastQueryClient) {
-      lastQueryClient.invalidateQueries({ refetchType: 'active' });
-    }
-
     // Final state — only promote to connected if realtime probe succeeded.
+    // setState('connected') handles query invalidation + toast internally.
     if (realtimeOk) {
       disconnectedAt = null;
       setState('connected');
@@ -411,10 +420,10 @@ function handleVisibilityChange() {
 export function useConnectionStatus(): ConnectionState {
   const queryClient = useQueryClient();
   const { addToast } = useToast();
-  const prevStateRef = useRef(currentState);
 
-  // Stash the QueryClient for the module-level recovery sequence.
+  // Stash references for module-level setState / recovery sequence.
   lastQueryClient = queryClient;
+  lastAddToast = addToast;
 
   const state = useSyncExternalStore(
     (cb) => {
@@ -468,21 +477,6 @@ export function useConnectionStatus(): ConnectionState {
       }
     };
   }, []);
-
-  // React to state transitions (reconnect → toast).
-  useEffect(() => {
-    if (prevStateRef.current !== 'connected' && state === 'connected') {
-      queryClient.invalidateQueries({ refetchType: 'active' });
-      addToast({ type: 'success', message: 'Connexion rétablie' });
-    }
-    if (prevStateRef.current !== 'offline' && state === 'offline') {
-      addToast({
-        type: 'warning',
-        message: 'Hors ligne, vérifiez votre connexion.',
-      });
-    }
-    prevStateRef.current = state;
-  }, [state, queryClient, addToast]);
 
   return state;
 }
