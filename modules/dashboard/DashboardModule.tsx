@@ -691,10 +691,10 @@ export const DashboardModule: React.FC = () => {
   return (
     <div className="w-full space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-        <div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-slate-900">Tableau de Bord</h1>
-          <div className="mt-1">
+          <div className="hidden sm:block">
             <FreshnessIndicator updatedAt={lastUpdated} />
           </div>
         </div>
