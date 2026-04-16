@@ -3,6 +3,9 @@ import type React from 'react';
 import { useCallback, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { DateRangePicker } from '../../components/DateRangePicker';
+import { FreshnessIndicator } from '../../components/FreshnessIndicator';
+import { useAuth } from '../../context/AuthContext';
+import { useFreshness } from '../../hooks/useFreshness';
 import { useAccounting } from './hooks/useAccounting';
 
 export type RevenueTab = 'SERVICES' | 'PRODUCTS';
@@ -19,11 +22,17 @@ export type FinancesOutletContext = ReturnType<typeof useAccounting> & {
 
 export const FinancesLayout: React.FC = () => {
   const location = useLocation();
+  const { activeSalon } = useAuth();
+  const salonId = activeSalon?.id ?? '';
   const accounting = useAccounting();
   const [revenueTab, setRevenueTab] = useState<RevenueTab>('SERVICES');
   const [expenseTab, setExpenseTab] = useState<ExpenseTab>('COURANTES');
   const [newExpenseHandler, setNewExpenseHandler] =
     useState<(() => void) | null>(null);
+  const { lastUpdated } = useFreshness({
+    queryKeyRoots: ['transactions'],
+    salonId,
+  });
 
   const registerNewExpenseHandler = useCallback((handler: (() => void) | null) => {
     // Wrap in a function so useState doesn't execute it as an updater
@@ -47,8 +56,15 @@ export const FinancesLayout: React.FC = () => {
   return (
     <div className="w-full relative">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pt-2">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
+            {isRevenus && (
+              <div className="hidden sm:block">
+                <FreshnessIndicator updatedAt={lastUpdated} />
+              </div>
+            )}
+          </div>
           {isRevenus && (
             <div className="inline-flex gap-1 bg-slate-100/80 p-1 rounded-xl ring-1 ring-slate-200/60">
               {[

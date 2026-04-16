@@ -39,8 +39,10 @@ import {
   YAxis,
 } from 'recharts';
 import { DateRangePicker } from '../../components/DateRangePicker';
+import { FreshnessIndicator } from '../../components/FreshnessIndicator';
 import { SafeResponsiveContainer as ResponsiveContainer } from '../../components/SafeResponsiveContainer';
 import { useAuth } from '../../context/AuthContext';
+import { useFreshness } from '../../hooks/useFreshness';
 import { useRealtimeSync } from '../../hooks/useRealtimeSync';
 import { useTransactions } from '../../hooks/useTransactions';
 import { formatPrice } from '../../lib/format';
@@ -171,6 +173,11 @@ export const DashboardModule: React.FC = () => {
   const { services, serviceCategories } = useServices();
   const { allStaff } = useTeam();
   useRealtimeSync('expenses');
+
+  const { lastUpdated } = useFreshness({
+    queryKeyRoots: ['transactions', 'appointments', 'clients', 'expenses', 'services'],
+    salonId,
+  });
 
   // State for Date Range (Default: Today)
   const [dateRange, setDateRange] = useState<DateRange>(() => {
@@ -685,7 +692,12 @@ export const DashboardModule: React.FC = () => {
     <div className="w-full space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-        <h1 className="text-2xl font-bold text-slate-900">Tableau de Bord</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Tableau de Bord</h1>
+          <div className="mt-1">
+            <FreshnessIndicator updatedAt={lastUpdated} />
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <DateRangePicker dateRange={dateRange} onChange={setDateRange} />
           <button
