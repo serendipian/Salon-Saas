@@ -22,6 +22,7 @@ import {
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useMediaQuery } from '../../context/MediaQueryContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useTransactions } from '../../hooks/useTransactions';
 import { formatPrice } from '../../lib/format';
@@ -50,6 +51,7 @@ export const TransactionHistoryPage: React.FC = () => {
   const { can } = usePermissions(role);
   const canVoid = can('void', 'pos');
   const canRefund = can('refund', 'pos');
+  const { isMobile } = useMediaQuery();
 
   // Date navigation
   const [historyDate, setHistoryDate] = useState(() => new Date());
@@ -124,12 +126,16 @@ export const TransactionHistoryPage: React.FC = () => {
   const [sortBy, setSortBy] = useState<'time' | 'amount'>('time');
   const [sortOpen, setSortOpen] = useState(false);
   const [sortDesc, setSortDesc] = useState(true);
-  const sortRef = useRef<HTMLDivElement>(null);
+  const sortRefMobile = useRef<HTMLDivElement>(null);
+  const sortRefDesktop = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!sortOpen) return;
     const handleClick = (e: MouseEvent) => {
-      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setSortOpen(false);
+      const target = e.target as Node;
+      const insideMobile = sortRefMobile.current?.contains(target);
+      const insideDesktop = sortRefDesktop.current?.contains(target);
+      if (!insideMobile && !insideDesktop) setSortOpen(false);
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -365,28 +371,45 @@ export const TransactionHistoryPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full space-y-6">
-      {/* Merged Header: back + title on left, date nav on right */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+    <div className="w-full space-y-4 md:space-y-6">
+      {/* Header: stacks on mobile (title row + date nav row) */}
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-2 md:gap-3">
           <button
             onClick={() => navigate('/pos')}
-            className="p-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-900"
+            className="p-2 -ml-1 rounded-lg hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-900"
             aria-label="Retour à la caisse"
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="text-2xl font-bold text-slate-900">Historique</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
+            Historique
+          </h1>
+          {!isHistoryToday && (
+            <button
+              onClick={() => {
+                setHistoryDate(new Date());
+                setSearchTerm('');
+                setStatusFilter('all');
+                setPaymentFilter(null);
+                setSortBy('time');
+                setSortDesc(true);
+              }}
+              className="md:hidden ml-auto text-xs font-medium text-blue-500 hover:text-blue-700 active:text-blue-800 transition-colors"
+            >
+              Aujourd'hui
+            </button>
+          )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
           <button
             onClick={goToPrevDay}
-            className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-900"
+            className="p-2 md:p-1.5 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition-colors text-slate-500 hover:text-slate-900"
             aria-label="Jour précédent"
           >
             <ChevronLeft size={18} />
           </button>
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700 min-w-[120px] text-center">
+          <span className="flex-1 md:flex-none rounded-full bg-slate-100 px-3 py-1.5 md:py-1 text-sm font-medium text-slate-700 md:min-w-[120px] text-center tabular-nums">
             {historyDateLabel}
             <span className="ml-1.5 text-xs text-slate-400 font-normal">
               {filteredTransactions.length}
@@ -395,7 +418,7 @@ export const TransactionHistoryPage: React.FC = () => {
           <button
             onClick={goToNextDay}
             disabled={isHistoryToday}
-            className={`p-1.5 rounded-lg transition-colors ${isHistoryToday ? 'text-slate-200 cursor-not-allowed' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-900'}`}
+            className={`p-2 md:p-1.5 rounded-lg transition-colors ${isHistoryToday ? 'text-slate-200 cursor-not-allowed' : 'hover:bg-slate-100 active:bg-slate-200 text-slate-500 hover:text-slate-900'}`}
             aria-label="Jour suivant"
           >
             <ChevronRight size={18} />
@@ -410,7 +433,7 @@ export const TransactionHistoryPage: React.FC = () => {
                 setSortBy('time');
                 setSortDesc(true);
               }}
-              className="text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors ml-1"
+              className="hidden md:inline text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors ml-1"
             >
               Aujourd'hui
             </button>
@@ -420,97 +443,155 @@ export const TransactionHistoryPage: React.FC = () => {
 
       {/* Stat Cards */}
       {dailySummary && (
-        <div className="grid gap-3 grid-cols-4">
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-            <div className="flex items-center gap-2 text-slate-400 mb-1">
-              <TrendingUp size={14} />
-              <span className="text-xs font-medium">Chiffre d'affaires</span>
+        <div className="grid gap-2 md:gap-3 grid-cols-2 md:grid-cols-4">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3 md:p-4">
+            <div className="flex items-center gap-1.5 md:gap-2 text-slate-400 mb-1">
+              <TrendingUp size={14} className="shrink-0" />
+              <span className="text-[11px] md:text-xs font-medium truncate">
+                Chiffre d'affaires
+              </span>
             </div>
-            <div className="text-lg font-bold text-slate-900">
+            <div className="text-base md:text-lg font-bold text-slate-900 tabular-nums">
               {formatPrice(dailySummary.total)}
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-            <div className="flex items-center gap-2 text-slate-400 mb-1">
-              <Receipt size={14} />
-              <span className="text-xs font-medium">Transactions</span>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3 md:p-4">
+            <div className="flex items-center gap-1.5 md:gap-2 text-slate-400 mb-1">
+              <Receipt size={14} className="shrink-0" />
+              <span className="text-[11px] md:text-xs font-medium truncate">Transactions</span>
             </div>
-            <div className="text-lg font-bold text-slate-900">{dailySummary.count}</div>
+            <div className="text-base md:text-lg font-bold text-slate-900 tabular-nums">
+              {dailySummary.count}
+            </div>
           </div>
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-            <div className="flex items-center gap-2 text-slate-400 mb-1">
-              <Scissors size={14} />
-              <span className="text-xs font-medium">Prestations</span>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3 md:p-4">
+            <div className="flex items-center gap-1.5 md:gap-2 text-slate-400 mb-1">
+              <Scissors size={14} className="shrink-0" />
+              <span className="text-[11px] md:text-xs font-medium truncate">Prestations</span>
             </div>
-            <div className="text-lg font-bold text-slate-900">{dailySummary.serviceCount}</div>
+            <div className="text-base md:text-lg font-bold text-slate-900 tabular-nums">
+              {dailySummary.serviceCount}
+            </div>
           </div>
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-            <div className="flex items-center gap-2 text-slate-400 mb-1">
-              <ShoppingBag size={14} />
-              <span className="text-xs font-medium">Produits</span>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3 md:p-4">
+            <div className="flex items-center gap-1.5 md:gap-2 text-slate-400 mb-1">
+              <ShoppingBag size={14} className="shrink-0" />
+              <span className="text-[11px] md:text-xs font-medium truncate">Produits</span>
             </div>
-            <div className="text-lg font-bold text-slate-900">{dailySummary.productCount}</div>
+            <div className="text-base md:text-lg font-bold text-slate-900 tabular-nums">
+              {dailySummary.productCount}
+            </div>
           </div>
         </div>
       )}
 
       {/* Search, Filter & Sort Bar */}
       {filteredTransactions.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3 flex gap-2 items-center">
-          {/* Search input */}
-          <div className="relative flex-shrink-0" style={{ width: 260 }}>
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Rechercher..."
-              className="w-full pl-8 pr-3 h-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            />
-          </div>
-          {/* Filter pills */}
-          <div className="flex gap-1.5 flex-wrap">
-            {/* Status pills */}
-            {(['all', 'voided', 'refunded'] as const).map((f) => {
-              const labels = { all: 'Tous', voided: 'Annulés', refunded: 'Remboursés' };
-              const icons = { all: History, voided: Ban, refunded: RotateCcw };
-              const count = statusCounts[f];
-              const isActive = statusFilter === f;
-              const Icon = icons[f];
-              return (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3 md:px-4 md:py-3 flex flex-col md:flex-row gap-2 md:gap-2 md:items-center">
+          {/* Row 1 (mobile): search + sort toggle. Desktop: just the search sized at 260. */}
+          <div className="flex items-center gap-2 md:contents">
+            <div className="relative flex-1 md:flex-shrink-0 md:flex-none md:w-[260px]">
+              <Search
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Rechercher..."
+                className="w-full pl-8 pr-3 h-10 md:h-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+            {/* Mobile sort inline with search */}
+            <div ref={sortRefMobile} className="relative md:hidden">
+              <div className="flex items-center gap-1">
                 <button
-                  key={f}
-                  onClick={() => setStatusFilter(f)}
-                  className={`h-8 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                  onClick={() => setSortOpen(!sortOpen)}
+                  className="h-10 px-3 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 active:bg-slate-200 transition-colors flex items-center gap-1.5"
+                  aria-label="Trier"
                 >
-                  <Icon size={12} />
-                  {labels[f]}
-                  <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
+                  <ArrowUpDown size={14} />
+                  <span>{{ time: 'Heure', amount: 'Mt.' }[sortBy]}</span>
                 </button>
-              );
-            })}
-            {/* Separator */}
-            <div className="w-px h-8 bg-slate-200 flex-shrink-0" />
-            {/* Payment method pills */}
-            {ALL_PAYMENT_METHODS.map((method) => {
-              const isActive = paymentFilter === method;
-              const count = paymentCounts.get(method) || 0;
-              const Icon = PAYMENT_ICONS[method] || CreditCard;
-              return (
                 <button
-                  key={method}
-                  onClick={() => setPaymentFilter(isActive ? null : method)}
-                  className={`h-8 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                  onClick={() => setSortDesc(!sortDesc)}
+                  className="h-10 w-10 rounded-lg bg-slate-100 text-slate-600 active:bg-slate-200 transition-colors flex items-center justify-center"
+                  aria-label={sortDesc ? 'Décroissant' : 'Croissant'}
                 >
-                  <Icon size={12} />
-                  {PAYMENT_METHOD_SHORT[method] || method}
-                  <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
+                  {sortDesc ? <ArrowDown size={14} /> : <ArrowUp size={14} />}
                 </button>
-              );
-            })}
+              </div>
+              {sortOpen && (
+                <div className="absolute right-0 top-full mt-1 bg-white rounded-lg border border-slate-200 shadow-lg py-1 z-10 min-w-[140px]">
+                  {(
+                    [
+                      ['time', 'Heure'],
+                      ['amount', 'Montant'],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        setSortBy(key);
+                        setSortOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm transition-colors ${sortBy === key ? 'bg-blue-50 text-blue-600 font-medium' : 'text-slate-600 active:bg-slate-50'}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          {/* Sort dropdown — right-aligned */}
-          <div ref={sortRef} className="ml-auto flex-shrink-0 relative">
+
+          {/* Filter pills: horizontal scroll on mobile, wrap on desktop */}
+          <div className="-mx-3 px-3 md:mx-0 md:px-0 overflow-x-auto md:overflow-visible scrollbar-hide">
+            <div className="flex gap-1.5 md:flex-wrap w-max md:w-auto">
+              {/* Status pills */}
+              {(['all', 'voided', 'refunded'] as const).map((f) => {
+                const labels = { all: 'Tous', voided: 'Annulés', refunded: 'Remboursés' };
+                const icons = { all: History, voided: Ban, refunded: RotateCcw };
+                const count = statusCounts[f];
+                const isActive = statusFilter === f;
+                const Icon = icons[f];
+                return (
+                  <button
+                    key={f}
+                    onClick={() => setStatusFilter(f)}
+                    className={`h-9 md:h-8 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 shrink-0 ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 active:bg-slate-200'}`}
+                  >
+                    <Icon size={12} />
+                    {labels[f]}
+                    <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
+                  </button>
+                );
+              })}
+              {/* Separator */}
+              <div className="w-px h-9 md:h-8 bg-slate-200 flex-shrink-0" />
+              {/* Payment method pills */}
+              {ALL_PAYMENT_METHODS.map((method) => {
+                const isActive = paymentFilter === method;
+                const count = paymentCounts.get(method) || 0;
+                const Icon = PAYMENT_ICONS[method] || CreditCard;
+                return (
+                  <button
+                    key={method}
+                    onClick={() => setPaymentFilter(isActive ? null : method)}
+                    className={`h-9 md:h-8 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 shrink-0 ${isActive ? 'bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 active:bg-slate-200'}`}
+                  >
+                    <Icon size={12} />
+                    {PAYMENT_METHOD_SHORT[method] || method}
+                    <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Desktop sort dropdown */}
+          <div ref={sortRefDesktop} className="hidden md:block ml-auto flex-shrink-0 relative">
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setSortOpen(!sortOpen)}
@@ -552,15 +633,254 @@ export const TransactionHistoryPage: React.FC = () => {
         </div>
       )}
 
-      {/* Transaction List Card */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        {filteredTransactions.length === 0 ? (
-          <div className="p-12 text-center">
+      {/* Transaction List — empty state */}
+      {filteredTransactions.length === 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="p-10 md:p-12 text-center">
             <History size={36} className="mx-auto mb-4 text-slate-300" />
-            <p className="text-slate-400">Aucune transaction enregistrée.</p>
+            <p className="text-slate-400 text-sm md:text-base">Aucune transaction enregistrée.</p>
           </div>
-        ) : (
-          /* Desktop: table layout */
+        </div>
+      )}
+
+      {/* Transaction List — mobile cards */}
+      {isMobile && filteredTransactions.length > 0 && (
+        <div className="space-y-2.5">
+          {displayedTransactions.map(({ parent: trx, children }) => {
+            const status = getTransactionStatus(trx, transactions);
+            const isVoided = status === 'voided';
+            const showVoid = canVoid && status === 'active' && isToday(trx.date);
+            const showRefund = canRefund && status !== 'voided' && status !== 'fully_refunded';
+            const timeStr = new Date(trx.date).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+            const staffNames = getStaffNames(trx);
+            return (
+              <div key={trx.id} className="space-y-1.5">
+                {/* Parent card */}
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setDetailTransaction(trx)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setDetailTransaction(trx);
+                    }
+                  }}
+                  className={`bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden active:bg-slate-50 transition-colors cursor-pointer ${isVoided ? 'opacity-60' : ''}`}
+                >
+                  {/* Top: time chip + client + total */}
+                  <div className="flex items-start gap-3 px-4 pt-3.5 pb-2.5">
+                    <div className="shrink-0 flex flex-col items-center gap-1 pt-0.5">
+                      <span className="text-[11px] font-semibold text-slate-400 tabular-nums tracking-tight">
+                        {timeStr}
+                      </span>
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          isVoided
+                            ? 'bg-red-400'
+                            : status === 'fully_refunded' || status === 'partially_refunded'
+                              ? 'bg-orange-400'
+                              : 'bg-emerald-400'
+                        }`}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap leading-tight">
+                        {trx.clientName ? (
+                          <span
+                            className={`text-slate-900 font-semibold text-[15px] ${isVoided ? 'line-through' : ''}`}
+                          >
+                            {trx.clientName}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 italic text-sm">Client de passage</span>
+                        )}
+                        {statusBadge(status, trx)}
+                      </div>
+                      {staffNames.length > 0 && (
+                        <div className="mt-1 text-xs text-slate-500 truncate">
+                          {staffNames.join(' · ')}
+                        </div>
+                      )}
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div
+                        className={`text-[17px] font-bold tabular-nums leading-none ${trx.total < 0 ? 'text-red-600' : 'text-slate-900'}`}
+                      >
+                        {formatPrice(trx.total)}
+                      </div>
+                      {trx.payments.length > 0 && (
+                        <div className="mt-1.5 flex gap-1 justify-end">
+                          {trx.payments.slice(0, 3).map((p, i) => {
+                            const PIcon = PAYMENT_ICONS[p.method] || CreditCard;
+                            return (
+                              <span
+                                key={i}
+                                className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-slate-100 text-slate-500"
+                                title={p.method}
+                              >
+                                <PIcon size={11} />
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Service chips */}
+                  {trx.items.length > 0 && (
+                    <div className="px-4 pb-3 flex flex-wrap gap-1">
+                      {trx.items.map((item, i) => (
+                        <span key={i} className={SERVICE_TAG}>
+                          {itemLabel(item)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Action strip */}
+                  {(showVoid || showRefund) && (
+                    <div className="border-t border-slate-100 bg-slate-50/60 px-2 py-1.5 flex items-center justify-end gap-0.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReceiptTransaction(trx);
+                        }}
+                        className="px-3 h-9 rounded-lg text-slate-500 hover:text-slate-900 active:bg-slate-200 transition-colors inline-flex items-center gap-1.5 text-xs font-medium"
+                        aria-label="Ticket"
+                      >
+                        <Receipt size={14} />
+                        Ticket
+                      </button>
+                      {showRefund && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRefundTarget(trx);
+                          }}
+                          className="px-3 h-9 rounded-lg text-orange-500 hover:text-orange-700 active:bg-orange-100 transition-colors inline-flex items-center gap-1.5 text-xs font-medium"
+                          aria-label="Rembourser"
+                        >
+                          <RotateCcw size={14} />
+                          Remb.
+                        </button>
+                      )}
+                      {showVoid && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setVoidTarget(trx);
+                          }}
+                          className="px-3 h-9 rounded-lg text-red-500 hover:text-red-700 active:bg-red-100 transition-colors inline-flex items-center gap-1.5 text-xs font-medium"
+                          aria-label="Annuler"
+                        >
+                          <Ban size={14} />
+                          Annuler
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {!showVoid && !showRefund && (
+                    <div className="border-t border-slate-100 bg-slate-50/60 px-4 py-1.5 flex items-center justify-end">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReceiptTransaction(trx);
+                        }}
+                        className="h-8 rounded-lg text-slate-500 active:bg-slate-200 transition-colors inline-flex items-center gap-1.5 text-xs font-medium"
+                        aria-label="Ticket"
+                      >
+                        <Receipt size={14} />
+                        Ticket
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Child cards (void/refund) with connector */}
+                {children.length > 0 && (
+                  <div className="pl-5 space-y-1.5">
+                    {children.map((child) => {
+                      const childTime = new Date(child.date).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      });
+                      const isVoid = child.type === 'VOID';
+                      const accentColor = isVoid ? 'text-red-500' : 'text-orange-500';
+                      const borderColor = isVoid ? 'border-red-200' : 'border-orange-200';
+                      return (
+                        <div
+                          key={child.id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setDetailTransaction(child)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              setDetailTransaction(child);
+                            }
+                          }}
+                          className={`relative bg-white rounded-lg border ${borderColor} shadow-sm active:bg-slate-50 transition-colors cursor-pointer p-3 pl-5`}
+                        >
+                          {/* Connector line on left */}
+                          <span
+                            className={`absolute left-0 top-0 bottom-0 w-0.5 rounded-l-lg ${isVoid ? 'bg-red-300' : 'bg-orange-300'}`}
+                          />
+                          <div className="flex items-center gap-2.5">
+                            <span
+                              className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${isVoid ? 'bg-red-50' : 'bg-orange-50'} ${accentColor}`}
+                            >
+                              {isVoid ? <Ban size={14} /> : <RotateCcw size={14} />}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 leading-tight">
+                                {statusBadge('active', child)}
+                                <span className="text-[11px] text-slate-400 tabular-nums">
+                                  {childTime}
+                                </span>
+                              </div>
+                              {child.items.length > 0 && (
+                                <div className="mt-1 flex flex-wrap gap-1">
+                                  {child.items.slice(0, 3).map((item, i) => (
+                                    <span
+                                      key={i}
+                                      className="text-[11px] font-medium bg-blue-50/60 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100 truncate max-w-[140px]"
+                                    >
+                                      {itemLabel(item)}
+                                    </span>
+                                  ))}
+                                  {child.items.length > 3 && (
+                                    <span className="text-[11px] text-slate-400 px-1.5 py-0.5">
+                                      +{child.items.length - 3}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            <div className="shrink-0 text-right">
+                              <div className="text-sm font-bold tabular-nums text-red-600">
+                                {formatPrice(child.total)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Transaction List — desktop table */}
+      {!isMobile && filteredTransactions.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b-2 border-slate-200 bg-slate-50">
@@ -743,8 +1063,8 @@ export const TransactionHistoryPage: React.FC = () => {
               })}
             </tbody>
           </table>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Modals */}
       {receiptTransaction && (
