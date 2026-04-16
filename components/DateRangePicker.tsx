@@ -462,13 +462,13 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
             setIsOpen(!isOpen);
           }}
           type="button"
-          className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-50 transition-colors text-slate-700 group"
+          className="flex items-center justify-center gap-2 px-3 py-1.5 min-w-[220px] hover:bg-slate-50 transition-colors text-slate-700 group"
         >
-          <CalendarIcon size={15} className="text-slate-400 group-hover:text-slate-600" />
-          <span className="text-sm font-medium">{formatButtonLabel()}</span>
+          <CalendarIcon size={15} className="text-slate-400 group-hover:text-slate-600 shrink-0" />
+          <span className="text-sm font-medium whitespace-nowrap">{formatButtonLabel()}</span>
           <ChevronDown
             size={14}
-            className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+            className={`text-slate-400 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`}
           />
         </button>
         <button
