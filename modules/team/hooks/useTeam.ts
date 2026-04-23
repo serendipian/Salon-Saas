@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { supabase } from '../../../lib/supabase';
+import { rawRpc, rawSelect } from '../../../lib/supabaseRaw';
 import type { StaffMember } from '../../../types';
 import { toStaffMember, toStaffMemberInsert } from '../mappers';
 
@@ -17,16 +18,15 @@ export const useTeam = (includeArchived = false) => {
 
   const { data: staff = [], isLoading } = useQuery({
     queryKey: ['staff_members', salonId, { includeArchived }],
-    queryFn: async () => {
-      let query = supabase.from('staff_members').select('*').eq('salon_id', salonId);
-      if (!includeArchived) {
-        query = query.is('deleted_at', null);
-      }
-      const { data, error } = await query.order('last_name');
-      if (error) throw error;
-      return (data ?? []).map((row) =>
-        toStaffMember(row as unknown as Parameters<typeof toStaffMember>[0]),
-      );
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('salon_id', `eq.${salonId}`);
+      if (!includeArchived) params.append('deleted_at', 'is.null');
+      params.append('order', 'last_name');
+      // biome-ignore lint/suspicious/noExplicitAny: toStaffMember accepts row shape narrower than generated types
+      const data = await rawSelect<any>('staff_members', params.toString(), signal);
+      return data.map((row) => toStaffMember(row as Parameters<typeof toStaffMember>[0]));
     },
     enabled: !!salonId,
   });
@@ -36,14 +36,21 @@ export const useTeam = (includeArchived = false) => {
 
   const { data: salaryMap = {} as Record<string, number> } = useQuery({
     queryKey: ['staff_pii_batch', salonId, staffIds],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_staff_pii_batch', { p_staff_ids: staffIds });
+    queryFn: async ({ signal }) => {
       const map: Record<string, number> = {};
-      if (error || !data) return map;
-      for (const row of data as { staff_id: string; base_salary: string | null }[]) {
-        if (row.base_salary != null) {
-          map[row.staff_id] = parseFloat(row.base_salary);
+      try {
+        const data = await rawRpc<{ staff_id: string; base_salary: string | null }[]>(
+          'get_staff_pii_batch',
+          { p_staff_ids: staffIds },
+          signal,
+        );
+        for (const row of data ?? []) {
+          if (row.base_salary != null) {
+            map[row.staff_id] = parseFloat(row.base_salary);
+          }
         }
+      } catch {
+        // PII decryption can fail for non-owner/manager roles — return empty map
       }
       return map;
     },

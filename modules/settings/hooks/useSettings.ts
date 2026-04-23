@@ -6,6 +6,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 import type { ExpenseCategorySetting, RecurringExpense, SalonSettings } from '../../../types';
 import {
   toExpenseCategory,
@@ -33,10 +34,14 @@ export const useSettings = () => {
   // --- Salon Settings (from salons table) ---
   const { data: salonSettings, isLoading: isLoadingSettings } = useQuery({
     queryKey: ['salon_settings', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('salons').select('*').eq('id', salonId).single();
-      if (error) throw error;
-      return toSalonSettings(data as any);
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('id', `eq.${salonId}`);
+      // biome-ignore lint/suspicious/noExplicitAny: toSalonSettings accepts row shape narrower than generated types
+      const rows = await rawSelect<any>('salons', params.toString(), signal);
+      if (rows.length === 0) throw new Error('Salon introuvable');
+      return toSalonSettings(rows[0]);
     },
     enabled: !!salonId,
   });
@@ -66,15 +71,15 @@ export const useSettings = () => {
   // --- Expense Categories ---
   const { data: expenseCategories = [], isLoading: isLoadingCategories } = useQuery({
     queryKey: ['expense_categories', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('expense_categories')
-        .select('*')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null)
-        .order('sort_order', { ascending: true, nullsFirst: false });
-      if (error) throw error;
-      return (data ?? []).map(toExpenseCategory);
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('deleted_at', 'is.null');
+      params.append('order', 'sort_order.asc.nullslast');
+      // biome-ignore lint/suspicious/noExplicitAny: toExpenseCategory accepts row shape narrower than generated types
+      const data = await rawSelect<any>('expense_categories', params.toString(), signal);
+      return data.map(toExpenseCategory);
     },
     enabled: !!salonId,
   });
@@ -129,15 +134,15 @@ export const useSettings = () => {
   // --- Recurring Expenses ---
   const { data: recurringExpenses = [], isLoading: isLoadingRecurring } = useQuery({
     queryKey: ['recurring_expenses', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('recurring_expenses')
-        .select('*')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null)
-        .order('name');
-      if (error) throw error;
-      return (data ?? []).map(toRecurringExpense);
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('deleted_at', 'is.null');
+      params.append('order', 'name');
+      // biome-ignore lint/suspicious/noExplicitAny: toRecurringExpense accepts row shape narrower than generated types
+      const data = await rawSelect<any>('recurring_expenses', params.toString(), signal);
+      return data.map(toRecurringExpense);
     },
     enabled: !!salonId,
   });

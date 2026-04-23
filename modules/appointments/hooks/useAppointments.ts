@@ -6,6 +6,7 @@ import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { withMutationTimeout } from '../../../lib/mutations';
 import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 import type { Appointment } from '../../../types';
 import { toAppointment, toAppointmentGroupInsert, toAppointmentInsert } from '../mappers';
 
@@ -33,21 +34,18 @@ export const useAppointments = (showDeleted = false) => {
 
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ['appointments', salonId, { showDeleted }],
-    queryFn: async () => {
-      let query = supabase
-        .from('appointments')
-        .select(
-          '*, clients(first_name, last_name), services(name), service_variants(name), staff_members(first_name, last_name)',
-        )
-        .eq('salon_id', salonId);
-      if (showDeleted) {
-        query = query.not('deleted_at', 'is', null);
-      } else {
-        query = query.is('deleted_at', null);
-      }
-      const { data, error } = await query.order('date', { ascending: false });
-      if (error) throw error;
-      return (data ?? []).map(toAppointment);
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append(
+        'select',
+        '*,clients(first_name,last_name),services(name),service_variants(name),staff_members(first_name,last_name)',
+      );
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('deleted_at', showDeleted ? 'not.is.null' : 'is.null');
+      params.append('order', 'date.desc');
+      // biome-ignore lint/suspicious/noExplicitAny: toAppointment accepts row shape narrower than generated types
+      const data = await rawSelect<any>('appointments', params.toString(), signal);
+      return data.map(toAppointment);
     },
     enabled: !!salonId,
   });
