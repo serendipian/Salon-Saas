@@ -3,6 +3,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 import type { Client } from '../../../types';
 import { toClient, toClientInsert } from '../mappers';
 
@@ -15,28 +16,26 @@ export const useClients = () => {
 
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ['clients', salonId],
-    queryFn: async () => {
-      // Fetch clients and stats separately, then merge
-      const [clientsRes, statsRes] = await Promise.all([
-        supabase
-          .from('clients')
-          .select('*')
-          .eq('salon_id', salonId)
-          .is('deleted_at', null)
-          .order('last_name'),
-        supabase.from('client_stats').select('*').eq('salon_id', salonId),
+    queryFn: async ({ signal }) => {
+      const clientsParams = new URLSearchParams();
+      clientsParams.append('select', '*');
+      clientsParams.append('salon_id', `eq.${salonId}`);
+      clientsParams.append('deleted_at', 'is.null');
+      clientsParams.append('order', 'last_name');
+
+      const statsParams = new URLSearchParams();
+      statsParams.append('select', '*');
+      statsParams.append('salon_id', `eq.${salonId}`);
+
+      const [clientRows, statRows] = await Promise.all([
+        // biome-ignore lint/suspicious/noExplicitAny: hand-written Row aliases narrower than generated types
+        rawSelect<any>('clients', clientsParams.toString(), signal),
+        // biome-ignore lint/suspicious/noExplicitAny: stats row also narrower than generated
+        rawSelect<any>('client_stats', statsParams.toString(), signal),
       ]);
 
-      if (clientsRes.error) throw clientsRes.error;
-      if (statsRes.error) throw statsRes.error;
-
-      const statsMap = new Map((statsRes.data ?? []).map((s) => [s.client_id, s]));
-
-      // biome-ignore lint/suspicious/noExplicitAny: hand-written Row aliases narrower than generated types
-      return (clientsRes.data ?? []).map((row: any) =>
-        // biome-ignore lint/suspicious/noExplicitAny: stats row also narrower than generated
-        toClient(row, (statsMap.get(row.id) ?? null) as any),
-      );
+      const statsMap = new Map(statRows.map((s) => [s.client_id, s]));
+      return clientRows.map((row) => toClient(row, (statsMap.get(row.id) ?? null) as never));
     },
     enabled: !!salonId,
   });

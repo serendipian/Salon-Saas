@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { withMutationTimeout } from '../lib/mutations';
 import { supabase } from '../lib/supabase';
+import { rawSelect } from '../lib/supabaseRaw';
 import {
   type TransactionRow,
   toTransaction,
@@ -29,21 +30,18 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
 
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ['transactions', salonId, from ?? 'all', to ?? 'all'],
-    queryFn: async () => {
-      let query = supabase
-        .from('transactions')
-        .select(
-          '*, transaction_items(*), transaction_payments(*), clients(first_name, last_name), profiles(first_name, last_name)',
-        )
-        .eq('salon_id', salonId)
-        .order('date', { ascending: false });
-
-      if (from) query = query.gte('date', from);
-      if (to) query = query.lte('date', to);
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return (data as unknown as TransactionRow[]).map(toTransaction);
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append(
+        'select',
+        '*,transaction_items(*),transaction_payments(*),clients(first_name,last_name),profiles(first_name,last_name)',
+      );
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('order', 'date.desc');
+      if (from) params.append('date', `gte.${from}`);
+      if (to) params.append('date', `lte.${to}`);
+      const data = await rawSelect<TransactionRow>('transactions', params.toString(), signal);
+      return data.map(toTransaction);
     },
     enabled: !!salonId,
   });

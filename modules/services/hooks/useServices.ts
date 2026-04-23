@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 import type { FavoriteItem, Service, ServiceCategory } from '../../../types';
 import { toService, toServiceCategory, toServiceInsert, toVariantInsert } from '../mappers';
 
@@ -25,16 +26,15 @@ export const useServices = () => {
   // Services query (with nested variants)
   const { data: services = [], isLoading: isLoadingServices } = useQuery({
     queryKey: ['services', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('services')
-        .select('*, service_variants(*)')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null)
-        .order('name');
-      if (error) throw error;
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*,service_variants(*)');
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('deleted_at', 'is.null');
+      params.append('order', 'name');
       // biome-ignore lint/suspicious/noExplicitAny: hand-written Row alias narrower than generated types
-      return (data ?? []).map((row: any) => toService(row));
+      const data = await rawSelect<any>('services', params.toString(), signal);
+      return data.map((row) => toService(row));
     },
     enabled: !!salonId,
   });
@@ -42,16 +42,15 @@ export const useServices = () => {
   // Service Categories query
   const { data: serviceCategories = [], isLoading: isLoadingCategories } = useQuery({
     queryKey: ['service_categories', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('service_categories')
-        .select('*')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null)
-        .order('sort_order', { ascending: true, nullsFirst: false });
-      if (error) throw error;
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('deleted_at', 'is.null');
+      params.append('order', 'sort_order.asc.nullslast');
       // biome-ignore lint/suspicious/noExplicitAny: hand-written Row alias narrower than generated types
-      return (data ?? []).map((row: any) => toServiceCategory(row));
+      const data = await rawSelect<any>('service_categories', params.toString(), signal);
+      return data.map((row) => toServiceCategory(row));
     },
     enabled: !!salonId,
   });

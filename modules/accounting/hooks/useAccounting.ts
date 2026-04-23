@@ -7,6 +7,7 @@ import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useTransactions } from '../../../hooks/useTransactions';
 import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 import type { CartItem, DateRange, Expense, LedgerEntry, Transaction } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { type ExpenseRow, toExpense, toExpenseInsert } from '../mappers';
@@ -77,15 +78,14 @@ export const useAccounting = () => {
   // --- Expenses Query ---
   const { data: expenses = [] } = useQuery({
     queryKey: ['expenses', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('expenses')
-        .select('*, expense_categories(name, color), suppliers(name)')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null)
-        .order('date', { ascending: false });
-      if (error) throw error;
-      return (data as unknown as ExpenseRow[]).map(toExpense);
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*,expense_categories(name,color),suppliers(name)');
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('deleted_at', 'is.null');
+      params.append('order', 'date.desc');
+      const data = await rawSelect<ExpenseRow>('expenses', params.toString(), signal);
+      return data.map(toExpense);
     },
     enabled: !!salonId,
   });
