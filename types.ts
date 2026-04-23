@@ -429,6 +429,7 @@ export interface Transaction {
   id: string;
   date: string; // ISO String
   total: number;
+  ticketNumber: number;
   clientName?: string;
   clientId?: string;
   appointmentId?: string;
