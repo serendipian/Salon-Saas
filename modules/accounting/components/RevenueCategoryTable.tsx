@@ -85,9 +85,7 @@ export const RevenueCategoryTable: React.FC<RevenueCategoryTableProps> = ({
   }> = ({ label, sortableKey, align = 'right' }) => {
     const active = sortKey === sortableKey;
     return (
-      <th
-        className={`px-5 py-4 ${align === 'right' ? 'text-right' : 'text-left'}`}
-      >
+      <th className={`px-5 py-4 ${align === 'right' ? 'text-right' : 'text-left'}`}>
         <button
           type="button"
           onClick={() => handleSort(sortableKey)}
@@ -145,9 +143,7 @@ export const RevenueCategoryTable: React.FC<RevenueCategoryTableProps> = ({
                     <div className="flex items-center gap-2">
                       <span
                         className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-[11px] font-bold ${
-                          rank <= 3
-                            ? 'bg-blue-50 text-blue-600'
-                            : 'bg-slate-50 text-slate-400'
+                          rank <= 3 ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-400'
                         }`}
                       >
                         {rank}
@@ -158,9 +154,7 @@ export const RevenueCategoryTable: React.FC<RevenueCategoryTableProps> = ({
                     </div>
                   </td>
                   <td className="px-5 py-4 font-semibold text-slate-900">{cat.categoryName}</td>
-                  <td className="px-5 py-4 text-right font-semibold text-slate-900">
-                    {cat.count}
-                  </td>
+                  <td className="px-5 py-4 text-right font-semibold text-slate-900">{cat.count}</td>
                   <td className="px-5 py-4 text-right text-slate-500">
                     {totalCount > 0 ? ((cat.count / totalCount) * 100).toFixed(1) : '0.0'}%
                   </td>

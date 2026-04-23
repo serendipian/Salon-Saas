@@ -3,7 +3,7 @@ import type React from 'react';
 import { useMemo } from 'react';
 import { EmptyState } from '../../../components/EmptyState';
 import { formatPrice } from '../../../lib/format';
-import { type Appointment, type AppointmentStatus } from '../../../types';
+import type { Appointment, AppointmentStatus } from '../../../types';
 import { groupByDayAndClient } from './groupAppointments';
 import { StatusBadge } from './StatusBadge';
 
@@ -54,9 +54,7 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
   const first = appointments[0];
   const last = appointments[appointments.length - 1];
   const totalPrice = appointments.reduce((sum, a) => sum + a.price, 0);
-  const endTime = new Date(
-    new Date(last.date).getTime() + (last.durationMinutes ?? 0) * 60_000,
-  );
+  const endTime = new Date(new Date(last.date).getTime() + (last.durationMinutes ?? 0) * 60_000);
   const timeRange = isMulti
     ? `${formatTime(first.date)} – ${endTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
     : formatTime(first.date);
@@ -151,9 +149,7 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
               >
                 <StatusBadge
                   status={appt.status}
-                  onStatusChange={
-                    onStatusChange ? (s) => onStatusChange(appt.id, s) : undefined
-                  }
+                  onStatusChange={onStatusChange ? (s) => onStatusChange(appt.id, s) : undefined}
                 />
                 {isMulti && onDelete && (
                   <button

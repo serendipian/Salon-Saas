@@ -57,10 +57,10 @@ export const useClients = () => {
       const snapshot = queryClient.getQueriesData<Client[]>({
         queryKey: ['clients', salonId],
       });
-      queryClient.setQueriesData<Client[]>(
-        { queryKey: ['clients', salonId] },
-        (old) => [client, ...(old ?? [])],
-      );
+      queryClient.setQueriesData<Client[]>({ queryKey: ['clients', salonId] }, (old) => [
+        client,
+        ...(old ?? []),
+      ]);
       return { snapshot };
     },
     onError: (err, _vars, context) => {

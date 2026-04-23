@@ -413,7 +413,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-slate-200 bg-white hover:border-slate-900 hover:bg-slate-50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 <Icon size={32} className="text-slate-400 group-hover:text-slate-900" />
-                <span className="font-bold text-slate-700 group-hover:text-slate-900">{method}</span>
+                <span className="font-bold text-slate-700 group-hover:text-slate-900">
+                  {method}
+                </span>
               </button>
             ))}
           </div>

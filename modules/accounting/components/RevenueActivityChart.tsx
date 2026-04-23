@@ -68,9 +68,7 @@ export const RevenueActivityChart: React.FC<RevenueActivityChartProps> = ({
             tickLine={false}
             tick={{ fill: '#64748b', fontSize: 10 }}
             width={45}
-            tickFormatter={(v: number) =>
-              v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)
-            }
+            tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))}
           />
           <Tooltip
             contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 12 }}
@@ -78,7 +76,13 @@ export const RevenueActivityChart: React.FC<RevenueActivityChartProps> = ({
             formatter={(value) => [formatPrice(Number(value)), 'CA']}
             labelFormatter={(label) => String(label ?? '')}
           />
-          <Bar dataKey="revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={20} minPointSize={0}>
+          <Bar
+            dataKey="revenue"
+            fill="#3b82f6"
+            radius={[4, 4, 0, 0]}
+            maxBarSize={20}
+            minPointSize={0}
+          >
             {highlightIndex !== undefined &&
               data.map((entry, i) => (
                 <Cell

@@ -13,7 +13,10 @@ function loadEnvLocal() {
     if (eq === -1) continue;
     const key = trimmed.slice(0, eq).trim();
     let value = trimmed.slice(eq + 1).trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
       value = value.slice(1, -1);
     }
     if (!(key in process.env)) process.env[key] = value;
@@ -35,41 +38,26 @@ const client = new Client({ connectionString: u.toString(), ssl: { rejectUnautho
   try {
     await client.connect();
 
-    const pubs = await client.query(
-      "SELECT pubname FROM pg_publication ORDER BY pubname"
-    );
+    const pubs = await client.query('SELECT pubname FROM pg_publication ORDER BY pubname');
     console.log('--- Publications ---');
     pubs.rows.forEach((r) => console.log('  ' + r.pubname));
 
     const tables = await client.query(
-      "SELECT schemaname, tablename FROM pg_publication_tables WHERE pubname = 'supabase_realtime' ORDER BY schemaname, tablename"
+      "SELECT schemaname, tablename FROM pg_publication_tables WHERE pubname = 'supabase_realtime' ORDER BY schemaname, tablename",
     );
-    console.log(
-      '\n--- Tables published to supabase_realtime (' +
-        tables.rows.length +
-        ') ---'
-    );
+    console.log('\n--- Tables published to supabase_realtime (' + tables.rows.length + ') ---');
     if (tables.rows.length === 0) console.log('  (none)');
-    else
-      tables.rows.forEach((r) =>
-        console.log('  ' + r.schemaname + '.' + r.tablename)
-      );
+    else tables.rows.forEach((r) => console.log('  ' + r.schemaname + '.' + r.tablename));
 
     const allTables = await client.query(
-      "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename"
+      "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename",
     );
     const pubSet = new Set(
-      tables.rows
-        .filter((r) => r.schemaname === 'public')
-        .map((r) => r.tablename)
+      tables.rows.filter((r) => r.schemaname === 'public').map((r) => r.tablename),
     );
-    console.log(
-      '\n--- All public tables (' +
-        allTables.rows.length +
-        ') - * = published ---'
-    );
+    console.log('\n--- All public tables (' + allTables.rows.length + ') - * = published ---');
     allTables.rows.forEach((r) =>
-      console.log('  ' + (pubSet.has(r.tablename) ? '*' : ' ') + ' ' + r.tablename)
+      console.log('  ' + (pubSet.has(r.tablename) ? '*' : ' ') + ' ' + r.tablename),
     );
 
     await client.end();

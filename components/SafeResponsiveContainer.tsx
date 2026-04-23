@@ -30,7 +30,9 @@ export const SafeResponsiveContainer: React.FC<Props> = ({ children, className, 
     if (!el) return;
     const observer = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect;
-      setSize((prev) => (prev.width === width && prev.height === height ? prev : { width, height }));
+      setSize((prev) =>
+        prev.width === width && prev.height === height ? prev : { width, height },
+      );
     });
     observer.observe(el);
     return () => observer.disconnect();
