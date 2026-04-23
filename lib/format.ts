@@ -14,3 +14,7 @@ export function formatDuration(minutes: number): string {
   const m = minutes % 60;
   return m > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${h}h`;
 }
+
+export function formatTicketNumber(n: number): string {
+  return `n°${n.toString().padStart(6, '0')}`;
+}

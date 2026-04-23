@@ -9,7 +9,7 @@ import {
   toTransaction,
   toTransactionRpcPayload,
 } from '../modules/pos/mappers';
-import type { CartItem, PaymentEntry } from '../types';
+import type { CartItem, PaymentEntry, Transaction } from '../types';
 import { useMutationToast } from './useMutationToast';
 import { useRealtimeSync } from './useRealtimeSync';
 
@@ -112,6 +112,21 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
           err.status = response.status;
           throw err;
         }
+
+        // RPC returns a bare UUID (PostgREST wraps scalar returns as JSON)
+        const newId = (await response.json()) as string;
+
+        // Hydrate the full transaction so callers (success modal etc.) receive
+        // a ready-to-render Transaction without an extra trip later.
+        const rows = await rawSelect<TransactionRow>(
+          'transactions',
+          `select=*,transaction_items(*),transaction_payments(*),clients(first_name,last_name),profiles(first_name,last_name)&id=eq.${newId}`,
+          signal,
+        );
+        if (!rows[0]) {
+          throw new Error('Transaction créée mais introuvable après hydratation.');
+        }
+        return toTransaction(rows[0]);
       },
     ),
     onSuccess: () => {
@@ -211,7 +226,8 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
     payments: PaymentEntry[],
     clientId?: string,
     appointmentId?: string,
-  ) => addTransactionMutation.mutateAsync({ items, payments, clientId, appointmentId });
+  ): Promise<Transaction> =>
+    addTransactionMutation.mutateAsync({ items, payments, clientId, appointmentId });
 
   const voidTransaction = (transactionId: string, reasonCategory: string, reasonNote: string) =>
     voidMutation.mutateAsync({ transactionId, reasonCategory, reasonNote });

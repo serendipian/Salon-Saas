@@ -32,6 +32,7 @@ export interface TransactionRow {
   appointment_id: string | null;
   date: string;
   total: number;
+  ticket_number: number;
   notes: string | null;
   created_at: string;
   created_by: string | null;
@@ -88,6 +89,7 @@ export function toTransaction(row: TransactionRow): Transaction {
     id: row.id,
     date: row.date,
     total: row.total,
+    ticketNumber: row.ticket_number,
     clientName,
     clientId: row.client_id ?? undefined,
     appointmentId: row.appointment_id ?? undefined,

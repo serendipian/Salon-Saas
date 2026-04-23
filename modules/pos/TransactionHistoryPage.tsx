@@ -25,11 +25,12 @@ import { useAuth } from '../../context/AuthContext';
 import { useMediaQuery } from '../../context/MediaQueryContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useTransactions } from '../../hooks/useTransactions';
-import { formatPrice } from '../../lib/format';
+import { formatPrice, formatTicketNumber } from '../../lib/format';
 import type { Transaction } from '../../types';
 import { ReceiptModal, TransactionDetailModal } from './components/POSModals';
 import { RefundModal } from './components/RefundModal';
 import { VoidModal } from './components/VoidModal';
+import { PAYMENT_METHOD_SHORT } from './constants';
 import { getTransactionStatus, type TransactionStatus } from './mappers';
 
 const ALL_PAYMENT_METHODS = ['Espèces', 'Carte Bancaire', 'Virement', 'Carte Cadeau'] as const;
@@ -250,12 +251,6 @@ export const TransactionHistoryPage: React.FC = () => {
     sortBy,
     sortDesc,
   ]);
-
-  const PAYMENT_METHOD_SHORT: Record<string, string> = {
-    'Carte Bancaire': 'Carte',
-    'Carte Cadeau': 'Cadeau',
-    Virement: 'Virement',
-  };
 
   const dailySummary = React.useMemo(() => {
     const activeSales = groupedTransactions.filter(({ parent: trx }) => {
@@ -885,6 +880,9 @@ export const TransactionHistoryPage: React.FC = () => {
             <thead>
               <tr className="border-b-2 border-slate-200 bg-slate-50">
                 <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  N°
+                </th>
+                <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                   Heure
                 </th>
                 <th className="px-6 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
@@ -916,6 +914,9 @@ export const TransactionHistoryPage: React.FC = () => {
                     <tr
                       className={`transition-colors ${idx % 2 === 1 ? 'bg-slate-100/50' : ''} hover:bg-slate-100/70 ${isVoided ? 'opacity-60' : ''}`}
                     >
+                      <td className="px-6 py-5 font-mono text-xs text-slate-500">
+                        {formatTicketNumber(trx.ticketNumber)}
+                      </td>
                       <td className="px-6 py-5 font-medium text-slate-700">
                         {new Date(trx.date).toLocaleTimeString([], {
                           hour: '2-digit',
@@ -1000,7 +1001,13 @@ export const TransactionHistoryPage: React.FC = () => {
                             <Eye size={16} />
                           </button>
                           <button
-                            onClick={() => setReceiptTransaction(trx)}
+                            onClick={() =>
+                              window.open(
+                                `/pos/historique/${trx.id}/print`,
+                                '_blank',
+                                'noopener,noreferrer',
+                              )
+                            }
                             className="p-2 text-slate-300 hover:text-slate-900 transition-colors"
                             title="Imprimer ticket"
                           >
@@ -1014,6 +1021,9 @@ export const TransactionHistoryPage: React.FC = () => {
                         key={child.id}
                         className="bg-slate-50/50 hover:bg-slate-100/50 transition-colors"
                       >
+                        <td className="px-6 py-2 font-mono text-xs text-slate-400">
+                          {formatTicketNumber(child.ticketNumber)}
+                        </td>
                         <td className="px-6 py-2 pl-10 text-xs text-slate-500">
                           {new Date(child.date).toLocaleTimeString([], {
                             hour: '2-digit',

@@ -18,11 +18,12 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Input } from '../../../components/FormElements';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
-import { formatPrice } from '../../../lib/format';
+import { formatPrice, formatTicketNumber } from '../../../lib/format';
 import type { CartItem, Service, ServiceVariant, Transaction } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { REFUND_CATEGORIES, VOID_CATEGORIES } from '../constants';
 import { getTransactionStatus } from '../mappers';
+import { ReceiptBody } from './ReceiptBody';
 
 // Shared hook for mobile fullscreen modal accessibility
 function useMobileModalA11y(isMobile: boolean, onClose: () => void) {
@@ -379,18 +380,10 @@ export const ReceiptModal: React.FC<{
   onClose: () => void;
 }> = ({ transaction, allTransactions, onClose }) => {
   const { salonSettings } = useSettings();
-  const totalPaid = transaction.payments.reduce((acc, p) => acc + p.amount, 0);
-  const change = Math.max(0, totalPaid - transaction.total);
-
-  // Use dynamic VAT from settings
   const vatRate = salonSettings.vatRate || 20;
-  const vatAmount = (transaction.total * (vatRate / 100)) / (1 + vatRate / 100);
   const { isMobile } = useMediaQuery();
   useMobileModalA11y(isMobile, onClose);
-
   const receiptStatus = getTransactionStatus(transaction, allTransactions);
-  const watermark =
-    receiptStatus === 'voided' ? 'ANNULÉ' : receiptStatus === 'fully_refunded' ? 'REMBOURSÉ' : null;
 
   if (isMobile) {
     return createPortal(
@@ -402,7 +395,12 @@ export const ReceiptModal: React.FC<{
         style={{ zIndex: 'var(--z-modal)' }}
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 shrink-0">
-          <h3 className="font-bold text-slate-900">Ticket de caisse</h3>
+          <h3 className="font-bold text-slate-900">
+            Ticket{' '}
+            <span className="font-mono text-slate-500">
+              {formatTicketNumber(transaction.ticketNumber)}
+            </span>
+          </h3>
           <button
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -413,81 +411,36 @@ export const ReceiptModal: React.FC<{
         </div>
 
         <div className="flex-1 overflow-y-auto p-5">
-          <div className="bg-white border border-slate-200 shadow-sm p-6 rounded-lg text-center relative overflow-hidden">
-            {watermark && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <span className="text-5xl font-black text-red-200 -rotate-12 select-none opacity-60">
-                  {watermark}
-                </span>
-              </div>
-            )}
-            <div className="w-12 h-12 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-xl mx-auto mb-3">
-              {salonSettings.name.charAt(0)}
-            </div>
-            <h2 className="font-bold text-slate-900 text-lg">{salonSettings.name}</h2>
-            <p className="text-xs text-slate-500 mt-1">{salonSettings.address}</p>
-            <p className="text-xs text-slate-500">{salonSettings.phone}</p>
-
-            <div className="mt-4 mb-6 text-xs text-slate-400">
-              <div>{new Date(transaction.date).toLocaleString()}</div>
-              <div className="uppercase mt-1">#{transaction.id}</div>
-            </div>
-
-            <div className="text-left space-y-4 mb-6">
-              {transaction.items.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex justify-between text-sm border-b border-slate-50 pb-2 last:border-0"
-                >
-                  <div>
-                    <div className="font-bold text-slate-800">{item.name}</div>
-                    {item.variantName && (
-                      <div className="text-xs text-slate-500">{item.variantName}</div>
-                    )}
-                    <div className="text-xs text-slate-400">
-                      {item.quantity} x {formatPrice(item.price)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold">{formatPrice(item.price * item.quantity)}</div>
-                    {item.originalPrice && item.originalPrice > item.price && (
-                      <div className="text-xs text-slate-400 line-through">
-                        {formatPrice(item.originalPrice * item.quantity)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t-2 border-dashed border-slate-200 pt-4 space-y-1">
-              <div className="flex justify-between text-slate-500 text-xs mb-2">
-                <span>TVA ({vatRate}%)</span>
-                <span>{formatPrice(vatAmount)}</span>
-              </div>
-              <div className="flex justify-between text-lg font-bold text-slate-900">
-                <span>TOTAL</span>
-                <span>{formatPrice(transaction.total)}</span>
-              </div>
-            </div>
-
-            {change > 0 && (
-              <div className="mt-4 flex justify-between bg-emerald-50 p-3 rounded-lg text-emerald-700 text-sm font-bold">
-                <span>Monnaie rendue</span>
-                <span>{formatPrice(change)}</span>
-              </div>
-            )}
-          </div>
+          <ReceiptBody
+            tx={transaction}
+            salonName={salonSettings.name}
+            salonAddress={salonSettings.address}
+            salonPhone={salonSettings.phone}
+            vatRate={vatRate}
+            status={receiptStatus}
+          />
         </div>
 
         {/* Sticky footer */}
         <div
-          className="shrink-0 px-5 py-4 border-t border-slate-200 bg-white"
+          className="shrink-0 px-5 py-4 border-t border-slate-200 bg-white flex gap-3"
           style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
         >
           <button
+            onClick={() =>
+              window.open(
+                `/pos/historique/${transaction.id}/print`,
+                '_blank',
+                'noopener,noreferrer',
+              )
+            }
+            className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 flex items-center justify-center gap-2 shadow-sm min-h-[44px]"
+          >
+            Imprimer
+          </button>
+          <button
             onClick={onClose}
-            className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm min-h-[44px]"
+            className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm min-h-[44px]"
           >
             Fermer
           </button>
@@ -501,77 +454,44 @@ export const ReceiptModal: React.FC<{
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-lg shadow-2xl max-w-md w-full overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
-          <h3 className="font-bold text-slate-800">Ticket de caisse</h3>
+          <h3 className="font-bold text-slate-800">
+            Ticket{' '}
+            <span className="font-mono text-slate-500">
+              {formatTicketNumber(transaction.ticketNumber)}
+            </span>
+          </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700">
             <X size={20} />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
-          <div className="bg-white border border-slate-200 shadow-sm p-6 rounded-lg text-center relative overflow-hidden">
-            {watermark && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <span className="text-5xl font-black text-red-200 -rotate-12 select-none opacity-60">
-                  {watermark}
-                </span>
-              </div>
-            )}
-            <div className="w-12 h-12 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-xl mx-auto mb-3">
-              {salonSettings.name.charAt(0)}
-            </div>
-            <h2 className="font-bold text-slate-900 text-lg">{salonSettings.name}</h2>
-            <p className="text-xs text-slate-500 mt-1">{salonSettings.address}</p>
-            <p className="text-xs text-slate-500">{salonSettings.phone}</p>
-
-            <div className="mt-4 mb-6 text-xs text-slate-400">
-              <div>{new Date(transaction.date).toLocaleString()}</div>
-              <div className="uppercase mt-1">#{transaction.id}</div>
-            </div>
-
-            <div className="text-left space-y-4 mb-6">
-              {transaction.items.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex justify-between text-sm border-b border-slate-50 pb-2 last:border-0"
-                >
-                  <div>
-                    <div className="font-bold text-slate-800">{item.name}</div>
-                    {item.variantName && (
-                      <div className="text-xs text-slate-500">{item.variantName}</div>
-                    )}
-                    <div className="text-xs text-slate-400">
-                      {item.quantity} x {formatPrice(item.price)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold">{formatPrice(item.price * item.quantity)}</div>
-                    {item.originalPrice && item.originalPrice > item.price && (
-                      <div className="text-xs text-slate-400 line-through">
-                        {formatPrice(item.originalPrice * item.quantity)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t-2 border-dashed border-slate-200 pt-4 space-y-1">
-              <div className="flex justify-between text-slate-500 text-xs mb-2">
-                <span>TVA ({vatRate}%)</span>
-                <span>{formatPrice(vatAmount)}</span>
-              </div>
-              <div className="flex justify-between text-lg font-bold text-slate-900">
-                <span>TOTAL</span>
-                <span>{formatPrice(transaction.total)}</span>
-              </div>
-            </div>
-          </div>
+          <ReceiptBody
+            tx={transaction}
+            salonName={salonSettings.name}
+            salonAddress={salonSettings.address}
+            salonPhone={salonSettings.phone}
+            vatRate={vatRate}
+            status={receiptStatus}
+          />
         </div>
 
-        <div className="p-4 border-t border-slate-100 bg-white">
+        <div className="p-4 border-t border-slate-100 bg-white flex gap-3">
+          <button
+            onClick={() =>
+              window.open(
+                `/pos/historique/${transaction.id}/print`,
+                '_blank',
+                'noopener,noreferrer',
+              )
+            }
+            className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg font-bold text-sm hover:bg-emerald-700 flex items-center justify-center gap-2 shadow-sm"
+          >
+            Imprimer
+          </button>
           <button
             onClick={onClose}
-            className="w-full py-2.5 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm"
+            className="flex-1 py-2.5 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm"
           >
             Fermer
           </button>
@@ -867,7 +787,12 @@ export const TransactionDetailModal: React.FC<{
         style={{ zIndex: 'var(--z-modal)' }}
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 shrink-0">
-          <h3 className="font-bold text-slate-900">Détails de la transaction</h3>
+          <h3 className="font-bold text-slate-900">
+            Détails{' '}
+            <span className="font-mono text-slate-500">
+              {formatTicketNumber(transaction.ticketNumber)}
+            </span>
+          </h3>
           <button
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -891,7 +816,12 @@ export const TransactionDetailModal: React.FC<{
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
-          <h3 className="font-bold text-slate-800">Détails de la transaction</h3>
+          <h3 className="font-bold text-slate-800">
+            Détails{' '}
+            <span className="font-mono text-slate-500">
+              {formatTicketNumber(transaction.ticketNumber)}
+            </span>
+          </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700">
             <X size={20} />
           </button>

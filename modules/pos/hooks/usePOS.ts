@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTransactions } from '../../../hooks/useTransactions';
-import type { Appointment, CartItem, Client, PaymentEntry } from '../../../types';
+import type { Appointment, CartItem, Client, PaymentEntry, Transaction } from '../../../types';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
 import { useClients } from '../../clients/hooks/useClients';
 import { useProducts } from '../../products/hooks/useProducts';
@@ -119,15 +119,16 @@ export const usePOS = () => {
 
   // --- Transaction Processing ---
 
-  const processTransaction = async (payments: PaymentEntry[]) => {
+  const processTransaction = async (payments: PaymentEntry[]): Promise<Transaction> => {
     // Read from refs to avoid stale closures (realtime events can cause re-renders)
-    await addTransaction(
+    const tx = await addTransaction(
       cartRef.current,
       payments,
       selectedClientRef.current?.id,
       linkedAppointmentIdRef.current ?? undefined,
     );
     clearCart();
+    return tx;
   };
 
   // --- Filtering & Derived State ---
