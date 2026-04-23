@@ -2,7 +2,7 @@ import { Trash2, User } from 'lucide-react';
 import type React from 'react';
 import { useMemo } from 'react';
 import { EmptyState } from '../../../components/EmptyState';
-import { formatPrice } from '../../../lib/format';
+import { formatName, formatPrice } from '../../../lib/format';
 import type { Appointment, AppointmentStatus } from '../../../types';
 import { groupByDayAndClient } from './groupAppointments';
 import { StatusBadge } from './StatusBadge';
@@ -64,7 +64,7 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
     if (
       isMulti &&
       !window.confirm(
-        `Supprimer les ${appointments.length} services de ${first.clientName || 'ce client'} ?`,
+        `Supprimer les ${appointments.length} services de ${formatName(first.clientName) || 'ce client'} ?`,
       )
     ) {
       return;
@@ -81,7 +81,7 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-slate-900 text-sm truncate">
-                {first.clientName || '—'}
+                {formatName(first.clientName) || '—'}
               </span>
               {isMulti && (
                 <span

@@ -1,7 +1,7 @@
 import { Calendar, Edit, Eye, Mail, Phone, Trash2, Users } from 'lucide-react';
 import type React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
-import { formatPrice } from '../../../lib/format';
+import { formatName, formatPrice } from '../../../lib/format';
 import type { Client } from '../../../types';
 
 interface ClientCardProps {
@@ -40,7 +40,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
             key={client.id}
             type="button"
             onClick={() => onViewDetails(client.id)}
-            aria-label={`Voir le profil de ${client.firstName} ${client.lastName}`}
+            aria-label={`Voir le profil de ${formatName(client.firstName)} ${formatName(client.lastName)}`}
             className="bg-white rounded-xl border border-slate-200 p-4 text-left transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
           >
             {/* Header: avatar + name + status */}
@@ -50,7 +50,9 @@ export const ClientCard: React.FC<ClientCardProps> = ({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="font-semibold text-slate-900 text-sm truncate">
-                  {[client.firstName, client.lastName].filter(Boolean).join(' ')}
+                  {[formatName(client.firstName), formatName(client.lastName)]
+                    .filter(Boolean)
+                    .join(' ')}
                 </div>
                 <div className="mt-0.5">
                   {client.status === 'VIP' && (

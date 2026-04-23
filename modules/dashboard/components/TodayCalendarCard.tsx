@@ -13,7 +13,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { useToast } from '../../../context/ToastContext';
-import { formatPrice } from '../../../lib/format';
+import { formatName, formatPrice } from '../../../lib/format';
 import { getSalonHourRange } from '../../../lib/scheduleHours';
 import {
   type Appointment,
@@ -213,7 +213,7 @@ const AppointmentPopover: React.FC<{
         </div>
         <div className="flex items-center gap-2.5 text-[13px] text-slate-600">
           <User size={14} className="text-slate-400 shrink-0" />
-          <span className="truncate">{appointment.clientName}</span>
+          <span className="truncate">{formatName(appointment.clientName)}</span>
         </div>
         <div className="flex items-center gap-2.5 text-[13px] text-slate-600">
           <Scissors size={14} className="text-slate-400 shrink-0" />
@@ -794,7 +794,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                           )}
                           {height >= 44 && (
                             <div className="text-[9px] font-medium opacity-50 truncate leading-tight">
-                              {appt.clientName}
+                              {formatName(appt.clientName)}
                             </div>
                           )}
                         </div>

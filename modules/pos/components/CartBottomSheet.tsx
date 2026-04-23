@@ -2,7 +2,7 @@ import { CreditCard, Edit3, Minus, Plus, ShoppingBag, Tag, Trash2, User, X } fro
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { formatPrice } from '../../../lib/format';
+import { formatName, formatPrice } from '../../../lib/format';
 import type { CartItem, Client, Service, StaffMember } from '../../../types';
 import { resolveCartItemCategoryId } from '../utils/resolveCartItemCategoryId';
 import { StaffSelector } from './StaffSelector';
@@ -156,7 +156,7 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
               )}
               <div>
                 <div className="font-bold text-slate-900 text-sm">
-                  {selectedClient.firstName} {selectedClient.lastName}
+                  {formatName(selectedClient.firstName)} {formatName(selectedClient.lastName)}
                 </div>
                 <div className="text-xs text-slate-500">{selectedClient.phone}</div>
               </div>
@@ -224,7 +224,7 @@ export const CartBottomSheet: React.FC<CartBottomSheetProps> = ({
                 )}
                 <div>
                   <div className="font-medium text-sm text-slate-900">
-                    {client.firstName} {client.lastName}
+                    {formatName(client.firstName)} {formatName(client.lastName)}
                   </div>
                   <div className="text-xs text-slate-500">{client.phone}</div>
                 </div>

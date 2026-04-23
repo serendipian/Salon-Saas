@@ -2,6 +2,7 @@ import { Search, UserCheck, UserPlus } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PhoneInput } from '../../../components/PhoneInput';
+import { formatName } from '../../../lib/format';
 import type { Client } from '../../../types';
 
 interface MobileClientSearchProps {
@@ -114,7 +115,7 @@ export const MobileClientSearch: React.FC<MobileClientSearchProps> = ({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-slate-800 truncate">
-                        {client.firstName} {client.lastName}
+                        {formatName(client.firstName)} {formatName(client.lastName)}
                       </div>
                       <div className="text-xs text-slate-400">{client.phone}</div>
                     </div>
@@ -220,7 +221,7 @@ export const MobileClientSearch: React.FC<MobileClientSearchProps> = ({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-slate-800 truncate">
-                  {client.firstName} {client.lastName}
+                  {formatName(client.firstName)} {formatName(client.lastName)}
                 </div>
                 {client.phone && (
                   <div className="text-xs text-slate-400 truncate">{client.phone}</div>

@@ -18,7 +18,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Input } from '../../../components/FormElements';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
-import { formatPrice, formatTicketNumber } from '../../../lib/format';
+import { formatName, formatPrice, formatTicketNumber } from '../../../lib/format';
 import type { CartItem, Service, ServiceVariant, Transaction } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { REFUND_CATEGORIES, VOID_CATEGORIES } from '../constants';
@@ -579,7 +579,9 @@ export const TransactionDetailModal: React.FC<{
         <div className="flex justify-between text-sm">
           <span className="text-slate-500">Client</span>
           {transaction.clientName ? (
-            <span className="font-medium text-slate-900">{transaction.clientName}</span>
+            <span className="font-medium text-slate-900">
+              {formatName(transaction.clientName)}
+            </span>
           ) : (
             <span className="italic text-slate-400">Client de passage</span>
           )}

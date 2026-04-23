@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
+import { formatName } from '../../lib/format';
 import type { Client, ViewState } from '../../types';
 import { ClientDetails } from './components/ClientDetails';
 import { ClientForm } from './components/ClientForm';
@@ -139,7 +140,8 @@ export const ClientsModule: React.FC = () => {
             <>
               Cette action est irréversible.{' '}
               <strong>
-                {pendingDeleteClient.firstName} {pendingDeleteClient.lastName}
+                {formatName(pendingDeleteClient.firstName)}{' '}
+                {formatName(pendingDeleteClient.lastName)}
               </strong>{' '}
               et tout son historique seront définitivement supprimés.
             </>

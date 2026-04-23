@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { EmptyState } from '../../../components/EmptyState';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { CategoryIcon } from '../../../lib/categoryIcons';
-import { formatDuration, formatPrice } from '../../../lib/format';
+import { formatDuration, formatName, formatPrice } from '../../../lib/format';
 import type {
   Appointment,
   AppointmentStatus,
@@ -169,7 +169,9 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                                 className={`flex items-center gap-2 text-sm font-medium ${blockMiddle || blockLast ? 'text-slate-500' : 'text-slate-900'}`}
                               >
                                 <ClientAvatar name={appt.clientName || '?'} />
-                                <span className="truncate">{appt.clientName || '—'}</span>
+                                <span className="truncate">
+                                  {formatName(appt.clientName) || '—'}
+                                </span>
                                 {blockFirst && (
                                   <span
                                     className="inline-flex items-center px-1.5 py-px rounded-md bg-gradient-to-br from-blue-500 to-indigo-500 text-white text-[9px] font-bold tracking-wide shadow-sm shadow-blue-500/30 ring-1 ring-white/20"

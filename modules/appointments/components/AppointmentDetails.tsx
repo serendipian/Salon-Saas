@@ -1,7 +1,7 @@
 import { ArrowLeft, Calendar, Scissors, Trash2, User } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
-import { formatPrice } from '../../../lib/format';
+import { formatName, formatPrice } from '../../../lib/format';
 import type { Appointment } from '../../../types';
 import { StatusBadge } from './StatusBadge';
 
@@ -101,7 +101,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
               </div>
               <div>
                 <div className="text-sm font-medium text-slate-500">Client</div>
-                <div className="font-semibold text-slate-900">{appointment.clientName}</div>
+                <div className="font-semibold text-slate-900">
+                  {formatName(appointment.clientName)}
+                </div>
               </div>
             </div>
 

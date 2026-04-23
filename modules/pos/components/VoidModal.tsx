@@ -3,7 +3,7 @@ import type React from 'react';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
-import { formatPrice } from '../../../lib/format';
+import { formatName, formatPrice } from '../../../lib/format';
 import type { Transaction } from '../../../types';
 import { VOID_CATEGORIES } from '../constants';
 
@@ -50,7 +50,7 @@ export const VoidModal: React.FC<VoidModalProps> = ({
         <div className="flex justify-between text-sm">
           <span className="text-slate-500">Client</span>
           <span className="font-medium text-slate-900">
-            {transaction.clientName || 'Client de passage'}
+            {formatName(transaction.clientName) || 'Client de passage'}
           </span>
         </div>
         <div className="flex justify-between text-sm">

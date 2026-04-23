@@ -22,7 +22,7 @@ import {
   X as XIcon,
 } from 'lucide-react';
 import type React from 'react';
-import { formatPrice } from '../../../lib/format';
+import { formatName, formatPrice } from '../../../lib/format';
 import { AppointmentStatus, type Client } from '../../../types';
 import { useTeam } from '../../team/hooks/useTeam';
 import { useClientAppointments } from '../hooks/useClientAppointments';
@@ -118,7 +118,9 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <h2 className="text-lg font-bold text-slate-900 truncate">
-                      {[client.firstName, client.lastName].filter(Boolean).join(' ')}
+                      {[formatName(client.firstName), formatName(client.lastName)]
+                        .filter(Boolean)
+                        .join(' ')}
                     </h2>
                     <p className="text-sm text-slate-500 flex items-center gap-1 mt-0.5">
                       <MapPin size={12} />

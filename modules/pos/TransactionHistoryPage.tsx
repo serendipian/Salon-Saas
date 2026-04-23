@@ -25,7 +25,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useMediaQuery } from '../../context/MediaQueryContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useTransactions } from '../../hooks/useTransactions';
-import { formatPrice, formatTicketNumber } from '../../lib/format';
+import { formatName, formatPrice, formatTicketNumber } from '../../lib/format';
 import type { Transaction } from '../../types';
 import { ReceiptModal, TransactionDetailModal } from './components/POSModals';
 import { RefundModal } from './components/RefundModal';
@@ -688,7 +688,7 @@ export const TransactionHistoryPage: React.FC = () => {
                           <span
                             className={`text-slate-900 font-semibold text-[15px] ${isVoided ? 'line-through' : ''}`}
                           >
-                            {trx.clientName}
+                            {formatName(trx.clientName)}
                           </span>
                         ) : (
                           <span className="text-slate-400 italic text-sm">Client de passage</span>
@@ -929,7 +929,7 @@ export const TransactionHistoryPage: React.FC = () => {
                             <span
                               className={`text-slate-900 font-medium text-sm ${isVoided ? 'line-through' : ''}`}
                             >
-                              {trx.clientName}
+                              {formatName(trx.clientName)}
                             </span>
                           ) : (
                             <span className="text-slate-400 italic text-sm">Client de passage</span>

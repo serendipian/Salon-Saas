@@ -1,6 +1,6 @@
 import { ArrowLeft, ChevronRight, Plus, Search, Trash2, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { formatDuration, formatPrice } from '../../../lib/format';
+import { formatDuration, formatName, formatPrice } from '../../../lib/format';
 import type { AppointmentStatus } from '../../../types';
 import { type UseAppointmentFormProps, useAppointmentForm } from '../hooks/useAppointmentForm';
 import InlineCalendar from './InlineCalendar';
@@ -141,7 +141,7 @@ export default function AppointmentBuilderMobile({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-slate-900 truncate">
-                    {selectedClient.firstName} {selectedClient.lastName}
+                    {formatName(selectedClient.firstName)} {formatName(selectedClient.lastName)}
                   </div>
                   {selectedClient.phone && (
                     <div className="text-xs text-slate-400 truncate">{selectedClient.phone}</div>
@@ -166,7 +166,7 @@ export default function AppointmentBuilderMobile({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-slate-900 truncate">
-                    {form.newClient.firstName} {form.newClient.lastName}
+                    {formatName(form.newClient.firstName)} {formatName(form.newClient.lastName)}
                   </div>
                   <div className="text-xs text-blue-600">Nouveau client</div>
                 </div>
@@ -438,9 +438,9 @@ export default function AppointmentBuilderMobile({
 
   // Summary for footer
   const clientName = selectedClient
-    ? `${selectedClient.firstName} ${selectedClient.lastName}`
+    ? `${formatName(selectedClient.firstName)} ${formatName(selectedClient.lastName)}`
     : form.newClient
-      ? `${form.newClient.firstName} ${form.newClient.lastName}`
+      ? `${formatName(form.newClient.firstName)} ${formatName(form.newClient.lastName)}`
       : '';
 
   const serviceNames = form.serviceBlocks

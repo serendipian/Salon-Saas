@@ -18,3 +18,19 @@ export function formatDuration(minutes: number): string {
 export function formatTicketNumber(n: number): string {
   return `n°${n.toString().padStart(6, '0')}`;
 }
+
+/**
+ * Title-case a person's name for UI display only (does not mutate stored data).
+ * Capitalises the first letter after any whitespace, hyphen, or apostrophe;
+ * lowercases the rest. Unicode-aware.
+ *
+ *   "JOHN DOE"      → "John Doe"
+ *   "marie-claire"  → "Marie-Claire"
+ *   "o'brien"       → "O'Brien"
+ */
+export function formatName(name: string | null | undefined): string {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .replace(/(^|[\s\-'])(\p{L})/gu, (_m, sep: string, c: string) => sep + c.toUpperCase());
+}

@@ -1,6 +1,7 @@
 import { Search, UserCheck, UserPlus, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { PhoneInput } from '../../../components/PhoneInput';
+import { formatName } from '../../../lib/format';
 import type { Client } from '../../../types';
 
 interface ClientFieldProps {
@@ -79,7 +80,9 @@ export default function ClientField({
           </div>
           <div>
             <div className="text-slate-800 text-sm font-medium">
-              {[selectedClient.firstName, selectedClient.lastName].filter(Boolean).join(' ')}
+              {[formatName(selectedClient.firstName), formatName(selectedClient.lastName)]
+                .filter(Boolean)
+                .join(' ')}
             </div>
             <div className="text-slate-400 text-xs">{selectedClient.phone ?? ''}</div>
           </div>
@@ -137,7 +140,9 @@ export default function ClientField({
                     </div>
                     <div>
                       <div className="text-slate-800 font-medium">
-                        {[client.firstName, client.lastName].filter(Boolean).join(' ')}
+                        {[formatName(client.firstName), formatName(client.lastName)]
+                          .filter(Boolean)
+                          .join(' ')}
                       </div>
                       <div className="text-slate-400 text-xs">{client.phone ?? ''}</div>
                     </div>
@@ -211,7 +216,9 @@ export default function ClientField({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-slate-800 font-medium truncate">
-                      {[client.firstName, client.lastName].filter(Boolean).join(' ')}
+                      {[formatName(client.firstName), formatName(client.lastName)]
+                        .filter(Boolean)
+                        .join(' ')}
                     </div>
                     <div className="text-slate-400 text-xs">{client.phone ?? ''}</div>
                   </div>

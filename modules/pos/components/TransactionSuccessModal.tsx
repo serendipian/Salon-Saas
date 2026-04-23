@@ -2,7 +2,7 @@ import { CheckCircle, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
-import { formatPrice, formatTicketNumber } from '../../../lib/format';
+import { formatName, formatPrice, formatTicketNumber } from '../../../lib/format';
 import type { Transaction } from '../../../types';
 import { PAYMENT_METHOD_SHORT } from '../constants';
 
@@ -142,7 +142,9 @@ export function TransactionSuccessModal({ tx, onClose }: TransactionSuccessModal
             {formatPaymentMethods(tx)}
           </div>
 
-          {tx.clientName && <div className="text-sm text-slate-500 mb-4">{tx.clientName}</div>}
+          {tx.clientName && (
+            <div className="text-sm text-slate-500 mb-4">{formatName(tx.clientName)}</div>
+          )}
         </div>
 
         {/* Footer buttons */}

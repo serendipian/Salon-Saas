@@ -1,7 +1,7 @@
 import { AlertTriangle, Calendar, Clock, User } from 'lucide-react';
 import type React from 'react';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
-import { formatPrice } from '../../../lib/format';
+import { formatName, formatPrice } from '../../../lib/format';
 import type { Appointment } from '../../../types';
 
 interface PendingAppointmentsProps {
@@ -74,7 +74,7 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
 
             {/* Client name */}
             <div className="font-semibold text-slate-900 text-sm mb-1">
-              {primary.clientName || (
+              {formatName(primary.clientName) || (
                 <span className="text-slate-400 italic">Client de passage</span>
               )}
             </div>

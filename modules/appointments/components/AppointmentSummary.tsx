@@ -1,5 +1,5 @@
 import { Calendar, Clock, Play, StickyNote, User, UserCircle } from 'lucide-react';
-import { formatDuration, formatPrice } from '../../../lib/format';
+import { formatDuration, formatName, formatPrice } from '../../../lib/format';
 import type { Client, Pack, Service, ServiceBlockItem, StaffMember } from '../../../types';
 
 interface ServiceBlockSummary {
@@ -64,10 +64,14 @@ export default function AppointmentSummary({
   const clientName = (() => {
     if (clientId) {
       const c = clients.find((cl) => cl.id === clientId);
-      return c ? [c.firstName, c.lastName].filter(Boolean).join(' ') : null;
+      return c ? [formatName(c.firstName), formatName(c.lastName)].filter(Boolean).join(' ') : null;
     }
     if (newClient && (newClient.firstName || newClient.lastName)) {
-      return [newClient.firstName, newClient.lastName].filter(Boolean).join(' ') || null;
+      return (
+        [formatName(newClient.firstName), formatName(newClient.lastName)]
+          .filter(Boolean)
+          .join(' ') || null
+      );
     }
     return null;
   })();

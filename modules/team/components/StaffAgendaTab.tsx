@@ -1,6 +1,7 @@
 import { Calendar, Clock, TrendingUp, User } from 'lucide-react';
 import type React from 'react';
 import { useMemo } from 'react';
+import { formatName } from '../../../lib/format';
 import type { StaffMember, WorkSchedule } from '../../../types';
 import { useStaffAppointments } from '../hooks/useStaffAppointments';
 
@@ -174,7 +175,7 @@ function AppointmentRow({ appointment }: { appointment: any }) {
   const statusLabel = status.label;
 
   const clientName = appointment.clients
-    ? `${appointment.clients.first_name} ${appointment.clients.last_name}`
+    ? `${formatName(appointment.clients.first_name)} ${formatName(appointment.clients.last_name)}`
     : 'Client inconnu';
 
   const serviceName = appointment.services?.name || '—';

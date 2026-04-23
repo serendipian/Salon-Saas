@@ -1,6 +1,6 @@
 import { Loader2, Users } from 'lucide-react';
 import type React from 'react';
-import { formatPrice } from '../../../lib/format';
+import { formatName, formatPrice } from '../../../lib/format';
 import { useStaffClients } from '../hooks/useStaffClients';
 
 interface ProfileClientPortfolioProps {
@@ -66,7 +66,7 @@ export const ProfileClientPortfolio: React.FC<ProfileClientPortfolioProps> = ({ 
                         {client.clientLastName?.[0]}
                       </div>
                       <span className="text-slate-900 font-medium">
-                        {client.clientFirstName} {client.clientLastName}
+                        {formatName(client.clientFirstName)} {formatName(client.clientLastName)}
                       </span>
                     </div>
                   </td>

@@ -1,5 +1,6 @@
 import { AlertCircle, CheckCircle2, Loader2, ShoppingBag, XCircle } from 'lucide-react';
 import type React from 'react';
+import { formatName } from '../../../lib/format';
 import type { StaffActivityEvent } from '../../../types';
 import { useStaffActivity } from '../hooks/useStaffActivity';
 
@@ -103,7 +104,9 @@ export const StaffActivityTab: React.FC<StaffActivityTabProps> = ({ staffId }) =
                 <p className="text-sm text-slate-800">{event.description}</p>
                 <div className="flex items-center gap-2 mt-0.5">
                   {event.clientName && (
-                    <span className="text-xs text-slate-500">{event.clientName}</span>
+                    <span className="text-xs text-slate-500">
+                      {formatName(event.clientName)}
+                    </span>
                   )}
                   <span className="text-xs text-slate-400">
                     {formatRelativeDate(event.eventDate)}

@@ -45,7 +45,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useFreshness } from '../../hooks/useFreshness';
 import { useRealtimeSync } from '../../hooks/useRealtimeSync';
 import { useTransactions } from '../../hooks/useTransactions';
-import { formatPrice } from '../../lib/format';
+import { formatName, formatPrice } from '../../lib/format';
 import { supabase } from '../../lib/supabase';
 import {
   AppointmentStatus,
@@ -1232,7 +1232,7 @@ export const DashboardModule: React.FC = () => {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
                               <span className="text-sm font-semibold text-slate-800 truncate">
-                                {apt.clientName}
+                                {formatName(apt.clientName)}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">

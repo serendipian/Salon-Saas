@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 import { SafeResponsiveContainer as ResponsiveContainer } from '../../../components/SafeResponsiveContainer';
-import { formatPrice } from '../../../lib/format';
+import { formatName, formatPrice } from '../../../lib/format';
 import type { Transaction } from '../../../types';
 import { REFUND_CATEGORIES, VOID_CATEGORIES } from '../../pos/constants';
 import type { FinancesOutletContext } from '../FinancesLayout';
@@ -155,7 +155,7 @@ export const RefundsPage: React.FC = () => {
                           {entry.type === 'VOID' ? 'Annulation' : 'Remboursement'}
                         </span>
                         <span className="text-sm text-slate-700 ml-2">
-                          {entry.clientName || 'Client de passage'}
+                          {formatName(entry.clientName) || 'Client de passage'}
                         </span>
                       </div>
                       <span className="font-bold text-sm text-red-600">

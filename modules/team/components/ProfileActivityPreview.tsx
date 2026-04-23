@@ -8,6 +8,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import type React from 'react';
+import { formatName } from '../../../lib/format';
 import type { StaffActivityEvent } from '../../../types';
 import { useStaffActivity } from '../hooks/useStaffActivity';
 
@@ -107,7 +108,9 @@ export const ProfileActivityPreview: React.FC<ProfileActivityPreviewProps> = ({
                     <p className="text-sm text-slate-800 truncate">{event.description}</p>
                     <div className="flex items-center gap-2 mt-0.5">
                       {event.clientName && (
-                        <span className="text-xs text-slate-500">{event.clientName}</span>
+                        <span className="text-xs text-slate-500">
+                          {formatName(event.clientName)}
+                        </span>
                       )}
                       <span className="text-xs text-slate-400">
                         {formatRelativeDate(event.eventDate)}

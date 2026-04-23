@@ -1,7 +1,7 @@
 import { Clock, Scissors, Tag, User } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useRef } from 'react';
-import { formatPrice } from '../../../lib/format';
+import { formatName, formatPrice } from '../../../lib/format';
 import type { Appointment } from '../../../types';
 import { StatusBadge } from './StatusBadge';
 
@@ -75,7 +75,7 @@ export const CalendarEventPopover: React.FC<CalendarEventPopoverProps> = ({
         </div>
         <div className="flex items-center gap-2.5 text-sm text-slate-600">
           <User size={14} className="text-slate-400 flex-shrink-0" />
-          <span>{appointment.clientName}</span>
+          <span>{formatName(appointment.clientName)}</span>
         </div>
         <div className="flex items-center gap-2.5 text-sm text-slate-600">
           <Scissors size={14} className="text-slate-400 flex-shrink-0" />

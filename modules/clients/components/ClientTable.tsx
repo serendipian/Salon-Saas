@@ -1,7 +1,7 @@
 import { Calendar, Edit, Eye, Phone, Trash2, Users } from 'lucide-react';
 import type React from 'react';
 import { EmptyState } from '../../../components/EmptyState';
-import { formatPrice } from '../../../lib/format';
+import { formatName, formatPrice } from '../../../lib/format';
 import type { Client } from '../../../types';
 
 interface ClientTableProps {
@@ -83,7 +83,9 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                     </div>
                     <div>
                       <div className="font-semibold text-slate-900 text-sm">
-                        {[client.firstName, client.lastName].filter(Boolean).join(' ')}
+                        {[formatName(client.firstName), formatName(client.lastName)]
+                          .filter(Boolean)
+                          .join(' ')}
                       </div>
                     </div>
                   </div>
@@ -146,7 +148,7 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                       onClick={() => onViewDetails(client.id)}
                       className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors"
                       title="Voir"
-                      aria-label={`Voir ${client.firstName} ${client.lastName}`}
+                      aria-label={`Voir ${formatName(client.firstName)} ${formatName(client.lastName)}`}
                     >
                       <Eye size={16} />
                     </button>
@@ -154,7 +156,7 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                       onClick={() => onEdit(client.id)}
                       className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
                       title="Modifier"
-                      aria-label={`Modifier ${client.firstName} ${client.lastName}`}
+                      aria-label={`Modifier ${formatName(client.firstName)} ${formatName(client.lastName)}`}
                     >
                       <Edit size={16} />
                     </button>
@@ -162,7 +164,7 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                       onClick={() => onSchedule(client.id)}
                       className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
                       title="Prendre RDV"
-                      aria-label={`Prendre RDV pour ${client.firstName} ${client.lastName}`}
+                      aria-label={`Prendre RDV pour ${formatName(client.firstName)} ${formatName(client.lastName)}`}
                     >
                       <Calendar size={16} />
                     </button>
@@ -171,7 +173,7 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                         onClick={() => onDelete(client.id)}
                         className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                         title="Supprimer"
-                        aria-label={`Supprimer ${client.firstName} ${client.lastName}`}
+                        aria-label={`Supprimer ${formatName(client.firstName)} ${formatName(client.lastName)}`}
                       >
                         <Trash2 size={16} />
                       </button>
