@@ -773,7 +773,9 @@ export const TransactionDetailModal: React.FC<{
         style={{ zIndex: 'var(--z-modal)' }}
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 shrink-0">
-          <h3 className="font-bold text-slate-900">Détails de la transaction</h3>
+          <h3 className="font-bold text-slate-900">
+            Détails <span className="font-mono text-slate-500">{formatTicketNumber(transaction.ticketNumber)}</span>
+          </h3>
           <button
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-slate-700 min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -797,7 +799,9 @@ export const TransactionDetailModal: React.FC<{
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
-          <h3 className="font-bold text-slate-800">Détails de la transaction</h3>
+          <h3 className="font-bold text-slate-800">
+            Détails <span className="font-mono text-slate-500">{formatTicketNumber(transaction.ticketNumber)}</span>
+          </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700">
             <X size={20} />
           </button>
