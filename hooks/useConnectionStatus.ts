@@ -2,7 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useSyncExternalStore } from 'react';
 import { resetAllChannels } from '../lib/realtimeReset';
-import { supabase } from '../lib/supabase';
+import { abortStaleFetches, supabase } from '../lib/supabase';
 
 export type ConnectionState =
   | 'connected'
@@ -329,6 +329,13 @@ async function triggerRecovery(_reason: 'visibility' | 'ws'): Promise<void> {
   setState('recovering');
 
   try {
+    // Kick any wedged SDK fetches so their auth-lock callbacks can release.
+    // Background-tab throttling routinely strands a refresh mid-flight; every
+    // subsequent read/write (favorites, history, expenses) queues behind it
+    // until we free the lock. 5s is generous enough that healthy in-flight
+    // requests are never touched.
+    abortStaleFetches(5_000);
+
     // Auth probe
     const authResult = await probeAuth();
 
@@ -367,6 +374,16 @@ async function triggerRecovery(_reason: 'visibility' | 'ws'): Promise<void> {
       return;
     }
 
+    // Cycle the underlying WebSocket before resetting logical channels.
+    // resetAllChannels() alone only recreates channel objects; if the socket
+    // itself is zombied from throttling, new channels never SUBSCRIBE.
+    try {
+      supabase.realtime.disconnect();
+      supabase.realtime.connect();
+    } catch {
+      // best effort — never throw from recovery
+    }
+
     // Realtime reset
     resetAllChannels();
 
@@ -375,13 +392,16 @@ async function triggerRecovery(_reason: 'visibility' | 'ws'): Promise<void> {
     startMonitoring();
     const realtimeOk = await probeRealtime();
 
-    // Final state — only promote to connected if realtime probe succeeded.
-    // setState('connected') handles query invalidation + toast internally.
+    // Refetch active queries unconditionally. Even if the realtime probe
+    // didn't succeed, auth is fresh and the SDK lock is free — reads should
+    // go through. Gating this on realtime left the app with stale cache
+    // (dashboard, POS favorites, history) until a manual refresh.
+    lastQueryClient?.invalidateQueries({ refetchType: 'active' });
+
     if (realtimeOk) {
       disconnectedAt = null;
       setState('connected');
     } else {
-      // Stay on reconnecting; future WS status events can promote to green.
       disconnectedAt = disconnectedAt ?? Date.now();
       setState('reconnecting');
     }
