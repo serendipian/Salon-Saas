@@ -313,14 +313,17 @@ async function probeRealtime(): Promise<boolean> {
   });
 }
 
-async function triggerRecovery(_reason: 'visibility' | 'ws'): Promise<void> {
+async function triggerRecovery(
+  _reason: 'visibility' | 'ws' | 'manual',
+  opts: { force?: boolean } = {},
+): Promise<void> {
   if (!isRecoveryEnabled()) {
     return;
   }
   if (recoveryInFlight) {
     return;
   }
-  if (Date.now() - lastRecoveryAt < TIMINGS.RECOVERY_RATE_LIMIT_MS) {
+  if (!opts.force && Date.now() - lastRecoveryAt < TIMINGS.RECOVERY_RATE_LIMIT_MS) {
     return;
   }
 
@@ -409,6 +412,14 @@ async function triggerRecovery(_reason: 'visibility' | 'ws'): Promise<void> {
     recoveryInFlight = false;
     lastRecoveryAt = Date.now();
   }
+}
+
+// User-initiated retry from the disconnect banner. Bypasses the rate limit
+// because a manual click expresses explicit intent that should override
+// throttling — and the retry button is useless otherwise (the auto-recovery
+// that just ran is still inside the 60s window).
+export async function manualRetryRecovery(): Promise<void> {
+  await triggerRecovery('manual', { force: true });
 }
 
 // ---- Visibility wiring --------------------------------------------------
