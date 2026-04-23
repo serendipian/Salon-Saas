@@ -2,8 +2,7 @@ import { WifiOff } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import type { ConnectionState } from '../hooks/useConnectionStatus';
-import { useConnectionStatus } from '../hooks/useConnectionStatus';
-import { supabase } from '../lib/supabase';
+import { manualRetryRecovery, useConnectionStatus } from '../hooks/useConnectionStatus';
 
 const DOT_STYLES: Record<ConnectionState, string> = {
   connected: 'bg-emerald-500',
@@ -91,10 +90,13 @@ export const ConnectionBanner: React.FC = () => {
 
   if (status !== 'disconnected' && status !== 'offline') return null;
 
-  const handleRetry = () => {
+  const handleRetry = async () => {
     setRetrying(true);
-    supabase.realtime.connect();
-    setTimeout(() => setRetrying(false), 3000);
+    try {
+      await manualRetryRecovery();
+    } finally {
+      setRetrying(false);
+    }
   };
 
   return (
