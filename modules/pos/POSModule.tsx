@@ -272,9 +272,9 @@ export const POSModule: React.FC = () => {
               services={services}
               totals={totals}
               onCheckout={() => {
-              if (successTx !== null) return;
-              setShowPaymentModal(true);
-            }}
+                if (successTx !== null) return;
+                setShowPaymentModal(true);
+              }}
             />
           </>
         )}

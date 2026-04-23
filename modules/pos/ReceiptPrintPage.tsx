@@ -3,11 +3,7 @@ import { useParams } from 'react-router-dom';
 import { rawSelect } from '../../lib/supabaseRaw';
 import { useSettings } from '../settings/hooks/useSettings';
 import { ReceiptBody } from './components/ReceiptBody';
-import {
-  getTransactionStatus,
-  type TransactionRow,
-  toTransaction,
-} from './mappers';
+import { getTransactionStatus, type TransactionRow, toTransaction } from './mappers';
 import type { Transaction } from '../../types';
 
 /**

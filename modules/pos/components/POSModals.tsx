@@ -396,7 +396,10 @@ export const ReceiptModal: React.FC<{
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 shrink-0">
           <h3 className="font-bold text-slate-900">
-            Ticket <span className="font-mono text-slate-500">{formatTicketNumber(transaction.ticketNumber)}</span>
+            Ticket{' '}
+            <span className="font-mono text-slate-500">
+              {formatTicketNumber(transaction.ticketNumber)}
+            </span>
           </h3>
           <button
             onClick={onClose}
@@ -425,7 +428,11 @@ export const ReceiptModal: React.FC<{
         >
           <button
             onClick={() =>
-              window.open(`/pos/historique/${transaction.id}/print`, '_blank', 'noopener,noreferrer')
+              window.open(
+                `/pos/historique/${transaction.id}/print`,
+                '_blank',
+                'noopener,noreferrer',
+              )
             }
             className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 flex items-center justify-center gap-2 shadow-sm min-h-[44px]"
           >
@@ -448,7 +455,10 @@ export const ReceiptModal: React.FC<{
       <div className="bg-white rounded-lg shadow-2xl max-w-md w-full overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
           <h3 className="font-bold text-slate-800">
-            Ticket <span className="font-mono text-slate-500">{formatTicketNumber(transaction.ticketNumber)}</span>
+            Ticket{' '}
+            <span className="font-mono text-slate-500">
+              {formatTicketNumber(transaction.ticketNumber)}
+            </span>
           </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700">
             <X size={20} />
@@ -469,7 +479,11 @@ export const ReceiptModal: React.FC<{
         <div className="p-4 border-t border-slate-100 bg-white flex gap-3">
           <button
             onClick={() =>
-              window.open(`/pos/historique/${transaction.id}/print`, '_blank', 'noopener,noreferrer')
+              window.open(
+                `/pos/historique/${transaction.id}/print`,
+                '_blank',
+                'noopener,noreferrer',
+              )
             }
             className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg font-bold text-sm hover:bg-emerald-700 flex items-center justify-center gap-2 shadow-sm"
           >
@@ -774,7 +788,10 @@ export const TransactionDetailModal: React.FC<{
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 shrink-0">
           <h3 className="font-bold text-slate-900">
-            Détails <span className="font-mono text-slate-500">{formatTicketNumber(transaction.ticketNumber)}</span>
+            Détails{' '}
+            <span className="font-mono text-slate-500">
+              {formatTicketNumber(transaction.ticketNumber)}
+            </span>
           </h3>
           <button
             onClick={onClose}
@@ -800,7 +817,10 @@ export const TransactionDetailModal: React.FC<{
       <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
           <h3 className="font-bold text-slate-800">
-            Détails <span className="font-mono text-slate-500">{formatTicketNumber(transaction.ticketNumber)}</span>
+            Détails{' '}
+            <span className="font-mono text-slate-500">
+              {formatTicketNumber(transaction.ticketNumber)}
+            </span>
           </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700">
             <X size={20} />

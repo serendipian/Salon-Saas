@@ -142,18 +142,14 @@ export function TransactionSuccessModal({ tx, onClose }: TransactionSuccessModal
             {formatPaymentMethods(tx)}
           </div>
 
-          {tx.clientName && (
-            <div className="text-sm text-slate-500 mb-4">{tx.clientName}</div>
-          )}
+          {tx.clientName && <div className="text-sm text-slate-500 mb-4">{tx.clientName}</div>}
         </div>
 
         {/* Footer buttons */}
         <div
           className="px-6 pb-6 flex flex-col gap-3 shrink-0"
           style={
-            isMobile
-              ? { paddingBottom: 'calc(24px + env(safe-area-inset-bottom))' }
-              : undefined
+            isMobile ? { paddingBottom: 'calc(24px + env(safe-area-inset-bottom))' } : undefined
           }
         >
           <button
