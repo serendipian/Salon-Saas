@@ -59,8 +59,7 @@ export const ConnectionStatusDot: React.FC = () => {
     };
   }, [status]);
 
-  const toneClass =
-    flash?.tone === 'success' ? 'text-emerald-600' : 'text-amber-600';
+  const toneClass = flash?.tone === 'success' ? 'text-emerald-600' : 'text-amber-600';
 
   return (
     <div className="flex items-center gap-1.5">

@@ -44,7 +44,10 @@ const inMemoryLock = async <T>(name: string, fn: () => Promise<T>): Promise<T> =
   const current = new Promise<void>((r) => {
     release = r;
   });
-  inMemoryLocks.set(name, previous.then(() => current));
+  inMemoryLocks.set(
+    name,
+    previous.then(() => current),
+  );
   try {
     await previous;
   } catch {

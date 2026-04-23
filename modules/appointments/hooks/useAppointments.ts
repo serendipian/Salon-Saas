@@ -177,12 +177,10 @@ export const useAppointments = (showDeleted = false) => {
       const snapshot = queryClient.getQueriesData<Appointment[]>({
         queryKey: ['appointments', salonId],
       });
-      queryClient.setQueriesData<Appointment[]>(
-        { queryKey: ['appointments', salonId] },
-        (old) =>
-          old?.map((a) =>
-            a.id === appointmentId ? { ...a, status: status as Appointment['status'] } : a,
-          ),
+      queryClient.setQueriesData<Appointment[]>({ queryKey: ['appointments', salonId] }, (old) =>
+        old?.map((a) =>
+          a.id === appointmentId ? { ...a, status: status as Appointment['status'] } : a,
+        ),
       );
       return { snapshot };
     },
@@ -268,9 +266,8 @@ export const useAppointments = (showDeleted = false) => {
       const snapshot = queryClient.getQueriesData<Appointment[]>({
         queryKey: ['appointments', salonId],
       });
-      queryClient.setQueriesData<Appointment[]>(
-        { queryKey: ['appointments', salonId] },
-        (old) => old?.filter((a) => a.id !== appointmentId),
+      queryClient.setQueriesData<Appointment[]>({ queryKey: ['appointments', salonId] }, (old) =>
+        old?.filter((a) => a.id !== appointmentId),
       );
       return { snapshot };
     },

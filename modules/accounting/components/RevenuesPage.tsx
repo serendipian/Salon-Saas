@@ -22,8 +22,13 @@ type ServiceSubTab = 'PAR_CATEGORIE' | 'PAR_EQUIPE';
 type ProductSubTab = 'PAR_CATEGORIE' | 'TOUS' | 'PAR_EQUIPE';
 
 export const RevenuesPage: React.FC = () => {
-  const { filteredTransactions, prevFilteredTransactions, dateRange, financials, revenueTab: mainTab } =
-    useOutletContext<FinancesOutletContext>();
+  const {
+    filteredTransactions,
+    prevFilteredTransactions,
+    dateRange,
+    financials,
+    revenueTab: mainTab,
+  } = useOutletContext<FinancesOutletContext>();
   const {
     serviceRevenue,
     productRevenue,
@@ -85,9 +90,9 @@ export const RevenuesPage: React.FC = () => {
 
   return (
     <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left: Main content */}
-        <div className="flex-1 min-w-0 space-y-6">
-          {/* SERVICES TAB */}
+      {/* Left: Main content */}
+      <div className="flex-1 min-w-0 space-y-6">
+        {/* SERVICES TAB */}
         {mainTab === 'SERVICES' && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -157,7 +162,11 @@ export const RevenuesPage: React.FC = () => {
               />
             )}
             {serviceSubTab === 'PAR_EQUIPE' && (
-              <StaffServiceTable data={revenueByStaffServices} totalRevenue={serviceRevenue.total} totalCount={serviceRevenue.count} />
+              <StaffServiceTable
+                data={revenueByStaffServices}
+                totalRevenue={serviceRevenue.total}
+                totalCount={serviceRevenue.count}
+              />
             )}
           </>
         )}
@@ -475,9 +484,7 @@ const StaffServiceTable: React.FC<{
                     <div className="flex items-center gap-2">
                       <span
                         className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-[11px] font-bold ${
-                          rank <= 3
-                            ? 'bg-blue-50 text-blue-600'
-                            : 'bg-slate-50 text-slate-400'
+                          rank <= 3 ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-400'
                         }`}
                       >
                         {rank}
@@ -501,9 +508,7 @@ const StaffServiceTable: React.FC<{
                       </span>
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-right font-semibold text-slate-900">
-                    {row.count}
-                  </td>
+                  <td className="px-5 py-4 text-right font-semibold text-slate-900">{row.count}</td>
                   <td className="px-5 py-4 text-right text-slate-500">
                     {totalCount > 0 ? ((row.count / totalCount) * 100).toFixed(1) : '0.0'}%
                   </td>
@@ -520,9 +525,7 @@ const StaffServiceTable: React.FC<{
                       </span>
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-right text-slate-500">
-                    {row.percent.toFixed(1)}%
-                  </td>
+                  <td className="px-5 py-4 text-right text-slate-500">{row.percent.toFixed(1)}%</td>
                   <td className="px-5 py-4 text-right font-semibold text-slate-900">
                     {formatPrice(row.avgBasket)}
                   </td>
@@ -550,9 +553,7 @@ const StaffServiceTable: React.FC<{
                         {formatPrice(svc.revenue)}
                       </td>
                       <td className="px-5 py-3 text-right text-slate-400">
-                        {totalRevenue > 0
-                          ? ((svc.revenue / totalRevenue) * 100).toFixed(1)
-                          : '0.0'}
+                        {totalRevenue > 0 ? ((svc.revenue / totalRevenue) * 100).toFixed(1) : '0.0'}
                         %
                       </td>
                       <td className="px-5 py-3"></td>

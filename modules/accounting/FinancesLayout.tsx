@@ -27,8 +27,7 @@ export const FinancesLayout: React.FC = () => {
   const accounting = useAccounting();
   const [revenueTab, setRevenueTab] = useState<RevenueTab>('SERVICES');
   const [expenseTab, setExpenseTab] = useState<ExpenseTab>('COURANTES');
-  const [newExpenseHandler, setNewExpenseHandler] =
-    useState<(() => void) | null>(null);
+  const [newExpenseHandler, setNewExpenseHandler] = useState<(() => void) | null>(null);
   const { lastUpdated } = useFreshness({
     queryKeyRoots: ['transactions'],
     salonId,

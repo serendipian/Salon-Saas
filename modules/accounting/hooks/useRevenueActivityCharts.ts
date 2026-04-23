@@ -10,12 +10,32 @@ export interface ActivityChartPoint {
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MONTH_LABELS = [
-  'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
-  'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc',
+  'Jan',
+  'Fév',
+  'Mar',
+  'Avr',
+  'Mai',
+  'Juin',
+  'Juil',
+  'Août',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Déc',
 ];
 const MONTH_LABELS_FULL = [
-  'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+  'Janvier',
+  'Février',
+  'Mars',
+  'Avril',
+  'Mai',
+  'Juin',
+  'Juillet',
+  'Août',
+  'Septembre',
+  'Octobre',
+  'Novembre',
+  'Décembre',
 ];
 
 function isTodayWithinRange(dateRange: DateRange): boolean {
@@ -46,8 +66,7 @@ function formatPeriodLabel(dateRange: DateRange): string {
   yesterday.setDate(yesterday.getDate() - 1);
 
   const isSameDay = fromDay.getTime() === toDay.getTime();
-  const fmt = (d: Date) =>
-    d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  const fmt = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 
   if (isSameDay) {
     if (fromDay.getTime() === today.getTime()) return "Aujourd'hui";
@@ -113,10 +132,7 @@ function bucketByDayOfWeek(transactions: Transaction[]): number[] {
   return buckets;
 }
 
-export function useRevenueByDayOfWeek(
-  dateRange: DateRange,
-  filteredTransactions: Transaction[],
-) {
+export function useRevenueByDayOfWeek(dateRange: DateRange, filteredTransactions: Transaction[]) {
   const isSingleDay = useMemo(() => {
     const diff = Math.round(
       (new Date(dateRange.to).getTime() - new Date(dateRange.from).getTime()) / 86_400_000,
@@ -177,8 +193,7 @@ export function useRevenueByDayOfWeek(
 
   const periodLabel = useMemo(() => {
     if (isSingleDay) {
-      const fmt = (d: Date) =>
-        d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      const fmt = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
       return `${fmt(weekWindow!.weekStart)} – ${fmt(weekWindow!.weekEnd)}`;
     }
     return formatPeriodLabel(dateRange);
@@ -191,15 +206,11 @@ export function useRevenueByDayOfWeek(
 // Short period (within one calendar month): show full month's daily breakdown.
 // Long period (spans multiple months): aggregate filteredTransactions by day-of-month.
 
-export function useRevenueByDayOfMonth(
-  dateRange: DateRange,
-  filteredTransactions: Transaction[],
-) {
+export function useRevenueByDayOfMonth(dateRange: DateRange, filteredTransactions: Transaction[]) {
   const periodMonth = useMemo(() => {
     const from = new Date(dateRange.from);
     const to = new Date(dateRange.to);
-    const sameMonth =
-      from.getMonth() === to.getMonth() && from.getFullYear() === to.getFullYear();
+    const sameMonth = from.getMonth() === to.getMonth() && from.getFullYear() === to.getFullYear();
     return sameMonth ? { month: from.getMonth(), year: from.getFullYear() } : null;
   }, [dateRange]);
 
