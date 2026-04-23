@@ -1,27 +1,27 @@
-# POS Post-Sale Receipt — Design (v3)
+# POS Post-Sale Confirmation — Design (v4)
 
 **Date:** 2026-04-23
-**Revision:** v3 — drop the separate success modal. Open the existing `ReceiptModal` directly on transaction success, extended with post-sale action buttons. This matches how real POS systems (Square, Shopify, Lightspeed) handle post-sale UX and removes a redundant preview modal.
-**Goal:** After a successful transaction creation in POS, open the receipt with a small success affordance and three post-sale actions (Imprimer / Voir l'historique / Nouvelle vente), so the cashier can print or move on in one click.
+**Revision:** v4 — aligns with industry POS practice (Square, Shopify POS, Lightspeed, Clover). Post-sale surface is a **lightweight confirmation modal with peer action buttons**, not a full rendered receipt. Full itemization stays in the existing `ReceiptModal`, reachable via a `Voir le reçu` button. Corrects v3's assumption that the receipt is the success state.
+**Goal:** After a successful transaction, show a compact confirmation with the ticket number, total, and peer actions (Imprimer / Voir le reçu / Voir l'historique / Nouvelle vente). Matches how Square, Lightspeed, and Clover handle post-sale UX, adapted to the current salon feature set.
 
 ---
 
 ## Motivation
 
-Completing a payment today closes `PaymentModal` and clears the cart silently. Cashiers get no confirmation, no path to print, no direct path back into work. Rather than introducing a new "success" modal that previews info already on the receipt, the receipt itself becomes the post-sale surface — faster, fewer clicks, and aligned with industry-standard POS flows.
+The cashier today gets no confirmation, no print path, and no navigation hooks after a sale — cart clears silently. Industry POS practice for this surface is well-established: a **slim confirmation screen** with receipt-delivery options as peer buttons, a manual "New Sale" to continue, and total/tender visible but itemization deferred to the emitted receipt. This design follows that pattern.
 
 ## Non-Goals
 
 - No changes to refund / void flows.
-- No auto-dismiss on the receipt.
-- No email/SMS receipt delivery (out of scope).
-- No new standalone success modal. The `ReceiptModal` takes on a post-sale mode instead.
+- No auto-dismiss on the modal.
+- No email/SMS receipt delivery (out of scope — easy to add later as additional peer buttons).
+- No changes to `PaymentModal` itself.
 
 ## In scope (three coupled deliverables)
 
-1. **Sequential per-salon ticket numbers** (new schema) — prerequisite for a human-readable ticket display.
-2. **`ReceiptModal` gains a post-sale mode** — success banner + three action buttons; history mode unchanged except gaining `Imprimer`.
-3. **Dedicated print route `/pos/historique/:id/print`** — enables the new `Imprimer` button and "Ctrl+P then close tab" workflow.
+1. **Sequential per-salon ticket numbers** — schema + backfill + concurrency-safe assignment. Prerequisite for a human-readable ticket display.
+2. **`TransactionSuccessModal`** — the new lightweight post-sale confirmation, opened automatically on sale success.
+3. **Dedicated print route `/pos/historique/:id/print`** — powers the one-tap `Imprimer` button, reused across the success modal, the `ReceiptModal`, and the `TransactionHistoryPage` row action.
 
 Implementation ordering likely: 1 → 3 → 2.
 
@@ -51,7 +51,7 @@ ALTER TABLE salon_ticket_counters ENABLE ROW LEVEL SECURITY;
 -- No client-side policies needed; only SECURITY DEFINER RPC touches it.
 ```
 
-Unique index:
+Unique index to enforce monotonicity:
 
 ```sql
 CREATE UNIQUE INDEX transactions_ticket_number_per_salon
@@ -61,14 +61,13 @@ CREATE UNIQUE INDEX transactions_ticket_number_per_salon
 
 ### Reset policy
 
-**Never resets.** Monotonically increasing per salon, forever. Tax-friendly and simplest.
+**Never resets.** Monotonically increasing per salon. Tax-friendly and simplest.
 
 ### Assignment — atomic, concurrency-safe
 
-Done inside `create_transaction` (existing `SECURITY DEFINER` RPC). Row-level lock via `UPDATE ... RETURNING`:
+Inside `create_transaction` (existing `SECURITY DEFINER` RPC):
 
 ```sql
--- inside create_transaction, before INSERT INTO transactions
 INSERT INTO salon_ticket_counters (salon_id)
 VALUES (p_salon_id)
 ON CONFLICT (salon_id) DO NOTHING;
@@ -82,11 +81,11 @@ RETURNING next_ticket_number - 1 INTO v_ticket_number;
 -- then INSERT INTO transactions (..., ticket_number) VALUES (..., v_ticket_number)
 ```
 
-Concurrent calls in the same salon serialize on the counter row. Different salons don't contend.
+`UPDATE ... RETURNING` locks the counter row — concurrent calls in the same salon serialize; different salons don't contend.
 
 ### Backfill
 
-One-time, deterministic ordering by `created_at, id`:
+One-time, deterministic ordering by `(created_at, id)`:
 
 ```sql
 WITH ranked AS (
@@ -115,7 +114,7 @@ ALTER TABLE transactions
 
 ### RPC signature
 
-`create_transaction` keeps `RETURNS UUID`. `ticket_number` is read client-side via the hydration `rawSelect` (§3).
+`create_transaction` keeps `RETURNS UUID`. Frontend reads `ticket_number` via the hydration `rawSelect` (§4).
 
 ### Frontend type + mapper
 
@@ -124,60 +123,77 @@ ALTER TABLE transactions
 
 ### Display updates (consistency)
 
-Ticket number shown wherever a short ID is shown today:
-
 - `ReceiptModal` header: `Ticket n°000042`.
 - `TransactionDetailModal` title: same.
 - `TransactionHistoryPage`: new `N°` column (sortable), placed before date on desktop, inline on mobile row.
+- `TransactionSuccessModal`: prominent in the success layout.
 
 Add `formatTicketNumber(n: number): string` to `lib/format.ts` → `'n°' + n.toString().padStart(6, '0')`.
 
 ---
 
-## 2. `ReceiptModal` — post-sale mode
+## 2. `TransactionSuccessModal`
 
-### Current state
+### Component
 
-`ReceiptModal` lives in `modules/pos/components/POSModals.tsx`. It renders the formal receipt (header, items, VAT, total, payments, change) plus prev/next tx navigation, and a single `Fermer` button.
-
-### New props
+**New file:** `modules/pos/components/TransactionSuccessModal.tsx`
 
 ```ts
-interface ReceiptModalProps {
-  tx: Transaction | null;
-  allTransactions: Transaction[];
-  onClose: () => void;
-  // Post-sale extras (all optional):
-  postSale?: boolean;              // true when opened from the POS success path
-  onNewSale?: () => void;          // "Nouvelle vente" (required when postSale=true)
-  onViewHistory?: () => void;      // "Voir l'historique" (required when postSale=true)
+interface TransactionSuccessModalProps {
+  tx: Transaction | null;          // null = hidden
+  onClose: () => void;             // backdrop (desktop) / Escape / X / "Nouvelle vente"
+  onOpenReceipt: (tx: Transaction) => void;
+  onViewHistory: () => void;
 }
 ```
 
-### Behavior
+Portaled to `document.body` (matching `PaymentModal`, `RefundModal`, `VoidModal`).
 
-**History mode** (`postSale` omitted/false — existing call sites):
-- Header: `Ticket n°000042` (was `#<UUID>`).
-- Footer buttons: `[ Imprimer ]  [ Fermer ]`.
-- Prev/next controls as today.
+### Layout
 
-**Post-sale mode** (`postSale = true`):
-- Small green banner at the very top, inside the modal body:
-  `✓ Transaction enregistrée`
-  `aria-live="polite"` so screen readers announce it. Banner uses `bg-emerald-50 text-emerald-700`, `lucide-react` `CheckCircle` icon.
-- Header: `Ticket n°000042` (same as history mode).
-- Prev/next controls **hidden** (the just-created tx won't be in `allTransactions` yet — cache invalidation is async; controls aren't useful anyway for a brand-new sale).
-- Footer buttons, in order: `[ Imprimer ]  (primary)  [ Voir l'historique ]  [ Nouvelle vente ]`.
-- Dismissal: `Escape`, `X`, backdrop (desktop only), or `Nouvelle vente` all fire `onClose()`. Backdrop on mobile is a no-op (fullscreen).
+```
+                                              [ X ]
 
-### The `Imprimer` button (both modes)
+              ✓ Transaction enregistrée        ← green CheckCircle, aria-live
 
-Opens the print route (§3) in a new browser tab: `window.open('/pos/historique/<id>/print', '_blank', 'noopener,noreferrer')`. Does not close the receipt modal — cashier can come back to it if needed.
+                  Ticket n°000042               ← monospaced, large
+                      60,00 €                   ← headline total, extra large
 
-### Action wiring
+          1 article · Espèces + Carte           ← compact sub-summary
+              Fatima Zahraoui                    ← only if client present
 
-- `onNewSale` → `setReceiptTransaction(null); setIsPostSale(false);` — cart is already empty, user stays on POS.
-- `onViewHistory` → close first (`setReceiptTransaction(null); setIsPostSale(false);`), then `navigate('/pos/historique')`. Order matters (prevent painting modal during route transition).
+              [ Imprimer ]         (primary, full width)
+              [ Voir le reçu ]     (secondary)
+              [ Voir l'historique ](secondary)
+              [ Nouvelle vente ]   (ghost)
+```
+
+Details:
+
+- Icon: green `CheckCircle` from `lucide-react` (matches icon vocabulary used in `PaymentModal`).
+- Ticket number rendered via `formatTicketNumber` → `n°000042`, monospaced.
+- Total: `formatPrice(tx.total)`. Rendered large — this is the single most important piece of info.
+- Sub-summary line: `<sum-of-qty> article(s) · <payment methods, comma-joined>`. Payment method labels via `PAYMENT_METHOD_SHORT` (e.g. `Espèces + Carte`).
+- Client row (optional): full `tx.clientName` as stored — no abbreviation. Hidden when null.
+- No timestamp, no cashier name in the compact view — those live in the full receipt.
+- Headline announces via `aria-live="polite"` so screen readers say "Transaction enregistrée, Ticket n°000042, 60 euros".
+
+### Button order and behavior
+
+Top-to-bottom on mobile (primary → ghost), two-column on desktop (`Imprimer` full-width on top, three secondaries in a grid below).
+
+| Label | Role | Behavior |
+|---|---|---|
+| **Imprimer** | Primary | `window.open('/pos/historique/<tx.id>/print', '_blank', 'noopener,noreferrer')`. Does **not** close the modal — cashier can print, then tap Nouvelle vente or close. Matches Square's "All Done" pattern. |
+| **Voir le reçu** | Secondary | `onClose()` then `onOpenReceipt(tx)` — closes this modal and opens the existing `ReceiptModal` with the just-created tx. |
+| **Voir l'historique** | Secondary | `onClose()` then `onViewHistory()` (which calls `navigate('/pos/historique')` in POSModule). Close-before-navigate to avoid painting the modal during route transition. |
+| **Nouvelle vente** | Ghost | `onClose()` only. Cashier lands on empty POS (cart already cleared by `processTransaction`). |
+
+### Dismissibility
+
+- Desktop: backdrop click, `Escape`, `X` icon, `Nouvelle vente` button — all fire `onClose`.
+- Mobile: `Escape`, `X`, `Nouvelle vente` (no backdrop — modal is fullscreen).
+- No auto-dismiss. Cashier dismisses manually (matches Square, Lightspeed, Clover defaults).
 
 ---
 
@@ -185,27 +201,35 @@ Opens the print route (§3) in a new browser tab: `window.open('/pos/historique/
 
 ### Route
 
-`/pos/historique/:id/print` — registered in `App.tsx`. Protected by the same auth/salon guard as the rest of the app (RLS on the query enforces salon scope).
+`/pos/historique/:id/print` — registered in `App.tsx`. Uses the same authenticated Supabase client as the rest of the app; RLS enforces salon scope.
 
 ### Page component
 
 `modules/pos/ReceiptPrintPage.tsx`:
 
-- Fetches the transaction by id via a hydrated `rawSelect` (same joins as §3 hydration).
-- Renders the same receipt body that `ReceiptModal` renders — factored into a shared presentational component `ReceiptBody` (extracted from `POSModals.tsx`) so both places stay in sync.
-- No chrome: no sidebar, no topbar, no tab bar. Just the receipt on a white page.
+- Fetches the transaction by id via a hydrated `rawSelect` (same joins as §4).
+- Renders the same content that `ReceiptModal` renders — factored into a shared presentational component `ReceiptBody` (extracted from `POSModals.tsx`) so both stay in sync.
+- No app chrome: no sidebar, no topbar, no tab bar. Just the receipt on a white page.
 - Calls `window.print()` in a `useEffect` on mount, after the data loads and renders.
-- After `onafterprint`, does nothing (cashier closes the tab).
+- No post-print behavior — cashier closes the tab.
 
 ### CSS
 
-A small `@media print` block hides the browser-default margins and forces the receipt to fill the page. No page-wide print stylesheet needed — the print page has no chrome to hide.
+A small `@media print` block clears default page margins. No app-wide print stylesheet needed.
+
+### Consumers of this route
+
+Three entry points, all converging on the same URL:
+
+1. `TransactionSuccessModal` → `Imprimer` button.
+2. `ReceiptModal` → new `Imprimer` button (replaces the current single `Fermer` with `[ Imprimer ] [ Fermer ]`).
+3. `TransactionHistoryPage` → existing Imprimer row action migrates to this route for consistency.
 
 ---
 
 ## 4. Data flow — hydrated tx snapshot
 
-The receipt in post-sale mode reads entirely from a server-hydrated `Transaction`, not from the cart (which is cleared immediately after the mutation).
+The success modal reads entirely from a server-hydrated `Transaction` snapshot (not from the cart, which is cleared immediately after the mutation).
 
 1. `processTransaction()` in `modules/pos/hooks/usePOS.ts` awaits the create mutation.
 2. Create mutation (`hooks/useTransactions.ts`) is reworked:
@@ -214,17 +238,15 @@ The receipt in post-sale mode reads entirely from a server-hydrated `Transaction
    - Map through `toTransaction()`.
    - Resolve the mutation with the full `Transaction`.
 3. `processTransaction()` returns that `Transaction`.
-4. `POSModule.tsx` sets `receiptTransaction` + `isPostSale = true`.
-5. Receipt renders from `receiptTransaction` alone; cart/client state irrelevant.
+4. `POSModule.tsx` sets `successTx = tx`.
+5. `TransactionSuccessModal` renders from `successTx` alone.
 
-No extra queries on the modal side (re-using the hydrated tx returned by the mutation).
+No extra queries on the modal side.
 
 ### State in `POSModule`
 
-`receiptTransaction: Transaction | null` already exists (`POSModule.tsx:90`). Add:
-
 ```ts
-const [isPostSale, setIsPostSale] = useState(false);
+const [successTx, setSuccessTx] = useState<Transaction | null>(null);
 ```
 
 `handleCompletePayment`:
@@ -232,86 +254,92 @@ const [isPostSale, setIsPostSale] = useState(false);
 ```ts
 const tx = await processTransaction(payments);
 setShowPaymentModal(false);
-setReceiptTransaction(tx);
-setIsPostSale(true);
+setSuccessTx(tx);
 ```
 
-Every close/action path also resets `setIsPostSale(false)`.
+Guard: don't reopen `PaymentModal` while `successTx !== null` — disables the checkout button for the brief time the success modal is visible. Prevents modal stacking.
 
-### Gate against modal-stacking
+### Receipt handoff via `onOpenReceipt`
 
-Guard reopening `PaymentModal` on `receiptTransaction === null`. If the receipt is open, the "Encaissement" button is disabled. Prevents stacking.
+Wires into the existing `receiptTransaction` state at `POSModule.tsx:90`. The `onOpenReceipt` callback closes the success modal (`setSuccessTx(null)`) and then sets `receiptTransaction` — both modals are never visible simultaneously.
 
----
-
-## Error handling
-
-- Failure path unchanged: `toastOnError('Impossible de créer la transaction')`. Cart preserved, receipt does not open.
-- If the hydration `rawSelect` fails after the RPC succeeds (rare), toast `'Transaction enregistrée'` and skip opening the receipt. Narrow fallback.
+Because the just-created tx won't yet be in `allTransactions` (invalidation is async), `ReceiptModal` must **hide its prev/next controls when the opened tx is not in `allTransactions`**. Small guard in the component.
 
 ---
 
-## A11y
+## 5. Error handling
 
-- Banner has `role="status"` and `aria-live="polite"` so "Transaction enregistrée" is announced on appearance.
-- Modal keeps `role="dialog"`, `aria-modal="true"`, `aria-labelledby` pointing at the ticket-number heading.
-- Initial focus on `Imprimer` (primary action) in post-sale mode; on `Fermer` in history mode.
-- Focus trap implemented inline in `ReceiptModal`. (Existing `useMobileModalA11y` is file-local, mobile-only, and only handles body-scroll-lock + Escape — not a focus trap.)
+- Failure path unchanged: `toastOnError('Impossible de créer la transaction')`. Cart preserved, success modal does not open.
+- If the hydration `rawSelect` fails after the RPC succeeds (rare), toast `'Transaction enregistrée'` as plain success toast and skip opening the modal. Narrow fallback.
 
 ---
 
-## Responsive behavior
+## 6. A11y
 
-Matches existing POS modal patterns.
+- `role="dialog"`, `aria-modal="true"`, `aria-labelledby="tx-success-heading"`.
+- `aria-live="polite"` on the headline so screen readers announce "Transaction enregistrée, Ticket n°000042, 60 euros" on open.
+- Initial focus on the primary `Imprimer` button.
+- Focus trap implemented inline in the component (4 tabbable buttons + X — simple loop). Do **not** claim reuse of `useMobileModalA11y` — that hook is file-local to `POSModals.tsx`, mobile-only, and only handles body-scroll-lock + Escape, not a focus trap. If a shared focus-trap hook is desired later, extract to `hooks/useModalA11y.ts`; out of scope for this feature.
+
+---
+
+## 7. Responsive behavior
 
 ### Mobile (< lg)
 
-- Fullscreen sheet (current `ReceiptModal` pattern preserved).
-- Body scroll locked; safe-area insets respected.
-- Footer buttons stacked full-width, 44 px min touch targets, safe-area padding at the bottom so none are hidden under `BottomTabBar` + home indicator.
-- Success banner sits at the top; content scrolls under it if long.
+- Fullscreen sheet, `fixed inset-0`, portal to `document.body`.
+- Body scroll locked; safe-area insets respected at the bottom.
+- Slide-up entry animation consistent with `PaymentModal` / `CartBottomSheet`.
+- 4 buttons stacked full-width, 44 px min touch targets, safe-area padding at the bottom so none are hidden under `BottomTabBar` + home indicator.
+- Content fits 360×640 without scrolling (headline + ticket# + total + 1 summary line + 4 buttons = small footprint).
 
 ### Desktop (≥ lg)
 
-- Centered card, `max-w-lg` (same as current `ReceiptModal`).
+- Centered card, `max-w-md` (~28 rem), `rounded-xl`.
 - Backdrop `bg-black/60 backdrop-blur-sm`; clicking backdrop closes.
-- Footer: `Imprimer` full-width primary on top, two secondaries below in a two-column grid.
+- Footer: `Imprimer` full-width primary on top, three secondaries in a 3-column grid below.
 
 ---
 
-## Consistency changes in other places
+## 8. Consistency changes in other places
 
-- `TransactionHistoryPage.tsx`: `Imprimer` column/button now navigates to the print route instead of whatever it does today (verify current behavior; if already using `window.print()` with a print stylesheet, migrate to the route for consistency).
-- `TransactionDetailModal` title adopts `formatTicketNumber`.
 - `PAYMENT_METHOD_SHORT` lifted from `TransactionHistoryPage.tsx:254-258` into `modules/pos/constants.ts` and imported by both places.
+- `ReceiptModal` in `POSModals.tsx` gains an `Imprimer` button alongside `Fermer`, and renders via the new `ReceiptBody` sub-component.
+- `ReceiptModal` header uses `formatTicketNumber` instead of short-UUID.
+- `TransactionDetailModal` title adopts `formatTicketNumber`.
+- `TransactionHistoryPage`: row-action `Imprimer` navigates to the print route (migrating from whatever it does today, for consistency).
 
 ---
 
-## Testing
+## 9. Testing
 
 - **Unit:** mapper updates for `ticketNumber` (extend `mappers.test.ts`).
 - **Manual test plan:**
-  1. Cash sale → receipt opens in post-sale mode, green banner visible, header shows `Ticket n°<next>`, footer has Imprimer / Voir l'historique / Nouvelle vente, no prev/next.
-  2. Click `Imprimer` → new tab opens at `/pos/historique/<id>/print`, print dialog appears, original receipt modal stays open in the POS tab.
-  3. Click `Voir l'historique` → modal closes, route is `/pos/historique`.
-  4. Click `Nouvelle vente` (or backdrop on desktop, or Escape, or X) → modal closes, cart empty, POS ready for next sale.
-  5. Open a receipt from TransactionHistoryPage → post-sale mode OFF: no green banner, footer is Imprimer / Fermer, prev/next shown.
-  6. Two parallel sales in the same salon (two tabs) → sequential, non-colliding ticket numbers.
-  7. Fresh salon (no prior sales) → ticket number is 1; counter seeded.
-  8. Existing salons after migration: highest pre-migration ticket number = N; next new sale = N+1.
-  9. Mobile 360×640: banner + ticket number + items + footer buttons all reachable, button area above safe-area/home indicator.
-  10. Screen reader: `Transaction enregistrée` announced when receipt opens in post-sale mode.
-  11. Print route opened in anonymous tab → RLS denial, clean error state (user's expected fallback).
+  1. Cash sale → success modal opens with `Ticket n°<next>`, headline total, `1 article · Espèces`, no client row. Focus on Imprimer.
+  2. Split cash + card, linked client → sub-summary shows `... · Espèces + Carte`, client full name on its own line.
+  3. Click `Imprimer` → new tab opens at `/pos/historique/<id>/print`, print dialog appears, success modal still visible in POS tab.
+  4. Click `Voir le reçu` → success modal closes, `ReceiptModal` opens with the same tx, prev/next hidden (tx not yet in allTransactions).
+  5. Close `ReceiptModal` → back to POS, empty cart.
+  6. Click `Voir l'historique` on the success modal → modal closes, route `/pos/historique`.
+  7. Click `Nouvelle vente` (or backdrop on desktop, or Escape, or X) → modal closes, cart empty, POS ready.
+  8. Two parallel sales in the same salon (two tabs) → sequential, non-colliding ticket numbers.
+  9. Fresh salon (no prior sales) → first ticket is 1, counter seeded.
+  10. Existing salons after migration: highest pre-migration ticket = N; next new sale = N+1.
+  11. Mobile 360×640: modal fits without scroll, all 4 buttons thumb-reachable, above safe-area.
+  12. Screen reader: `"Transaction enregistrée, Ticket n°000042, 60 euros"` announced on open.
+  13. Open a receipt from TransactionHistoryPage → new `Imprimer` button present; clicking it opens the print route.
+  14. Print route opened in anonymous tab → RLS denial, clean error state.
 
 ---
 
-## File changes
+## 10. File changes
 
 ### New files
 
 - `supabase/migrations/<next>_add_ticket_number.sql` — schema + backfill + `create_transaction` RPC update.
+- `modules/pos/components/TransactionSuccessModal.tsx` — the post-sale confirmation.
 - `modules/pos/ReceiptPrintPage.tsx` — dedicated print route, auto-`window.print()` on mount.
-- `modules/pos/components/ReceiptBody.tsx` — shared receipt layout factored out of `POSModals.tsx` so `ReceiptModal` and `ReceiptPrintPage` both render the same thing.
+- `modules/pos/components/ReceiptBody.tsx` — shared receipt layout factored out of `POSModals.tsx` so `ReceiptModal` and `ReceiptPrintPage` render identical markup.
 
 ### Modified files
 
@@ -319,11 +347,11 @@ Matches existing POS modal patterns.
 - `modules/pos/mappers.ts` — `toTransaction` reads `ticket_number`.
 - `modules/pos/mappers.test.ts` — cover `ticketNumber`.
 - `modules/pos/constants.ts` — export `PAYMENT_METHOD_SHORT`.
-- `modules/pos/TransactionHistoryPage.tsx` — import shared `PAYMENT_METHOD_SHORT`; add `N°` column; Imprimer action navigates to print route.
+- `modules/pos/TransactionHistoryPage.tsx` — import shared `PAYMENT_METHOD_SHORT`; add `N°` column; row-action Imprimer navigates to print route.
 - `hooks/useTransactions.ts` — create mutation: parse RPC return, run hydrated `rawSelect`, resolve with full `Transaction`.
 - `modules/pos/hooks/usePOS.ts` — `processTransaction()` returns the hydrated `Transaction`.
-- `modules/pos/POSModule.tsx` — add `isPostSale` state; on success set `receiptTransaction` + `isPostSale=true`; pass props to `POSModals`; wire `onNewSale` / `onViewHistory`; gate PaymentModal reopen.
-- `modules/pos/components/POSModals.tsx` — `ReceiptModal` gains `postSale`, `onNewSale`, `onViewHistory` props + banner + reworked footer; delegates layout to new `ReceiptBody`. Header uses `formatTicketNumber`. `TransactionDetailModal` title adopts `formatTicketNumber`.
+- `modules/pos/POSModule.tsx` — add `successTx` state; on success `setSuccessTx(tx)`; render `<TransactionSuccessModal>`; wire `onOpenReceipt` into existing `receiptTransaction` state; wire `onViewHistory` to `navigate('/pos/historique')`; gate PaymentModal reopen on `successTx === null`.
+- `modules/pos/components/POSModals.tsx` — `ReceiptModal`: footer gains `Imprimer` alongside `Fermer`; body delegates to new `ReceiptBody`; header uses `formatTicketNumber`; prev/next hidden when opened tx not in `allTransactions`. `TransactionDetailModal` title adopts `formatTicketNumber`.
 - `lib/format.ts` — add `formatTicketNumber`.
 - `App.tsx` — register `/pos/historique/:id/print` route.
 
@@ -333,16 +361,19 @@ Matches existing POS modal patterns.
 - Refund / void flows.
 - `PaymentModal.tsx` internals (POSModule handles the reopen gate).
 
-### Dropped from v2
+---
 
-- `TransactionSuccessModal.tsx` — not built. Receipt is the success surface.
+## 11. Open risks
+
+- **Backfill lock.** `ALTER COLUMN ... SET NOT NULL` takes an ACCESS EXCLUSIVE lock on `transactions`. Fast on current scale; monitor if the table ever grows into millions of rows.
+- **Mobile print.** `window.open('_blank')` behavior varies on iOS Safari and inside PWAs. If installed as a PWA the new tab may not open or may break out of the standalone window. In practice most salon POS deployments use a desktop or tablet with a dedicated thermal printer, so the new-tab pattern targets the common case. If mobile print matters in the future, revisit with same-tab navigation to the print route and a back button.
+- **`BIGINT` rollover** — 9.2 × 10^18 headroom, irrelevant.
+- **Cross-tab print.** Opening the print tab and not closing it accumulates tabs. Acceptable; typical browsers and shifts handle this fine.
 
 ---
 
-## Open risks
+## 12. Future work (out of scope for v4)
 
-- **Backfill lock.** `ALTER COLUMN ... SET NOT NULL` takes an ACCESS EXCLUSIVE lock. Fast on current scale; monitor if the table ever grows into millions of rows.
-- **Print route auth.** Uses the standard authenticated Supabase client. Anonymous tab → RLS denies (expected).
-- **`BIGINT` rollover** — irrelevant.
-- **Cross-tab print.** If the cashier opens the print tab and doesn't close it, they accumulate tabs. Acceptable; browsers handle this fine and a typical shift closes them.
-- **Mobile print.** `window.open('_blank')` behavior varies on iOS Safari and inside PWAs. If installed as a PWA, the new tab may not open or may break out of the standalone window. In practice many salon POS setups use a dedicated thermal printer driven from a desktop/tablet anyway, so the new-tab flow targets the common case. If mobile print turns out to matter, a future refinement is same-tab navigation (push/replace) to the print route and a back button, but that adds friction on desktop — skipped for v1.
+- **Email receipt** — adds an `[ Email ]` peer button on the success modal; requires an email-sending capability (SendGrid/Resend/etc.) and a customer-email field on clients or a direct entry field in the modal.
+- **SMS receipt** — same shape, different channel.
+- **"No receipt" quick-dismiss** — Toast's pattern of a prominent `[ Sans reçu ]` button that also advances to the next sale. Low priority for a salon where physical receipts remain common.
