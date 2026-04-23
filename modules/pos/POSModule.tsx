@@ -29,6 +29,7 @@ import {
   TransactionDetailModal,
 } from './components/POSModals';
 import { RefundModal } from './components/RefundModal';
+import { TransactionSuccessModal } from './components/TransactionSuccessModal';
 import { VoidModal } from './components/VoidModal';
 import { usePOS } from './hooks/usePOS';
 
@@ -89,6 +90,7 @@ export const POSModule: React.FC = () => {
   const [variantModalData, setVariantModalData] = useState<{ service: Service } | null>(null);
   const [receiptTransaction, setReceiptTransaction] = useState<Transaction | null>(null);
   const [detailTransaction, setDetailTransaction] = useState<Transaction | null>(null);
+  const [successTx, setSuccessTx] = useState<Transaction | null>(null);
   const [voidTarget, setVoidTarget] = useState<Transaction | null>(null);
   const [refundTarget, setRefundTarget] = useState<Transaction | null>(null);
   const { isMobile } = useMediaQuery();
@@ -140,8 +142,9 @@ export const POSModule: React.FC = () => {
     if (isProcessing) return;
     setIsProcessing(true);
     try {
-      await processTransaction(payments);
+      const tx = await processTransaction(payments);
       setShowPaymentModal(false);
+      setSuccessTx(tx);
     } catch {
       // Error toast is handled by the mutation's onError callback
       // Keep modal open so user can retry
@@ -236,7 +239,10 @@ export const POSModule: React.FC = () => {
             allStaff={allStaff}
             services={services}
             totals={totals}
-            onCheckout={() => setShowPaymentModal(true)}
+            onCheckout={() => {
+              if (successTx !== null) return;
+              setShowPaymentModal(true);
+            }}
           />
         )}
 
@@ -265,7 +271,10 @@ export const POSModule: React.FC = () => {
               allStaff={allStaff}
               services={services}
               totals={totals}
-              onCheckout={() => setShowPaymentModal(true)}
+              onCheckout={() => {
+              if (successTx !== null) return;
+              setShowPaymentModal(true);
+            }}
             />
           </>
         )}
@@ -311,6 +320,8 @@ export const POSModule: React.FC = () => {
             onClose={() => setReceiptTransaction(null)}
           />
         )}
+
+        <TransactionSuccessModal tx={successTx} onClose={() => setSuccessTx(null)} />
 
         {detailTransaction && (
           <TransactionDetailModal
