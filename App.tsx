@@ -50,6 +50,7 @@ import { ClientsModule } from './modules/clients/ClientsModule';
 // Module imports (unchanged)
 import { DashboardModule } from './modules/dashboard/DashboardModule';
 import { POSModule } from './modules/pos/POSModule';
+import ReceiptPrintPage from './modules/pos/ReceiptPrintPage';
 import { TransactionHistoryPage } from './modules/pos/TransactionHistoryPage';
 import { ProductSettingsPage } from './modules/products/ProductSettingsPage';
 import { ProductsModule } from './modules/products/ProductsModule';
@@ -308,6 +309,18 @@ export default function App() {
                   <Route path="signups" element={<AdminRecentSignups />} />
                   <Route path="churn" element={<AdminChurnLog />} />
                 </Route>
+
+                {/* Chrome-less print route (no Layout, no sidebar/topbar) */}
+                <Route
+                  path="/pos/historique/:id/print"
+                  element={
+                    <ProtectedRoute action="view" resource="pos">
+                      <ErrorBoundary moduleName="Impression">
+                        <ReceiptPrintPage />
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
 
                 {/* Protected app routes */}
                 <Route
