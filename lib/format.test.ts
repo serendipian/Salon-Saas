@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { formatDuration, formatPrice, setSalonCurrency } from './format';
+import { formatDuration, formatPrice, formatTicketNumber, setSalonCurrency } from './format';
 
 describe('formatPrice', () => {
   beforeEach(() => {
@@ -55,5 +55,19 @@ describe('formatDuration', () => {
     expect(formatDuration(90)).toBe('1h30');
     expect(formatDuration(105)).toBe('1h45');
     expect(formatDuration(125)).toBe('2h05');
+  });
+});
+
+describe('formatTicketNumber', () => {
+  it('pads single-digit to 6 digits with n° prefix', () => {
+    expect(formatTicketNumber(1)).toBe('n°000001');
+  });
+
+  it('pads multi-digit correctly', () => {
+    expect(formatTicketNumber(42)).toBe('n°000042');
+  });
+
+  it('keeps numbers >6 digits unpadded', () => {
+    expect(formatTicketNumber(1234567)).toBe('n°1234567');
   });
 });
