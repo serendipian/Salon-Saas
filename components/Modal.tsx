@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -111,7 +112,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   const titleId = `modal-title-${title.replace(/\s+/g, '-').toLowerCase()}`;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       onClick={() => dismissible && onClose()}
@@ -149,6 +150,7 @@ export const Modal: React.FC<ModalProps> = ({
         )}
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
