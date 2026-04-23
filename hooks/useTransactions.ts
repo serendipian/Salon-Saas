@@ -65,11 +65,55 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
         signal: AbortSignal,
       ) => {
         const payload = toTransactionRpcPayload(items, payments, clientId, salonId, appointmentId);
-        // biome-ignore lint/suspicious/noExplicitAny: payload helper produces nullable fields that RPC accepts but TS narrows incorrectly
-        const { error } = await supabase
-          .rpc('create_transaction', payload as any)
-          .abortSignal(signal);
-        if (error) throw error;
+
+        // Raw fetch — supabase.rpc() can hang indefinitely after background-tab
+        // throttling when the SDK's auth lock wedges (same class of issue as
+        // getUser/signOut/updateUser, already bypassed elsewhere).
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+        const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+        const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\./)?.[1];
+        const storageKey = projectRef ? `sb-${projectRef}-auth-token` : null;
+
+        let accessToken: string | null = null;
+        try {
+          const raw = storageKey ? localStorage.getItem(storageKey) : null;
+          if (raw) {
+            const parsed = JSON.parse(raw) as { access_token?: string };
+            accessToken = parsed.access_token ?? null;
+          }
+        } catch {
+          // fall through to the missing-token error below
+        }
+        if (!accessToken) {
+          throw new Error('Session introuvable, veuillez vous reconnecter.');
+        }
+
+        const response = await fetch(`${supabaseUrl}/rest/v1/rpc/create_transaction`, {
+          method: 'POST',
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+          signal,
+        });
+
+        if (!response.ok) {
+          let message = `HTTP ${response.status}`;
+          let code: string | undefined;
+          try {
+            const body = (await response.json()) as { message?: string; code?: string };
+            if (body.message) message = body.message;
+            code = body.code;
+          } catch {
+            // non-JSON body — keep HTTP status as the message
+          }
+          const err = new Error(message) as Error & { code?: string; status?: number };
+          if (code) err.code = code;
+          err.status = response.status;
+          throw err;
+        }
       },
     ),
     onSuccess: () => {
