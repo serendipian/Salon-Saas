@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 import type { Brand, Product, ProductCategory } from '../../../types';
 import { toBrand, toProduct, toProductCategory, toProductInsert } from '../mappers';
 
@@ -25,16 +26,15 @@ export const useProducts = () => {
   // Products query (with supplier + brand names via relation)
   const { data: products = [], isLoading: isLoadingProducts } = useQuery({
     queryKey: ['products', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*, suppliers(name), brands(name)')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null)
-        .order('name');
-      if (error) throw error;
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*,suppliers(name),brands(name)');
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('deleted_at', 'is.null');
+      params.append('order', 'name');
       // biome-ignore lint/suspicious/noExplicitAny: hand-written Row alias narrower than generated types
-      return (data ?? []).map((row: any) => toProduct(row));
+      const data = await rawSelect<any>('products', params.toString(), signal);
+      return data.map((row) => toProduct(row));
     },
     enabled: !!salonId,
   });
@@ -42,16 +42,15 @@ export const useProducts = () => {
   // Product Categories query
   const { data: productCategories = [], isLoading: isLoadingCategories } = useQuery({
     queryKey: ['product_categories', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('product_categories')
-        .select('*')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null)
-        .order('sort_order', { ascending: true, nullsFirst: false });
-      if (error) throw error;
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('deleted_at', 'is.null');
+      params.append('order', 'sort_order.asc.nullslast');
       // biome-ignore lint/suspicious/noExplicitAny: hand-written Row alias narrower than generated types
-      return (data ?? []).map((row: any) => toProductCategory(row));
+      const data = await rawSelect<any>('product_categories', params.toString(), signal);
+      return data.map((row) => toProductCategory(row));
     },
     enabled: !!salonId,
   });
@@ -59,15 +58,15 @@ export const useProducts = () => {
   // Brands query (with supplier name)
   const { data: brands = [], isLoading: isLoadingBrands } = useQuery({
     queryKey: ['brands', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('brands')
-        .select('*, suppliers(name)')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null)
-        .order('sort_order', { ascending: true, nullsFirst: false });
-      if (error) throw error;
-      return (data ?? []).map(toBrand);
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*,suppliers(name)');
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('deleted_at', 'is.null');
+      params.append('order', 'sort_order.asc.nullslast');
+      // biome-ignore lint/suspicious/noExplicitAny: toBrand accepts row shape narrower than generated types
+      const data = await rawSelect<any>('brands', params.toString(), signal);
+      return data.map(toBrand);
     },
     enabled: !!salonId,
   });

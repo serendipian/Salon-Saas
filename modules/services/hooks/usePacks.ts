@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 import { toPack } from '../packMappers';
 import { isPackValid, isPackVisible } from '../utils/packExpansion';
 import { usePackGroups } from './usePackGroups';
@@ -20,18 +21,18 @@ export function usePacks() {
 
   const { data: packs = [], isLoading } = useQuery({
     queryKey: ['packs', salonId],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!salonId) return [];
-      const { data, error } = await supabase
-        .from('packs')
-        .select(
-          '*, pack_items(*, services(name), service_variants(name, price, duration_minutes, deleted_at))',
-        )
-        .eq('salon_id', salonId)
-        .order('sort_order');
-
-      if (error) throw error;
-      return (data ?? []).map(toPack);
+      const params = new URLSearchParams();
+      params.append(
+        'select',
+        '*,pack_items(*,services(name),service_variants(name,price,duration_minutes,deleted_at))',
+      );
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('order', 'sort_order');
+      // biome-ignore lint/suspicious/noExplicitAny: toPack accepts row shape narrower than generated types
+      const data = await rawSelect<any>('packs', params.toString(), signal);
+      return data.map(toPack);
     },
     enabled: !!salonId,
   });
