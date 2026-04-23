@@ -15,6 +15,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // navigator.locks handling is trusted as of @supabase/supabase-js >= 2.45.
 const FETCH_TIMEOUT_MS = 30_000;
 
+interface InflightFetch {
+  controller: AbortController;
+  startedAt: number;
+}
+const activeFetches = new Set<InflightFetch>();
+
 const fetchWithTimeout: typeof fetch = (input, init) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
@@ -24,6 +30,9 @@ const fetchWithTimeout: typeof fetch = (input, init) => {
     existingSignal.addEventListener('abort', () => controller.abort());
   }
 
+  const entry: InflightFetch = { controller, startedAt: Date.now() };
+  activeFetches.add(entry);
+
   return fetch(input, { ...init, signal: controller.signal })
     .catch((err) => {
       if (err.name === 'AbortError' && !existingSignal?.aborted) {
@@ -31,8 +40,34 @@ const fetchWithTimeout: typeof fetch = (input, init) => {
       }
       throw err;
     })
-    .finally(() => clearTimeout(timeoutId));
+    .finally(() => {
+      clearTimeout(timeoutId);
+      activeFetches.delete(entry);
+    });
 };
+
+/**
+ * Force-abort any in-flight fetch older than `olderThanMs`. Used by the
+ * connection-recovery path on idle return: Chrome's background-tab throttling
+ * can freeze a supabase-js auth-refresh fetch mid-flight, and supabase-js holds
+ * its internal auth lock across that fetch. Every subsequent SDK call
+ * (reads, writes, realtime auth) then queues behind the dead lock until the
+ * 30s fetch timeout catches up — which itself is throttled on a returning tab.
+ *
+ * Aborting the stale fetch propagates AbortError into the SDK's refresh
+ * handler, which releases the lock and unblocks queued callers.
+ */
+export function abortStaleFetches(olderThanMs: number): number {
+  const now = Date.now();
+  let aborted = 0;
+  for (const entry of activeFetches) {
+    if (now - entry.startedAt >= olderThanMs) {
+      entry.controller.abort();
+      aborted++;
+    }
+  }
+  return aborted;
+}
 
 // Per-tab async mutex keyed by name. Serializes callers via a promise chain.
 // Used as a fallback when navigator.locks is unavailable or returns a null
