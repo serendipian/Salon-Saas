@@ -1485,6 +1485,46 @@ export type Database = {
           },
         ]
       }
+      salon_ticket_counters: {
+        Row: {
+          next_ticket_number: number
+          salon_id: string
+          updated_at: string
+        }
+        Insert: {
+          next_ticket_number?: number
+          salon_id: string
+          updated_at?: string
+        }
+        Update: {
+          next_ticket_number?: number
+          salon_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_ticket_counters_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: true
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_ticket_counters_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: true
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_ticket_counters_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: true
+            referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       salons: {
         Row: {
           address: string | null
@@ -2488,6 +2528,7 @@ export type Database = {
           reason_category: string | null
           reason_note: string | null
           salon_id: string
+          ticket_number: number
           total: number
           type: string
         }
@@ -2503,6 +2544,7 @@ export type Database = {
           reason_category?: string | null
           reason_note?: string | null
           salon_id: string
+          ticket_number: number
           total: number
           type?: string
         }
@@ -2518,6 +2560,7 @@ export type Database = {
           reason_category?: string | null
           reason_note?: string | null
           salon_id?: string
+          ticket_number?: number
           total?: number
           type?: string
         }
@@ -3251,3 +3294,5 @@ export const Constants = {
     Enums: {},
   },
 } as const
+A new version of Supabase CLI is available: v2.90.0 (currently installed v2.84.4)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
