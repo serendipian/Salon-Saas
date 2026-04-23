@@ -3,6 +3,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 import { toPackGroup } from '../packMappers';
 
 export function usePackGroups() {
@@ -15,16 +16,15 @@ export function usePackGroups() {
 
   const { data: packGroups = [], isLoading } = useQuery({
     queryKey: ['pack_groups', salonId],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!salonId) return [];
-      const { data, error } = await supabase
-        .from('pack_groups')
-        .select('*')
-        .eq('salon_id', salonId)
-        .order('sort_order');
-
-      if (error) throw error;
-      return (data ?? []).map(toPackGroup);
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('order', 'sort_order');
+      // biome-ignore lint/suspicious/noExplicitAny: toPackGroup accepts row shape narrower than generated types
+      const data = await rawSelect<any>('pack_groups', params.toString(), signal);
+      return data.map(toPackGroup);
     },
     enabled: !!salonId,
   });
