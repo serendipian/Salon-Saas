@@ -30,6 +30,7 @@ import type { Transaction } from '../../types';
 import { ReceiptModal, TransactionDetailModal } from './components/POSModals';
 import { RefundModal } from './components/RefundModal';
 import { VoidModal } from './components/VoidModal';
+import { PAYMENT_METHOD_SHORT } from './constants';
 import { getTransactionStatus, type TransactionStatus } from './mappers';
 
 const ALL_PAYMENT_METHODS = ['Espèces', 'Carte Bancaire', 'Virement', 'Carte Cadeau'] as const;
@@ -250,12 +251,6 @@ export const TransactionHistoryPage: React.FC = () => {
     sortBy,
     sortDesc,
   ]);
-
-  const PAYMENT_METHOD_SHORT: Record<string, string> = {
-    'Carte Bancaire': 'Carte',
-    'Carte Cadeau': 'Cadeau',
-    Virement: 'Virement',
-  };
 
   const dailySummary = React.useMemo(() => {
     const activeSales = groupedTransactions.filter(({ parent: trx }) => {

@@ -16,3 +16,11 @@ export const REFUND_CATEGORIES = [
 
 export type VoidCategoryKey = (typeof VOID_CATEGORIES)[number]['key'];
 export type RefundCategoryKey = (typeof REFUND_CATEGORIES)[number]['key'];
+
+// Short labels for payment methods (used on dense surfaces where the full label
+// would overflow). Full labels are authored by PaymentModal.
+export const PAYMENT_METHOD_SHORT: Record<string, string> = {
+  'Carte Bancaire': 'Carte',
+  'Carte Cadeau': 'Cadeau',
+  Virement: 'Virement',
+};
