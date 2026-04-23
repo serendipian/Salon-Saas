@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 import type { Supplier, SupplierCategory } from '../../../types';
 import { toSupplier, toSupplierCategory, toSupplierInsert } from '../mappers';
 
@@ -23,31 +24,30 @@ export const useSuppliers = () => {
 
   const { data: suppliers = [], isLoading: isLoadingSuppliers } = useQuery({
     queryKey: ['suppliers', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('suppliers')
-        .select('*')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null)
-        .order('name');
-      if (error) throw error;
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('deleted_at', 'is.null');
+      params.append('order', 'name');
       // biome-ignore lint/suspicious/noExplicitAny: hand-written Row alias narrower than generated types
-      return (data ?? []).map((row: any) => toSupplier(row));
+      const data = await rawSelect<any>('suppliers', params.toString(), signal);
+      return data.map((row) => toSupplier(row));
     },
     enabled: !!salonId,
   });
 
   const { data: supplierCategories = [], isLoading: isLoadingCategories } = useQuery({
     queryKey: ['supplier_categories', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('supplier_categories')
-        .select('*')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null)
-        .order('sort_order', { ascending: true, nullsFirst: false });
-      if (error) throw error;
-      return (data ?? []).map(toSupplierCategory);
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('deleted_at', 'is.null');
+      params.append('order', 'sort_order.asc.nullslast');
+      // biome-ignore lint/suspicious/noExplicitAny: toSupplierCategory accepts row shape narrower than generated types
+      const data = await rawSelect<any>('supplier_categories', params.toString(), signal);
+      return data.map(toSupplierCategory);
     },
     enabled: !!salonId,
   });
