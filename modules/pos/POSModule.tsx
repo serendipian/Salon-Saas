@@ -58,7 +58,17 @@ export const POSModule: React.FC = () => {
     updateQuantity,
     removeFromCart,
     processTransaction,
-    pendingAppointments,
+    pendingAppointmentGroups,
+    filteredPendingAppointmentGroups,
+    availableAppointmentStaff,
+    availableAppointmentCategories,
+    appointmentStaffFilter,
+    appointmentCategoryFilter,
+    appointmentStatusFilter,
+    setAppointmentStaffFilter,
+    setAppointmentCategoryFilter,
+    setAppointmentStatusFilter,
+    resetAppointmentFilters,
     linkedAppointmentId,
     importAppointment,
     voidTransaction: doVoid,
@@ -216,9 +226,19 @@ export const POSModule: React.FC = () => {
           filteredItems={filteredItems}
           onServiceClick={handleServiceClick}
           onProductClick={handleProductClick}
-          pendingAppointments={pendingAppointments}
+          filteredAppointmentGroups={filteredPendingAppointmentGroups}
+          totalAppointmentGroupCount={pendingAppointmentGroups.length}
           onImportAppointment={importAppointment}
           linkedAppointmentId={linkedAppointmentId}
+          availableAppointmentStaff={availableAppointmentStaff}
+          availableAppointmentCategories={availableAppointmentCategories}
+          appointmentStaffFilter={appointmentStaffFilter}
+          appointmentCategoryFilter={appointmentCategoryFilter}
+          appointmentStatusFilter={appointmentStatusFilter}
+          onAppointmentStaffFilterChange={setAppointmentStaffFilter}
+          onAppointmentCategoryFilterChange={setAppointmentCategoryFilter}
+          onAppointmentStatusFilterChange={setAppointmentStatusFilter}
+          onResetAppointmentFilters={resetAppointmentFilters}
           favorites={allFavorites}
           onAddToCart={addToCart}
           packs={validPacks}

@@ -11,9 +11,12 @@ import type {
   ProductCategory,
   Service,
   ServiceCategory,
+  StaffMember,
 } from '../../../types';
+import { AppointmentStatus } from '../../../types';
 import { formatPackItemCount, getPackDiscount } from '../../services/utils/packExpansion';
 import type { POSViewMode } from '../hooks/usePOS';
+import { AppointmentFilters } from './AppointmentFilters';
 import { PendingAppointments } from './PendingAppointments';
 
 interface POSCatalogProps {
@@ -28,9 +31,21 @@ interface POSCatalogProps {
   filteredItems: (Service | Product)[];
   onServiceClick: (s: Service) => void;
   onProductClick: (p: Product) => void;
-  pendingAppointments: Appointment[];
+  filteredAppointmentGroups: Appointment[][];
+  totalAppointmentGroupCount: number;
   onImportAppointment: (appointment: Appointment) => void;
   linkedAppointmentId: string | null;
+  availableAppointmentStaff: StaffMember[];
+  availableAppointmentCategories: ServiceCategory[];
+  appointmentStaffFilter: string;
+  appointmentCategoryFilter: string;
+  appointmentStatusFilter: 'ALL' | AppointmentStatus.SCHEDULED | AppointmentStatus.IN_PROGRESS;
+  onAppointmentStaffFilterChange: (id: string) => void;
+  onAppointmentCategoryFilterChange: (id: string) => void;
+  onAppointmentStatusFilterChange: (
+    status: 'ALL' | AppointmentStatus.SCHEDULED | AppointmentStatus.IN_PROGRESS,
+  ) => void;
+  onResetAppointmentFilters: () => void;
   favorites: FavoriteItem[];
   onAddToCart: (item: import('../../../types').CartItem) => void;
   packs: Pack[];
@@ -77,9 +92,19 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
   filteredItems,
   onServiceClick,
   onProductClick,
-  pendingAppointments,
+  filteredAppointmentGroups,
+  totalAppointmentGroupCount,
   onImportAppointment,
   linkedAppointmentId,
+  availableAppointmentStaff,
+  availableAppointmentCategories,
+  appointmentStaffFilter,
+  appointmentCategoryFilter,
+  appointmentStatusFilter,
+  onAppointmentStaffFilterChange,
+  onAppointmentCategoryFilterChange,
+  onAppointmentStatusFilterChange,
+  onResetAppointmentFilters,
   favorites,
   onAddToCart,
   packs,
@@ -131,16 +156,11 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
             >
               <Calendar size={16} />
               <span className="hidden sm:inline">Rendez-vous</span>
-              {pendingAppointments.length > 0 &&
-                (() => {
-                  const groupCount = new Set(pendingAppointments.map((a) => a.groupId ?? a.id))
-                    .size;
-                  return (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                      {groupCount > 9 ? '9+' : groupCount}
-                    </span>
-                  );
-                })()}
+              {totalAppointmentGroupCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {totalAppointmentGroupCount > 9 ? '9+' : totalAppointmentGroupCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -461,11 +481,30 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
 
         {/* Appointments View */}
         {viewMode === 'APPOINTMENTS' && (
-          <PendingAppointments
-            appointments={pendingAppointments}
-            onImport={onImportAppointment}
-            linkedAppointmentId={linkedAppointmentId}
-          />
+          <>
+            <AppointmentFilters
+              staff={availableAppointmentStaff}
+              categories={availableAppointmentCategories}
+              staffValue={appointmentStaffFilter}
+              categoryValue={appointmentCategoryFilter}
+              statusValue={appointmentStatusFilter}
+              onStaffChange={onAppointmentStaffFilterChange}
+              onCategoryChange={onAppointmentCategoryFilterChange}
+              onStatusChange={onAppointmentStatusFilterChange}
+              onReset={onResetAppointmentFilters}
+            />
+            <PendingAppointments
+              groups={filteredAppointmentGroups}
+              onImport={onImportAppointment}
+              linkedAppointmentId={linkedAppointmentId}
+              filtersActive={
+                appointmentStaffFilter !== 'ALL' ||
+                appointmentCategoryFilter !== 'ALL' ||
+                appointmentStatusFilter !== 'ALL'
+              }
+              onResetFilters={onResetAppointmentFilters}
+            />
+          </>
         )}
       </div>
     </div>

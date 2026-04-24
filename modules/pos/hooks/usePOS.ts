@@ -343,7 +343,6 @@ export const usePOS = () => {
     transactions,
     filteredItems,
     totals,
-    pendingAppointments,
     pendingAppointmentGroups,
     filteredPendingAppointmentGroups,
     availableAppointmentStaff,

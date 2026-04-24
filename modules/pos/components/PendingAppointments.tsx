@@ -1,26 +1,43 @@
-import { AlertTriangle, Calendar, Clock, User } from 'lucide-react';
+import { AlertTriangle, Calendar, Clock, Filter, User } from 'lucide-react';
 import type React from 'react';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
 import { formatName, formatPrice } from '../../../lib/format';
 import type { Appointment } from '../../../types';
+import { AppointmentStatus } from '../../../types';
 
 interface PendingAppointmentsProps {
-  appointments: Appointment[];
+  groups: Appointment[][];
   onImport: (appointment: Appointment) => void;
   linkedAppointmentId: string | null;
+  filtersActive: boolean;
+  onResetFilters: () => void;
 }
 
 export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
-  appointments,
+  groups,
   onImport,
   linkedAppointmentId,
+  filtersActive,
+  onResetFilters,
 }) => {
   const { isMobile } = useMediaQuery();
 
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  if (appointments.length === 0) {
+  if (groups.length === 0) {
+    if (filtersActive) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+          <Filter size={48} strokeWidth={1} className="mb-4 opacity-50" />
+          <p className="font-medium text-sm">Aucun rendez-vous ne correspond aux filtres</p>
+          <button
+            type="button"
+            onClick={onResetFilters}
+            className="mt-4 text-xs font-semibold text-blue-600 hover:text-blue-700"
+          >
+            Réinitialiser les filtres
+          </button>
+        </div>
+      );
+    }
     return (
       <div className="flex flex-col items-center justify-center py-16 text-slate-400">
         <Calendar size={48} strokeWidth={1} className="mb-4 opacity-50" />
@@ -30,24 +47,23 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
     );
   }
 
-  // Group by groupId (null = standalone appointment)
-  const grouped = new Map<string, Appointment[]>();
-  appointments.forEach((appt) => {
-    const key = appt.groupId ?? appt.id;
-    if (!grouped.has(key)) grouped.set(key, []);
-    grouped.get(key)?.push(appt);
-  });
+  const now = new Date();
 
   return (
     <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 xl:grid-cols-3'}`}>
-      {Array.from(grouped.entries()).map(([groupKey, groupAppts]) => {
+      {groups.map((groupAppts) => {
         const primary = groupAppts[0];
-        const isOverdue = new Date(primary.date) < todayStart;
+        const groupKey = primary.groupId ?? primary.id;
+        // Same-day overdue: scheduled time has passed, status still SCHEDULED.
+        // Past-day overdues are excluded upstream, so this only fires within today.
+        const isOverdue =
+          primary.status === AppointmentStatus.SCHEDULED && new Date(primary.date) < now;
         const isLinked = groupAppts.some((a) => a.id === linkedAppointmentId);
         const totalPrice = groupAppts.reduce((sum, a) => sum + a.price, 0);
 
         return (
           <button
+            type="button"
             key={groupKey}
             onClick={() => onImport(primary)}
             disabled={isLinked}
@@ -59,7 +75,6 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
                   : 'border-slate-200 bg-white hover:border-slate-400 hover:shadow-md'
             }`}
           >
-            {/* Overdue badge */}
             {isOverdue && (
               <div className="flex items-center gap-1.5 text-amber-600 text-xs font-semibold mb-2">
                 <AlertTriangle size={12} />
@@ -67,19 +82,16 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
               </div>
             )}
 
-            {/* Linked badge */}
             {isLinked && (
               <div className="text-xs font-semibold text-green-600 mb-2">Dans le panier</div>
             )}
 
-            {/* Client name */}
             <div className="font-semibold text-slate-900 text-sm mb-1">
               {formatName(primary.clientName) || (
                 <span className="text-slate-400 italic">Client de passage</span>
               )}
             </div>
 
-            {/* Time */}
             <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3">
               <Clock size={12} />
               <span>
@@ -90,7 +102,6 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
               </span>
             </div>
 
-            {/* Services list */}
             <div className="space-y-1.5 mb-3">
               {groupAppts.map((appt) => (
                 <div key={appt.id} className="flex justify-between items-center text-xs">
@@ -107,7 +118,6 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
               ))}
             </div>
 
-            {/* Staff + total */}
             <div className="flex justify-between items-center pt-2 border-t border-slate-100">
               <div className="flex items-center gap-1.5 text-xs text-slate-500">
                 <User size={12} />
