@@ -82,6 +82,18 @@ describe('diffAppointmentsFromCart', () => {
     expect(result[0].staff_id).toBe('st2');
   });
 
+  it('dedups by appointmentId — first cart line wins', () => {
+    const appt = mkAppt({ id: 'a1', staffId: 'st1', price: 100 });
+    const cart = [
+      mkItem({ id: 'ci1', appointmentId: 'a1', staffId: 'st2', price: 80 }),
+      // Duplicate appointmentId with a different modification — should be
+      // ignored in favor of the first occurrence.
+      mkItem({ id: 'ci2', appointmentId: 'a1', staffId: 'st3', price: 60 }),
+    ];
+    const result = diffAppointmentsFromCart(cart, [appt]);
+    expect(result).toEqual([{ id: 'a1', staff_id: 'st2', price: 80 }]);
+  });
+
   it('collects modifications across multiple cart items', () => {
     const appts = [mkAppt({ id: 'a1' }), mkAppt({ id: 'a2', price: 50 })];
     const cart = [

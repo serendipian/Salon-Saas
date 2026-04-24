@@ -27,9 +27,15 @@ export const diffAppointmentsFromCart = (
 ): AppointmentModification[] => {
   const byId = new Map(sourceAppointments.map((a) => [a.id, a]));
   const modifications: AppointmentModification[] = [];
+  // Dedup across cart items that happen to share the same appointmentId.
+  // Unreachable via current UI flows (importAppointment emits one cart item
+  // per appointment and addToCart merges duplicates by variant), but a future
+  // import path could miss the merge — keep the invariant load-bearing.
+  const seenIds = new Set<string>();
 
   for (const item of cart) {
     if (!item.appointmentId) continue;
+    if (seenIds.has(item.appointmentId)) continue;
     const source = byId.get(item.appointmentId);
     if (!source) continue;
 
@@ -42,6 +48,7 @@ export const diffAppointmentsFromCart = (
       if (priceDiff) mod.price = item.price;
       modifications.push(mod);
     }
+    seenIds.add(item.appointmentId);
   }
 
   return modifications;
