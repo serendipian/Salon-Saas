@@ -108,14 +108,14 @@ export type Database = {
       }
       appointments: {
         Row: {
-          deletion_note: string | null
-          deletion_reason: string | null
           cancelled_at: string | null
           client_id: string | null
           created_at: string
           created_by: string | null
           date: string
           deleted_at: string | null
+          deletion_note: string | null
+          deletion_reason: string | null
           duration_minutes: number
           group_id: string | null
           id: string
@@ -130,14 +130,14 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
-          deletion_note?: string | null
-          deletion_reason?: string | null
           cancelled_at?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
           date: string
           deleted_at?: string | null
+          deletion_note?: string | null
+          deletion_reason?: string | null
           duration_minutes: number
           group_id?: string | null
           id?: string
@@ -152,14 +152,14 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
-          deletion_note?: string | null
-          deletion_reason?: string | null
           cancelled_at?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
           date?: string
           deleted_at?: string | null
+          deletion_note?: string | null
+          deletion_reason?: string | null
           duration_minutes?: number
           group_id?: string | null
           id?: string
@@ -2859,10 +2859,6 @@ export type Database = {
         }
         Returns: string
       }
-      delete_appointments_bulk: {
-        Args: { p_appointment_ids: string[]; p_note?: string; p_reason: string }
-        Returns: number
-      }
       check_slot_availability: {
         Args: { p_date: string; p_duration_minutes: number; p_staff_id: string }
         Returns: boolean
@@ -2906,6 +2902,10 @@ export type Database = {
           }
       debug_auth: { Args: never; Returns: Json }
       decrypt_pii: { Args: { ciphertext: string }; Returns: string }
+      delete_appointments_bulk: {
+        Args: { p_appointment_ids: string[]; p_note?: string; p_reason: string }
+        Returns: number
+      }
       edit_appointment_group: {
         Args: {
           p_client_id: string
