@@ -82,6 +82,7 @@ CREATE OR REPLACE FUNCTION delete_appointments_bulk(
 RETURNS INTEGER
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, extensions, vault
 AS $$
 DECLARE
   v_id UUID;
