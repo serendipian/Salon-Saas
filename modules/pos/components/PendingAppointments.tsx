@@ -66,10 +66,9 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
             type="button"
             key={groupKey}
             onClick={() => onImport(primary)}
-            disabled={isLinked}
             className={`text-left p-4 rounded-xl border-2 transition-all ${
               isLinked
-                ? 'border-green-300 bg-green-50 opacity-60 cursor-not-allowed'
+                ? 'border-green-400 bg-green-50 hover:border-green-500 hover:shadow-md'
                 : isOverdue
                   ? 'border-amber-300 bg-amber-50 hover:border-amber-400 hover:shadow-md'
                   : 'border-slate-200 bg-white hover:border-slate-400 hover:shadow-md'
@@ -83,7 +82,9 @@ export const PendingAppointments: React.FC<PendingAppointmentsProps> = ({
             )}
 
             {isLinked && (
-              <div className="text-xs font-semibold text-green-600 mb-2">Dans le panier</div>
+              <div className="text-xs font-semibold text-green-600 mb-2">
+                Dans le panier · cliquer pour retirer
+              </div>
             )}
 
             <div className="font-semibold text-slate-900 text-sm mb-1">

@@ -42,7 +42,7 @@ export const usePOS = () => {
   const { allStaff } = useTeam();
   const { allAppointments } = useAppointments();
 
-  const [viewMode, setViewMode] = useState<POSViewMode>('SERVICES');
+  const [viewMode, setViewModeRaw] = useState<POSViewMode>('SERVICES');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -61,12 +61,24 @@ export const usePOS = () => {
   const linkedAppointmentIdRef = useRef(linkedAppointmentId);
   linkedAppointmentIdRef.current = linkedAppointmentId;
 
-  // Default to FAVORITES filter when favorites exist and on SERVICES view
-  const hasDefaultedToFavorites = useRef(false);
-  useEffect(() => {
-    if (!hasDefaultedToFavorites.current && favorites.length > 0 && viewMode === 'SERVICES') {
+  // Default to FAVORITES every time the user enters the SERVICES tab. Using a
+  // setViewMode wrapper (not a useEffect) keeps the reset deterministic with
+  // the tab change — no stale render where selectedCategory still points at
+  // the previous tab's selection.
+  const setViewMode = (mode: POSViewMode) => {
+    setViewModeRaw(mode);
+    if (mode === 'SERVICES' && favorites.length > 0) {
       setSelectedCategory('FAVORITES');
-      hasDefaultedToFavorites.current = true;
+    }
+  };
+
+  // Initial mount lands on SERVICES; apply the same default on first render
+  // once favorites have loaded.
+  const hasAppliedInitialFavorites = useRef(false);
+  useEffect(() => {
+    if (!hasAppliedInitialFavorites.current && favorites.length > 0 && viewMode === 'SERVICES') {
+      setSelectedCategory('FAVORITES');
+      hasAppliedInitialFavorites.current = true;
     }
   }, [favorites, viewMode]);
 
@@ -361,6 +373,7 @@ export const usePOS = () => {
     updateCartItem,
     updateQuantity,
     removeFromCart,
+    clearCart,
     processTransaction,
     importAppointment,
     voidTransaction,

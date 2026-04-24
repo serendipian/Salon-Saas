@@ -1,5 +1,4 @@
 import type React from 'react';
-import { useMediaQuery } from '../../../context/MediaQueryContext';
 import { AppointmentStatus, type ServiceCategory, type StaffMember } from '../../../types';
 
 type StatusFilter = 'ALL' | AppointmentStatus.SCHEDULED | AppointmentStatus.IN_PROGRESS;
@@ -16,10 +15,10 @@ interface AppointmentFiltersProps {
   onReset: () => void;
 }
 
-const chipBase =
-  'shrink-0 snap-start px-3 min-h-[36px] rounded-full text-xs font-medium transition-colors flex items-center gap-1.5';
-const chipActive = 'bg-slate-900 text-white';
-const chipIdle = 'bg-slate-100 text-slate-700 hover:bg-slate-200';
+const CHIP_BASE =
+  'flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors shrink-0';
+const CHIP_ACTIVE = 'bg-slate-900 text-white border border-slate-900';
+const CHIP_IDLE = 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
 
 const Chip: React.FC<{
   active: boolean;
@@ -29,10 +28,15 @@ const Chip: React.FC<{
   <button
     type="button"
     onClick={onClick}
-    className={`${chipBase} ${active ? chipActive : chipIdle}`}
+    className={`${CHIP_BASE} ${active ? CHIP_ACTIVE : CHIP_IDLE}`}
+    style={{ scrollSnapAlign: 'start' }}
   >
     {children}
   </button>
+);
+
+const Divider: React.FC = () => (
+  <span className="shrink-0 self-stretch w-px bg-slate-200 mx-1" aria-hidden="true" />
 );
 
 export const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
@@ -46,93 +50,89 @@ export const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
   onStatusChange,
   onReset,
 }) => {
-  const { isMobile } = useMediaQuery();
   const anyActive = staffValue !== 'ALL' || categoryValue !== 'ALL' || statusValue !== 'ALL';
-
   const hasStaffOptions = staff.length > 0;
   const hasCategoryOptions = categories.length > 0;
-  if (!hasStaffOptions && !hasCategoryOptions) return null;
-
-  const rowClass = `flex gap-2 ${isMobile ? 'overflow-x-auto snap-x scrollbar-hide' : 'flex-wrap'}`;
 
   return (
-    <div className="mb-4 space-y-2">
+    <div
+      className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide items-center"
+      style={{ scrollSnapType: 'x mandatory' }}
+    >
       {hasStaffOptions && (
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 font-medium w-20 shrink-0">Employé</span>
-          <div className={rowClass}>
-            <Chip active={staffValue === 'ALL'} onClick={() => onStaffChange('ALL')}>
-              Tous
+        <>
+          <Chip active={staffValue === 'ALL'} onClick={() => onStaffChange('ALL')}>
+            Tous
+          </Chip>
+          {staff.map((s) => (
+            <Chip
+              key={s.id}
+              active={staffValue === s.id}
+              onClick={() => onStaffChange(s.id)}
+            >
+              {s.photoUrl ? (
+                <img
+                  src={s.photoUrl}
+                  alt=""
+                  className="w-4 h-4 rounded-full object-cover"
+                />
+              ) : null}
+              <span>{s.firstName}</span>
             </Chip>
-            {staff.map((s) => (
-              <Chip
-                key={s.id}
-                active={staffValue === s.id}
-                onClick={() => onStaffChange(s.id)}
-              >
-                {s.photoUrl ? (
-                  <img
-                    src={s.photoUrl}
-                    alt=""
-                    className="w-4 h-4 rounded-full object-cover"
-                  />
-                ) : null}
-                <span>{s.firstName}</span>
-              </Chip>
-            ))}
-          </div>
-        </div>
+          ))}
+          <Divider />
+        </>
       )}
 
       {hasCategoryOptions && (
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 font-medium w-20 shrink-0">Catégorie</span>
-          <div className={rowClass}>
-            <Chip active={categoryValue === 'ALL'} onClick={() => onCategoryChange('ALL')}>
-              Toutes
+        <>
+          <Chip
+            active={categoryValue === 'ALL'}
+            onClick={() => onCategoryChange('ALL')}
+          >
+            Toutes
+          </Chip>
+          {categories.map((c) => (
+            <Chip
+              key={c.id}
+              active={categoryValue === c.id}
+              onClick={() => onCategoryChange(c.id)}
+            >
+              {c.name}
             </Chip>
-            {categories.map((c) => (
-              <Chip
-                key={c.id}
-                active={categoryValue === c.id}
-                onClick={() => onCategoryChange(c.id)}
-              >
-                {c.name}
-              </Chip>
-            ))}
-          </div>
-        </div>
+          ))}
+          <Divider />
+        </>
       )}
 
-      <div className="flex items-center gap-3">
-        <span className="text-xs text-slate-500 font-medium w-20 shrink-0">Statut</span>
-        <div className={`${rowClass} flex-1`}>
-          <Chip active={statusValue === 'ALL'} onClick={() => onStatusChange('ALL')}>
-            Tous
-          </Chip>
-          <Chip
-            active={statusValue === AppointmentStatus.SCHEDULED}
-            onClick={() => onStatusChange(AppointmentStatus.SCHEDULED)}
-          >
-            Planifié
-          </Chip>
-          <Chip
-            active={statusValue === AppointmentStatus.IN_PROGRESS}
-            onClick={() => onStatusChange(AppointmentStatus.IN_PROGRESS)}
-          >
-            En cours
-          </Chip>
-        </div>
-        {anyActive && (
+      <Chip active={statusValue === 'ALL'} onClick={() => onStatusChange('ALL')}>
+        Tous statuts
+      </Chip>
+      <Chip
+        active={statusValue === AppointmentStatus.SCHEDULED}
+        onClick={() => onStatusChange(AppointmentStatus.SCHEDULED)}
+      >
+        Planifié
+      </Chip>
+      <Chip
+        active={statusValue === AppointmentStatus.IN_PROGRESS}
+        onClick={() => onStatusChange(AppointmentStatus.IN_PROGRESS)}
+      >
+        En cours
+      </Chip>
+
+      {anyActive && (
+        <>
+          <Divider />
           <button
             type="button"
             onClick={onReset}
-            className="text-xs text-blue-600 hover:text-blue-700 font-semibold shrink-0"
+            className="px-3 py-2.5 text-xs text-blue-600 hover:text-blue-700 font-semibold shrink-0 whitespace-nowrap"
           >
             Réinitialiser
           </button>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 };

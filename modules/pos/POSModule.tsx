@@ -57,6 +57,7 @@ export const POSModule: React.FC = () => {
     updateCartItem,
     updateQuantity,
     removeFromCart,
+    clearCart,
     processTransaction,
     pendingAppointmentGroups,
     filteredPendingAppointmentGroups,
@@ -228,7 +229,23 @@ export const POSModule: React.FC = () => {
           onProductClick={handleProductClick}
           filteredAppointmentGroups={filteredPendingAppointmentGroups}
           totalAppointmentGroupCount={pendingAppointmentGroups.length}
-          onImportAppointment={importAppointment}
+          onImportAppointment={(appt) => {
+            // Toggle: clicking the already-linked card (or any sibling in the
+            // same group) clears the cart so the user can pick a different one.
+            const isLinkedGroup =
+              linkedAppointmentId === appt.id ||
+              (appt.groupId != null &&
+                pendingAppointmentGroups.some(
+                  (g) =>
+                    g.some((a) => a.id === linkedAppointmentId) &&
+                    g.some((a) => a.groupId === appt.groupId),
+                ));
+            if (isLinkedGroup) {
+              clearCart();
+            } else {
+              importAppointment(appt);
+            }
+          }}
           linkedAppointmentId={linkedAppointmentId}
           availableAppointmentStaff={availableAppointmentStaff}
           availableAppointmentCategories={availableAppointmentCategories}

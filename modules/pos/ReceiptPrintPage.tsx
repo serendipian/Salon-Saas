@@ -45,6 +45,10 @@ export default function ReceiptPrintPage() {
         );
         setAllForStatus(siblings.map(toTransaction));
       } catch (e) {
+        // The effect cleanup aborts the in-flight fetch on unmount (and in
+        // React Strict Mode's dev-only remount). Skip that noise so only real
+        // failures surface as an error page.
+        if (e instanceof DOMException && e.name === 'AbortError') return;
         setError(e instanceof Error ? e.message : 'Erreur inconnue.');
       }
     })();

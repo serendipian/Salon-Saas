@@ -165,7 +165,7 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
           </div>
         </div>
 
-        {/* Categories */}
+        {/* Categories (Services / Products) */}
         {viewMode !== 'APPOINTMENTS' && !(isMobile && searchTerm.length > 0) && (
           <div
             className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide"
@@ -225,6 +225,21 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
               </button>
             ))}
           </div>
+        )}
+
+        {/* Appointment filters (same slot as category chips, matching style) */}
+        {viewMode === 'APPOINTMENTS' && !(isMobile && searchTerm.length > 0) && (
+          <AppointmentFilters
+            staff={availableAppointmentStaff}
+            categories={availableAppointmentCategories}
+            staffValue={appointmentStaffFilter}
+            categoryValue={appointmentCategoryFilter}
+            statusValue={appointmentStatusFilter}
+            onStaffChange={onAppointmentStaffFilterChange}
+            onCategoryChange={onAppointmentCategoryFilterChange}
+            onStatusChange={onAppointmentStatusFilterChange}
+            onReset={onResetAppointmentFilters}
+          />
         )}
       </div>
 
@@ -479,32 +494,19 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
           </div>
         )}
 
-        {/* Appointments View */}
+        {/* Appointments View — filter chips render in the header slot above */}
         {viewMode === 'APPOINTMENTS' && (
-          <>
-            <AppointmentFilters
-              staff={availableAppointmentStaff}
-              categories={availableAppointmentCategories}
-              staffValue={appointmentStaffFilter}
-              categoryValue={appointmentCategoryFilter}
-              statusValue={appointmentStatusFilter}
-              onStaffChange={onAppointmentStaffFilterChange}
-              onCategoryChange={onAppointmentCategoryFilterChange}
-              onStatusChange={onAppointmentStatusFilterChange}
-              onReset={onResetAppointmentFilters}
-            />
-            <PendingAppointments
-              groups={filteredAppointmentGroups}
-              onImport={onImportAppointment}
-              linkedAppointmentId={linkedAppointmentId}
-              filtersActive={
-                appointmentStaffFilter !== 'ALL' ||
-                appointmentCategoryFilter !== 'ALL' ||
-                appointmentStatusFilter !== 'ALL'
-              }
-              onResetFilters={onResetAppointmentFilters}
-            />
-          </>
+          <PendingAppointments
+            groups={filteredAppointmentGroups}
+            onImport={onImportAppointment}
+            linkedAppointmentId={linkedAppointmentId}
+            filtersActive={
+              appointmentStaffFilter !== 'ALL' ||
+              appointmentCategoryFilter !== 'ALL' ||
+              appointmentStatusFilter !== 'ALL'
+            }
+            onResetFilters={onResetAppointmentFilters}
+          />
         )}
       </div>
     </div>
