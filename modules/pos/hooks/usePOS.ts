@@ -169,18 +169,11 @@ export const usePOS = () => {
 
     return allAppointments
       .filter((a) => {
-        if (a.status !== 'SCHEDULED') return false;
-        // Today's appointments OR overdue from previous days
-        return a.date < tomorrowStart;
+        if (a.status !== 'SCHEDULED' && a.status !== 'IN_PROGRESS') return false;
+        // Today only — past-day overdues are stale data, not billable work
+        return a.date >= todayStart && a.date < tomorrowStart;
       })
-      .sort((a, b) => {
-        const aIsOverdue = a.date < todayStart;
-        const bIsOverdue = b.date < todayStart;
-        // Overdue first, then by scheduled time
-        if (aIsOverdue && !bIsOverdue) return -1;
-        if (!aIsOverdue && bIsOverdue) return 1;
-        return new Date(a.date).getTime() - new Date(b.date).getTime();
-      });
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [allAppointments]);
 
   // --- Import Appointment ---
