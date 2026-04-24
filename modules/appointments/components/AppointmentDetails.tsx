@@ -73,11 +73,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
             <h2 className="text-xl font-bold text-slate-900 mb-2">{appointment.serviceName}</h2>
             <StatusBadge
               status={appointment.status}
-              cancellationReason={appointment.cancellationReason ?? null}
+              deletionReason={appointment.deletionReason ?? null}
             />
-            {appointment.status === AppointmentStatus.CANCELLED && appointment.cancellationNote && (
+            {appointment.status === AppointmentStatus.CANCELLED && appointment.deletionNote && (
               <p className="mt-2 text-xs text-slate-500 italic max-w-md">
-                {appointment.cancellationNote}
+                {appointment.deletionNote}
               </p>
             )}
           </div>
@@ -180,14 +180,14 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
                       {appt.status === AppointmentStatus.CANCELLED && (
                         <StatusBadge
                           status={appt.status}
-                          cancellationReason={appt.cancellationReason ?? null}
+                          deletionReason={appt.deletionReason ?? null}
                         />
                       )}
                     </div>
                     <div className="text-slate-500 text-xs mt-0.5">
                       {appt.staffName} · {appt.durationMinutes} min
-                      {appt.cancellationNote && (
-                        <span className="ml-2 italic">« {appt.cancellationNote} »</span>
+                      {appt.deletionNote && (
+                        <span className="ml-2 italic">« {appt.deletionNote} »</span>
                       )}
                     </div>
                   </div>

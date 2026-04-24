@@ -244,14 +244,14 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                             <td className="px-4 py-3 align-top border-r border-slate-100">
                               <StatusBadge
                                 status={appt.status}
-                                cancellationReason={appt.cancellationReason ?? null}
+                                deletionReason={appt.deletionReason ?? null}
                                 onStatusChange={
                                   onStatusChange ? (s) => onStatusChange(appt.id, s) : undefined
                                 }
                               />
-                              {appt.cancellationNote && (
-                                <div className="text-[10px] text-slate-500 italic mt-1 max-w-[180px] truncate" title={appt.cancellationNote}>
-                                  « {appt.cancellationNote} »
+                              {appt.deletionNote && (
+                                <div className="text-[10px] text-slate-500 italic mt-1 max-w-[180px] truncate" title={appt.deletionNote}>
+                                  « {appt.deletionNote} »
                                 </div>
                               )}
                               {appt.deletedAt && (

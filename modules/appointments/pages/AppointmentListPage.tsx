@@ -4,11 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { useFreshness } from '../../../hooks/useFreshness';
 import { formatName } from '../../../lib/format';
-import type { CancellationReason } from '../../../types';
+import type { DeletionReason } from '../../../types';
 import { useServices } from '../../services/hooks/useServices';
 import { useTeam } from '../../team/hooks/useTeam';
 import { AppointmentList } from '../components/AppointmentList';
-import { CancelAppointmentModal } from '../components/CancelAppointmentModal';
+import { DeleteAppointmentModal } from '../components/DeleteAppointmentModal';
 import { useAppointments } from '../hooks/useAppointments';
 
 export const AppointmentListPage: React.FC = () => {
@@ -46,7 +46,7 @@ export const AppointmentListPage: React.FC = () => {
     return formatName(first.clientName) || undefined;
   }, [cancelRequest, allAppointments]);
 
-  const handleConfirmCancel = async (reason: CancellationReason, note: string) => {
+  const handleConfirmCancel = async (reason: DeletionReason, note: string) => {
     if (!cancelRequest) return;
     try {
       await cancelAppointments(cancelRequest, reason, note || undefined);
@@ -76,7 +76,7 @@ export const AppointmentListPage: React.FC = () => {
         onToggleDeleted={role === 'owner' ? () => setShowDeleted(!showDeleted) : undefined}
         freshnessUpdatedAt={lastUpdated}
       />
-      <CancelAppointmentModal
+      <DeleteAppointmentModal
         isOpen={cancelRequest !== null}
         onClose={() => {
           if (!isCancelling) setCancelRequest(null);

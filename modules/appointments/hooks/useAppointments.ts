@@ -9,7 +9,7 @@ import { supabase } from '../../../lib/supabase';
 import {
   type Appointment,
   AppointmentStatus,
-  type CancellationReason,
+  type DeletionReason,
 } from '../../../types';
 import { toAppointment, toAppointmentGroupInsert, toAppointmentInsert } from '../mappers';
 
@@ -258,7 +258,7 @@ export const useAppointments = (showDeleted = false) => {
 
   type CancelVars = {
     appointmentIds: string[];
-    reason: CancellationReason;
+    reason: DeletionReason;
     note?: string;
   };
   // Returns the count of rows actually cancelled (rows that were already
@@ -271,7 +271,7 @@ export const useAppointments = (showDeleted = false) => {
         // realtime race that cancels a sibling under us no longer errors.
         const trimmedNote = note?.trim() ? note.trim() : undefined;
         const { data, error } = await supabase
-          .rpc('cancel_appointments_bulk', {
+          .rpc('delete_appointments_bulk', {
             p_appointment_ids: appointmentIds,
             p_reason: reason,
             p_note: trimmedNote,
@@ -295,8 +295,8 @@ export const useAppointments = (showDeleted = false) => {
             ? {
                 ...a,
                 status: AppointmentStatus.CANCELLED,
-                cancellationReason: reason,
-                cancellationNote: trimmedNote,
+                deletionReason: reason,
+                deletionNote: trimmedNote,
                 cancelledAt: nowIso,
               }
             : a,
@@ -392,7 +392,7 @@ export const useAppointments = (showDeleted = false) => {
     isDeleting: deleteAppointmentMutation.isPending,
     cancelAppointments: (
       appointmentIds: string[],
-      reason: CancellationReason,
+      reason: DeletionReason,
       note?: string,
     ) => cancelAppointmentMutation.mutateAsync({ appointmentIds, reason, note }),
     isCancelling: cancelAppointmentMutation.isPending,

@@ -9,13 +9,16 @@ export enum AppointmentStatus {
   NO_SHOW = 'NO_SHOW',
 }
 
-// Reason codes for why an appointment was cancelled. Stored on the row alongside
-// status='CANCELLED'. UI displays these as distinct labels + colors (see StatusBadge).
-export enum CancellationReason {
+// Reason codes for why a booked service was deleted — either via advance
+// cancellation from the Agenda, or via removal from the POS cart. Stored on
+// the appointment row alongside status='CANCELLED'. UI displays these as
+// distinct labels + colors (see StatusBadge).
+export enum DeletionReason {
   CANCELLED = 'CANCELLED', // Client cancelled — generic
   REPLACED = 'REPLACED', // Swapped for a different service
-  OFFERED = 'OFFERED', // Performed as a gift / complimentary, not billable
-  OTHER = 'OTHER', // Any other reason (usually accompanied by a note)
+  OFFERED = 'OFFERED', // Performed as a gift / complimentary, not billed
+  COMPLAINED = 'COMPLAINED', // Client complained — service not charged
+  ERROR = 'ERROR', // Staff or system mistake
 }
 
 // General Settings Domain
@@ -378,8 +381,8 @@ export interface Appointment {
   notes?: string;
   groupId?: string | null;
   deletedAt?: string | null;
-  cancellationReason?: CancellationReason | null;
-  cancellationNote?: string | null;
+  deletionReason?: DeletionReason | null;
+  deletionNote?: string | null;
   cancelledAt?: string | null;
 }
 

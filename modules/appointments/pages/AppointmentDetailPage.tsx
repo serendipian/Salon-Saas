@@ -2,9 +2,9 @@ import type React from 'react';
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatName } from '../../../lib/format';
-import type { CancellationReason } from '../../../types';
+import type { DeletionReason } from '../../../types';
 import { AppointmentDetails } from '../components/AppointmentDetails';
-import { CancelAppointmentModal } from '../components/CancelAppointmentModal';
+import { DeleteAppointmentModal } from '../components/DeleteAppointmentModal';
 import { useAppointments } from '../hooks/useAppointments';
 
 export const AppointmentDetailPage: React.FC = () => {
@@ -29,7 +29,7 @@ export const AppointmentDetailPage: React.FC = () => {
     );
   }
 
-  const handleConfirmCancel = async (reason: CancellationReason, note: string) => {
+  const handleConfirmCancel = async (reason: DeletionReason, note: string) => {
     if (!cancelRequest) return;
     try {
       await cancelAppointments(cancelRequest, reason, note || undefined);
@@ -48,7 +48,7 @@ export const AppointmentDetailPage: React.FC = () => {
         onEdit={() => navigate(`/calendar/${id}/edit`)}
         onRequestCancel={(ids) => setCancelRequest(ids)}
       />
-      <CancelAppointmentModal
+      <DeleteAppointmentModal
         isOpen={cancelRequest !== null}
         onClose={() => {
           if (!isCancelling) setCancelRequest(null);

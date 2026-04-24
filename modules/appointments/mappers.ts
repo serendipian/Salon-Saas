@@ -3,7 +3,7 @@ import type {
   Appointment,
   AppointmentGroup,
   AppointmentStatus,
-  CancellationReason,
+  DeletionReason,
 } from '../../types';
 
 // Row type includes JOINed relations from:
@@ -26,8 +26,8 @@ interface AppointmentRow {
   created_by: string | null;
   updated_by: string | null;
   deleted_at: string | null;
-  cancellation_reason: string | null;
-  cancellation_note: string | null;
+  deletion_reason: string | null;
+  deletion_note: string | null;
   cancelled_at: string | null;
   // JOINed relations (nullable if FK is null)
   clients: { first_name: string; last_name: string } | null;
@@ -58,8 +58,8 @@ export function toAppointment(row: AppointmentRow): Appointment {
     notes: row.notes ?? undefined,
     groupId: row.group_id ?? null,
     deletedAt: row.deleted_at ?? null,
-    cancellationReason: (row.cancellation_reason as CancellationReason | null) ?? null,
-    cancellationNote: row.cancellation_note ?? null,
+    deletionReason: (row.deletion_reason as DeletionReason | null) ?? null,
+    deletionNote: row.deletion_note ?? null,
     cancelledAt: row.cancelled_at ?? null,
   };
 }

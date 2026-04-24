@@ -108,8 +108,8 @@ export type Database = {
       }
       appointments: {
         Row: {
-          cancellation_note: string | null
-          cancellation_reason: string | null
+          deletion_note: string | null
+          deletion_reason: string | null
           cancelled_at: string | null
           client_id: string | null
           created_at: string
@@ -130,8 +130,8 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
-          cancellation_note?: string | null
-          cancellation_reason?: string | null
+          deletion_note?: string | null
+          deletion_reason?: string | null
           cancelled_at?: string | null
           client_id?: string | null
           created_at?: string
@@ -152,8 +152,8 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
-          cancellation_note?: string | null
-          cancellation_reason?: string | null
+          deletion_note?: string | null
+          deletion_reason?: string | null
           cancelled_at?: string | null
           client_id?: string | null
           created_at?: string
@@ -2859,7 +2859,7 @@ export type Database = {
         }
         Returns: string
       }
-      cancel_appointments_bulk: {
+      delete_appointments_bulk: {
         Args: { p_appointment_ids: string[]; p_note?: string; p_reason: string }
         Returns: number
       }

@@ -153,7 +153,7 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
               >
                 <StatusBadge
                   status={appt.status}
-                  cancellationReason={appt.cancellationReason ?? null}
+                  deletionReason={appt.deletionReason ?? null}
                   onStatusChange={onStatusChange ? (s) => onStatusChange(appt.id, s) : undefined}
                 />
                 {isMulti &&

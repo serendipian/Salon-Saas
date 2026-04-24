@@ -1,22 +1,23 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { Modal } from '../../../components/Modal';
-import { CancellationReason } from '../../../types';
+import { DeletionReason } from '../../../types';
 
 interface ReasonOption {
-  code: CancellationReason;
+  code: DeletionReason;
   label: string;
   hint: string;
 }
 
 const REASON_OPTIONS: ReasonOption[] = [
-  { code: CancellationReason.CANCELLED, label: 'Annulé', hint: 'Le rendez-vous n’aura pas lieu' },
-  { code: CancellationReason.REPLACED, label: 'Remplacé', hint: 'Le service a été remplacé par un autre' },
-  { code: CancellationReason.OFFERED, label: 'Offert', hint: 'Offert — ne sera pas facturé' },
-  { code: CancellationReason.OTHER, label: 'Autre', hint: 'Préciser la raison dans la note' },
+  { code: DeletionReason.CANCELLED, label: 'Annulé', hint: 'Le rendez-vous n’aura pas lieu' },
+  { code: DeletionReason.REPLACED, label: 'Remplacé', hint: 'Le service a été remplacé par un autre' },
+  { code: DeletionReason.OFFERED, label: 'Offert', hint: 'Offert — ne sera pas facturé' },
+  { code: DeletionReason.COMPLAINED, label: 'Réclamation', hint: 'Client mécontent — non facturé' },
+  { code: DeletionReason.ERROR, label: 'Erreur', hint: 'Erreur de saisie ou de réservation' },
 ];
 
-export interface CancelAppointmentModalProps {
+export interface DeleteAppointmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   /** 'single' for one service, 'group' for a whole visit (multiple services). */
@@ -25,11 +26,11 @@ export interface CancelAppointmentModalProps {
   subjectLabel?: string;
   /** Count of services that will be cancelled when scope='group'. */
   count?: number;
-  onConfirm: (reason: CancellationReason, note: string) => void | Promise<void>;
+  onConfirm: (reason: DeletionReason, note: string) => void | Promise<void>;
   isSubmitting?: boolean;
 }
 
-export const CancelAppointmentModal: React.FC<CancelAppointmentModalProps> = ({
+export const DeleteAppointmentModal: React.FC<DeleteAppointmentModalProps> = ({
   isOpen,
   onClose,
   scope,
@@ -38,12 +39,12 @@ export const CancelAppointmentModal: React.FC<CancelAppointmentModalProps> = ({
   onConfirm,
   isSubmitting = false,
 }) => {
-  const [reason, setReason] = useState<CancellationReason>(CancellationReason.CANCELLED);
+  const [reason, setReason] = useState<DeletionReason>(DeletionReason.CANCELLED);
   const [note, setNote] = useState('');
 
   useEffect(() => {
     if (isOpen) {
-      setReason(CancellationReason.CANCELLED);
+      setReason(DeletionReason.CANCELLED);
       setNote('');
     }
   }, [isOpen]);
@@ -52,9 +53,6 @@ export const CancelAppointmentModal: React.FC<CancelAppointmentModalProps> = ({
     if (isSubmitting) return;
     void onConfirm(reason, note);
   };
-
-  const noteRequired = reason === CancellationReason.OTHER;
-  const canSubmit = !isSubmitting && (!noteRequired || note.trim().length > 0);
 
   const title =
     scope === 'group'
@@ -94,7 +92,7 @@ export const CancelAppointmentModal: React.FC<CancelAppointmentModalProps> = ({
                 >
                   <input
                     type="radio"
-                    name="cancel-reason"
+                    name="delete-reason"
                     value={opt.code}
                     checked={isActive}
                     onChange={() => setReason(opt.code)}
@@ -111,19 +109,15 @@ export const CancelAppointmentModal: React.FC<CancelAppointmentModalProps> = ({
         </fieldset>
 
         <div>
-          <label htmlFor="cancel-note" className="block text-sm font-medium text-slate-700 mb-1.5">
-            Note {noteRequired ? <span className="text-red-500">*</span> : <span className="text-slate-400 font-normal">(optionnel)</span>}
+          <label htmlFor="delete-note" className="block text-sm font-medium text-slate-700 mb-1.5">
+            Note <span className="text-slate-400 font-normal">(optionnel)</span>
           </label>
           <textarea
-            id="cancel-note"
+            id="delete-note"
             value={note}
             onChange={(e) => setNote(e.target.value)}
             rows={3}
-            placeholder={
-              noteRequired
-                ? 'Préciser la raison...'
-                : 'Détail supplémentaire (visible dans l’historique)'
-            }
+            placeholder="Détail supplémentaire (visible dans l’historique)"
             className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm transition-all shadow-sm placeholder:text-slate-400 resize-none"
           />
         </div>
@@ -140,10 +134,10 @@ export const CancelAppointmentModal: React.FC<CancelAppointmentModalProps> = ({
           <button
             type="button"
             onClick={handleConfirm}
-            disabled={!canSubmit}
+            disabled={isSubmitting}
             className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? 'Annulation...' : 'Confirmer l’annulation'}
+            {isSubmitting ? 'Annulation...' : 'Confirmer'}
           </button>
         </div>
       </div>
