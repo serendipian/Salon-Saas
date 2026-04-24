@@ -186,9 +186,15 @@ export const usePOS = () => {
   // --- Import Appointment ---
 
   const importAppointment = (appointment: Appointment) => {
-    // Find all appointments in the same group (or just this one if no group)
+    // Billable-active = SCHEDULED or IN_PROGRESS. Matches both the pending pool
+    // filter above and the create_transaction RPC's validation. CANCELLED /
+    // COMPLETED / NO_SHOW siblings must not enter the cart.
     const groupAppointments = appointment.groupId
-      ? allAppointments.filter((a) => a.groupId === appointment.groupId && a.status === 'SCHEDULED')
+      ? allAppointments.filter(
+          (a) =>
+            a.groupId === appointment.groupId &&
+            (a.status === 'SCHEDULED' || a.status === 'IN_PROGRESS'),
+        )
       : [appointment];
 
     // Clear current cart and set client
