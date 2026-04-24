@@ -7,6 +7,11 @@ import { useProducts } from '../../products/hooks/useProducts';
 import { useServices } from '../../services/hooks/useServices';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useTeam } from '../../team/hooks/useTeam';
+import {
+  type AppointmentFilters,
+  filterAppointmentGroups,
+  groupAppointments,
+} from '../utils/groupAndFilterAppointments';
 
 export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'APPOINTMENTS';
 
@@ -43,6 +48,10 @@ export const usePOS = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [linkedAppointmentId, setLinkedAppointmentId] = useState<string | null>(null);
+  const [rawStaffFilter, setRawStaffFilter] = useState<string>('ALL');
+  const [rawCategoryFilter, setRawCategoryFilter] = useState<string>('ALL');
+  const [appointmentStatusFilter, setAppointmentStatusFilter] =
+    useState<AppointmentFilters['status']>('ALL');
 
   // Refs for stable access in async callbacks (avoids stale closures)
   const cartRef = useRef(cart);
@@ -176,6 +185,95 @@ export const usePOS = () => {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [allAppointments]);
 
+  const pendingAppointmentGroups = useMemo(
+    () => groupAppointments(pendingAppointments),
+    [pendingAppointments],
+  );
+
+  const availableAppointmentStaff = useMemo(() => {
+    const ids = new Set<string>();
+    for (const group of pendingAppointmentGroups) {
+      for (const appt of group) ids.add(appt.staffId);
+    }
+    return allStaff.filter((s) => s.active && !s.deletedAt && ids.has(s.id));
+  }, [pendingAppointmentGroups, allStaff]);
+
+  const availableAppointmentCategories = useMemo(() => {
+    const serviceCategoryById = new Map(services.map((s) => [s.id, s.categoryId]));
+    const ids = new Set<string>();
+    for (const group of pendingAppointmentGroups) {
+      for (const appt of group) {
+        const catId = serviceCategoryById.get(appt.serviceId);
+        if (catId) ids.add(catId);
+      }
+    }
+    return serviceCategories.filter((c) => ids.has(c.id));
+  }, [pendingAppointmentGroups, services, serviceCategories]);
+
+  // Effective values fall back to 'ALL' when the raw selection no longer
+  // appears in the available options. This keeps render coherent in the same
+  // frame when, e.g., a category is deleted while active.
+  const appointmentStaffFilter =
+    rawStaffFilter === 'ALL' ||
+    availableAppointmentStaff.some((s) => s.id === rawStaffFilter)
+      ? rawStaffFilter
+      : 'ALL';
+
+  const appointmentCategoryFilter =
+    rawCategoryFilter === 'ALL' ||
+    availableAppointmentCategories.some((c) => c.id === rawCategoryFilter)
+      ? rawCategoryFilter
+      : 'ALL';
+
+  const filteredPendingAppointmentGroups = useMemo(
+    () =>
+      filterAppointmentGroups(
+        pendingAppointmentGroups,
+        {
+          staffId: appointmentStaffFilter,
+          categoryId: appointmentCategoryFilter,
+          status: appointmentStatusFilter,
+        },
+        services,
+      ),
+    [
+      pendingAppointmentGroups,
+      appointmentStaffFilter,
+      appointmentCategoryFilter,
+      appointmentStatusFilter,
+      services,
+    ],
+  );
+
+  // State hygiene: keep raw state in sync with effective on next tick, so
+  // subsequent interactions start from a clean slate.
+  useEffect(() => {
+    if (
+      rawStaffFilter !== 'ALL' &&
+      !availableAppointmentStaff.some((s) => s.id === rawStaffFilter)
+    ) {
+      setRawStaffFilter('ALL');
+    }
+  }, [availableAppointmentStaff, rawStaffFilter]);
+
+  useEffect(() => {
+    if (
+      rawCategoryFilter !== 'ALL' &&
+      !availableAppointmentCategories.some((c) => c.id === rawCategoryFilter)
+    ) {
+      setRawCategoryFilter('ALL');
+    }
+  }, [availableAppointmentCategories, rawCategoryFilter]);
+
+  const setAppointmentStaffFilter = setRawStaffFilter;
+  const setAppointmentCategoryFilter = setRawCategoryFilter;
+
+  const resetAppointmentFilters = () => {
+    setRawStaffFilter('ALL');
+    setRawCategoryFilter('ALL');
+    setAppointmentStatusFilter('ALL');
+  };
+
   // --- Import Appointment ---
 
   const importAppointment = (appointment: Appointment) => {
@@ -246,6 +344,17 @@ export const usePOS = () => {
     filteredItems,
     totals,
     pendingAppointments,
+    pendingAppointmentGroups,
+    filteredPendingAppointmentGroups,
+    availableAppointmentStaff,
+    availableAppointmentCategories,
+    appointmentStaffFilter,
+    appointmentCategoryFilter,
+    appointmentStatusFilter,
+    setAppointmentStaffFilter,
+    setAppointmentCategoryFilter,
+    setAppointmentStatusFilter,
+    resetAppointmentFilters,
     linkedAppointmentId,
 
     // Actions
