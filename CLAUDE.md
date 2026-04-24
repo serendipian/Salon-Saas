@@ -216,6 +216,34 @@ modules/{module}/
 - Sticky footers use `bottom: calc(56px + env(safe-area-inset-bottom, 0px))` to sit above BottomTabBar
 - Content areas use `pb-44` to prevent footer overlap
 
+### Deletion Reasons (Unified Across Agenda Cancel + POS Cart Remove)
+Advance cancellation and POS-cart removal are the same business event — a booked service that was not delivered or charged — so they share one vocabulary, one modal, one DB column set, and one badge palette.
+- `DeletionReason` enum in `types.ts` (5 values: `CANCELLED`, `REPLACED`, `OFFERED`, `COMPLAINED`, `ERROR`). Stored on appointment rows alongside `status='CANCELLED'`
+- Columns: `deletion_reason`, `deletion_note`, `cancelled_at` (the timestamp keeps its old name to avoid collision with the soft-delete `deleted_at`)
+- `modules/appointments/components/DeleteAppointmentModal.tsx` — reused by the Agenda trash button and the POS cart remove handler
+- `StatusBadge.tsx` `REASON_CONFIG` maps each reason to a distinct palette (red / amber / sky / rose / slate)
+- Trigger `clear_deletion_metadata_on_restore` auto-clears reason/note/cancelled_at when status leaves CANCELLED via the status dropdown
+- Agenda flow: `delete_appointments_bulk(UUID[], TEXT, TEXT)` RPC — atomic, idempotent, skips already-cancelled rows
+- POS flow: `create_transaction` RPC takes `p_deleted_appointments JSONB` (per-row deletion) and `p_modified_appointments JSONB` (staff/price changes that propagate back to the appointment row)
+
+### POS Deletion Pipeline
+- `CartItem.appointmentId?` in `types.ts` — populated by `importAppointment`, tags cart items back to their source booking
+- `usePOS.pendingDeletions: Map<appointmentId, {reason, note}>` — collects deletion metadata until checkout; reset by `clearCart` and by `importAppointment`
+- `POSModule.handleRequestRemoveItem` intercepts cart-item removal for rows with `appointmentId` and opens `DeleteAppointmentModal` — item stays in cart until user confirms
+- `modules/pos/utils/diffAppointmentsFromCart.ts` — pure utility, detects staff/price deltas between cart lines and their source appointments, deduped by appointmentId
+- `processTransaction` flushes both arrays into the RPC at checkout; deletions are excluded from the modifications list (RPC status filter would no-op them anyway but filtering keeps the payload honest)
+- Client guards: Encaissement button disabled on empty cart; double-click trash guarded via `if (deletionTarget) return`
+- Server guard: RPC rejects empty `p_items` to prevent zero-euro tickets from bypassed UI
+- Group status flips to COMPLETED only when no sibling remains un-terminal (SCHEDULED/IN_PROGRESS)
+
+### POS Rendez-vous Filters (Same Slot as Services Chips)
+- `modules/pos/components/AppointmentFilters.tsx` — single horizontal chip row in the category-chip slot, matching Services tab style (`px-4 py-2.5 rounded-lg`)
+- Chip groups: staff (with photos) → service category → status (Planifié / En cours); small vertical dividers between groups
+- `modules/pos/utils/groupAndFilterAppointments.ts` — pure utility with unit tests. OR semantics within groups, AND across filter dimensions
+- Effective-value pattern in `usePOS` falls back to 'ALL' when a selection vanishes (category deleted mid-flight) without a one-frame empty flicker
+- Pending pool is today-only by design — past-day stale rows belong in the Agenda cleanup flow, not POS
+- Clicking an already-linked appointment card clears the cart (toggle behavior)
+
 ### Dead Code
 All previously listed dead monolithic components (`components/AccountingModule.tsx`, etc.) and `services/store.ts` have been deleted. No known dead code remains in the active codebase.
 
@@ -232,7 +260,7 @@ npm run preview      # Preview production build
 
 - **Backend**: Supabase (PostgreSQL 15, Auth, Realtime, Storage — `avatars` bucket for profile photos)
 - **Local dev**: `npm run db:start` / `npm run db:stop` (requires Docker Desktop)
-- **Migrations**: `supabase/migrations/` — 61 migration files, applied in order
+- **Migrations**: `supabase/migrations/` — applied in order by timestamp prefix (`YYYYMMDDHHMMSS_description.sql`)
 - **Seed data**: `supabase/seed.sql` — subscription plans (Free, Premium, Pro)
 - **Types**: Auto-generated via `npm run db:types` → `lib/database.types.ts`
 - **Types (remote)**: `npx supabase gen types typescript --project-id izsycdmrwscdnxebptsx > lib/database.types.ts` (no Docker/local dev)
