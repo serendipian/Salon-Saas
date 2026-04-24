@@ -261,26 +261,24 @@ export const useAppointments = (showDeleted = false) => {
     reason: CancellationReason;
     note?: string;
   };
-  const cancelAppointmentMutation = useMutation<void, Error, CancelVars, OptimisticContext>({
-    mutationFn: withMutationTimeout<CancelVars, void>(
+  // Returns the count of rows actually cancelled (rows that were already
+  // CANCELLED are silently skipped by the server RPC).
+  const cancelAppointmentMutation = useMutation<number, Error, CancelVars, OptimisticContext>({
+    mutationFn: withMutationTimeout<CancelVars, number>(
       async ({ appointmentIds, reason, note }, signal) => {
-        // Fire each RPC in parallel; any failure rejects the whole mutation.
-        // Partial success is acceptable on the server — the onSettled refetch
-        // reconciles the UI either way.
+        // Atomic bulk RPC — all-or-nothing inside a single DB transaction.
+        // Already-CANCELLED rows are skipped server-side (idempotent), so a
+        // realtime race that cancels a sibling under us no longer errors.
         const trimmedNote = note?.trim() ? note.trim() : undefined;
-        const results = await Promise.all(
-          appointmentIds.map((id) =>
-            supabase
-              .rpc('cancel_appointment', {
-                p_appointment_id: id,
-                p_reason: reason,
-                p_note: trimmedNote,
-              })
-              .abortSignal(signal),
-          ),
-        );
-        const firstError = results.find((r) => r.error)?.error;
-        if (firstError) throw firstError;
+        const { data, error } = await supabase
+          .rpc('cancel_appointments_bulk', {
+            p_appointment_ids: appointmentIds,
+            p_reason: reason,
+            p_note: trimmedNote,
+          })
+          .abortSignal(signal);
+        if (error) throw error;
+        return data ?? 0;
       },
     ),
     onMutate: async ({ appointmentIds, reason, note }) => {
@@ -293,7 +291,7 @@ export const useAppointments = (showDeleted = false) => {
       const trimmedNote = note?.trim() || null;
       queryClient.setQueriesData<Appointment[]>({ queryKey: ['appointments', salonId] }, (old) =>
         old?.map((a) =>
-          idSet.has(a.id)
+          idSet.has(a.id) && a.status !== AppointmentStatus.CANCELLED
             ? {
                 ...a,
                 status: AppointmentStatus.CANCELLED,
@@ -306,14 +304,19 @@ export const useAppointments = (showDeleted = false) => {
       );
       return { snapshot };
     },
-    onSuccess: (_, { appointmentIds }) => {
-      addToast({
-        type: 'success',
-        message:
-          appointmentIds.length === 1
-            ? 'Rendez-vous annulé'
-            : `Visite annulée (${appointmentIds.length} services)`,
-      });
+    onSuccess: (cancelledCount) => {
+      if (cancelledCount === 0) {
+        // No-op case: every target was already CANCELLED (realtime race or
+        // duplicate click). Server succeeded, nothing to celebrate.
+        addToast({ type: 'info', message: 'Rendez-vous déjà annulé' });
+      } else if (cancelledCount === 1) {
+        addToast({ type: 'success', message: 'Rendez-vous annulé' });
+      } else {
+        addToast({
+          type: 'success',
+          message: `Visite annulée (${cancelledCount} services)`,
+        });
+      }
     },
     onError: (err, _vars, context) => {
       if (context?.snapshot) {

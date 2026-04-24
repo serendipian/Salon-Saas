@@ -2863,6 +2863,10 @@ export type Database = {
         Args: { p_appointment_id: string; p_note?: string; p_reason: string }
         Returns: undefined
       }
+      cancel_appointments_bulk: {
+        Args: { p_appointment_ids: string[]; p_note?: string; p_reason: string }
+        Returns: number
+      }
       check_slot_availability: {
         Args: { p_date: string; p_duration_minutes: number; p_staff_id: string }
         Returns: boolean
