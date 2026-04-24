@@ -7,6 +7,7 @@ import { useMediaQuery } from '../../context/MediaQueryContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import type {
   CartItem,
+  DeletionReason,
   FavoriteItem,
   Pack,
   PaymentEntry,
@@ -15,6 +16,7 @@ import type {
   ServiceVariant,
   Transaction,
 } from '../../types';
+import { DeleteAppointmentModal } from '../appointments/components/DeleteAppointmentModal';
 import { usePacks } from '../services/hooks/usePacks';
 import { expandPack } from '../services/utils/packExpansion';
 import { CartBottomSheet } from './components/CartBottomSheet';
@@ -59,6 +61,7 @@ export const POSModule: React.FC = () => {
     removeFromCart,
     clearCart,
     processTransaction,
+    recordAppointmentDeletion,
     pendingAppointmentGroups,
     filteredPendingAppointmentGroups,
     availableAppointmentStaff,
@@ -104,6 +107,13 @@ export const POSModule: React.FC = () => {
   const [successTx, setSuccessTx] = useState<Transaction | null>(null);
   const [voidTarget, setVoidTarget] = useState<Transaction | null>(null);
   const [refundTarget, setRefundTarget] = useState<Transaction | null>(null);
+  // When the user removes an appointment-linked cart item, hold the cart
+  // until they pick a reason (modal). Null = modal closed.
+  const [deletionTarget, setDeletionTarget] = useState<{
+    appointmentId: string;
+    cartItemId: string;
+    serviceName: string;
+  } | null>(null);
   const { isMobile } = useMediaQuery();
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -147,6 +157,28 @@ export const POSModule: React.FC = () => {
       originalPrice: product.price,
       quantity: 1,
     });
+  };
+
+  // Remove a cart item — if it came from an appointment, prompt for a
+  // deletion reason first. The item stays in the cart until the user confirms.
+  const handleRequestRemoveItem = (id: string) => {
+    const item = cart.find((c) => c.id === id);
+    if (item?.appointmentId) {
+      setDeletionTarget({
+        appointmentId: item.appointmentId,
+        cartItemId: item.id,
+        serviceName: item.name,
+      });
+      return;
+    }
+    removeFromCart(id);
+  };
+
+  const handleConfirmDeletion = (reason: DeletionReason, note: string) => {
+    if (!deletionTarget) return;
+    recordAppointmentDeletion(deletionTarget.appointmentId, reason, note);
+    removeFromCart(deletionTarget.cartItemId);
+    setDeletionTarget(null);
   };
 
   const handleCompletePayment = async (payments: PaymentEntry[]) => {
@@ -270,7 +302,7 @@ export const POSModule: React.FC = () => {
             selectedClient={selectedClient}
             onSelectClient={setSelectedClient}
             onUpdateQuantity={updateQuantity}
-            onRemoveItem={removeFromCart}
+            onRemoveItem={handleRequestRemoveItem}
             onEditItem={setEditingItem}
             onUpdateCartItem={updateCartItem}
             allStaff={allStaff}
@@ -299,7 +331,7 @@ export const POSModule: React.FC = () => {
               selectedClient={selectedClient}
               onSelectClient={setSelectedClient}
               onUpdateQuantity={updateQuantity}
-              onRemoveItem={removeFromCart}
+              onRemoveItem={handleRequestRemoveItem}
               onEditItem={(item) => {
                 setEditingItem(item);
                 setIsCartOpen(false);
@@ -403,6 +435,14 @@ export const POSModule: React.FC = () => {
             isPending={isRefunding}
           />
         )}
+
+        <DeleteAppointmentModal
+          isOpen={deletionTarget !== null}
+          onClose={() => setDeletionTarget(null)}
+          scope="single"
+          subjectLabel={deletionTarget?.serviceName}
+          onConfirm={handleConfirmDeletion}
+        />
       </div>
     </div>
   );

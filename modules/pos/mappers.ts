@@ -108,12 +108,26 @@ export function toTransaction(row: TransactionRow): Transaction {
 
 // --- Frontend → RPC Payload ---
 
+export interface TransactionDeletion {
+  id: string;
+  reason: string;
+  note?: string;
+}
+
+export interface TransactionModification {
+  id: string;
+  staff_id?: string | null;
+  price?: number;
+}
+
 export function toTransactionRpcPayload(
   cart: CartItem[],
   payments: PaymentEntry[],
   clientId: string | undefined,
   salonId: string,
   appointmentId?: string,
+  deletedAppointments: TransactionDeletion[] = [],
+  modifiedAppointments: TransactionModification[] = [],
 ) {
   const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -153,6 +167,8 @@ export function toTransactionRpcPayload(
     p_appointment_id: appointmentId ?? null,
     p_items,
     p_payments,
+    p_deleted_appointments: deletedAppointments,
+    p_modified_appointments: modifiedAppointments,
   };
 }
 

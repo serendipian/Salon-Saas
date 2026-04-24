@@ -5,6 +5,8 @@ import { withMutationTimeout } from '../lib/mutations';
 import { supabase } from '../lib/supabase';
 import { rawSelect } from '../lib/supabaseRaw';
 import {
+  type TransactionDeletion,
+  type TransactionModification,
   type TransactionRow,
   toTransaction,
   toTransactionRpcPayload,
@@ -54,15 +56,27 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
           payments,
           clientId,
           appointmentId,
+          deletedAppointments = [],
+          modifiedAppointments = [],
         }: {
           items: CartItem[];
           payments: PaymentEntry[];
           clientId?: string;
           appointmentId?: string;
+          deletedAppointments?: TransactionDeletion[];
+          modifiedAppointments?: TransactionModification[];
         },
         signal: AbortSignal,
       ) => {
-        const payload = toTransactionRpcPayload(items, payments, clientId, salonId, appointmentId);
+        const payload = toTransactionRpcPayload(
+          items,
+          payments,
+          clientId,
+          salonId,
+          appointmentId,
+          deletedAppointments,
+          modifiedAppointments,
+        );
 
         // Raw fetch — supabase.rpc() can hang indefinitely after background-tab
         // throttling when the SDK's auth lock wedges (same class of issue as
@@ -226,8 +240,17 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
     payments: PaymentEntry[],
     clientId?: string,
     appointmentId?: string,
+    deletedAppointments: TransactionDeletion[] = [],
+    modifiedAppointments: TransactionModification[] = [],
   ): Promise<Transaction> =>
-    addTransactionMutation.mutateAsync({ items, payments, clientId, appointmentId });
+    addTransactionMutation.mutateAsync({
+      items,
+      payments,
+      clientId,
+      appointmentId,
+      deletedAppointments,
+      modifiedAppointments,
+    });
 
   const voidTransaction = (transactionId: string, reasonCategory: string, reasonNote: string) =>
     voidMutation.mutateAsync({ transactionId, reasonCategory, reasonNote });

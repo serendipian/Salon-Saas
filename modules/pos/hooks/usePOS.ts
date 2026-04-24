@@ -1,12 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTransactions } from '../../../hooks/useTransactions';
-import type { Appointment, CartItem, Client, PaymentEntry, Transaction } from '../../../types';
+import type {
+  Appointment,
+  CartItem,
+  Client,
+  DeletionReason,
+  PaymentEntry,
+  Transaction,
+} from '../../../types';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
 import { useClients } from '../../clients/hooks/useClients';
 import { useProducts } from '../../products/hooks/useProducts';
 import { useServices } from '../../services/hooks/useServices';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useTeam } from '../../team/hooks/useTeam';
+import { diffAppointmentsFromCart } from '../utils/diffAppointmentsFromCart';
 import {
   type AppointmentFilters,
   filterAppointmentGroups,
@@ -48,6 +56,12 @@ export const usePOS = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [linkedAppointmentId, setLinkedAppointmentId] = useState<string | null>(null);
+  // Collected when the user removes or edits an appointment-linked cart item.
+  // Flushed into the create_transaction RPC at checkout. Cleared by clearCart
+  // and by importAppointment (fresh import starts clean).
+  const [pendingDeletions, setPendingDeletions] = useState<
+    Map<string, { reason: DeletionReason; note: string }>
+  >(new Map());
   const [rawStaffFilter, setRawStaffFilter] = useState<string>('ALL');
   const [rawCategoryFilter, setRawCategoryFilter] = useState<string>('ALL');
   const [appointmentStatusFilter, setAppointmentStatusFilter] =
@@ -60,6 +74,10 @@ export const usePOS = () => {
   selectedClientRef.current = selectedClient;
   const linkedAppointmentIdRef = useRef(linkedAppointmentId);
   linkedAppointmentIdRef.current = linkedAppointmentId;
+  const pendingDeletionsRef = useRef(pendingDeletions);
+  pendingDeletionsRef.current = pendingDeletions;
+  const allAppointmentsRef = useRef(allAppointments);
+  allAppointmentsRef.current = allAppointments;
 
   // Default to FAVORITES every time the user enters the SERVICES tab from a
   // different tab. The guard on `viewMode !== 'SERVICES'` matters because
@@ -136,17 +154,41 @@ export const usePOS = () => {
     setCart([]);
     setSelectedClient(null);
     setLinkedAppointmentId(null);
+    setPendingDeletions(new Map());
+  };
+
+  // Record that an appointment-linked cart item was removed with a reason.
+  // The actual cart removal is the caller's job — this only tracks metadata.
+  const recordAppointmentDeletion = (
+    appointmentId: string,
+    reason: DeletionReason,
+    note: string,
+  ) => {
+    setPendingDeletions((prev) => {
+      const next = new Map(prev);
+      next.set(appointmentId, { reason, note });
+      return next;
+    });
   };
 
   // --- Transaction Processing ---
 
   const processTransaction = async (payments: PaymentEntry[]): Promise<Transaction> => {
     // Read from refs to avoid stale closures (realtime events can cause re-renders)
+    const deletedAppointments = Array.from(pendingDeletionsRef.current.entries()).map(
+      ([id, { reason, note }]) => ({ id, reason, note }),
+    );
+    const modifiedAppointments = diffAppointmentsFromCart(
+      cartRef.current,
+      allAppointmentsRef.current,
+    );
     const tx = await addTransaction(
       cartRef.current,
       payments,
       selectedClientRef.current?.id,
       linkedAppointmentIdRef.current ?? undefined,
+      deletedAppointments,
+      modifiedAppointments,
     );
     clearCart();
     return tx;
@@ -300,13 +342,17 @@ export const usePOS = () => {
         )
       : [appointment];
 
-    // Clear current cart and set client
+    // Clear current cart and set client. Fresh import starts with no pending
+    // deletions — any leftover from a prior visit would contaminate this one.
     setCart([]);
+    setPendingDeletions(new Map());
     const client = clients.find((c) => c.id === appointment.clientId);
     setSelectedClient(client ?? null);
     setLinkedAppointmentId(appointment.id);
 
-    // Convert each appointment in the group to a cart item
+    // Convert each appointment in the group to a cart item. The appointmentId
+    // tag lets the deletion pipeline know which appointment to update when the
+    // item is removed or edited.
     const cartItems: CartItem[] = groupAppointments.map((appt) => ({
       id: crypto.randomUUID(),
       referenceId: appt.variantId || appt.serviceId,
@@ -318,6 +364,7 @@ export const usePOS = () => {
       quantity: 1,
       staffId: appt.staffId || undefined,
       staffName: appt.staffName || undefined,
+      appointmentId: appt.id,
     }));
 
     setCart(cartItems);
@@ -376,6 +423,8 @@ export const usePOS = () => {
     clearCart,
     processTransaction,
     importAppointment,
+    recordAppointmentDeletion,
+    pendingDeletions,
     voidTransaction,
     refundTransaction,
     isVoiding,

@@ -431,6 +431,10 @@ export interface CartItem {
   originalItemId?: string;
   packId?: string;
   packName?: string;
+  // Populated when this cart line originated from a pending appointment
+  // (importAppointment). Lets the POS deletion pipeline know that removing
+  // this item should prompt for a reason and record it on the source row.
+  appointmentId?: string;
 }
 
 export interface PaymentEntry {

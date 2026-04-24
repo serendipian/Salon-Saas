@@ -2900,6 +2900,19 @@ export type Database = {
             }
             Returns: string
           }
+        | {
+            Args: {
+              p_appointment_id?: string
+              p_client_id: string
+              p_deleted_appointments?: Json
+              p_items: Json
+              p_modified_appointments?: Json
+              p_notes?: string
+              p_payments: Json
+              p_salon_id: string
+            }
+            Returns: string
+          }
       debug_auth: { Args: never; Returns: Json }
       decrypt_pii: { Args: { ciphertext: string }; Returns: string }
       delete_appointments_bulk: {
