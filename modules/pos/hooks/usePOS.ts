@@ -61,15 +61,15 @@ export const usePOS = () => {
   const linkedAppointmentIdRef = useRef(linkedAppointmentId);
   linkedAppointmentIdRef.current = linkedAppointmentId;
 
-  // Default to FAVORITES every time the user enters the SERVICES tab. Using a
-  // setViewMode wrapper (not a useEffect) keeps the reset deterministic with
-  // the tab change — no stale render where selectedCategory still points at
-  // the previous tab's selection.
+  // Default to FAVORITES every time the user enters the SERVICES tab from a
+  // different tab. The guard on `viewMode !== 'SERVICES'` matters because
+  // importAppointment also calls setViewMode('SERVICES') to snap back — and
+  // we don't want to blow away a category the cashier just picked.
   const setViewMode = (mode: POSViewMode) => {
-    setViewModeRaw(mode);
-    if (mode === 'SERVICES' && favorites.length > 0) {
+    if (mode === 'SERVICES' && viewMode !== 'SERVICES' && favorites.length > 0) {
       setSelectedCategory('FAVORITES');
     }
+    setViewModeRaw(mode);
   };
 
   // Initial mount lands on SERVICES; apply the same default on first render

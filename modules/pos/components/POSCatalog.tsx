@@ -227,8 +227,10 @@ export const POSCatalog: React.FC<POSCatalogProps> = ({
           </div>
         )}
 
-        {/* Appointment filters (same slot as category chips, matching style) */}
-        {viewMode === 'APPOINTMENTS' && !(isMobile && searchTerm.length > 0) && (
+        {/* Appointment filters (same slot as category chips, matching style).
+            Search doesn't apply to appointments, so the mobile-search-hide that
+            the Services/Products row uses isn't relevant here. */}
+        {viewMode === 'APPOINTMENTS' && (
           <AppointmentFilters
             staff={availableAppointmentStaff}
             categories={availableAppointmentCategories}
