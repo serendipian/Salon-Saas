@@ -19,7 +19,6 @@ export const AppointmentListPage: React.FC = () => {
   });
   const {
     appointments,
-    allAppointments,
     searchTerm,
     setSearchTerm,
     statusFilter,
@@ -41,7 +40,6 @@ export const AppointmentListPage: React.FC = () => {
   return (
     <AppointmentList
       appointments={appointments}
-      allAppointments={allAppointments}
       serviceCategories={serviceCategories}
       services={services}
       allStaff={team}

@@ -4,6 +4,7 @@ import {
   Bell,
   Calendar,
   ChevronDown,
+  ClipboardList,
   CreditCard,
   LayoutDashboard,
   LogOut,
@@ -137,6 +138,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
   const mainNavItems: NavItem[] = [
     { id: 'dashboard', label: 'Accueil', icon: LayoutDashboard, resource: 'dashboard' },
     { id: 'calendar', label: 'Agenda', icon: Calendar, resource: 'appointments' },
+    { id: 'appointments', label: 'Rendez-vous', icon: ClipboardList, resource: 'appointments' },
     { id: 'clients', label: 'Clients', icon: Users, resource: 'clients' },
     { id: 'pos', label: 'Caisse', icon: CreditCard, resource: 'pos' },
     { id: 'finances', label: 'Finances', icon: BarChart3, resource: 'accounting' },

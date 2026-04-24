@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import type { Appointment, Service, ServiceCategory, StaffMember } from '../../../types';
+import { TodayCalendarCard } from '../../dashboard/components/TodayCalendarCard';
 import { CalendarDayView } from './CalendarDayView';
 import { CalendarEventPopover } from './CalendarEventPopover';
 import { CalendarHeader } from './CalendarHeader';
@@ -16,6 +17,7 @@ interface CalendarViewProps {
   allStaff: StaffMember[];
   onViewDetails: (id: string) => void;
   onEdit: (id: string) => void;
+  onUpdateAppointment?: (appt: Appointment) => void;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = ({
@@ -25,6 +27,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   allStaff,
   onViewDetails,
   onEdit,
+  onUpdateAppointment,
 }) => {
   const calendar = useCalendar(allAppointments, serviceCategories, services, allStaff);
 
@@ -87,6 +90,18 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             onPrev={calendar.goPrev}
             onNext={calendar.goNext}
           />
+
+          {calendar.viewMode === 'team' && (
+            <TodayCalendarCard
+              appointments={calendar.filteredAppointments}
+              services={services}
+              serviceCategories={serviceCategories}
+              staff={allStaff}
+              onUpdateAppointment={onUpdateAppointment}
+              targetDate={calendar.currentDate}
+              embedded
+            />
+          )}
 
           {calendar.viewMode === 'day' && (
             <CalendarDayView

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Appointment, ServiceCategory, StaffMember } from '../../../types';
 
-export type CalendarViewMode = 'day' | 'week' | 'month';
+export type CalendarViewMode = 'team' | 'day' | 'week' | 'month';
 
 export interface UseCalendarReturn {
   currentDate: Date;
@@ -25,7 +25,7 @@ export function useCalendar(
   allStaff: StaffMember[],
 ): UseCalendarReturn {
   const [currentDate, setCurrentDate] = useState(() => new Date());
-  const [viewMode, setViewMode] = useState<CalendarViewMode>('week');
+  const [viewMode, setViewMode] = useState<CalendarViewMode>('team');
 
   const [categoryFilters, setCategoryFilters] = useState<Set<string>>(
     () => new Set(serviceCategories.map((c) => c.id)),
@@ -56,7 +56,7 @@ export function useCalendar(
   const goPrev = useCallback(() => {
     setCurrentDate((prev) => {
       const d = new Date(prev);
-      if (viewMode === 'day') d.setDate(d.getDate() - 1);
+      if (viewMode === 'day' || viewMode === 'team') d.setDate(d.getDate() - 1);
       else if (viewMode === 'week') d.setDate(d.getDate() - 7);
       else d.setMonth(d.getMonth() - 1);
       return d;
@@ -66,7 +66,7 @@ export function useCalendar(
   const goNext = useCallback(() => {
     setCurrentDate((prev) => {
       const d = new Date(prev);
-      if (viewMode === 'day') d.setDate(d.getDate() + 1);
+      if (viewMode === 'day' || viewMode === 'team') d.setDate(d.getDate() + 1);
       else if (viewMode === 'week') d.setDate(d.getDate() + 7);
       else d.setMonth(d.getMonth() + 1);
       return d;

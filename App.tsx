@@ -41,6 +41,7 @@ import { RefundsPage } from './modules/accounting/components/RefundsPage';
 import { RevenuesPage } from './modules/accounting/components/RevenuesPage';
 import { FinancesLayout } from './modules/accounting/FinancesLayout';
 import { AppointmentsModule } from './modules/appointments/AppointmentsModule';
+import { AppointmentCalendarPage } from './modules/appointments/pages/AppointmentCalendarPage';
 import { AppointmentDetailPage } from './modules/appointments/pages/AppointmentDetailPage';
 import { AppointmentEditPage } from './modules/appointments/pages/AppointmentEditPage';
 import { AppointmentListPage } from './modules/appointments/pages/AppointmentListPage';
@@ -137,17 +138,27 @@ const AppContent = () => {
           path="/calendar"
           element={
             <ProtectedRoute action="view" resource="appointments">
-              <ErrorBoundary moduleName="Rendez-vous">
+              <ErrorBoundary moduleName="Agenda">
                 <AppointmentsModule />
               </ErrorBoundary>
             </ProtectedRoute>
           }
         >
-          <Route index element={<AppointmentListPage />} />
+          <Route index element={<AppointmentCalendarPage />} />
           <Route path="new" element={<AppointmentNewPage />} />
           <Route path=":id" element={<AppointmentDetailPage />} />
           <Route path=":id/edit" element={<AppointmentEditPage />} />
         </Route>
+        <Route
+          path="/appointments"
+          element={
+            <ProtectedRoute action="view" resource="appointments">
+              <ErrorBoundary moduleName="Rendez-vous">
+                <AppointmentListPage />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/products"
           element={

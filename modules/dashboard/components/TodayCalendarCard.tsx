@@ -40,6 +40,8 @@ interface TodayCalendarCardProps {
   onUpdateAppointment?: (appt: Appointment) => void;
   /** The day to display — defaults to today */
   targetDate?: Date;
+  /** When true, omits the outer card chrome + date/counts header (parent provides them) */
+  embedded?: boolean;
 }
 
 function fmt(date: Date): string {
@@ -259,6 +261,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   staff,
   onUpdateAppointment,
   targetDate: targetDateProp,
+  embedded = false,
 }) => {
   const targetDate = useMemo(() => {
     if (!targetDateProp) return new Date();
@@ -578,52 +581,59 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   const nowLabel = nowOffset !== null ? fmt(new Date()) : null;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden relative">
-      {/* ── Header ── */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white">
-        <h3 className="font-bold text-slate-800 capitalize">
-          {targetDate.toLocaleDateString('fr-FR', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-          })}
-        </h3>
-        <div className="flex items-center gap-2">
-          {/* Category filter */}
-          {availableCategories.length > 0 && (
-            <div className="relative">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="appearance-none text-[11px] font-medium pl-6 pr-5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-300 cursor-pointer"
-              >
-                <option value="">Toutes catégories</option>
-                {availableCategories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              <Filter
-                size={11}
-                className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-              />
-            </div>
-          )}
-          {todayAppts.length > 0 && (
-            <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="flex items-center gap-1 text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-lg">
-                <Check size={12} />
-                {completedCount}
-              </span>
-              <span className="flex items-center gap-1 text-slate-500 font-medium bg-slate-100 px-2 py-1 rounded-lg">
-                <Clock size={12} />
-                {todayAppts.length - completedCount}
-              </span>
-            </div>
-          )}
+    <div
+      className={
+        embedded
+          ? 'flex-1 min-h-0 overflow-hidden relative'
+          : 'bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden relative'
+      }
+    >
+      {/* ── Header — hidden when embedded (parent CalendarHeader owns the title) ── */}
+      {!embedded && (
+        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white">
+          <h3 className="font-bold text-slate-800 capitalize">
+            {targetDate.toLocaleDateString('fr-FR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+            })}
+          </h3>
+          <div className="flex items-center gap-2">
+            {availableCategories.length > 0 && (
+              <div className="relative">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="appearance-none text-[11px] font-medium pl-6 pr-5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-300 cursor-pointer"
+                >
+                  <option value="">Toutes catégories</option>
+                  {availableCategories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                <Filter
+                  size={11}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                />
+              </div>
+            )}
+            {todayAppts.length > 0 && (
+              <div className="flex items-center gap-1.5 text-[11px]">
+                <span className="flex items-center gap-1 text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-lg">
+                  <Check size={12} />
+                  {completedCount}
+                </span>
+                <span className="flex items-center gap-1 text-slate-500 font-medium bg-slate-100 px-2 py-1 rounded-lg">
+                  <Clock size={12} />
+                  {todayAppts.length - completedCount}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── Empty state ── */}
       {todayAppts.length === 0 && staffColumns.length === 0 ? (
@@ -637,7 +647,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
       ) : (
         <div
           ref={scrollRef}
-          className={`overflow-x-auto overflow-y-auto max-h-[560px] relative ${drag?.isDragging ? 'select-none' : ''}`}
+          className={`overflow-x-auto overflow-y-auto ${embedded ? 'h-full' : 'max-h-[560px]'} relative ${drag?.isDragging ? 'select-none' : ''}`}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerCancel}

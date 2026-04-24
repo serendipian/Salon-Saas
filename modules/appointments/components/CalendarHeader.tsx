@@ -38,7 +38,7 @@ function getWeekRange(date: Date): { start: Date; end: Date } {
 }
 
 function formatTitle(date: Date, viewMode: CalendarViewMode): string {
-  if (viewMode === 'day') {
+  if (viewMode === 'day' || viewMode === 'team') {
     return `${date.getDate()} ${MONTHS_FR[date.getMonth()]} ${date.getFullYear()}`;
   }
   if (viewMode === 'week') {
@@ -52,7 +52,8 @@ function formatTitle(date: Date, viewMode: CalendarViewMode): string {
   return `${MONTHS_FR[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-const VIEW_MODES: { key: CalendarViewMode; label: string }[] = [
+const VIEW_MODES: { key: CalendarViewMode; label: string; shortLabel?: string }[] = [
+  { key: 'team', label: 'Planning Équipe', shortLabel: 'Équipe' },
   { key: 'day', label: 'Jour' },
   { key: 'week', label: 'Semaine' },
   { key: 'month', label: 'Mois' },
@@ -103,7 +104,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         </h2>
 
         <div className="flex rounded-lg border border-slate-300 overflow-hidden shrink-0">
-          {VIEW_MODES.map(({ key, label }) => (
+          {VIEW_MODES.map(({ key, label, shortLabel }, idx) => (
             <button
               key={key}
               onClick={() => onViewModeChange(key)}
@@ -111,10 +112,17 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                 viewMode === key
                   ? 'bg-blue-500 text-white'
                   : 'bg-white text-slate-600 hover:bg-slate-50'
-              } ${key !== 'day' ? 'border-l border-slate-300' : ''}`}
+              } ${idx > 0 ? 'border-l border-slate-300' : ''}`}
               aria-pressed={viewMode === key}
             >
-              {label}
+              {shortLabel ? (
+                <>
+                  <span className="hidden sm:inline">{label}</span>
+                  <span className="sm:hidden">{shortLabel}</span>
+                </>
+              ) : (
+                label
+              )}
             </button>
           ))}
         </div>
