@@ -1,9 +1,15 @@
 import { Check } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { AppointmentStatus } from '../../../types';
+import { AppointmentStatus, CancellationReason } from '../../../types';
 
-const STATUS_CONFIG = {
+interface BadgeConfig {
+  label: string;
+  style: string;
+  dot: string;
+}
+
+const STATUS_CONFIG: Record<AppointmentStatus, BadgeConfig> = {
   [AppointmentStatus.SCHEDULED]: {
     label: 'Planifié',
     style: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -31,6 +37,33 @@ const STATUS_CONFIG = {
   },
 };
 
+// When status=CANCELLED and a reason is present, swap the generic "Annulé"
+// badge for a reason-specific variant. Colors chosen so "Offert" reads as
+// positive (blue), "Remplacé" as neutral-warning (amber), "Autre"/generic
+// keep the muted CANCELLED slate.
+const REASON_CONFIG: Record<CancellationReason, BadgeConfig> = {
+  [CancellationReason.CANCELLED]: {
+    label: 'Annulé',
+    style: 'bg-red-50 text-red-700 border-red-200',
+    dot: 'bg-red-500',
+  },
+  [CancellationReason.REPLACED]: {
+    label: 'Remplacé',
+    style: 'bg-amber-50 text-amber-700 border-amber-200',
+    dot: 'bg-amber-500',
+  },
+  [CancellationReason.OFFERED]: {
+    label: 'Offert',
+    style: 'bg-sky-50 text-sky-700 border-sky-200',
+    dot: 'bg-sky-500',
+  },
+  [CancellationReason.OTHER]: {
+    label: 'Annulé',
+    style: 'bg-slate-100 text-slate-600 border-slate-200',
+    dot: 'bg-slate-400',
+  },
+};
+
 const ALL_STATUSES = [
   AppointmentStatus.SCHEDULED,
   AppointmentStatus.IN_PROGRESS,
@@ -41,13 +74,29 @@ const ALL_STATUSES = [
 
 interface StatusBadgeProps {
   status: AppointmentStatus;
+  /** When status=CANCELLED and a reason is provided, the badge shows a reason-specific label/color. */
+  cancellationReason?: CancellationReason | null;
   onStatusChange?: (status: AppointmentStatus) => void;
 }
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, onStatusChange }) => {
+function resolveConfig(
+  status: AppointmentStatus,
+  reason?: CancellationReason | null,
+): BadgeConfig {
+  if (status === AppointmentStatus.CANCELLED && reason) {
+    return REASON_CONFIG[reason] ?? STATUS_CONFIG[status];
+  }
+  return STATUS_CONFIG[status];
+}
+
+export const StatusBadge: React.FC<StatusBadgeProps> = ({
+  status,
+  cancellationReason,
+  onStatusChange,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const config = STATUS_CONFIG[status];
+  const config = resolveConfig(status, cancellationReason);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

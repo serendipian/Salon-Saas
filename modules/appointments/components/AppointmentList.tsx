@@ -26,7 +26,7 @@ interface AppointmentListProps {
   onAdd: () => void;
   onDetails: (id: string) => void;
   onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
+  onRequestCancel?: (appointmentIds: string[]) => void;
   onStatusChange?: (id: string, status: AppointmentStatus) => void;
   showDeleted?: boolean;
   onToggleDeleted?: () => void;
@@ -45,7 +45,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
   onAdd,
   onDetails,
   onEdit,
-  onDelete,
+  onRequestCancel,
   onStatusChange,
   showDeleted,
   onToggleDeleted,
@@ -148,14 +148,14 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
             categories={serviceCategories}
             onDetails={onDetails}
             onEdit={showDeleted ? undefined : onEdit}
-            onDelete={showDeleted ? undefined : onDelete}
+            onRequestCancel={showDeleted ? undefined : onRequestCancel}
             onStatusChange={showDeleted ? undefined : onStatusChange}
           />
         ) : (
           <AppointmentCardList
             appointments={appointments}
             onDetails={onDetails}
-            onDelete={showDeleted ? undefined : onDelete}
+            onRequestCancel={showDeleted ? undefined : onRequestCancel}
             onStatusChange={showDeleted ? undefined : onStatusChange}
           />
         )}

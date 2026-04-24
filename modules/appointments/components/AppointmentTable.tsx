@@ -4,12 +4,12 @@ import { EmptyState } from '../../../components/EmptyState';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import { formatDuration, formatName, formatPrice } from '../../../lib/format';
-import type {
-  Appointment,
+import {
+  type Appointment,
   AppointmentStatus,
-  Service,
-  ServiceCategory,
-  StaffMember,
+  type Service,
+  type ServiceCategory,
+  type StaffMember,
 } from '../../../types';
 import { groupByDayAndClient } from './groupAppointments';
 import { StatusBadge } from './StatusBadge';
@@ -39,7 +39,7 @@ interface AppointmentTableProps {
   categories: ServiceCategory[];
   onDetails: (id: string) => void;
   onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
+  onRequestCancel?: (appointmentIds: string[]) => void;
   onStatusChange?: (id: string, status: AppointmentStatus) => void;
 }
 
@@ -52,7 +52,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
   categories,
   onDetails,
   onEdit,
-  onDelete,
+  onRequestCancel,
   onStatusChange,
 }) => {
   const staffMap = useMemo(() => new Map(team.map((s) => [s.id, s])), [team]);
@@ -244,10 +244,16 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                             <td className="px-4 py-3 align-top border-r border-slate-100">
                               <StatusBadge
                                 status={appt.status}
+                                cancellationReason={appt.cancellationReason ?? null}
                                 onStatusChange={
                                   onStatusChange ? (s) => onStatusChange(appt.id, s) : undefined
                                 }
                               />
+                              {appt.cancellationNote && (
+                                <div className="text-[10px] text-slate-500 italic mt-1 max-w-[180px] truncate" title={appt.cancellationNote}>
+                                  « {appt.cancellationNote} »
+                                </div>
+                              )}
                               {appt.deletedAt && (
                                 <div className="text-[10px] text-red-500 mt-0.5">
                                   Supprimé le {new Date(appt.deletedAt).toLocaleDateString('fr-FR')}
@@ -268,18 +274,20 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                                     <Pencil size={14} />
                                   </button>
                                 )}
-                                {onDelete && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onDelete(appt.id);
-                                    }}
-                                    className="p-1.5 text-slate-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50"
-                                    title="Supprimer"
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
-                                )}
+                                {onRequestCancel &&
+                                  appt.status !== AppointmentStatus.COMPLETED &&
+                                  appt.status !== AppointmentStatus.CANCELLED && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onRequestCancel([appt.id]);
+                                      }}
+                                      className="p-1.5 text-slate-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50"
+                                      title="Annuler"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  )}
                               </div>
                             </td>
                           </tr>

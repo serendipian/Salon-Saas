@@ -9,6 +9,15 @@ export enum AppointmentStatus {
   NO_SHOW = 'NO_SHOW',
 }
 
+// Reason codes for why an appointment was cancelled. Stored on the row alongside
+// status='CANCELLED'. UI displays these as distinct labels + colors (see StatusBadge).
+export enum CancellationReason {
+  CANCELLED = 'CANCELLED', // Client cancelled — generic
+  REPLACED = 'REPLACED', // Swapped for a different service
+  OFFERED = 'OFFERED', // Performed as a gift / complimentary, not billable
+  OTHER = 'OTHER', // Any other reason (usually accompanied by a note)
+}
+
 // General Settings Domain
 export interface SalonSettings {
   name: string;
@@ -369,6 +378,9 @@ export interface Appointment {
   notes?: string;
   groupId?: string | null;
   deletedAt?: string | null;
+  cancellationReason?: CancellationReason | null;
+  cancellationNote?: string | null;
+  cancelledAt?: string | null;
 }
 
 export interface AppointmentGroup {

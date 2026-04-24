@@ -1,5 +1,10 @@
 // modules/appointments/mappers.ts
-import type { Appointment, AppointmentGroup, AppointmentStatus } from '../../types';
+import type {
+  Appointment,
+  AppointmentGroup,
+  AppointmentStatus,
+  CancellationReason,
+} from '../../types';
 
 // Row type includes JOINed relations from:
 // .select('*, clients(first_name, last_name), services(name), staff_members(first_name, last_name)')
@@ -21,6 +26,9 @@ interface AppointmentRow {
   created_by: string | null;
   updated_by: string | null;
   deleted_at: string | null;
+  cancellation_reason: string | null;
+  cancellation_note: string | null;
+  cancelled_at: string | null;
   // JOINed relations (nullable if FK is null)
   clients: { first_name: string; last_name: string } | null;
   services: { name: string } | null;
@@ -50,6 +58,9 @@ export function toAppointment(row: AppointmentRow): Appointment {
     notes: row.notes ?? undefined,
     groupId: row.group_id ?? null,
     deletedAt: row.deleted_at ?? null,
+    cancellationReason: (row.cancellation_reason as CancellationReason | null) ?? null,
+    cancellationNote: row.cancellation_note ?? null,
+    cancelledAt: row.cancelled_at ?? null,
   };
 }
 

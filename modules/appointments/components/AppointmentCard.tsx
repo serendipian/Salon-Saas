@@ -3,7 +3,7 @@ import type React from 'react';
 import { useMemo } from 'react';
 import { EmptyState } from '../../../components/EmptyState';
 import { formatName, formatPrice } from '../../../lib/format';
-import type { Appointment, AppointmentStatus } from '../../../types';
+import { type Appointment, AppointmentStatus } from '../../../types';
 import { groupByDayAndClient } from './groupAppointments';
 import { StatusBadge } from './StatusBadge';
 
@@ -40,36 +40,40 @@ const formatDayLabel = (dayKey: string) => {
 interface GroupedCardProps {
   appointments: Appointment[];
   onDetails: (id: string) => void;
-  onDelete?: (id: string) => void;
+  /** Opens a confirm-with-reason modal. Array: single id = per-service cancel; multiple = cancel whole visit. */
+  onRequestCancel?: (appointmentIds: string[]) => void;
   onStatusChange?: (id: string, status: AppointmentStatus) => void;
 }
 
 const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
   appointments,
   onDetails,
-  onDelete,
+  onRequestCancel,
   onStatusChange,
 }) => {
   const isMulti = appointments.length > 1;
   const first = appointments[0];
   const last = appointments[appointments.length - 1];
   const totalPrice = appointments.reduce((sum, a) => sum + a.price, 0);
+  // Completed + already-cancelled rows aren't cancelable — server refuses both,
+  // so don't offer the action for them.
+  const cancellableIds = useMemo(
+    () =>
+      appointments
+        .filter(
+          (a) => a.status !== AppointmentStatus.COMPLETED && a.status !== AppointmentStatus.CANCELLED,
+        )
+        .map((a) => a.id),
+    [appointments],
+  );
   const endTime = new Date(new Date(last.date).getTime() + (last.durationMinutes ?? 0) * 60_000);
   const timeRange = isMulti
     ? `${formatTime(first.date)} – ${endTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
     : formatTime(first.date);
 
-  const handleDeleteAll = () => {
-    if (!onDelete) return;
-    if (
-      isMulti &&
-      !window.confirm(
-        `Supprimer les ${appointments.length} services de ${formatName(first.clientName) || 'ce client'} ?`,
-      )
-    ) {
-      return;
-    }
-    appointments.forEach((a) => onDelete(a.id));
+  const handleCancelAll = () => {
+    if (!onRequestCancel || cancellableIds.length === 0) return;
+    onRequestCancel(cancellableIds);
   };
 
   return (
@@ -97,13 +101,13 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-sm font-semibold text-slate-900">{formatPrice(totalPrice)}</span>
-          {onDelete && (
+          {onRequestCancel && cancellableIds.length > 0 && (
             <button
               type="button"
-              onClick={handleDeleteAll}
+              onClick={handleCancelAll}
               className="p-1.5 -mr-1 text-slate-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-400 focus:outline-none"
-              aria-label={isMulti ? 'Supprimer la visite' : 'Supprimer le rendez-vous'}
-              title={isMulti ? 'Supprimer la visite' : 'Supprimer'}
+              aria-label={isMulti ? 'Annuler la visite' : 'Annuler le rendez-vous'}
+              title={isMulti ? 'Annuler la visite' : 'Annuler'}
             >
               <Trash2 size={14} />
             </button>
@@ -149,22 +153,26 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
               >
                 <StatusBadge
                   status={appt.status}
+                  cancellationReason={appt.cancellationReason ?? null}
                   onStatusChange={onStatusChange ? (s) => onStatusChange(appt.id, s) : undefined}
                 />
-                {isMulti && onDelete && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(appt.id);
-                    }}
-                    className="p-1 text-slate-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-400 focus:outline-none"
-                    aria-label={`Supprimer ${appt.serviceName}`}
-                    title="Supprimer ce service"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                )}
+                {isMulti &&
+                  onRequestCancel &&
+                  appt.status !== AppointmentStatus.COMPLETED &&
+                  appt.status !== AppointmentStatus.CANCELLED && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRequestCancel([appt.id]);
+                      }}
+                      className="p-1 text-slate-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-400 focus:outline-none"
+                      aria-label={`Annuler ${appt.serviceName}`}
+                      title="Annuler ce service"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
                 {appt.deletedAt && (
                   <span className="text-[10px] text-red-500 whitespace-nowrap">
                     Supprimé le{' '}
@@ -186,14 +194,14 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
 interface AppointmentCardListProps {
   appointments: Appointment[];
   onDetails: (id: string) => void;
-  onDelete?: (id: string) => void;
+  onRequestCancel?: (appointmentIds: string[]) => void;
   onStatusChange?: (id: string, status: AppointmentStatus) => void;
 }
 
 export const AppointmentCardList: React.FC<AppointmentCardListProps> = ({
   appointments,
   onDetails,
-  onDelete,
+  onRequestCancel,
   onStatusChange,
 }) => {
   const grouped = useMemo(() => groupByDayAndClient(appointments), [appointments]);
@@ -220,7 +228,7 @@ export const AppointmentCardList: React.FC<AppointmentCardListProps> = ({
                 key={group[0].clientId || group[0].id || idx}
                 appointments={group}
                 onDetails={onDetails}
-                onDelete={onDelete}
+                onRequestCancel={onRequestCancel}
                 onStatusChange={onStatusChange}
               />
             ))}

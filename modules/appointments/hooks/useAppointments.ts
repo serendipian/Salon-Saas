@@ -6,7 +6,11 @@ import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { withMutationTimeout } from '../../../lib/mutations';
 import { supabase } from '../../../lib/supabase';
-import type { Appointment } from '../../../types';
+import {
+  type Appointment,
+  AppointmentStatus,
+  type CancellationReason,
+} from '../../../types';
 import { toAppointment, toAppointmentGroupInsert, toAppointmentInsert } from '../mappers';
 
 export const useAppointments = (showDeleted = false) => {
@@ -252,6 +256,76 @@ export const useAppointments = (showDeleted = false) => {
     onError: toastOnError('Erreur lors de la modification du rendez-vous'),
   });
 
+  type CancelVars = {
+    appointmentIds: string[];
+    reason: CancellationReason;
+    note?: string;
+  };
+  const cancelAppointmentMutation = useMutation<void, Error, CancelVars, OptimisticContext>({
+    mutationFn: withMutationTimeout<CancelVars, void>(
+      async ({ appointmentIds, reason, note }, signal) => {
+        // Fire each RPC in parallel; any failure rejects the whole mutation.
+        // Partial success is acceptable on the server — the onSettled refetch
+        // reconciles the UI either way.
+        const trimmedNote = note?.trim() ? note.trim() : undefined;
+        const results = await Promise.all(
+          appointmentIds.map((id) =>
+            supabase
+              .rpc('cancel_appointment', {
+                p_appointment_id: id,
+                p_reason: reason,
+                p_note: trimmedNote,
+              })
+              .abortSignal(signal),
+          ),
+        );
+        const firstError = results.find((r) => r.error)?.error;
+        if (firstError) throw firstError;
+      },
+    ),
+    onMutate: async ({ appointmentIds, reason, note }) => {
+      await queryClient.cancelQueries({ queryKey: ['appointments', salonId] });
+      const snapshot = queryClient.getQueriesData<Appointment[]>({
+        queryKey: ['appointments', salonId],
+      });
+      const nowIso = new Date().toISOString();
+      const idSet = new Set(appointmentIds);
+      const trimmedNote = note?.trim() || null;
+      queryClient.setQueriesData<Appointment[]>({ queryKey: ['appointments', salonId] }, (old) =>
+        old?.map((a) =>
+          idSet.has(a.id)
+            ? {
+                ...a,
+                status: AppointmentStatus.CANCELLED,
+                cancellationReason: reason,
+                cancellationNote: trimmedNote,
+                cancelledAt: nowIso,
+              }
+            : a,
+        ),
+      );
+      return { snapshot };
+    },
+    onSuccess: (_, { appointmentIds }) => {
+      addToast({
+        type: 'success',
+        message:
+          appointmentIds.length === 1
+            ? 'Rendez-vous annulé'
+            : `Visite annulée (${appointmentIds.length} services)`,
+      });
+    },
+    onError: (err, _vars, context) => {
+      if (context?.snapshot) {
+        for (const [key, data] of context.snapshot) queryClient.setQueryData(key, data);
+      }
+      toastOnError("Erreur lors de l'annulation du rendez-vous")(err);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments', salonId] });
+    },
+  });
+
   const deleteAppointmentMutation = useMutation<void, Error, string, OptimisticContext>({
     mutationFn: withMutationTimeout<string, void>(async (appointmentId, signal) => {
       const { error } = await supabase
@@ -313,5 +387,11 @@ export const useAppointments = (showDeleted = false) => {
       updateStatusMutation.mutateAsync({ appointmentId, status }),
     deleteAppointment: deleteAppointmentMutation.mutateAsync,
     isDeleting: deleteAppointmentMutation.isPending,
+    cancelAppointments: (
+      appointmentIds: string[],
+      reason: CancellationReason,
+      note?: string,
+    ) => cancelAppointmentMutation.mutateAsync({ appointmentIds, reason, note }),
+    isCancelling: cancelAppointmentMutation.isPending,
   };
 };

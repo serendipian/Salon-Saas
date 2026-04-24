@@ -1,8 +1,7 @@
 import { ArrowLeft, Calendar, Scissors, Trash2, User } from 'lucide-react';
 import type React from 'react';
-import { useState } from 'react';
 import { formatName, formatPrice } from '../../../lib/format';
-import type { Appointment } from '../../../types';
+import { type Appointment, AppointmentStatus } from '../../../types';
 import { StatusBadge } from './StatusBadge';
 
 interface AppointmentDetailsProps {
@@ -10,7 +9,8 @@ interface AppointmentDetailsProps {
   allAppointments?: Appointment[];
   onBack: () => void;
   onEdit: () => void;
-  onDelete?: (id: string) => void;
+  /** Opens a confirm-with-reason modal. Callers handle the modal state themselves. */
+  onRequestCancel?: (appointmentIds: string[]) => void;
 }
 
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
@@ -18,14 +18,22 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
   allAppointments = [],
   onBack,
   onEdit,
-  onDelete,
+  onRequestCancel,
 }) => {
-  const [showConfirm, setShowConfirm] = useState(false);
   const date = new Date(appointment.date);
 
   const groupedAppointments = appointment.groupId
     ? allAppointments.filter((a) => a.groupId === appointment.groupId)
     : [appointment];
+
+  // On detail page, the "cancel" button targets the whole visit (this appointment +
+  // any siblings with the same DB group), excluding already-terminal ones.
+  const cancellableIds = groupedAppointments
+    .filter(
+      (a) => a.status !== AppointmentStatus.COMPLETED && a.status !== AppointmentStatus.CANCELLED,
+    )
+    .map((a) => a.id);
+  const canCancel = onRequestCancel && cancellableIds.length > 0;
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4">
@@ -38,13 +46,13 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
         </button>
         <h1 className="text-xl font-bold text-slate-900">Détails du Rendez-vous</h1>
         <div className="ml-auto flex gap-3">
-          {onDelete && (
+          {canCancel && (
             <button
-              onClick={() => setShowConfirm(true)}
+              onClick={() => onRequestCancel?.(cancellableIds)}
               className="px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg font-medium text-sm hover:bg-red-50 shadow-sm transition-all flex items-center gap-2"
             >
               <Trash2 size={16} />
-              Supprimer
+              {cancellableIds.length > 1 ? 'Annuler la visite' : 'Annuler'}
             </button>
           )}
           <button
@@ -63,7 +71,15 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
               Référence # {appointment.id.toUpperCase()}
             </div>
             <h2 className="text-xl font-bold text-slate-900 mb-2">{appointment.serviceName}</h2>
-            <StatusBadge status={appointment.status} />
+            <StatusBadge
+              status={appointment.status}
+              cancellationReason={appointment.cancellationReason ?? null}
+            />
+            {appointment.status === AppointmentStatus.CANCELLED && appointment.cancellationNote && (
+              <p className="mt-2 text-xs text-slate-500 italic max-w-md">
+                {appointment.cancellationNote}
+              </p>
+            )}
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-slate-900">
@@ -138,10 +154,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
               {groupedAppointments.map((appt, i) => (
                 <div
                   key={appt.id}
-                  className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 flex items-center gap-3"
+                  className={`border rounded-lg px-4 py-3 flex items-center gap-3 ${
+                    appt.status === AppointmentStatus.CANCELLED
+                      ? 'bg-slate-100 border-slate-200 opacity-75'
+                      : 'bg-slate-50 border-slate-200'
+                  }`}
                 >
-                  {/* L-15: Numbered badge instead of hardcoded 5-digit unicode
-                      string. Previously rendered nothing for the 6th+ row. */}
                   <span
                     aria-label={`Prestation ${i + 1}`}
                     className="w-5 h-5 shrink-0 rounded-full bg-slate-200 text-slate-600 inline-flex items-center justify-center text-[10px] font-bold tabular-nums"
@@ -149,12 +167,37 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <span className="text-slate-800 text-sm font-medium">{appt.serviceName}</span>
-                    <span className="text-slate-500 text-xs ml-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span
+                        className={`text-sm font-medium ${
+                          appt.status === AppointmentStatus.CANCELLED
+                            ? 'text-slate-500 line-through'
+                            : 'text-slate-800'
+                        }`}
+                      >
+                        {appt.serviceName}
+                      </span>
+                      {appt.status === AppointmentStatus.CANCELLED && (
+                        <StatusBadge
+                          status={appt.status}
+                          cancellationReason={appt.cancellationReason ?? null}
+                        />
+                      )}
+                    </div>
+                    <div className="text-slate-500 text-xs mt-0.5">
                       {appt.staffName} · {appt.durationMinutes} min
-                    </span>
+                      {appt.cancellationNote && (
+                        <span className="ml-2 italic">« {appt.cancellationNote} »</span>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-blue-600 text-sm font-semibold shrink-0">
+                  <span
+                    className={`text-sm font-semibold shrink-0 ${
+                      appt.status === AppointmentStatus.CANCELLED
+                        ? 'text-slate-400 line-through'
+                        : 'text-blue-600'
+                    }`}
+                  >
                     {formatPrice(appt.price)}
                   </span>
                 </div>
@@ -164,44 +207,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
         )}
       </div>
 
-      {/* Delete confirmation */}
-      {showConfirm && onDelete && (
-        <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-          onClick={() => setShowConfirm(false)}
-        >
-          <div
-            className="bg-white rounded-xl p-6 max-w-sm mx-4 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">
-              Supprimer ce rendez-vous ?
-            </h3>
-            <p className="text-sm text-slate-600 mb-5">
-              {groupedAppointments.length > 1
-                ? `Ce rendez-vous contient ${groupedAppointments.length} services. Tous seront supprimés.`
-                : 'Cette action est irréversible.'}
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={() => {
-                  onDelete(appointment.id);
-                  setShowConfirm(false);
-                }}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
-              >
-                Supprimer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

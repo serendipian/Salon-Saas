@@ -108,6 +108,9 @@ export type Database = {
       }
       appointments: {
         Row: {
+          cancellation_note: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
           client_id: string | null
           created_at: string
           created_by: string | null
@@ -127,6 +130,9 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          cancellation_note?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -146,6 +152,9 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          cancellation_note?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -2849,6 +2858,10 @@ export type Database = {
           p_staff_id: string
         }
         Returns: string
+      }
+      cancel_appointment: {
+        Args: { p_appointment_id: string; p_note?: string; p_reason: string }
+        Returns: undefined
       }
       check_slot_availability: {
         Args: { p_date: string; p_duration_minutes: number; p_staff_id: string }
