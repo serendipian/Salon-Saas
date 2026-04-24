@@ -2859,10 +2859,6 @@ export type Database = {
         }
         Returns: string
       }
-      cancel_appointment: {
-        Args: { p_appointment_id: string; p_note?: string; p_reason: string }
-        Returns: undefined
-      }
       cancel_appointments_bulk: {
         Args: { p_appointment_ids: string[]; p_note?: string; p_reason: string }
         Returns: number
