@@ -1,5 +1,16 @@
-import { Calendar, Edit, Eye, Phone, Trash2, Users } from 'lucide-react';
+import {
+  Calendar,
+  ChevronDown,
+  ChevronsUpDown,
+  ChevronUp,
+  Edit,
+  Eye,
+  Phone,
+  Trash2,
+  Users,
+} from 'lucide-react';
 import type React from 'react';
+import { useMemo, useState } from 'react';
 import { EmptyState } from '../../../components/EmptyState';
 import { formatName, formatPrice } from '../../../lib/format';
 import type { Client } from '../../../types';
@@ -12,6 +23,41 @@ interface ClientTableProps {
   onDelete?: (id: string) => void;
 }
 
+type SortKey =
+  | 'name'
+  | 'firstVisit'
+  | 'lastVisit'
+  | 'totalVisits'
+  | 'totalSpent'
+  | 'avgBasket'
+  | 'createdAt';
+
+type SortDirection = 'asc' | 'desc';
+
+interface SortState {
+  key: SortKey;
+  direction: SortDirection;
+}
+
+const getSortValue = (client: Client, key: SortKey): number | string | null => {
+  switch (key) {
+    case 'name':
+      return `${client.lastName ?? ''} ${client.firstName ?? ''}`.trim().toLowerCase();
+    case 'firstVisit':
+      return client.firstVisitDate ? new Date(client.firstVisitDate).getTime() : null;
+    case 'lastVisit':
+      return client.lastVisitDate ? new Date(client.lastVisitDate).getTime() : null;
+    case 'totalVisits':
+      return client.totalVisits;
+    case 'totalSpent':
+      return client.totalSpent;
+    case 'avgBasket':
+      return client.totalVisits > 0 ? client.totalSpent / client.totalVisits : null;
+    case 'createdAt':
+      return new Date(client.createdAt).getTime();
+  }
+};
+
 export const ClientTable: React.FC<ClientTableProps> = ({
   clients,
   onViewDetails,
@@ -19,6 +65,56 @@ export const ClientTable: React.FC<ClientTableProps> = ({
   onSchedule,
   onDelete,
 }) => {
+  const [sort, setSort] = useState<SortState>({ key: 'name', direction: 'asc' });
+
+  const sortedClients = useMemo(() => {
+    const factor = sort.direction === 'asc' ? 1 : -1;
+    return [...clients].sort((a, b) => {
+      const va = getSortValue(a, sort.key);
+      const vb = getSortValue(b, sort.key);
+      // Nulls always last, regardless of direction
+      if (va === null && vb === null) return 0;
+      if (va === null) return 1;
+      if (vb === null) return -1;
+      if (va < vb) return -1 * factor;
+      if (va > vb) return 1 * factor;
+      return 0;
+    });
+  }, [clients, sort]);
+
+  const handleSort = (key: SortKey) => {
+    setSort((prev) =>
+      prev.key === key
+        ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+        : { key, direction: 'asc' },
+    );
+  };
+
+  const SortableHeader: React.FC<{
+    label: string;
+    sortKey: SortKey;
+    className?: string;
+  }> = ({ label, sortKey, className = '' }) => {
+    const isActive = sort.key === sortKey;
+    const Icon = !isActive ? ChevronsUpDown : sort.direction === 'asc' ? ChevronUp : ChevronDown;
+    return (
+      <th
+        scope="col"
+        aria-sort={isActive ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+        className={`px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider ${className}`}
+      >
+        <button
+          type="button"
+          onClick={() => handleSort(sortKey)}
+          className="flex items-center gap-1 uppercase tracking-wider hover:text-slate-900 transition-colors"
+        >
+          {label}
+          <Icon size={12} className={isActive ? 'text-slate-700' : 'text-slate-400'} />
+        </button>
+      </th>
+    );
+  };
+
   if (clients.length === 0) {
     return (
       <EmptyState
@@ -34,38 +130,40 @@ export const ClientTable: React.FC<ClientTableProps> = ({
       <table className="w-full text-left border-collapse">
         <thead className="bg-slate-50 border-b border-slate-200">
           <tr>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Client
-            </th>
+            <SortableHeader label="Client" sortKey="name" />
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
               Statut
             </th>
             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
               Téléphone
             </th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
-              Première Visite
-            </th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
-              Dernière Visite
-            </th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Total Visites
-            </th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Total Dépensé
-            </th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
-              Panier Moyen
-            </th>
-            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
-              Date de Création
-            </th>
+            <SortableHeader
+              label="Première Visite"
+              sortKey="firstVisit"
+              className="hidden lg:table-cell"
+            />
+            <SortableHeader
+              label="Dernière Visite"
+              sortKey="lastVisit"
+              className="hidden lg:table-cell"
+            />
+            <SortableHeader label="Total Visites" sortKey="totalVisits" />
+            <SortableHeader label="Total Dépensé" sortKey="totalSpent" />
+            <SortableHeader
+              label="Panier Moyen"
+              sortKey="avgBasket"
+              className="hidden lg:table-cell"
+            />
+            <SortableHeader
+              label="Date de Création"
+              sortKey="createdAt"
+              className="hidden lg:table-cell"
+            />
             <th className="px-6 py-3"></th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
-          {clients.map((client) => {
+          {sortedClients.map((client) => {
             const initials =
               `${client.firstName?.[0] ?? ''}${client.lastName?.[0] ?? ''}`.toUpperCase();
             const avgBasket = client.totalVisits > 0 ? client.totalSpent / client.totalVisits : 0;
