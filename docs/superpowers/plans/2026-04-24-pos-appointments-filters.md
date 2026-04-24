@@ -368,7 +368,7 @@ Create `modules/pos/utils/groupAndFilterAppointments.ts`:
 
 ```ts
 import type { Appointment, Service } from '../../../types';
-import type { AppointmentStatus } from '../../../types';
+import { AppointmentStatus } from '../../../types';
 
 export interface AppointmentFilters {
   staffId: string; // staffId | 'ALL'
@@ -471,6 +471,8 @@ import {
 } from '../utils/groupAndFilterAppointments';
 ```
 
+**Design note:** The hook keeps raw filter state internally (`rawStaffFilter`, `rawCategoryFilter`) but exposes *effective* values to consumers (`appointmentStaffFilter`, `appointmentCategoryFilter`). If the user's selected option vanishes (deleted category, staff no longer has pending appointments), the effective value falls back to `'ALL'` **in the same render** — no flicker. A `useEffect` also clears the raw state for persistence on the next interaction.
+
 - [ ] **Step 2: Add filter state after the existing state declarations**
 
 Locate the block at `modules/pos/hooks/usePOS.ts:40-45`:
@@ -487,14 +489,16 @@ const [linkedAppointmentId, setLinkedAppointmentId] = useState<string | null>(nu
 Add immediately after (preserving the existing lines):
 
 ```ts
-const [appointmentStaffFilter, setAppointmentStaffFilter] = useState<string>('ALL');
-const [appointmentCategoryFilter, setAppointmentCategoryFilter] = useState<string>('ALL');
+const [rawStaffFilter, setRawStaffFilter] = useState<string>('ALL');
+const [rawCategoryFilter, setRawCategoryFilter] = useState<string>('ALL');
 const [appointmentStatusFilter, setAppointmentStatusFilter] = useState<
   AppointmentFilters['status']
 >('ALL');
 ```
 
-- [ ] **Step 3: Derive `pendingAppointmentGroups` after the existing `pendingAppointments` memo**
+Status has no option-validity problem (only 3 fixed chips, all always valid), so it keeps a plain state variable without the raw/effective split.
+
+- [ ] **Step 3: Derive `pendingAppointmentGroups` and available filter options**
 
 Locate the end of the `pendingAppointments` memo (currently ending around `modules/pos/hooks/usePOS.ts:184`). Add immediately after:
 
@@ -504,32 +508,6 @@ const pendingAppointmentGroups = useMemo(
   [pendingAppointments],
 );
 
-const filteredPendingAppointmentGroups = useMemo(
-  () =>
-    filterAppointmentGroups(
-      pendingAppointmentGroups,
-      {
-        staffId: appointmentStaffFilter,
-        categoryId: appointmentCategoryFilter,
-        status: appointmentStatusFilter,
-      },
-      services,
-    ),
-  [
-    pendingAppointmentGroups,
-    appointmentStaffFilter,
-    appointmentCategoryFilter,
-    appointmentStatusFilter,
-    services,
-  ],
-);
-```
-
-- [ ] **Step 4: Derive available filter options**
-
-Add immediately after the block from Step 3:
-
-```ts
 const availableAppointmentStaff = useMemo(() => {
   const ids = new Set<string>();
   for (const group of pendingAppointmentGroups) {
@@ -551,43 +529,90 @@ const availableAppointmentCategories = useMemo(() => {
 }, [pendingAppointmentGroups, services, serviceCategories]);
 ```
 
-- [ ] **Step 5: Add auto-reset effect for vanished filter options**
+- [ ] **Step 4: Derive effective filter values (no-flicker validation)**
 
-Add immediately after the block from Step 4:
+Add immediately after Step 3. These are the values consumers see — if the raw selection is invalid, effective falls back to `'ALL'` in the same render:
 
 ```ts
-useEffect(() => {
-  if (
-    appointmentStaffFilter !== 'ALL' &&
-    !availableAppointmentStaff.some((s) => s.id === appointmentStaffFilter)
-  ) {
-    setAppointmentStaffFilter('ALL');
-  }
-}, [availableAppointmentStaff, appointmentStaffFilter]);
+const appointmentStaffFilter =
+  rawStaffFilter === 'ALL' ||
+  availableAppointmentStaff.some((s) => s.id === rawStaffFilter)
+    ? rawStaffFilter
+    : 'ALL';
 
-useEffect(() => {
-  if (
-    appointmentCategoryFilter !== 'ALL' &&
-    !availableAppointmentCategories.some((c) => c.id === appointmentCategoryFilter)
-  ) {
-    setAppointmentCategoryFilter('ALL');
-  }
-}, [availableAppointmentCategories, appointmentCategoryFilter]);
+const appointmentCategoryFilter =
+  rawCategoryFilter === 'ALL' ||
+  availableAppointmentCategories.some((c) => c.id === rawCategoryFilter)
+    ? rawCategoryFilter
+    : 'ALL';
 ```
 
-- [ ] **Step 6: Add a reset-all helper**
+- [ ] **Step 5: Derive `filteredPendingAppointmentGroups` using effective filters**
 
-Add immediately after the effects from Step 5:
+Add immediately after Step 4:
 
 ```ts
+const filteredPendingAppointmentGroups = useMemo(
+  () =>
+    filterAppointmentGroups(
+      pendingAppointmentGroups,
+      {
+        staffId: appointmentStaffFilter,
+        categoryId: appointmentCategoryFilter,
+        status: appointmentStatusFilter,
+      },
+      services,
+    ),
+  [
+    pendingAppointmentGroups,
+    appointmentStaffFilter,
+    appointmentCategoryFilter,
+    appointmentStatusFilter,
+    services,
+  ],
+);
+```
+
+- [ ] **Step 6: Add auto-reset effect for vanished filter options (state hygiene)**
+
+Add immediately after Step 5. These effects keep raw state in sync with effective so later interactions start from a clean slate. They are belt-and-suspenders — the effective derivations above already prevent user-visible staleness:
+
+```ts
+useEffect(() => {
+  if (
+    rawStaffFilter !== 'ALL' &&
+    !availableAppointmentStaff.some((s) => s.id === rawStaffFilter)
+  ) {
+    setRawStaffFilter('ALL');
+  }
+}, [availableAppointmentStaff, rawStaffFilter]);
+
+useEffect(() => {
+  if (
+    rawCategoryFilter !== 'ALL' &&
+    !availableAppointmentCategories.some((c) => c.id === rawCategoryFilter)
+  ) {
+    setRawCategoryFilter('ALL');
+  }
+}, [availableAppointmentCategories, rawCategoryFilter]);
+```
+
+- [ ] **Step 7: Add filter setter wrappers and reset helper**
+
+Setters need to be exported under the `setAppointmentStaffFilter` / `setAppointmentCategoryFilter` names that `POSCatalog` expects. They write to raw state:
+
+```ts
+const setAppointmentStaffFilter = setRawStaffFilter;
+const setAppointmentCategoryFilter = setRawCategoryFilter;
+
 const resetAppointmentFilters = () => {
-  setAppointmentStaffFilter('ALL');
-  setAppointmentCategoryFilter('ALL');
+  setRawStaffFilter('ALL');
+  setRawCategoryFilter('ALL');
   setAppointmentStatusFilter('ALL');
 };
 ```
 
-- [ ] **Step 7: Add new values to the hook's return object**
+- [ ] **Step 8: Add new values to the hook's return object**
 
 Locate the return block at `modules/pos/hooks/usePOS.ts:239-263` and insert the new keys inside it. The existing `pendingAppointments` export stays for now (removed in Task 6 after consumers migrate).
 
@@ -607,12 +632,12 @@ Insert after `pendingAppointments,`:
     resetAppointmentFilters,
 ```
 
-- [ ] **Step 8: Typecheck**
+- [ ] **Step 9: Typecheck**
 
 Run: `npx tsc --noEmit`
 Expected: no new errors. (The hook consumers — POSModule — compile fine because they destructure only named keys and ignore the new ones for now.)
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 10: Commit**
 
 ```bash
 git add modules/pos/hooks/usePOS.ts
@@ -620,9 +645,10 @@ git commit -m "feat(pos): add filter state and grouped exports to usePOS
 
 Introduces staff/category/status filter state, exports pre-grouped
 appointment lists (unfiltered and filtered), and derives the option
-lists for each chip row from appointments that actually appear. Auto-
-resets a dimension to ALL when its selected option is no longer
-available (e.g., category deleted while active)."
+lists for each chip row from appointments that actually appear. An
+effective-value pattern validates the selection against available
+options in the same render, so deleting the active category never
+shows a one-frame 'filtered empty' flicker before auto-reset."
 ```
 
 ---
@@ -784,28 +810,9 @@ Key changes vs the previous version:
 - `isOverdue` rule changed from "before today" to "scheduled time passed + still SCHEDULED".
 - `type="button"` added on both interactive buttons (was missing, avoids accidental submits inside a `<form>`).
 
-- [ ] **Step 2: Typecheck**
+**Do not commit or typecheck yet.** This file change breaks the `POSCatalog` call site; committing now would leave a red CI state at this SHA. The repair lands alongside the rest of the wiring in Task 6, which commits `PendingAppointments.tsx` together with `POSCatalog.tsx` and `POSModule.tsx` as one atomic, green commit.
 
-Run: `npx tsc --noEmit`
-Expected: two errors at the call site in `POSCatalog.tsx` because props changed. These are fixed in Task 6.
-
-- [ ] **Step 3: Commit**
-
-```bash
-git add modules/pos/components/PendingAppointments.tsx
-git commit -m "refactor(pos): PendingAppointments renders pre-grouped data
-
-- Accept Appointment[][] instead of Appointment[], grouping lifted
-  to the hook where it is shared with filter-option derivation.
-- Add filtered-empty state with a Reset button.
-- Rescope 'En retard' badge to same-day overdues only (past-day
-  overdues no longer reach this component).
-
-Typechecks temporarily break at the POSCatalog call site; fixed in
-the next commit."
-```
-
-(Type error remains until Task 6 wires the new props. This is the TDD-ish 'red' state and is acceptable for a single-feature branch. Keep going.)
+Leave the file modified but unstaged. Move on to Task 5.
 
 ---
 
@@ -965,21 +972,14 @@ export const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
 
 Notes:
 - Uses `StaffMember.photoUrl` directly instead of `StaffAvatar` to keep the chip compact (24px icon). `StaffAvatar`'s smallest supported size is still too large for a 36px chip.
-- `scrollbar-hide` is a Tailwind utility added via the `tailwind-scrollbar-hide` plugin or a CSS recipe already in use elsewhere in this codebase. If the class isn't resolving at runtime, grep for its definition under `src/` or `styles/` and either use the existing utility or fall back to `[&::-webkit-scrollbar]:hidden` inline.
+- `scrollbar-hide` is already in use in this codebase at [POSCatalog.tsx:151](../../modules/pos/components/POSCatalog.tsx#L151) — no verification needed.
 
-- [ ] **Step 2: Verify `scrollbar-hide` resolves**
-
-Run: `grep -r "scrollbar-hide" modules/ src/ styles/ 2>/dev/null | head -5`
-Expected: at least one existing usage, confirming the utility is available.
-
-If no match, replace `scrollbar-hide` in the component with `[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`.
-
-- [ ] **Step 3: Typecheck**
+- [ ] **Step 2: Typecheck**
 
 Run: `npx tsc --noEmit`
-Expected: same two pre-existing errors from Task 4 (POSCatalog call site). No new errors from the new file.
+Expected: same two pre-existing errors from Task 4 (POSCatalog call site is still using the old `PendingAppointments` prop shape). No new errors from the new file.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
 git add modules/pos/components/AppointmentFilters.tsx
@@ -1236,13 +1236,20 @@ Open the POS module, switch to the Rendez-vous tab, and verify the checklist in 
 
 - [ ] **Step 12: Commit**
 
+This commit bundles the `PendingAppointments.tsx` rewrite from Task 4 (left uncommitted) with the wiring changes here, so the branch never has a red-CI SHA.
+
 ```bash
-git add modules/pos/POSModule.tsx modules/pos/components/POSCatalog.tsx modules/pos/hooks/usePOS.ts
+git add \
+  modules/pos/POSModule.tsx \
+  modules/pos/components/POSCatalog.tsx \
+  modules/pos/components/PendingAppointments.tsx \
+  modules/pos/hooks/usePOS.ts
 git commit -m "feat(pos): filters on Rendez-vous tab — staff, category, status
 
-Wires AppointmentFilters above the pending appointments card grid.
-Tab badge shows unfiltered count; empty state distinguishes unfiltered
-from filtered-match-zero. Active staff / present categories are
+Wires AppointmentFilters above the pending appointments card grid
+and refactors PendingAppointments to render pre-grouped data with a
+filtered-empty state and same-day-only overdue badge. Tab badge
+shows unfiltered count; active staff / present categories are
 derived from the unfiltered list so chips reflect what is actually
 there."
 ```
@@ -1295,6 +1302,8 @@ This is a final pass before opening the PR. Do it in a browser.
 - No placeholders: every step contains the actual code or command. ✓
 - Type consistency: `AppointmentFilters` type alias from the utility matches the chip component's `StatusFilter` shape (both `'ALL' | AppointmentStatus.SCHEDULED | AppointmentStatus.IN_PROGRESS`). Hook exports and component prop names are lined up end-to-end (`filteredPendingAppointmentGroups` → `filteredAppointmentGroups` at the render layer; `pendingAppointmentGroups.length` → `totalAppointmentGroupCount`). ✓
 - Scope: one branch, one PR, feature-and-fix bundled since they are intertwined. ✓
+- Green-at-every-commit: Task 4 deliberately leaves `PendingAppointments.tsx` modified but uncommitted; Task 6 stages it with the wiring changes in one atomic commit so bisecting the branch never lands on a broken SHA. ✓
+- No-flicker filter validation: `usePOS` exposes effective filter values that fall back to `'ALL'` in the same render when the selected option vanishes (deleted category, archived staff), so the user never sees a transient "filtered empty" state during the reset. Raw state is still cleaned up via `useEffect` for post-interaction consistency. ✓
 
 ---
 
