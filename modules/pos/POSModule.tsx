@@ -162,6 +162,9 @@ export const POSModule: React.FC = () => {
   // Remove a cart item — if it came from an appointment, prompt for a
   // deletion reason first. The item stays in the cart until the user confirms.
   const handleRequestRemoveItem = (id: string) => {
+    // Prevent a second trash click from overwriting the in-flight target and
+    // orphaning the first row's deletion metadata.
+    if (deletionTarget) return;
     const item = cart.find((c) => c.id === id);
     if (item?.appointmentId) {
       setDeletionTarget({

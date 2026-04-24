@@ -178,10 +178,14 @@ export const usePOS = () => {
     const deletedAppointments = Array.from(pendingDeletionsRef.current.entries()).map(
       ([id, { reason, note }]) => ({ id, reason, note }),
     );
+    const deletedIds = new Set(deletedAppointments.map((d) => d.id));
+    // Exclude any appointment that's being deleted from the modification list.
+    // Sending both would be a wasted UPDATE (the deletion's status filter
+    // would no-op it anyway) but filtering here keeps the RPC payload honest.
     const modifiedAppointments = diffAppointmentsFromCart(
       cartRef.current,
       allAppointmentsRef.current,
-    );
+    ).filter((m) => !deletedIds.has(m.id));
     const tx = await addTransaction(
       cartRef.current,
       payments,
