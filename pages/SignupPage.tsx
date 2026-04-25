@@ -18,7 +18,7 @@ export const SignupPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(true);
 
   if (!authLoading && isAuthenticated) {
     return <Navigate to={redirect || '/dashboard'} replace />;
@@ -161,6 +161,14 @@ export const SignupPage: React.FC = () => {
             )}
           </button>
 
+          <AuthDivider label="ou" />
+
+          <GoogleSignInButton
+            redirect={redirect}
+            label="S’inscrire avec Google"
+            onError={setError}
+          />
+
           <label className="auth-terms">
             <input
               type="checkbox"
@@ -202,14 +210,6 @@ export const SignupPage: React.FC = () => {
               .
             </span>
           </label>
-
-          <AuthDivider label="ou" />
-
-          <GoogleSignInButton
-            redirect={redirect}
-            label="S’inscrire avec Google"
-            onError={setError}
-          />
         </form>
       )}
     </AuthShell>
