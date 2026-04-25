@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { BonusSystemEditor } from '../../../components/BonusSystemEditor';
 import { useAuth } from '../../../context/AuthContext';
 import { formatPrice } from '../../../lib/format';
-import { supabase } from '../../../lib/supabase';
+import { rawRpc } from '../../../lib/supabaseRaw';
 import type { BonusTier, StaffMember } from '../../../types';
 import { useStaffCompensation } from '../hooks/useStaffCompensation';
 import { useStaffPayouts } from '../hooks/useStaffPayouts';
@@ -41,9 +41,12 @@ export const StaffRemunerationTab: React.FC<StaffRemunerationTabProps> = ({
   const { data: piiData } = useQuery({
     queryKey: ['staff_pii', salonId, staff.id],
     enabled: !!staff.id,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_staff_pii', { p_staff_id: staff.id });
-      if (error) throw error;
+    queryFn: async ({ signal }) => {
+      const data = await rawRpc<{ base_salary: string | null }[] | { base_salary: string | null } | null>(
+        'get_staff_pii',
+        { p_staff_id: staff.id },
+        signal,
+      );
       const row = Array.isArray(data) ? data[0] : data;
       if (!row) return { baseSalary: null };
       return {

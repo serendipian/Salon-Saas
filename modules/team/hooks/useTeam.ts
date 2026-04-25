@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { supabase } from '../../../lib/supabase';
+import { rawRpc, rawSelect } from '../../../lib/supabaseRaw';
 import type { StaffMember } from '../../../types';
 import { toStaffMember, toStaffMemberInsert } from '../mappers';
 
@@ -17,16 +18,20 @@ export const useTeam = (includeArchived = false) => {
 
   const { data: staff = [], isLoading } = useQuery({
     queryKey: ['staff_members', salonId, { includeArchived }],
-    queryFn: async () => {
-      let query = supabase.from('staff_members').select('*').eq('salon_id', salonId);
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('salon_id', `eq.${salonId}`);
       if (!includeArchived) {
-        query = query.is('deleted_at', null);
+        params.append('deleted_at', 'is.null');
       }
-      const { data, error } = await query.order('last_name');
-      if (error) throw error;
-      return (data ?? []).map((row) =>
-        toStaffMember(row as unknown as Parameters<typeof toStaffMember>[0]),
+      params.append('order', 'last_name.asc');
+      const data = await rawSelect<Parameters<typeof toStaffMember>[0]>(
+        'staff_members',
+        params.toString(),
+        signal,
       );
+      return data.map(toStaffMember);
     },
     enabled: !!salonId,
   });
@@ -36,16 +41,24 @@ export const useTeam = (includeArchived = false) => {
 
   const { data: salaryMap = {} as Record<string, number> } = useQuery({
     queryKey: ['staff_pii_batch', salonId, staffIds],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_staff_pii_batch', { p_staff_ids: staffIds });
+    queryFn: async ({ signal }) => {
       const map: Record<string, number> = {};
-      if (error || !data) return map;
-      for (const row of data as { staff_id: string; base_salary: string | null }[]) {
-        if (row.base_salary != null) {
-          map[row.staff_id] = parseFloat(row.base_salary);
+      try {
+        const data = await rawRpc<{ staff_id: string; base_salary: string | null }[] | null>(
+          'get_staff_pii_batch',
+          { p_staff_ids: staffIds },
+          signal,
+        );
+        if (!data) return map;
+        for (const row of data) {
+          if (row.base_salary != null) {
+            map[row.staff_id] = parseFloat(row.base_salary);
+          }
         }
+        return map;
+      } catch {
+        return map;
       }
-      return map;
     },
     staleTime: 5 * 60 * 1000,
     enabled: staffIds.length > 0,

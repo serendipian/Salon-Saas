@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 import type { PayoutType, StaffPayout } from '../../../types';
 
 export interface CreatePayoutInput {
@@ -40,16 +41,15 @@ export const useStaffPayouts = (staffId: string) => {
 
   const { data: payouts = [], isLoading } = useQuery({
     queryKey: ['staff_payouts', salonId, staffId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('staff_payouts')
-        .select('*')
-        .eq('staff_id', staffId)
-        .eq('salon_id', salonId!)
-        .is('deleted_at', null)
-        .order('period_start', { ascending: false });
-      if (error) throw error;
-      return (data || []).map(toStaffPayout);
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('staff_id', `eq.${staffId}`);
+      params.append('salon_id', `eq.${salonId!}`);
+      params.append('deleted_at', 'is.null');
+      params.append('order', 'period_start.desc');
+      const data = await rawSelect<any>('staff_payouts', params.toString(), signal);
+      return data.map(toStaffPayout);
     },
     enabled: !!salonId && !!staffId,
   });

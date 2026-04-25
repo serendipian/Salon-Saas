@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
-import { supabase } from '../../../lib/supabase';
+import { rawRpc } from '../../../lib/supabaseRaw';
 import type { StaffActivityEvent } from '../../../types';
 
 const PAGE_SIZE = 20;
@@ -11,13 +11,16 @@ export const useStaffActivity = (staffId: string) => {
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['staff_activity', salonId, staffId],
-    queryFn: async ({ pageParam = 0 }) => {
-      const { data, error } = await supabase.rpc('get_staff_activity', {
-        p_staff_id: staffId,
-        p_limit: PAGE_SIZE,
-        p_offset: pageParam,
-      });
-      if (error) throw error;
+    queryFn: async ({ pageParam = 0, signal }) => {
+      const data = await rawRpc<any[] | null>(
+        'get_staff_activity',
+        {
+          p_staff_id: staffId,
+          p_limit: PAGE_SIZE,
+          p_offset: pageParam,
+        },
+        signal,
+      );
       return (data || []).map(
         (row: any): StaffActivityEvent => ({
           eventType: row.event_type,

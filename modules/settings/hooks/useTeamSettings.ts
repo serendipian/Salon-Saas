@@ -3,6 +3,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { Role } from '../../../lib/auth.types';
 import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 
 /** Number of days before a generated invitation link expires. */
 export const INVITATION_EXPIRY_DAYS = 7;
@@ -50,28 +51,25 @@ export function useTeamSettings() {
 
   const { data: members = [], isLoading: membersLoading } = useQuery({
     queryKey: ['team-settings-members', salonId],
-    queryFn: async (): Promise<MemberRow[]> => {
+    queryFn: async ({ signal }): Promise<MemberRow[]> => {
       // Disambiguate the profiles join via the FK name — salon_memberships
-      // has two FKs to profiles (profile_id and invited_by) so Supabase
+      // has two FKs to profiles (profile_id and invited_by) so PostgREST
       // requires an explicit hint. `!salon_memberships_profile_id_fkey`
-      // tells PostgREST which relationship to embed.
-      const { data, error } = await supabase
-        .from('salon_memberships')
-        .select(
-          'id, role, status, created_at, accepted_at, profile_id, profile:profiles!salon_memberships_profile_id_fkey(id, first_name, last_name, email, avatar_url)',
-        )
-        .eq('salon_id', salonId!)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: true });
-      if (error) throw error;
-      // Supabase returns the embedded row as either a single object or array
-      // depending on FK cardinality inference. Normalize and drop rows with
-      // no joined profile (shouldn't happen in practice given the FK).
+      // names which relationship to embed.
+      const params = new URLSearchParams();
+      params.append(
+        'select',
+        'id,role,status,created_at,accepted_at,profile_id,profile:profiles!salon_memberships_profile_id_fkey(id,first_name,last_name,email,avatar_url)',
+      );
+      params.append('salon_id', `eq.${salonId!}`);
+      params.append('deleted_at', 'is.null');
+      params.append('order', 'created_at.asc');
       type JoinedRow = Omit<MemberRow, 'profile' | 'role'> & {
         role: string;
         profile: MemberRow['profile'] | MemberRow['profile'][] | null;
       };
-      return ((data as unknown as JoinedRow[] | null) ?? []).flatMap((row) => {
+      const data = await rawSelect<JoinedRow>('salon_memberships', params.toString(), signal);
+      return data.flatMap((row) => {
         const profile = Array.isArray(row.profile) ? row.profile[0] : row.profile;
         if (!profile) return [];
         return [
@@ -92,14 +90,12 @@ export function useTeamSettings() {
 
   const { data: invitations = [], isLoading: invitationsLoading } = useQuery({
     queryKey: ['team-settings-invitations', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('invitations')
-        .select('id, role, token, created_at, expires_at, accepted_at, staff_member_id')
-        .eq('salon_id', salonId!)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as InvitationRow[];
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', 'id,role,token,created_at,expires_at,accepted_at,staff_member_id');
+      params.append('salon_id', `eq.${salonId!}`);
+      params.append('order', 'created_at.desc');
+      return rawSelect<InvitationRow>('invitations', params.toString(), signal);
     },
     enabled: !!salonId,
   });

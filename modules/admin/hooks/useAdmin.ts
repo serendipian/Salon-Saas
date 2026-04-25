@@ -2,6 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../../../context/ToastContext';
 import { supabase } from '../../../lib/supabase';
+import { rawRpc } from '../../../lib/supabaseRaw';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -83,11 +84,7 @@ export interface AdminHistoryPoint {
 export function useAdminMRR() {
   return useQuery<AdminMRR>({
     queryKey: ['admin', 'mrr'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_mrr');
-      if (error) throw error;
-      return data as unknown as AdminMRR;
-    },
+    queryFn: ({ signal }) => rawRpc<AdminMRR>('get_admin_mrr', {}, signal),
     staleTime: 60_000,
     retry: false,
   });
@@ -96,10 +93,9 @@ export function useAdminMRR() {
 export function useAdminAccounts() {
   return useQuery<AdminAccount[]>({
     queryKey: ['admin', 'accounts'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_accounts');
-      if (error) throw error;
-      return (data ?? []) as AdminAccount[];
+    queryFn: async ({ signal }) => {
+      const data = await rawRpc<AdminAccount[] | null>('get_admin_accounts', {}, signal);
+      return data ?? [];
     },
     staleTime: 60_000,
     retry: false,
@@ -109,13 +105,8 @@ export function useAdminAccounts() {
 export function useAdminAccount(salonId: string) {
   return useQuery<AdminAccountDetail>({
     queryKey: ['admin', 'account', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_account_detail', {
-        p_salon_id: salonId,
-      });
-      if (error) throw error;
-      return data as unknown as AdminAccountDetail;
-    },
+    queryFn: ({ signal }) =>
+      rawRpc<AdminAccountDetail>('get_admin_account_detail', { p_salon_id: salonId }, signal),
     enabled: !!salonId,
     staleTime: 60_000,
     retry: false,
@@ -125,10 +116,9 @@ export function useAdminAccount(salonId: string) {
 export function useAdminTrials() {
   return useQuery<AdminTrial[]>({
     queryKey: ['admin', 'trials'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_trials');
-      if (error) throw error;
-      return (data ?? []) as AdminTrial[];
+    queryFn: async ({ signal }) => {
+      const data = await rawRpc<AdminTrial[] | null>('get_admin_trials', {}, signal);
+      return data ?? [];
     },
     staleTime: 60_000,
     retry: false,
@@ -138,10 +128,13 @@ export function useAdminTrials() {
 export function useAdminFailedPayments() {
   return useQuery<AdminFailedPayment[]>({
     queryKey: ['admin', 'failed_payments'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_failed_payments');
-      if (error) throw error;
-      return (data ?? []) as AdminFailedPayment[];
+    queryFn: async ({ signal }) => {
+      const data = await rawRpc<AdminFailedPayment[] | null>(
+        'get_admin_failed_payments',
+        {},
+        signal,
+      );
+      return data ?? [];
     },
     staleTime: 60_000,
     retry: false,
@@ -151,10 +144,9 @@ export function useAdminFailedPayments() {
 export function useAdminRecentSignups() {
   return useQuery<AdminSignup[]>({
     queryKey: ['admin', 'recent_signups'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_recent_signups');
-      if (error) throw error;
-      return (data ?? []) as AdminSignup[];
+    queryFn: async ({ signal }) => {
+      const data = await rawRpc<AdminSignup[] | null>('get_admin_recent_signups', {}, signal);
+      return data ?? [];
     },
     staleTime: 60_000,
     retry: false,
@@ -164,10 +156,9 @@ export function useAdminRecentSignups() {
 export function useAdminChurn() {
   return useQuery<AdminChurn[]>({
     queryKey: ['admin', 'churn'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_churn');
-      if (error) throw error;
-      return (data ?? []) as AdminChurn[];
+    queryFn: async ({ signal }) => {
+      const data = await rawRpc<AdminChurn[] | null>('get_admin_churn', {}, signal);
+      return data ?? [];
     },
     staleTime: 60_000,
     retry: false,
@@ -177,13 +168,13 @@ export function useAdminChurn() {
 export function useAdminMRRHistory() {
   return useQuery<AdminHistoryPoint[]>({
     queryKey: ['admin', 'mrr_history'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_mrr_history', { months_back: 6 });
-      if (error) throw error;
-      return ((data as { month: string; mrr: number }[]) ?? []).map((d) => ({
-        month: d.month,
-        value: Number(d.mrr),
-      }));
+    queryFn: async ({ signal }) => {
+      const data = await rawRpc<{ month: string; mrr: number }[] | null>(
+        'get_admin_mrr_history',
+        { months_back: 6 },
+        signal,
+      );
+      return (data ?? []).map((d) => ({ month: d.month, value: Number(d.mrr) }));
     },
     staleTime: 60_000,
     retry: false,
@@ -193,13 +184,13 @@ export function useAdminMRRHistory() {
 export function useAdminSignupsHistory() {
   return useQuery<AdminHistoryPoint[]>({
     queryKey: ['admin', 'signups_history'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_signups_history', { months_back: 6 });
-      if (error) throw error;
-      return ((data as { month: string; count: number }[]) ?? []).map((d) => ({
-        month: d.month,
-        value: Number(d.count),
-      }));
+    queryFn: async ({ signal }) => {
+      const data = await rawRpc<{ month: string; count: number }[] | null>(
+        'get_admin_signups_history',
+        { months_back: 6 },
+        signal,
+      );
+      return (data ?? []).map((d) => ({ month: d.month, value: Number(d.count) }));
     },
     staleTime: 60_000,
     retry: false,
@@ -209,13 +200,13 @@ export function useAdminSignupsHistory() {
 export function useAdminTrialsHistory() {
   return useQuery<AdminHistoryPoint[]>({
     queryKey: ['admin', 'trials_history'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_trials_history', { months_back: 6 });
-      if (error) throw error;
-      return ((data as { month: string; count: number }[]) ?? []).map((d) => ({
-        month: d.month,
-        value: Number(d.count),
-      }));
+    queryFn: async ({ signal }) => {
+      const data = await rawRpc<{ month: string; count: number }[] | null>(
+        'get_admin_trials_history',
+        { months_back: 6 },
+        signal,
+      );
+      return (data ?? []).map((d) => ({ month: d.month, value: Number(d.count) }));
     },
     staleTime: 60_000,
     retry: false,

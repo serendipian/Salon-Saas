@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
-import { supabase } from '../../../lib/supabase';
+import { rawRpc } from '../../../lib/supabaseRaw';
 import type { StaffClient } from '../../../types';
 
 export const useStaffClients = (staffId: string) => {
@@ -9,12 +9,12 @@ export const useStaffClients = (staffId: string) => {
 
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ['staff_clients', salonId, staffId],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_staff_clients', {
-        p_staff_id: staffId,
-        p_limit: 10,
-      });
-      if (error) throw error;
+    queryFn: async ({ signal }) => {
+      const data = await rawRpc<any[] | null>(
+        'get_staff_clients',
+        { p_staff_id: staffId, p_limit: 10 },
+        signal,
+      );
       return (data || []).map(
         (row: any): StaffClient => ({
           clientId: row.client_id,

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { useTransactions } from '../../../hooks/useTransactions';
-import { supabase } from '../../../lib/supabase';
+import { rawRpc } from '../../../lib/supabaseRaw';
 import type { CartItem, DateRange, StaffMember, Transaction } from '../../../types';
 import { calcBonus, countWorkingDays } from '../utils';
 
@@ -62,14 +62,22 @@ export const useTeamPerformance = (
 
   const { data: piiMap = {} as Record<string, number | null>, isLoading: isLoadingPii } = useQuery({
     queryKey: ['staff_pii_batch', salonId, staffIds],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_staff_pii_batch', { p_staff_ids: staffIds });
+    queryFn: async ({ signal }) => {
       const map: Record<string, number | null> = {};
-      if (error || !data) return map;
-      for (const row of data as { staff_id: string; base_salary: string | null }[]) {
-        map[row.staff_id] = row.base_salary ? parseFloat(row.base_salary) : null;
+      try {
+        const data = await rawRpc<{ staff_id: string; base_salary: string | null }[] | null>(
+          'get_staff_pii_batch',
+          { p_staff_ids: staffIds },
+          signal,
+        );
+        if (!data) return map;
+        for (const row of data) {
+          map[row.staff_id] = row.base_salary ? parseFloat(row.base_salary) : null;
+        }
+        return map;
+      } catch {
+        return map;
       }
-      return map;
     },
     staleTime: 5 * 60 * 1000,
     enabled: staffIds.length > 0,

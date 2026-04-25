@@ -3,6 +3,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 import type { StaffMember } from '../../../types';
 import { toStaffMember, toStaffMemberInsert } from '../mappers';
 
@@ -16,19 +17,22 @@ export const useStaffDetail = (slug: string) => {
 
   const { data: staff, isLoading } = useQuery({
     queryKey: ['staff_member', salonId, slug],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       // Prefer active record when slug collides with an archived duplicate
-      const { data, error } = await supabase
-        .from('staff_members')
-        .select('*')
-        .eq('slug', slug)
-        .eq('salon_id', salonId)
-        .order('deleted_at', { ascending: true, nullsFirst: true })
-        .limit(1)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) return null;
-      return toStaffMember(data as unknown as Parameters<typeof toStaffMember>[0]);
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('slug', `eq.${slug}`);
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('order', 'deleted_at.asc.nullsfirst');
+      params.append('limit', '1');
+      const data = await rawSelect<Parameters<typeof toStaffMember>[0]>(
+        'staff_members',
+        params.toString(),
+        signal,
+      );
+      const row = data[0];
+      if (!row) return null;
+      return toStaffMember(row);
     },
     enabled: !!salonId && !!slug,
   });
