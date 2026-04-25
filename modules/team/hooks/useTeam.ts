@@ -3,8 +3,7 @@ import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
-import { supabase } from '../../../lib/supabase';
-import { rawRpc, rawSelect } from '../../../lib/supabaseRaw';
+import { rawInsertReturning, rawRpc, rawSelect, rawUpdate } from '../../../lib/supabaseRaw';
 import type { StaffMember } from '../../../types';
 import { toStaffMember, toStaffMemberInsert } from '../mappers';
 
@@ -76,8 +75,11 @@ export const useTeam = (includeArchived = false) => {
 
   // Load PII fields for a specific staff member via decrypted RPC
   const loadStaffPii = async (staffId: string): Promise<Partial<StaffMember>> => {
-    const { data, error } = await supabase.rpc('get_staff_pii', { p_staff_id: staffId });
-    if (error) throw error;
+    const data = await rawRpc<
+      | { base_salary: string | null; iban: string | null; social_security_number: string | null }[]
+      | { base_salary: string | null; iban: string | null; social_security_number: string | null }
+      | null
+    >('get_staff_pii', { p_staff_id: staffId });
     const row = Array.isArray(data) ? data[0] : data;
     if (!row) return {};
     return {
@@ -89,7 +91,7 @@ export const useTeam = (includeArchived = false) => {
 
   // Save PII fields via encrypted RPC (base_salary, iban, social_security_number)
   const savePiiFields = async (staffId: string, member: StaffMember) => {
-    const { error } = await supabase.rpc('update_staff_pii', {
+    await rawRpc('update_staff_pii', {
       p_staff_id: staffId,
       p_base_salary: member.baseSalary != null ? String(member.baseSalary) : undefined,
       p_iban: member.iban || undefined,
@@ -98,18 +100,18 @@ export const useTeam = (includeArchived = false) => {
       p_clear_iban: !member.iban,
       p_clear_ssn: !member.socialSecurityNumber,
     });
-    if (error) throw error;
   };
 
   const addStaffMemberMutation = useMutation({
     mutationFn: async (member: StaffMember) => {
       const insertData = toStaffMemberInsert(member, salonId);
-      const { data, error } = await supabase
-        .from('staff_members')
-        .insert(insertData)
-        .select('id, slug')
-        .single();
-      if (error) throw error;
+      const inserted = await rawInsertReturning<{ id: string; slug: string }>(
+        'staff_members',
+        insertData,
+        'id,slug',
+      );
+      const data = inserted[0];
+      if (!data) throw new Error('Staff insert returned no row');
       try {
         await savePiiFields(data.id, member);
       } catch (piiError) {
@@ -129,12 +131,10 @@ export const useTeam = (includeArchived = false) => {
   const updateStaffMemberMutation = useMutation({
     mutationFn: async (member: StaffMember) => {
       const { id, salon_id, ...updateData } = toStaffMemberInsert(member, salonId);
-      const { error } = await supabase
-        .from('staff_members')
-        .update(updateData)
-        .eq('id', member.id)
-        .eq('salon_id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${member.id}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('staff_members', params.toString(), updateData);
       // PII save is best-effort — non-PII update already succeeded
       try {
         await savePiiFields(member.id, member);
