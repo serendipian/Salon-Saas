@@ -15,6 +15,18 @@ import { useNewClientCount } from './useNewClientCount';
 export const calcTrend = (curr: number, prev: number) =>
   prev === 0 ? (curr > 0 ? 100 : 0) : ((curr - prev) / Math.abs(prev)) * 100;
 
+// Parse a stored date value into a local-day Date. Bare YYYY-MM-DD strings
+// (Postgres DATE columns, <input type="date"> values) are parsed by the
+// browser as UTC midnight, which reads as the *previous* day in negative-
+// offset timezones — build the Date from parts in that case.
+const parseLocalDay = (dateStr: string): Date => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+  if (m) {
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  }
+  return new Date(dateStr);
+};
+
 export const useAccounting = () => {
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
@@ -235,11 +247,8 @@ export const useAccounting = () => {
     const prevTo = from - 1;
     const prevFrom = prevTo - duration;
 
-    // Bucket a stored ISO timestamp to the *local* calendar day, not the UTC day.
-    // Splitting on 'T' would pull the UTC date portion, which misfiles records
-    // created close to midnight (e.g. 00:55 local = previous day UTC).
     const parseLocalDate = (dateStr: string): number => {
-      const d = new Date(dateStr);
+      const d = parseLocalDay(dateStr);
       return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
     };
 
@@ -402,7 +411,7 @@ export const useAccounting = () => {
     const chartToStr = toLocalDate(to);
 
     transactions.forEach((t: Transaction) => {
-      const d = new Date(t.date);
+      const d = parseLocalDay(t.date);
       const dStr = toLocalDate(d);
       if (dStr < chartFromStr || dStr > chartToStr) return;
       const key = toChartKey(d);
@@ -410,7 +419,7 @@ export const useAccounting = () => {
     });
 
     expenses.forEach((e: Expense) => {
-      const d = new Date(e.date);
+      const d = parseLocalDay(e.date);
       const dStr = toLocalDate(d);
       if (dStr < chartFromStr || dStr > chartToStr) return;
       const key = toChartKey(d);

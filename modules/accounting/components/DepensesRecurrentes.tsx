@@ -29,7 +29,7 @@ interface Props {
 }
 
 export const DepensesRecurrentes: React.FC<Props> = ({ onCreateExpense }) => {
-  const { recurringExpenses, updateRecurringExpenses } = useSettings();
+  const { recurringExpenses, updateRecurringExpenses, expenseCategories } = useSettings();
   const { addToast } = useToast();
   const [isAdding, setIsAdding] = useState(false);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
@@ -68,6 +68,16 @@ export const DepensesRecurrentes: React.FC<Props> = ({ onCreateExpense }) => {
   const handleGenerate = async (rec: RecurringExpense) => {
     if (!onCreateExpense) return;
     if (generatingId) return;
+    // RecurringExpense has no category field today, so default to the first
+    // available category. The user can re-categorize from the list afterward.
+    const defaultCategory = expenseCategories[0]?.id;
+    if (!defaultCategory) {
+      addToast({
+        type: 'error',
+        message: "Aucune catégorie de dépense disponible. Créez-en une d'abord.",
+      });
+      return;
+    }
     setGeneratingId(rec.id);
     try {
       // Create the expense first — only advance the date and toast on success.
@@ -75,7 +85,7 @@ export const DepensesRecurrentes: React.FC<Props> = ({ onCreateExpense }) => {
         description: rec.name,
         amount: rec.amount,
         date: rec.nextDate,
-        category: '',
+        category: defaultCategory,
       });
       updateRecurringExpenses(
         recurringExpenses.map((r) =>
