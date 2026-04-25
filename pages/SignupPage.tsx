@@ -150,24 +150,30 @@ export const SignupPage: React.FC = () => {
             </div>
           )}
 
-          <button type="submit" disabled={isSubmitting || !acceptedTerms} className="auth-cta">
-            {isSubmitting ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <>
-                Créer mon compte
-                <ArrowRight size={16} strokeWidth={1.75} />
-              </>
-            )}
-          </button>
+          <div className="space-y-2">
+            <button
+              type="submit"
+              disabled={isSubmitting || !acceptedTerms}
+              className="auth-cta"
+            >
+              {isSubmitting ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <>
+                  Créer mon compte
+                  <ArrowRight size={16} strokeWidth={1.75} />
+                </>
+              )}
+            </button>
 
-          <AuthDivider label="ou" />
+            <AuthDivider label="ou" />
 
-          <GoogleSignInButton
-            redirect={redirect}
-            label="S’inscrire avec Google"
-            onError={setError}
-          />
+            <GoogleSignInButton
+              redirect={redirect}
+              label="S’inscrire avec Google"
+              onError={setError}
+            />
+          </div>
 
           <label className="auth-terms">
             <input

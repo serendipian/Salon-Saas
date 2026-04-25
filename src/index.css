@@ -368,23 +368,14 @@ body {
 }
 
 /* "ou" divider between primary CTA and Google button.
-   Uses !important to override the form's space-y-5 / space-y-6 gap and
-   the next-sibling's space-y top margin, so the divider sits visually
-   close to the buttons it separates instead of floating in 20–24px of
-   whitespace on each side. */
+   Spacing around the divider is controlled by the consumer wrapping the
+   CTA + divider + Google button in a tighter space-y-2 container. */
 .auth-divider {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  /* margin-top is 0: the CTA above carries a 8–12px drop shadow that
-     visually fills the gap. Adding margin here reads as double-spacing. */
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-}
-.auth-divider + * {
-  margin-top: 8px !important;
 }
 .auth-divider::before,
 .auth-divider::after {
@@ -409,10 +400,11 @@ body {
 .auth-terms {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 10.5px;
   line-height: 1.5;
+  letter-spacing: -0.005em;
   color: rgba(42, 38, 34, 0.78);
   user-select: none;
 }

@@ -187,25 +187,27 @@ export const LoginPage: React.FC = () => {
               </div>
             )}
 
-            <button type="submit" disabled={isSubmitting} className="auth-cta">
-              {isSubmitting ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : mode === 'magic' ? (
-                <>
-                  <Sparkles size={16} strokeWidth={1.5} />
-                  Envoyer le lien
-                </>
-              ) : (
-                <>
-                  Se connecter
-                  <ArrowRight size={16} strokeWidth={1.75} />
-                </>
-              )}
-            </button>
+            <div className="space-y-2">
+              <button type="submit" disabled={isSubmitting} className="auth-cta">
+                {isSubmitting ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : mode === 'magic' ? (
+                  <>
+                    <Sparkles size={16} strokeWidth={1.5} />
+                    Envoyer le lien
+                  </>
+                ) : (
+                  <>
+                    Se connecter
+                    <ArrowRight size={16} strokeWidth={1.75} />
+                  </>
+                )}
+              </button>
 
-            <AuthDivider label="ou" />
+              <AuthDivider label="ou" />
 
-            <GoogleSignInButton redirect={redirect} onError={setError} />
+              <GoogleSignInButton redirect={redirect} onError={setError} />
+            </div>
           </form>
         </>
       )}
