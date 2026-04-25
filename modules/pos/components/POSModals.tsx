@@ -57,10 +57,37 @@ export const ItemEditorModal: React.FC<{
   const { isMobile } = useMediaQuery();
   useMobileModalA11y(isMobile, onClose);
 
-  const applyDiscount = (percent: number) => {
-    const newPrice = originalPrice * (1 - percent / 100);
-    setPrice(parseFloat(newPrice.toFixed(2)));
+  // Discount preset selection state.
+  // - Click a preset → sets price + selectedPreset + note (the preset label
+  //   flows into change_note on the appointment row at checkout time).
+  // - Manual price entry → clears selectedPreset (the note is left alone so
+  //   the cashier can keep custom text without losing it).
+  // - Mutual exclusion: only one preset can be active at a time.
+  type DiscountPreset = '-10%' | '-20%' | 'Offert';
+  const [selectedPreset, setSelectedPreset] = useState<DiscountPreset | null>(() => {
+    if (item.note === '-10%' || item.note === '-20%' || item.note === 'Offert') {
+      return item.note;
+    }
+    return null;
+  });
+
+  const applyPreset = (preset: DiscountPreset) => {
+    const newPrice =
+      preset === 'Offert' ? 0 : parseFloat((originalPrice * (1 - (preset === '-10%' ? 10 : 20) / 100)).toFixed(2));
+    setPrice(newPrice);
+    setSelectedPreset(preset);
+    setNote(preset);
   };
+
+  const handlePriceChange = (raw: string) => {
+    setPrice(parseFloat(raw));
+    setSelectedPreset(null);
+  };
+
+  const presetButtonClass = (preset: DiscountPreset, idleExtra = '') =>
+    selectedPreset === preset
+      ? 'bg-slate-900 text-white border-slate-900'
+      : `bg-white border-slate-200 hover:bg-slate-50 ${idleExtra}`;
 
   const handleSave = () => {
     const safePrice = Number.isNaN(price) || price < 0 ? 0 : price;
@@ -109,7 +136,7 @@ export const ItemEditorModal: React.FC<{
                 type="number"
                 inputMode="decimal"
                 value={price}
-                onChange={(e) => setPrice(parseFloat(e.target.value))}
+                onChange={(e) => handlePriceChange(e.target.value)}
                 className="w-full text-3xl font-bold text-slate-900 border-b-2 border-slate-200 focus:border-slate-900 outline-none py-1 bg-white"
               />
               <span className="absolute right-0 bottom-2 text-lg text-slate-400">
@@ -125,20 +152,26 @@ export const ItemEditorModal: React.FC<{
 
           <div className="grid grid-cols-3 gap-3">
             <button
-              onClick={() => applyDiscount(10)}
-              className="py-3 text-sm font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50 min-h-[44px]"
+              type="button"
+              onClick={() => applyPreset('-10%')}
+              className={`py-3 text-sm font-medium border rounded-lg min-h-[44px] transition-colors ${presetButtonClass('-10%')}`}
+              aria-pressed={selectedPreset === '-10%'}
             >
               -10%
             </button>
             <button
-              onClick={() => applyDiscount(20)}
-              className="py-3 text-sm font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50 min-h-[44px]"
+              type="button"
+              onClick={() => applyPreset('-20%')}
+              className={`py-3 text-sm font-medium border rounded-lg min-h-[44px] transition-colors ${presetButtonClass('-20%')}`}
+              aria-pressed={selectedPreset === '-20%'}
             >
               -20%
             </button>
             <button
-              onClick={() => setPrice(0)}
-              className="py-3 text-sm font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50 text-emerald-600 min-h-[44px]"
+              type="button"
+              onClick={() => applyPreset('Offert')}
+              className={`py-3 text-sm font-medium border rounded-lg min-h-[44px] transition-colors ${presetButtonClass('Offert', 'text-emerald-600')}`}
+              aria-pressed={selectedPreset === 'Offert'}
             >
               Offert
             </button>
@@ -215,7 +248,7 @@ export const ItemEditorModal: React.FC<{
                 type="number"
                 inputMode="decimal"
                 value={price}
-                onChange={(e) => setPrice(parseFloat(e.target.value))}
+                onChange={(e) => handlePriceChange(e.target.value)}
                 className="w-full text-3xl font-bold text-slate-900 border-b-2 border-slate-200 focus:border-slate-900 outline-none py-1 bg-white"
               />
               <span className="absolute right-0 bottom-2 text-lg text-slate-400">
@@ -231,20 +264,26 @@ export const ItemEditorModal: React.FC<{
 
           <div className="grid grid-cols-3 gap-2">
             <button
-              onClick={() => applyDiscount(10)}
-              className="py-2 text-xs font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50"
+              type="button"
+              onClick={() => applyPreset('-10%')}
+              className={`py-2 text-xs font-medium border rounded-lg transition-colors ${presetButtonClass('-10%')}`}
+              aria-pressed={selectedPreset === '-10%'}
             >
               -10%
             </button>
             <button
-              onClick={() => applyDiscount(20)}
-              className="py-2 text-xs font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50"
+              type="button"
+              onClick={() => applyPreset('-20%')}
+              className={`py-2 text-xs font-medium border rounded-lg transition-colors ${presetButtonClass('-20%')}`}
+              aria-pressed={selectedPreset === '-20%'}
             >
               -20%
             </button>
             <button
-              onClick={() => setPrice(0)}
-              className="py-2 text-xs font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50 text-emerald-600"
+              type="button"
+              onClick={() => applyPreset('Offert')}
+              className={`py-2 text-xs font-medium border rounded-lg transition-colors ${presetButtonClass('Offert', 'text-emerald-600')}`}
+              aria-pressed={selectedPreset === 'Offert'}
             >
               Offert
             </button>

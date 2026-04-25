@@ -1,8 +1,10 @@
 import { ArrowLeft, ArrowRight, Calendar, Receipt, Scissors, Trash2, User } from 'lucide-react';
 import type React from 'react';
+import { useState } from 'react';
 import { useLinkedTransaction } from '../../../hooks/useLinkedTransaction';
 import { formatName, formatPrice } from '../../../lib/format';
 import { type Appointment, AppointmentStatus } from '../../../types';
+import { LinkedReceiptModal } from '../../pos/components/LinkedReceiptModal';
 import { useTeam } from '../../team/hooks/useTeam';
 import { StatusBadge } from './StatusBadge';
 
@@ -67,6 +69,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
 }) => {
   const { allStaff } = useTeam(true); // include archived so renamed/deleted staff still resolve
   const { data: linkedTransaction } = useLinkedTransaction(appointment, allAppointments);
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
   const date = new Date(appointment.date);
 
@@ -107,13 +110,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
           {linkedTransaction && (
             <button
               type="button"
-              onClick={() =>
-                window.open(
-                  `/pos/historique/${linkedTransaction.id}/print`,
-                  '_blank',
-                  'noopener,noreferrer',
-                )
-              }
+              onClick={() => setIsReceiptOpen(true)}
               className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium text-sm hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-2"
             >
               <Receipt size={16} />
@@ -321,6 +318,13 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
           </div>
         )}
       </div>
+
+      {isReceiptOpen && linkedTransaction && (
+        <LinkedReceiptModal
+          transactionId={linkedTransaction.id}
+          onClose={() => setIsReceiptOpen(false)}
+        />
+      )}
     </div>
   );
 };
