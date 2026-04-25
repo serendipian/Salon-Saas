@@ -12,6 +12,7 @@ import { setSalonCurrency } from '../lib/format';
 import { useRealtimeEpoch } from '../lib/realtimeReset';
 import { Sentry } from '../lib/sentry';
 import { supabase } from '../lib/supabase';
+import { rawRpc, rawUpdate } from '../lib/supabaseRaw';
 
 export type ProfileUpdates = Omit<
   Partial<Profile>,
@@ -516,8 +517,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateProfile = useCallback(
     async (data: ProfileUpdates) => {
       if (!user) return { error: 'Not authenticated' };
-      const { error } = await supabase.from('profiles').update(data).eq('id', user.id);
-      if (error) return { error: error.message };
+      try {
+        const params = new URLSearchParams();
+        params.append('id', `eq.${user.id}`);
+        await rawUpdate('profiles', params.toString(), data);
+      } catch (err) {
+        return { error: err instanceof Error ? err.message : String(err) };
+      }
       const updated = await fetchProfile(user.id);
       if (updated) setProfile(updated);
       return { error: null };
@@ -537,22 +543,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createSalon = useCallback(
     async (name: string, timezone = 'Europe/Paris', currency = 'MAD') => {
-      const { data, error } = await supabase.rpc('create_salon', {
-        p_name: name,
-        p_timezone: timezone,
-        p_currency: currency,
-      });
-
-      if (error) {
-        return { salonId: null, error: error.message };
+      let data: string;
+      try {
+        data = await rawRpc<string>('create_salon', {
+          p_name: name,
+          p_timezone: timezone,
+          p_currency: currency,
+        });
+      } catch (err) {
+        return {
+          salonId: null,
+          error: err instanceof Error ? err.message : String(err),
+        };
       }
 
       // Initialize 14-day Pro trial for the new salon
-      const { error: trialError } = await supabase.rpc('initialize_salon_trial', {
-        p_salon_id: data,
-      });
-      if (trialError) {
-        console.error('Failed to initialize salon trial:', trialError.message);
+      try {
+        await rawRpc('initialize_salon_trial', { p_salon_id: data });
+      } catch (trialError) {
+        console.error(
+          'Failed to initialize salon trial:',
+          trialError instanceof Error ? trialError.message : trialError,
+        );
       }
 
       // Refetch memberships after salon creation

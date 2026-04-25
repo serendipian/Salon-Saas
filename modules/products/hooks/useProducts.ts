@@ -3,8 +3,7 @@ import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
-import { supabase } from '../../../lib/supabase';
-import { rawSelect } from '../../../lib/supabaseRaw';
+import { rawInsert, rawRpc, rawSelect, rawUpdate } from '../../../lib/supabaseRaw';
 import type { Brand, Product, ProductCategory } from '../../../types';
 import { toBrand, toProduct, toProductCategory, toProductInsert } from '../mappers';
 
@@ -80,10 +79,7 @@ export const useProducts = () => {
       product: Product;
       supplierId?: string | null;
     }) => {
-      const { error } = await supabase
-        .from('products')
-        .insert(toProductInsert(product, salonId, supplierId));
-      if (error) throw error;
+      await rawInsert('products', toProductInsert(product, salonId, supplierId));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
@@ -102,12 +98,10 @@ export const useProducts = () => {
       supplierId?: string | null;
     }) => {
       const { salon_id, ...updateData } = toProductInsert(product, salonId, supplierId);
-      const { error } = await supabase
-        .from('products')
-        .update(updateData)
-        .eq('id', product.id)
-        .eq('salon_id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${product.id}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('products', params.toString(), updateData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });
@@ -126,12 +120,11 @@ export const useProducts = () => {
         sort_order: i,
       }));
 
-      const { error } = await supabase.rpc('save_product_categories', {
+      await rawRpc('save_product_categories', {
         p_salon_id: salonId,
         p_categories: p_categories,
         p_assignments: assignments ?? null,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product_categories', salonId] });
@@ -152,11 +145,10 @@ export const useProducts = () => {
         sort_order: i,
       }));
 
-      const { error } = await supabase.rpc('save_brands', {
+      await rawRpc('save_brands', {
         p_salon_id: salonId,
         p_brands: p_brands,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['brands', salonId] });
@@ -168,12 +160,12 @@ export const useProducts = () => {
   // Delete product (soft-delete via deleted_at)
   const deleteProductMutation = useMutation({
     mutationFn: async (productId: string) => {
-      const { error } = await supabase
-        .from('products')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', productId)
-        .eq('salon_id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${productId}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('products', params.toString(), {
+        deleted_at: new Date().toISOString(),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products', salonId] });

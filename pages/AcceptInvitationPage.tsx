@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { rawRpc } from '../lib/supabaseRaw';
 
 interface InvitationInfo {
   staff_first_name: string | null;
@@ -55,23 +56,19 @@ export const AcceptInvitationPage: React.FC = () => {
     if (acceptedRef.current) return;
     setStatus('processing');
     try {
-      const { error } = await supabase.rpc('accept_invitation', { p_token: token! });
-      if (error) {
-        setStatus('error');
-        setErrorMessage(
-          error.message.includes('expired')
-            ? 'Cette invitation a expiré. Demandez une nouvelle invitation.'
-            : error.message.includes('already')
-              ? 'Vous êtes déjà membre de ce salon.'
-              : `Une erreur est survenue: ${error.message}`,
-        );
-      } else {
-        acceptedRef.current = true;
-        setStatus('success');
-      }
-    } catch {
+      await rawRpc('accept_invitation', { p_token: token! });
+      acceptedRef.current = true;
+      setStatus('success');
+    } catch (err) {
       setStatus('error');
-      setErrorMessage('Une erreur est survenue. Veuillez réessayer.');
+      const message = err instanceof Error ? err.message : String(err);
+      setErrorMessage(
+        message.includes('expired')
+          ? 'Cette invitation a expiré. Demandez une nouvelle invitation.'
+          : message.includes('already')
+            ? 'Vous êtes déjà membre de ce salon.'
+            : `Une erreur est survenue: ${message}`,
+      );
     }
   }, [token]);
 

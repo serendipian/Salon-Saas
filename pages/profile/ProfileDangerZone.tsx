@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { supabase } from '../../lib/supabase';
+import { rawRpc } from '../../lib/supabaseRaw';
 
 export const ProfileDangerZone: React.FC = () => {
   const { activeSalon, memberships } = useAuth();
@@ -38,14 +39,14 @@ export const ProfileDangerZone: React.FC = () => {
 
   const handleLeave = async () => {
     setIsLeaving(true);
-    const { error } = await supabase.rpc('leave_salon', { p_salon_id: salonId });
-
-    setIsLeaving(false);
-
-    if (error) {
+    try {
+      await rawRpc('leave_salon', { p_salon_id: salonId });
+    } catch {
+      setIsLeaving(false);
       addToast({ type: 'error', message: 'Impossible de quitter le salon' });
       return;
     }
+    setIsLeaving(false);
 
     addToast({ type: 'success', message: 'Vous avez quitté le salon' });
 

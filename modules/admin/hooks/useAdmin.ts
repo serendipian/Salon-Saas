@@ -220,11 +220,7 @@ export function useAdminExtendTrial(salonId: string) {
   const { addToast } = useToast();
   return useMutation({
     mutationFn: async (days: number) => {
-      const { error } = await supabase.rpc('admin_extend_trial', {
-        p_salon_id: salonId,
-        p_days: days,
-      });
-      if (error) throw error;
+      await rawRpc('admin_extend_trial', { p_salon_id: salonId, p_days: days });
     },
     onSuccess: () => {
       addToast({ type: 'success', message: 'Essai prolongé avec succès.' });
@@ -245,8 +241,7 @@ export function useAdminSetPlan(salonId: string) {
   const { addToast } = useToast();
   return useMutation({
     mutationFn: async (tier: string) => {
-      const { error } = await supabase.rpc('admin_set_plan', { p_salon_id: salonId, p_tier: tier });
-      if (error) throw error;
+      await rawRpc('admin_set_plan', { p_salon_id: salonId, p_tier: tier });
     },
     onSuccess: () => {
       addToast({ type: 'success', message: 'Plan mis à jour avec succès.' });
@@ -266,8 +261,7 @@ export function useAdminSuspend(salonId: string) {
   const { addToast } = useToast();
   return useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc('admin_suspend_salon', { p_salon_id: salonId });
-      if (error) throw error;
+      await rawRpc('admin_suspend_salon', { p_salon_id: salonId });
     },
     onSuccess: () => {
       addToast({ type: 'success', message: 'Compte suspendu.' });
@@ -287,8 +281,7 @@ export function useAdminReactivate(salonId: string) {
   const { addToast } = useToast();
   return useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc('admin_reactivate_salon', { p_salon_id: salonId });
-      if (error) throw error;
+      await rawRpc('admin_reactivate_salon', { p_salon_id: salonId });
     },
     onSuccess: () => {
       addToast({ type: 'success', message: 'Compte réactivé.' });
