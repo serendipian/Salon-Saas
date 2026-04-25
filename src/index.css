@@ -100,20 +100,21 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* Mobile hero — tall cinematic banner that flows into the form.
+/* Mobile hero — compact cinematic banner that flows into the form.
    Scoped to <lg so .auth-mobile-hero never overrides Tailwind's lg:hidden
-   on desktop (would otherwise double-stack the hero over the form). */
+   on desktop (would otherwise double-stack the hero over the form).
+   Sized small enough that the full form stays above the fold on phones. */
 @media (max-width: 1023.98px) {
   .auth-mobile-hero {
     display: flex;
     flex-direction: column;
-    min-height: 52dvh;
-    max-height: 60dvh;
+    min-height: 32dvh;
+    max-height: 38dvh;
   }
   @media (orientation: landscape) and (max-height: 600px) {
     .auth-mobile-hero {
-      min-height: 56dvh;
-      max-height: 70dvh;
+      min-height: 38dvh;
+      max-height: 44dvh;
     }
   }
 }
@@ -202,6 +203,18 @@ body {
   background-image:
     radial-gradient(circle at 1px 1px, rgba(14, 12, 11, 0.045) 1px, transparent 0);
   background-size: 3px 3px;
+}
+
+/* Form-area top padding — tight on mobile so the whole form sits above
+   the fold on phones; comfortable on desktop where there's no hero stacked
+   on top. */
+.auth-form-area {
+  padding-top: 16px;
+}
+@media (min-width: 1024px) {
+  .auth-form-area {
+    padding-top: 40px;
+  }
 }
 
 /* Form primitives — editorial, underline-only inputs */

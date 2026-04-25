@@ -101,7 +101,7 @@ export const LoginPage: React.FC = () => {
       ) : (
         <>
           {/* Mode toggle pill */}
-          <div className="auth-toggle mb-8">
+          <div className="auth-toggle mb-5">
             <span className="auth-toggle-thumb" style={thumbStyle} />
             <button
               ref={passwordBtnRef}
@@ -129,7 +129,7 @@ export const LoginPage: React.FC = () => {
 
           <form
             onSubmit={mode === 'password' ? handlePasswordLogin : handleMagicLink}
-            className="space-y-7"
+            className="space-y-5 sm:space-y-6"
           >
             <div>
               <label htmlFor="email" className="auth-label">

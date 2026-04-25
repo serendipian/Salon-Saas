@@ -192,10 +192,9 @@ export const AuthShell: React.FC<AuthShellProps> = ({
           </svg>
 
           <div
-            className="relative z-10 flex flex-1 items-center justify-center px-6 sm:px-12"
+            className="auth-form-area relative z-10 flex flex-1 items-center justify-center px-6 sm:px-12"
             style={{
-              paddingTop: '32px',
-              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 32px)',
+              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
             }}
           >
             <div className="w-full max-w-[440px]">
@@ -234,7 +233,7 @@ export const AuthShell: React.FC<AuthShellProps> = ({
 
               {footer && (
                 <div
-                  className="auth-rise mt-8 border-t border-[var(--auth-line)] pt-6 text-sm text-[var(--auth-ink-soft)]/80"
+                  className="auth-rise mt-6 border-t border-[var(--auth-line)] pt-4 text-sm text-[var(--auth-ink-soft)]/80"
                   style={{ ['--d' as string]: '480ms' }}
                 >
                   {footer}

@@ -104,7 +104,7 @@ export const ResetPasswordPage: React.FC = () => {
           <CheckCircle2 size={26} strokeWidth={1.5} />
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-7">
+        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
           <div>
             <label htmlFor="password" className="auth-label">
               Nouveau mot de passe
