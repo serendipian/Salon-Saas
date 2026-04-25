@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AuthShell } from './auth/AuthShell';
+import { AuthDivider, GoogleSignInButton } from './auth/GoogleSignInButton';
 
 export const LoginPage: React.FC = () => {
   const {
@@ -201,6 +202,10 @@ export const LoginPage: React.FC = () => {
                 </>
               )}
             </button>
+
+            <AuthDivider label="ou" />
+
+            <GoogleSignInButton redirect={redirect} onError={setError} />
           </form>
         </>
       )}

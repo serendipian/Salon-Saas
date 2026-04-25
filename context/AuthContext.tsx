@@ -39,6 +39,7 @@ interface AuthContextType {
     lastName: string,
   ) => Promise<{ error: string | null }>;
   signInWithMagicLink: (email: string) => Promise<{ error: string | null }>;
+  signInWithGoogle: (redirect?: string | null) => Promise<{ error: string | null }>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
   updatePassword: (
     newPassword: string,
@@ -450,6 +451,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [sanitizeAuthError],
   );
 
+  const signInWithGoogle = useCallback(
+    async (redirect?: string | null) => {
+      const target = redirect
+        ? `${window.location.origin}${redirect}`
+        : `${window.location.origin}/dashboard`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: target,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'select_account',
+          },
+        },
+      });
+      return { error: error ? sanitizeAuthError(error.message) : null };
+    },
+    [sanitizeAuthError],
+  );
+
   const resetPassword = useCallback(
     async (email: string) => {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -610,6 +631,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signUp,
     signInWithMagicLink,
+    signInWithGoogle,
     resetPassword,
     updatePassword,
     signOut,
