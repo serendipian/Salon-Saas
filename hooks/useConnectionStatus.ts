@@ -55,6 +55,64 @@ let offlineRetryTimer: ReturnType<typeof setTimeout> | null = null;
 let lastQueryClient: QueryClient | null = null;
 const listeners = new Set<() => void>();
 
+// ---- Diagnostics --------------------------------------------------------
+// Console-only logging of realtime WebSocket lifecycle. Lets us see *why*
+// the orange dot fires for users who report it: idle WS timeout (1006),
+// browser tab suspension (1001), server-side close (1011), etc. No PII,
+// no external transport — read from DevTools console.
+
+let lastSubscribedAt: number | null = null;
+let socketCloseListenerAttached = false;
+
+function fmtElapsed(from: number | null): string {
+  if (from === null) return 'n/a';
+  const s = Math.round((Date.now() - from) / 1000);
+  if (s < 60) return `${s}s`;
+  return `${Math.round(s / 60)}m${s % 60}s`;
+}
+
+function logRealtime(event: string, extra: Record<string, unknown> = {}) {
+  // Single tagged line per event; easy to grep "[realtime]" in DevTools.
+  // biome-ignore lint/suspicious/noConsole: diagnostic logger
+  console.log(
+    `[realtime] ${event}`,
+    JSON.stringify({
+      at: new Date().toISOString(),
+      visibility: typeof document !== 'undefined' ? document.visibilityState : 'unknown',
+      online: typeof navigator !== 'undefined' ? navigator.onLine : 'unknown',
+      sinceSubscribed: fmtElapsed(lastSubscribedAt),
+      sinceRecovery: fmtElapsed(lastRecoveryAt || null),
+      ...extra,
+    }),
+  );
+}
+
+/**
+ * Attach a one-time listener to the underlying WebSocket so we can capture
+ * its real close code (1006, 1001, 1011, etc.) — `channel.subscribe(status)`
+ * only gives us a string status, which is too coarse to diagnose causes.
+ */
+function attachSocketCloseListener() {
+  if (socketCloseListenerAttached) return;
+  // The supabase-js types don't expose `realtime.conn`, but it's the live
+  // WebSocket. Best-effort access via runtime check.
+  // biome-ignore lint/suspicious/noExplicitAny: poking at SDK internals for diagnostics only
+  const realtime = (supabase as any).realtime;
+  const conn: WebSocket | undefined = realtime?.conn;
+  if (!conn || typeof conn.addEventListener !== 'function') return;
+  conn.addEventListener('close', (e: CloseEvent) => {
+    logRealtime('socket.close', {
+      code: e.code,
+      reason: e.reason || null,
+      wasClean: e.wasClean,
+    });
+  });
+  conn.addEventListener('error', () => {
+    logRealtime('socket.error', {});
+  });
+  socketCloseListenerAttached = true;
+}
+
 function notifyListeners() {
   for (const fn of listeners) fn();
 }
@@ -92,8 +150,15 @@ function evaluateStateInternal() {
 function startMonitoring() {
   if (monitorChannel) return;
   monitorChannel = supabase.channel('connection-monitor').subscribe((status) => {
+    // Defer attaching the socket close listener until after the first
+    // subscribe attempt — by that point realtime.conn exists.
+    attachSocketCloseListener();
+
+    logRealtime('channel.status', { status, recoveryInFlight });
+
     if (recoveryInFlight) return; // ignore expected churn during recovery
     if (status === 'SUBSCRIBED') {
+      lastSubscribedAt = Date.now();
       disconnectedAt = null;
       evaluateStateInternal();
     } else if (status === 'TIMED_OUT' || status === 'CLOSED' || status === 'CHANNEL_ERROR') {
@@ -314,7 +379,7 @@ async function probeRealtime(): Promise<boolean> {
 }
 
 async function triggerRecovery(
-  _reason: 'visibility' | 'ws' | 'manual',
+  reason: 'visibility' | 'ws' | 'manual',
   opts: { force?: boolean } = {},
 ): Promise<void> {
   if (!isRecoveryEnabled()) {
@@ -324,11 +389,12 @@ async function triggerRecovery(
     return;
   }
   if (!opts.force && Date.now() - lastRecoveryAt < TIMINGS.RECOVERY_RATE_LIMIT_MS) {
+    logRealtime('recovery.skip', { reason, why: 'rate-limited' });
     return;
   }
 
+  logRealtime('recovery.start', { reason });
   recoveryInFlight = true;
-  const _startedAt = Date.now();
   setState('recovering');
 
   try {
@@ -404,10 +470,17 @@ async function triggerRecovery(
     if (realtimeOk) {
       disconnectedAt = null;
       setState('connected');
+      logRealtime('recovery.end', { result: 'ok' });
     } else {
       disconnectedAt = disconnectedAt ?? Date.now();
       setState('reconnecting');
+      logRealtime('recovery.end', { result: 'realtime-probe-failed' });
     }
+    // Re-attach close listener since the underlying socket was just recreated
+    // by realtime.disconnect()/connect() — the prior listener was on the
+    // dead socket and won't fire again.
+    socketCloseListenerAttached = false;
+    attachSocketCloseListener();
   } finally {
     recoveryInFlight = false;
     lastRecoveryAt = Date.now();
