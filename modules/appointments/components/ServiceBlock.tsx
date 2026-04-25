@@ -28,6 +28,7 @@ interface ServiceBlockProps {
   packs?: Pack[];
   onAddPackBlocks?: (pack: Pack) => void;
   stepOffset?: number;
+  hasConflict?: boolean;
 }
 
 export default function ServiceBlock({
@@ -46,6 +47,7 @@ export default function ServiceBlock({
   packs = [],
   onAddPackBlocks,
   stepOffset = 0,
+  hasConflict = false,
 }: ServiceBlockProps) {
   const [activeCategoryId, setActiveCategoryId] = useState<string>(() => {
     // Otherwise, if the block already has items, open the tab matching the first item's category.
@@ -195,6 +197,11 @@ export default function ServiceBlock({
               {index + 1 + stepOffset}
             </span>
             <span className="text-slate-700 text-base font-medium">{headerTitle}</span>
+            {hasConflict && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-amber-100 text-amber-800 border border-amber-200">
+                Conflit horaire
+              </span>
+            )}
             {serviceInfoBadge}
           </div>
           <button
@@ -215,13 +222,22 @@ export default function ServiceBlock({
 
   // Expanded (active) state
   return (
-    <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
+    <div
+      className={`border-2 rounded-2xl p-4 bg-blue-50/30 shadow-sm ${
+        hasConflict ? 'border-amber-400' : 'border-blue-400'
+      }`}
+    >
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
             {index + 1 + stepOffset}
           </span>
           <span className="text-slate-900 text-base font-semibold">{headerTitle}</span>
+          {hasConflict && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-amber-100 text-amber-800 border border-amber-200">
+              Conflit horaire
+            </span>
+          )}
           {serviceInfoBadge}
         </div>
         <div className="flex items-center gap-1.5">
