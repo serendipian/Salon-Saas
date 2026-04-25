@@ -149,11 +149,18 @@ function evaluateStateInternal() {
 
 function startMonitoring() {
   if (monitorChannel) return;
-  monitorChannel = supabase.channel('connection-monitor').subscribe((status) => {
-    // Defer attaching the socket close listener until after the first
-    // subscribe attempt — by that point realtime.conn exists.
-    attachSocketCloseListener();
+  // Capture the channel locally so the subscribe callback can verify it's
+  // still the active monitor before reacting. Without this guard, a
+  // torn-down channel's stale CLOSED event (from React StrictMode's
+  // double-mount, route changes, or any other remount) would trigger a
+  // bogus recovery cycle that kills the working WS for every other
+  // channel.
+  const ch = supabase.channel('connection-monitor');
+  ch.subscribe((status) => {
+    // Stale: this channel was already removed; ignore its trailing events.
+    if (ch !== monitorChannel) return;
 
+    attachSocketCloseListener();
     logRealtime('channel.status', { status, recoveryInFlight });
 
     if (recoveryInFlight) return; // ignore expected churn during recovery
@@ -173,6 +180,7 @@ function startMonitoring() {
       }
     }
   });
+  monitorChannel = ch;
 }
 
 function stopMonitoring() {

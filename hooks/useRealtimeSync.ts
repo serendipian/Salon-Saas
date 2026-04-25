@@ -35,8 +35,11 @@ function subscribe(
 
   const handlers = new Set<EventHandler>([handler]);
 
+  // Don't prefix `realtime:` ourselves — supabase-realtime-js's
+  // RealtimeClient.channel() auto-prepends it, so we'd otherwise produce
+  // double-prefixed topics like `realtime:realtime:appointments:...`.
   const channel = supabase
-    .channel(`realtime:${key}`)
+    .channel(key)
     .on(
       'postgres_changes',
       {
