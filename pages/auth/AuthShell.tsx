@@ -135,12 +135,16 @@ export const AuthShell: React.FC<AuthShellProps> = ({
               }}
             />
 
-            {/* Centered wordmark + slogan — only text on the hero */}
+            {/* Centered wordmark + slogan — only text on the hero.
+                Bottom padding equals the 32px cream cap + 8px breathing room
+                so the text sits visually centered on the photo, not on the
+                full hero box (which includes the cream cap). */}
             <div
               className="auth-rise relative z-10 flex flex-1 flex-col items-center justify-center px-6 text-center"
               style={{
                 ['--d' as string]: '120ms',
-                paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)',
+                paddingTop: 'calc(env(safe-area-inset-top, 0px) + 8px)',
+                paddingBottom: '40px',
               }}
             >
               <h2 className="auth-display text-[44px] font-light italic leading-none text-white">
@@ -192,7 +196,7 @@ export const AuthShell: React.FC<AuthShellProps> = ({
           </svg>
 
           <div
-            className="auth-form-area relative z-10 flex flex-1 items-center justify-center px-6 sm:px-12"
+            className="auth-form-area relative z-10 flex flex-1 items-start justify-center px-6 sm:px-12 lg:items-center"
             style={{
               paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
             }}
