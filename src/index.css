@@ -32,9 +32,11 @@
   --z-toast: 70;
 }
 
-/* Base styles */
+/* Base styles — subtle warm off-white, kept close enough to slate-50
+   that the 300+ bg-slate-50 / #f8fafc surfaces across the app still
+   read as cohesive instead of cool patches on a warm field. */
 body {
-  background-color: #f8fafc;
+  background-color: #faf8f5;
 }
 
 /* Custom Scrollbar */
