@@ -17,7 +17,7 @@ export const CreateSalonPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#f8fafc]">
+      <div className="flex items-center justify-center h-screen bg-[#f7f2ea]">
         <div className="w-10 h-10 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin" />
       </div>
     );
@@ -54,7 +54,7 @@ export const CreateSalonPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#f7f2ea] px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 text-white shadow-lg mb-4">
