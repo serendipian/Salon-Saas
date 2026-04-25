@@ -5,8 +5,13 @@ import { useToast } from '../../../context/ToastContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { withMutationTimeout } from '../../../lib/mutations';
-import { supabase } from '../../../lib/supabase';
-import { rawSelect } from '../../../lib/supabaseRaw';
+import {
+  rawInsert,
+  rawInsertReturning,
+  rawRpc,
+  rawSelect,
+  rawUpdate,
+} from '../../../lib/supabaseRaw';
 import {
   type Appointment,
   AppointmentStatus,
@@ -59,17 +64,15 @@ export const useAppointments = (showDeleted = false) => {
 
   const addAppointmentMutation = useMutation({
     mutationFn: withMutationTimeout(async (appt: Appointment, signal: AbortSignal) => {
-      const { error } = await supabase
-        .from('appointments')
-        .insert(toAppointmentInsert(appt, salonId))
-        .abortSignal(signal);
-      if (error) {
-        if (error.code === '23P01') {
+      try {
+        await rawInsert('appointments', toAppointmentInsert(appt, salonId), signal);
+      } catch (err) {
+        if ((err as { code?: string }).code === '23P01') {
           throw new Error(
             'Ce créneau est déjà occupé pour ce praticien. Veuillez choisir un autre horaire.',
           );
         }
-        throw error;
+        throw err;
       }
     }),
     onSuccess: () => {
@@ -81,19 +84,18 @@ export const useAppointments = (showDeleted = false) => {
   const updateAppointmentMutation = useMutation({
     mutationFn: withMutationTimeout(async (appt: Appointment, signal: AbortSignal) => {
       const { id, salon_id, ...updateData } = toAppointmentInsert(appt, salonId);
-      const { error } = await supabase
-        .from('appointments')
-        .update(updateData)
-        .eq('id', appt.id)
-        .eq('salon_id', salonId)
-        .abortSignal(signal);
-      if (error) {
-        if (error.code === '23P01') {
+      const params = new URLSearchParams();
+      params.append('id', `eq.${appt.id}`);
+      params.append('salon_id', `eq.${salonId}`);
+      try {
+        await rawUpdate('appointments', params.toString(), updateData, signal);
+      } catch (err) {
+        if ((err as { code?: string }).code === '23P01') {
           throw new Error(
             'Ce créneau est déjà occupé pour ce praticien. Veuillez choisir un autre horaire.',
           );
         }
-        throw error;
+        throw err;
       }
     }),
     onSuccess: () => {
@@ -122,19 +124,19 @@ export const useAppointments = (showDeleted = false) => {
         signal: AbortSignal,
       ) => {
         // 1. Insert the group
-        const { data: group, error: groupError } = await supabase
-          .from('appointment_groups')
-          .insert(toAppointmentGroupInsert(payload, salonId))
-          .select('id')
-          .abortSignal(signal)
-          .single();
-
-        if (groupError) throw groupError;
+        const inserted = await rawInsertReturning<{ id: string }>(
+          'appointment_groups',
+          toAppointmentGroupInsert(payload, salonId),
+          'id',
+          signal,
+        );
+        const groupId = inserted[0]?.id;
+        if (!groupId) throw new Error('Group insert returned no id');
 
         // 2. Insert each appointment linked to the group
         const appointmentRows = payload.serviceBlocks.map((block) => ({
           salon_id: salonId,
-          group_id: group.id,
+          group_id: groupId,
           client_id: payload.clientId || null,
           service_id: block.serviceId || null,
           service_variant_id: block.variantId || null,
@@ -146,14 +148,9 @@ export const useAppointments = (showDeleted = false) => {
           notes: payload.notes || null,
         }));
 
-        const { error: apptError } = await supabase
-          .from('appointments')
-          .insert(appointmentRows)
-          .abortSignal(signal);
+        await rawInsert('appointments', appointmentRows, signal);
 
-        if (apptError) throw apptError;
-
-        return group.id;
+        return groupId;
       },
     ),
     onSuccess: () => {
@@ -168,13 +165,10 @@ export const useAppointments = (showDeleted = false) => {
   const updateStatusMutation = useMutation<void, Error, UpdateStatusVars, OptimisticContext>({
     mutationFn: withMutationTimeout<UpdateStatusVars, void>(
       async ({ appointmentId, status }, signal) => {
-        const { error } = await supabase
-          .from('appointments')
-          .update({ status })
-          .eq('id', appointmentId)
-          .eq('salon_id', salonId)
-          .abortSignal(signal);
-        if (error) throw error;
+        const params = new URLSearchParams();
+        params.append('id', `eq.${appointmentId}`);
+        params.append('salon_id', `eq.${salonId}`);
+        await rawUpdate('appointments', params.toString(), { status }, signal);
       },
     ),
     onMutate: async ({ appointmentId, status }) => {
@@ -220,34 +214,35 @@ export const useAppointments = (showDeleted = false) => {
         },
         signal: AbortSignal,
       ) => {
-        const { data, error } = await supabase
-          // biome-ignore lint/suspicious/noExplicitAny: RPC accepts nullable via coercion but TS narrows incorrectly
-          .rpc('edit_appointment_group', {
-            p_old_appointment_id: payload.oldAppointmentId,
-            p_salon_id: salonId,
-            p_client_id: (payload.clientId || null) as any,
-            p_notes: (payload.notes || null) as any,
-            p_reminder_minutes: (payload.reminderMinutes ?? null) as any,
-            p_status: payload.status,
-            p_service_blocks: payload.serviceBlocks.map((b) => ({
-              service_id: b.serviceId || null,
-              service_variant_id: b.variantId || null,
-              staff_id: b.staffId || null,
-              date: b.date,
-              duration_minutes: b.durationMinutes,
-              price: b.price,
-            })),
-          })
-          .abortSignal(signal);
-        if (error) {
-          if (error.code === '23P01') {
+        try {
+          return await rawRpc<unknown>(
+            'edit_appointment_group',
+            {
+              p_old_appointment_id: payload.oldAppointmentId,
+              p_salon_id: salonId,
+              p_client_id: payload.clientId || null,
+              p_notes: payload.notes || null,
+              p_reminder_minutes: payload.reminderMinutes ?? null,
+              p_status: payload.status,
+              p_service_blocks: payload.serviceBlocks.map((b) => ({
+                service_id: b.serviceId || null,
+                service_variant_id: b.variantId || null,
+                staff_id: b.staffId || null,
+                date: b.date,
+                duration_minutes: b.durationMinutes,
+                price: b.price,
+              })),
+            },
+            signal,
+          );
+        } catch (err) {
+          if ((err as { code?: string }).code === '23P01') {
             throw new Error(
               'Ce créneau est déjà occupé pour ce praticien. Veuillez choisir un autre horaire.',
             );
           }
-          throw error;
+          throw err;
         }
-        return data;
       },
     ),
     onSuccess: () => {
@@ -271,14 +266,15 @@ export const useAppointments = (showDeleted = false) => {
         // Already-CANCELLED rows are skipped server-side (idempotent), so a
         // realtime race that cancels a sibling under us no longer errors.
         const trimmedNote = note?.trim() ? note.trim() : undefined;
-        const { data, error } = await supabase
-          .rpc('delete_appointments_bulk', {
+        const data = await rawRpc<number | null>(
+          'delete_appointments_bulk',
+          {
             p_appointment_ids: appointmentIds,
             p_reason: reason,
             p_note: trimmedNote,
-          })
-          .abortSignal(signal);
-        if (error) throw error;
+          },
+          signal,
+        );
         return data ?? 0;
       },
     ),
@@ -332,12 +328,7 @@ export const useAppointments = (showDeleted = false) => {
 
   const deleteAppointmentMutation = useMutation<void, Error, string, OptimisticContext>({
     mutationFn: withMutationTimeout<string, void>(async (appointmentId, signal) => {
-      const { error } = await supabase
-        .rpc('soft_delete_appointment', {
-          p_appointment_id: appointmentId,
-        })
-        .abortSignal(signal);
-      if (error) throw error;
+      await rawRpc('soft_delete_appointment', { p_appointment_id: appointmentId }, signal);
     }),
     onMutate: async (appointmentId) => {
       await queryClient.cancelQueries({ queryKey: ['appointments', salonId] });
