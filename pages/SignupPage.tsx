@@ -194,18 +194,18 @@ export const SignupPage: React.FC = () => {
                 href="/legal/terms"
                 target="_blank"
                 rel="noreferrer"
-                className="auth-link text-[var(--auth-ink)]"
+                className="font-medium text-[var(--auth-ink)] underline underline-offset-2 decoration-[var(--auth-ink)]/40 hover:decoration-[var(--auth-ink)]"
               >
-                conditions d’utilisation
+                Conditions d’Utilisation
               </a>{' '}
               et la{' '}
               <a
                 href="/legal/privacy"
                 target="_blank"
                 rel="noreferrer"
-                className="auth-link text-[var(--auth-ink)]"
+                className="font-medium text-[var(--auth-ink)] underline underline-offset-2 decoration-[var(--auth-ink)]/40 hover:decoration-[var(--auth-ink)]"
               >
-                politique de confidentialité
+                Politique de Confidentialité
               </a>
               .
             </span>

@@ -378,7 +378,9 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  margin-top: 8px !important;
+  /* margin-top is 0: the CTA above carries a 8–12px drop shadow that
+     visually fills the gap. Adding margin here reads as double-spacing. */
+  margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
 .auth-divider + * {
