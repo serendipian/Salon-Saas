@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
-import { supabase } from '../../../lib/supabase';
+import { rawSelect, rawUpdate } from '../../../lib/supabaseRaw';
 import type { ProductSettings } from '../../../types';
 
 const DEFAULTS: ProductSettings = {
@@ -18,14 +18,17 @@ export function useProductSettings() {
 
   const { data: productSettings = DEFAULTS, isLoading } = useQuery({
     queryKey: ['product_settings', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('salons')
-        .select('product_settings')
-        .eq('id', salonId)
-        .single();
-      if (error) throw error;
-      const raw = data?.product_settings as Record<string, unknown> | null;
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', 'product_settings');
+      params.append('id', `eq.${salonId}`);
+      params.append('limit', '1');
+      const data = await rawSelect<{ product_settings: Record<string, unknown> | null }>(
+        'salons',
+        params.toString(),
+        signal,
+      );
+      const raw = data[0]?.product_settings ?? null;
       if (!raw || Object.keys(raw).length === 0) return DEFAULTS;
       return {
         lowStockThreshold:
@@ -45,11 +48,9 @@ export function useProductSettings() {
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (settings: ProductSettings) => {
-      const { error } = await supabase
-        .from('salons')
-        .update({ product_settings: settings as any })
-        .eq('id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${salonId}`);
+      await rawUpdate('salons', params.toString(), { product_settings: settings });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product_settings', salonId] });

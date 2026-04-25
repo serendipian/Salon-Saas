@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
-import { supabase } from '../../../lib/supabase';
+import { rawSelect, rawUpdate } from '../../../lib/supabaseRaw';
 import type { ServiceSettings } from '../../../types';
 
 const DEFAULTS: ServiceSettings = {
@@ -19,14 +19,17 @@ export function useServiceSettings() {
 
   const { data: serviceSettings = DEFAULTS, isLoading } = useQuery({
     queryKey: ['service_settings', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('salons')
-        .select('service_settings')
-        .eq('id', salonId)
-        .single();
-      if (error) throw error;
-      const raw = data?.service_settings as Record<string, unknown> | null;
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', 'service_settings');
+      params.append('id', `eq.${salonId}`);
+      params.append('limit', '1');
+      const data = await rawSelect<{ service_settings: Record<string, unknown> | null }>(
+        'salons',
+        params.toString(),
+        signal,
+      );
+      const raw = data[0]?.service_settings ?? null;
       if (!raw || Object.keys(raw).length === 0) return DEFAULTS;
       return {
         defaultDuration:
@@ -48,11 +51,9 @@ export function useServiceSettings() {
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (settings: ServiceSettings) => {
-      const { error } = await supabase
-        .from('salons')
-        .update({ service_settings: settings as any })
-        .eq('id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${salonId}`);
+      await rawUpdate('salons', params.toString(), { service_settings: settings });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service_settings', salonId] });
