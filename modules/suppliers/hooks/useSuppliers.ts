@@ -3,8 +3,7 @@ import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
-import { supabase } from '../../../lib/supabase';
-import { rawSelect } from '../../../lib/supabaseRaw';
+import { rawInsert, rawRpc, rawSelect, rawUpdate } from '../../../lib/supabaseRaw';
 import type { Supplier, SupplierCategory } from '../../../types';
 import { toSupplier, toSupplierCategory, toSupplierInsert } from '../mappers';
 
@@ -54,10 +53,7 @@ export const useSuppliers = () => {
 
   const addSupplierMutation = useMutation({
     mutationFn: async (supplier: Supplier) => {
-      const { error } = await supabase
-        .from('suppliers')
-        .insert(toSupplierInsert(supplier, salonId));
-      if (error) throw error;
+      await rawInsert('suppliers', toSupplierInsert(supplier, salonId));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers', salonId] });
@@ -68,12 +64,10 @@ export const useSuppliers = () => {
   const updateSupplierMutation = useMutation({
     mutationFn: async (supplier: Supplier) => {
       const { id, salon_id, ...updateData } = toSupplierInsert(supplier, salonId);
-      const { error } = await supabase
-        .from('suppliers')
-        .update(updateData)
-        .eq('id', supplier.id)
-        .eq('salon_id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${supplier.id}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('suppliers', params.toString(), updateData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers', salonId] });
@@ -83,12 +77,12 @@ export const useSuppliers = () => {
 
   const deleteSupplierMutation = useMutation({
     mutationFn: async (supplierId: string) => {
-      const { error } = await supabase
-        .from('suppliers')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', supplierId)
-        .eq('salon_id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${supplierId}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('suppliers', params.toString(), {
+        deleted_at: new Date().toISOString(),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers', salonId] });
@@ -106,12 +100,11 @@ export const useSuppliers = () => {
         sort_order: i,
       }));
 
-      const { error } = await supabase.rpc('save_supplier_categories', {
+      await rawRpc('save_supplier_categories', {
         p_salon_id: salonId,
         p_categories: p_categories,
         p_assignments: assignments ?? null,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supplier_categories', salonId] });

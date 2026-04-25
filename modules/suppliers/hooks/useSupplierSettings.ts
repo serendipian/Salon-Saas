@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
-import { supabase } from '../../../lib/supabase';
+import { rawSelect, rawUpdate } from '../../../lib/supabaseRaw';
 import type { SupplierSettings } from '../../../types';
 
 const DEFAULTS: SupplierSettings = {
@@ -19,14 +19,17 @@ export function useSupplierSettings() {
 
   const { data: supplierSettings = DEFAULTS, isLoading } = useQuery({
     queryKey: ['supplier_settings', salonId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('salons')
-        .select('supplier_settings')
-        .eq('id', salonId)
-        .single();
-      if (error) throw error;
-      const raw = data?.supplier_settings as Record<string, unknown> | null;
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', 'supplier_settings');
+      params.append('id', `eq.${salonId}`);
+      params.append('limit', '1');
+      const data = await rawSelect<{ supplier_settings: Record<string, unknown> | null }>(
+        'salons',
+        params.toString(),
+        signal,
+      );
+      const raw = data[0]?.supplier_settings ?? null;
       if (!raw || Object.keys(raw).length === 0) return DEFAULTS;
       return {
         defaultPaymentTerms:
@@ -47,11 +50,9 @@ export function useSupplierSettings() {
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (settings: SupplierSettings) => {
-      const { error } = await supabase
-        .from('salons')
-        .update({ supplier_settings: settings as any })
-        .eq('id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${salonId}`);
+      await rawUpdate('salons', params.toString(), { supplier_settings: settings });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supplier_settings', salonId] });
