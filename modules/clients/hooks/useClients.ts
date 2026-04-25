@@ -2,8 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
-import { supabase } from '../../../lib/supabase';
-import { rawSelect } from '../../../lib/supabaseRaw';
+import { rawInsert, rawRpc, rawSelect, rawUpdate } from '../../../lib/supabaseRaw';
 import type { Client } from '../../../types';
 import { toClient, toClientInsert } from '../mappers';
 
@@ -48,8 +47,7 @@ export const useClients = () => {
 
   const addClientMutation = useMutation<void, Error, Client, { snapshot: ClientsSnapshot }>({
     mutationFn: async (client) => {
-      const { error } = await supabase.from('clients').insert(toClientInsert(client, salonId));
-      if (error) throw error;
+      await rawInsert('clients', toClientInsert(client, salonId));
     },
     onMutate: async (client) => {
       await queryClient.cancelQueries({ queryKey: ['clients', salonId] });
@@ -73,12 +71,10 @@ export const useClients = () => {
 
   const updateClientMutation = useMutation<void, Error, Client, { snapshot: ClientsSnapshot }>({
     mutationFn: async (client) => {
-      const { error } = await supabase
-        .from('clients')
-        .update(toClientInsert(client, salonId))
-        .eq('id', client.id)
-        .eq('salon_id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${client.id}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('clients', params.toString(), toClientInsert(client, salonId));
     },
     onMutate: async (client) => {
       await queryClient.cancelQueries({ queryKey: ['clients', salonId] });
@@ -101,10 +97,7 @@ export const useClients = () => {
 
   const deleteClientMutation = useMutation<void, Error, string, { snapshot: ClientsSnapshot }>({
     mutationFn: async (id) => {
-      const { error } = await supabase.rpc('soft_delete_client', {
-        p_client_id: id,
-      });
-      if (error) throw error;
+      await rawRpc('soft_delete_client', { p_client_id: id });
     },
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ['clients', salonId] });
