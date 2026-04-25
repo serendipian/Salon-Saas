@@ -399,8 +399,8 @@ body {
    for keyboard / screen-reader users. */
 .auth-terms {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
   font-size: 10.5px;
   line-height: 1.5;
@@ -421,7 +421,6 @@ body {
   justify-content: center;
   width: 18px;
   height: 18px;
-  margin-top: 1px;
   border: 1.5px solid rgba(14, 12, 11, 0.28);
   border-radius: 2px;
   background: #fff;
