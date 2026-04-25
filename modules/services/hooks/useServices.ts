@@ -3,8 +3,13 @@ import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
-import { supabase } from '../../../lib/supabase';
-import { rawSelect } from '../../../lib/supabaseRaw';
+import {
+  rawInsert,
+  rawInsertReturning,
+  rawRpc,
+  rawSelect,
+  rawUpdate,
+} from '../../../lib/supabaseRaw';
 import type { FavoriteItem, Service, ServiceCategory } from '../../../types';
 import { toService, toServiceCategory, toServiceInsert, toVariantInsert } from '../mappers';
 
@@ -59,19 +64,13 @@ export const useServices = () => {
   const addServiceMutation = useMutation({
     mutationFn: async (service: Service) => {
       const serviceRow = toServiceInsert(service, salonId);
-      const { data: inserted, error: svcErr } = await supabase
-        .from('services')
-        .insert(serviceRow)
-        .select('id')
-        .single();
-      if (svcErr) throw svcErr;
+      const inserted = await rawInsertReturning<{ id: string }>('services', serviceRow, 'id');
+      const newId = inserted[0]?.id;
+      if (!newId) throw new Error('Service insert returned no id');
 
       if (service.variants.length > 0) {
-        const variantRows = service.variants.map((v, i) =>
-          toVariantInsert(v, inserted.id, salonId, i),
-        );
-        const { error: varErr } = await supabase.from('service_variants').insert(variantRows);
-        if (varErr) throw varErr;
+        const variantRows = service.variants.map((v, i) => toVariantInsert(v, newId, salonId, i));
+        await rawInsert('service_variants', variantRows);
       }
     },
     onSuccess: () => {
@@ -85,33 +84,35 @@ export const useServices = () => {
   const updateServiceMutation = useMutation({
     mutationFn: async (service: Service) => {
       const svcRow = toServiceInsert(service, salonId);
-      const { error: svcErr } = await supabase
-        .from('services')
-        .update(svcRow)
-        .eq('id', service.id)
-        .eq('salon_id', salonId);
-      if (svcErr) throw svcErr;
+      const svcParams = new URLSearchParams();
+      svcParams.append('id', `eq.${service.id}`);
+      svcParams.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('services', svcParams.toString(), svcRow);
 
-      // Get existing variant IDs
-      const { data: existingVariants, error: fetchErr } = await supabase
-        .from('service_variants')
-        .select('id')
-        .eq('service_id', service.id)
-        .is('deleted_at', null);
-      if (fetchErr) throw fetchErr;
+      // Get existing variant IDs (defense-in-depth: scope by salon_id even
+      // though RLS already enforces it).
+      const fetchParams = new URLSearchParams();
+      fetchParams.append('select', 'id');
+      fetchParams.append('service_id', `eq.${service.id}`);
+      fetchParams.append('salon_id', `eq.${salonId}`);
+      fetchParams.append('deleted_at', 'is.null');
+      const existingVariants = await rawSelect<{ id: string }>(
+        'service_variants',
+        fetchParams.toString(),
+      );
 
-      const existingIds = new Set((existingVariants ?? []).map((v) => v.id));
+      const existingIds = new Set(existingVariants.map((v) => v.id));
       const newIds = new Set(service.variants.filter((v) => v.id).map((v) => v.id));
 
       // Soft-delete removed variants
       const toDelete = [...existingIds].filter((id) => !newIds.has(id));
       if (toDelete.length > 0) {
-        const { error } = await supabase
-          .from('service_variants')
-          .update({ deleted_at: new Date().toISOString() })
-          .in('id', toDelete)
-          .eq('salon_id', salonId);
-        if (error) throw error;
+        const delParams = new URLSearchParams();
+        delParams.append('id', `in.(${toDelete.join(',')})`);
+        delParams.append('salon_id', `eq.${salonId}`);
+        await rawUpdate('service_variants', delParams.toString(), {
+          deleted_at: new Date().toISOString(),
+        });
       }
 
       // Upsert remaining variants — batched inserts, parallel updates
@@ -127,33 +128,22 @@ export const useServices = () => {
         }
       }
 
-      const updatePromises = toUpdate.map(({ id, row }) =>
-        supabase
-          .from('service_variants')
-          .update({
-            name: row.name,
-            duration_minutes: row.duration_minutes,
-            price: row.price,
-            cost: row.cost,
-            additional_cost: row.additional_cost,
-            sort_order: row.sort_order,
-          })
-          .eq('id', id)
-          .eq('salon_id', salonId)
-          .then(({ error }) => {
-            if (error) throw error;
-          }),
-      );
+      const updatePromises = toUpdate.map(({ id, row }) => {
+        const p = new URLSearchParams();
+        p.append('id', `eq.${id}`);
+        p.append('salon_id', `eq.${salonId}`);
+        return rawUpdate('service_variants', p.toString(), {
+          name: row.name,
+          duration_minutes: row.duration_minutes,
+          price: row.price,
+          cost: row.cost,
+          additional_cost: row.additional_cost,
+          sort_order: row.sort_order,
+        });
+      });
 
       const insertPromise =
-        toInsert.length > 0
-          ? supabase
-              .from('service_variants')
-              .insert(toInsert)
-              .then(({ error }) => {
-                if (error) throw error;
-              })
-          : Promise.resolve();
+        toInsert.length > 0 ? rawInsert('service_variants', toInsert) : Promise.resolve();
 
       await Promise.all([...updatePromises, insertPromise]);
     },
@@ -167,10 +157,7 @@ export const useServices = () => {
   // Delete Service (soft-delete via RPC)
   const deleteServiceMutation = useMutation({
     mutationFn: async (serviceId: string) => {
-      const { error } = await supabase.rpc('soft_delete_service', {
-        p_service_id: serviceId,
-      });
-      if (error) throw error;
+      await rawRpc('soft_delete_service', { p_service_id: serviceId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
@@ -190,12 +177,11 @@ export const useServices = () => {
         sort_order: i,
       }));
 
-      const { error } = await supabase.rpc('save_service_categories', {
+      await rawRpc('save_service_categories', {
         p_salon_id: salonId,
         p_categories: p_categories,
         p_assignments: assignments ?? null,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service_categories', salonId] });
@@ -217,13 +203,12 @@ export const useServices = () => {
       id: string;
       isFavorite: boolean;
     }) => {
-      const { error } = await supabase.rpc('toggle_favorite', {
+      await rawRpc('toggle_favorite', {
         p_salon_id: salonId,
         p_type: type,
         p_id: id,
         p_is_favorite: isFavorite,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });
@@ -242,11 +227,10 @@ export const useServices = () => {
         id: item.id,
         sort_order: item.sortOrder,
       }));
-      const { error } = await supabase.rpc('reorder_favorites', {
+      await rawRpc('reorder_favorites', {
         p_salon_id: salonId,
         p_items: p_items,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services', salonId] });

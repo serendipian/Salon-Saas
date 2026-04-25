@@ -3,8 +3,14 @@ import { useMemo } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
-import { supabase } from '../../../lib/supabase';
-import { rawSelect } from '../../../lib/supabaseRaw';
+import {
+  rawDelete,
+  rawInsert,
+  rawInsertReturning,
+  rawRpc,
+  rawSelect,
+  rawUpdate,
+} from '../../../lib/supabaseRaw';
 import { toPack } from '../packMappers';
 import { isPackValid, isPackVisible } from '../utils/packExpansion';
 import { usePackGroups } from './usePackGroups';
@@ -56,31 +62,29 @@ export function usePacks() {
     }) => {
       if (!salonId) throw new Error('No salon');
 
-      const { data: packRow, error: packError } = await supabase
-        .from('packs')
-        .insert({
+      const inserted = await rawInsertReturning<{ id: string }>(
+        'packs',
+        {
           salon_id: salonId,
           name: pack.name,
           description: pack.description || null,
           price: pack.price,
           pack_group_id: pack.groupId,
-        })
-        .select('id')
-        .single();
-
-      if (packError) throw packError;
+        },
+        'id',
+      );
+      const packId = inserted[0]?.id;
+      if (!packId) throw new Error('Pack insert returned no id');
 
       const itemRows = pack.items.map((item, i) => ({
-        pack_id: packRow.id,
+        pack_id: packId,
         salon_id: salonId,
         service_id: item.serviceId,
         service_variant_id: item.serviceVariantId,
         sort_order: i,
       }));
 
-      const { error: itemsError } = await supabase.from('pack_items').insert(itemRows);
-
-      if (itemsError) throw itemsError;
+      await rawInsert('pack_items', itemRows);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
@@ -100,18 +104,15 @@ export function usePacks() {
     }) => {
       if (!salonId) throw new Error('No salon');
 
-      const { error: packError } = await supabase
-        .from('packs')
-        .update({
-          name: pack.name,
-          description: pack.description || null,
-          price: pack.price,
-          pack_group_id: pack.groupId,
-        })
-        .eq('id', pack.id)
-        .eq('salon_id', salonId);
-
-      if (packError) throw packError;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${pack.id}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('packs', params.toString(), {
+        name: pack.name,
+        description: pack.description || null,
+        price: pack.price,
+        pack_group_id: pack.groupId,
+      });
 
       // Atomic item replacement via RPC to prevent orphaned packs on partial failure
       const itemsJson = pack.items.map((item, i) => ({
@@ -120,13 +121,11 @@ export function usePacks() {
         sort_order: i,
       }));
 
-      const { error: rpcError } = await supabase.rpc('replace_pack_items', {
+      await rawRpc('replace_pack_items', {
         p_pack_id: pack.id,
         p_salon_id: salonId,
         p_items: itemsJson,
       });
-
-      if (rpcError) throw rpcError;
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
@@ -140,13 +139,10 @@ export function usePacks() {
       if (!salonId) throw new Error('No salon');
       // Hard delete: packs have no persistent references outside pack_items
       // (which cascades). The audit trigger still records the full row state.
-      const { error } = await supabase
-        .from('packs')
-        .delete()
-        .eq('id', packId)
-        .eq('salon_id', salonId);
-
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${packId}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawDelete('packs', params.toString());
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
@@ -158,13 +154,10 @@ export function usePacks() {
   const toggleActiveMutation = useMutation({
     mutationFn: async ({ packId, active }: { packId: string; active: boolean }) => {
       if (!salonId) throw new Error('No salon');
-      const { error } = await supabase
-        .from('packs')
-        .update({ active })
-        .eq('id', packId)
-        .eq('salon_id', salonId);
-
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${packId}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('packs', params.toString(), { active });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['packs', salonId] });
@@ -177,13 +170,12 @@ export function usePacks() {
   const toggleFavoriteMutation = useMutation({
     mutationFn: async ({ packId, isFavorite }: { packId: string; isFavorite: boolean }) => {
       if (!salonId) throw new Error('No salon');
-      const { error } = await supabase.rpc('toggle_favorite', {
+      await rawRpc('toggle_favorite', {
         p_salon_id: salonId,
         p_type: 'pack',
         p_id: packId,
         p_is_favorite: isFavorite,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['packs', salonId] });

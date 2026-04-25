@@ -143,6 +143,31 @@ export async function rawInsert(
 }
 
 /**
+ * Raw-fetch a PostgREST INSERT that returns the inserted row(s). Use when
+ * you need DB-generated columns back (id, slug, computed defaults, etc.) —
+ * matches `supabase.from(t).insert(...).select(cols)`. Pass `select` to
+ * narrow the returned columns; defaults to `*`. Returns an array of rows
+ * (PostgREST always returns arrays, even for a single insert).
+ */
+export async function rawInsertReturning<T>(
+  table: string,
+  body: unknown,
+  select = '*',
+  signal?: AbortSignal,
+): Promise<T[]> {
+  // Use URLSearchParams to encode `select` exactly once at the HTTP layer,
+  // matching how rawSelect/rawUpdate callers build their query strings.
+  const params = new URLSearchParams({ select });
+  const response = await sendRequest(`${table}?${params.toString()}`, {
+    method: 'POST',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify(body),
+    signal,
+  });
+  return response.json() as Promise<T[]>;
+}
+
+/**
  * Raw-fetch a PostgREST UPDATE. `params` is the fully-formed filter query
  * string (no leading `?`), e.g. "id=eq.xxx&salon_id=eq.yyy". Returns void;
  * matches `supabase.from(t).update(...).eq(...)` without `.select()`.
@@ -157,6 +182,24 @@ export async function rawUpdate(
     method: 'PATCH',
     headers: { Prefer: 'return=minimal' },
     body: JSON.stringify(body),
+    signal,
+  });
+}
+
+/**
+ * Raw-fetch a PostgREST DELETE. `params` is the filter query string. Use
+ * sparingly — most "deletes" in this codebase are soft-deletes via
+ * rawUpdate setting `deleted_at`. Real DELETEs are reserved for tables
+ * that have no outside references and where audit triggers capture state.
+ */
+export async function rawDelete(
+  table: string,
+  params: string,
+  signal?: AbortSignal,
+): Promise<void> {
+  await sendRequest(`${table}?${params}`, {
+    method: 'DELETE',
+    headers: { Prefer: 'return=minimal' },
     signal,
   });
 }

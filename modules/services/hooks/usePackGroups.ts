@@ -2,8 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
-import { supabase } from '../../../lib/supabase';
-import { rawSelect } from '../../../lib/supabaseRaw';
+import { rawDelete, rawInsert, rawSelect, rawUpdate } from '../../../lib/supabaseRaw';
 import { toPackGroup } from '../packMappers';
 
 export function usePackGroups() {
@@ -38,7 +37,7 @@ export function usePackGroups() {
       endsAt: string | null;
     }) => {
       if (!salonId) throw new Error('No salon');
-      const { error } = await supabase.from('pack_groups').insert({
+      await rawInsert('pack_groups', {
         salon_id: salonId,
         name: group.name,
         description: group.description || null,
@@ -46,7 +45,6 @@ export function usePackGroups() {
         starts_at: group.startsAt,
         ends_at: group.endsAt,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pack_groups', salonId] });
@@ -65,18 +63,16 @@ export function usePackGroups() {
       endsAt: string | null;
     }) => {
       if (!salonId) throw new Error('No salon');
-      const { error } = await supabase
-        .from('pack_groups')
-        .update({
-          name: group.name,
-          description: group.description || null,
-          color: group.color,
-          starts_at: group.startsAt,
-          ends_at: group.endsAt,
-        })
-        .eq('id', group.id)
-        .eq('salon_id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${group.id}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('pack_groups', params.toString(), {
+        name: group.name,
+        description: group.description || null,
+        color: group.color,
+        starts_at: group.startsAt,
+        ends_at: group.endsAt,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pack_groups', salonId] });
@@ -89,12 +85,10 @@ export function usePackGroups() {
     mutationFn: async (groupId: string) => {
       if (!salonId) throw new Error('No salon');
       // FK is ON DELETE SET NULL → packs in the group simply become ungrouped.
-      const { error } = await supabase
-        .from('pack_groups')
-        .delete()
-        .eq('id', groupId)
-        .eq('salon_id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${groupId}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawDelete('pack_groups', params.toString());
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pack_groups', salonId] });
@@ -107,12 +101,10 @@ export function usePackGroups() {
   const toggleActiveMutation = useMutation({
     mutationFn: async ({ groupId, active }: { groupId: string; active: boolean }) => {
       if (!salonId) throw new Error('No salon');
-      const { error } = await supabase
-        .from('pack_groups')
-        .update({ active })
-        .eq('id', groupId)
-        .eq('salon_id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${groupId}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('pack_groups', params.toString(), { active });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pack_groups', salonId] });
