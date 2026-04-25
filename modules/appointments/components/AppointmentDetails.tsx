@@ -2,10 +2,11 @@ import { ArrowLeft, ArrowRight, Calendar, Receipt, Scissors, Trash2, User } from
 import type React from 'react';
 import { useState } from 'react';
 import { useLinkedTransaction } from '../../../hooks/useLinkedTransaction';
-import { formatName, formatPrice } from '../../../lib/format';
+import { formatName } from '../../../lib/format';
 import { type Appointment, AppointmentStatus } from '../../../types';
 import { LinkedReceiptModal } from '../../pos/components/LinkedReceiptModal';
 import { useTeam } from '../../team/hooks/useTeam';
+import { PriceDisplay } from './PriceDisplay';
 import { StatusBadge } from './StatusBadge';
 
 interface AppointmentDetailsProps {
@@ -16,49 +17,6 @@ interface AppointmentDetailsProps {
   /** Opens a confirm-with-reason modal. Callers handle the modal state themselves. */
   onRequestCancel?: (appointmentIds: string[]) => void;
 }
-
-/**
- * Renders a price as either a single number (when nothing changed) or a
- * "was → became" diff with a Modifié badge. Used in both the header card and
- * inside the grouped services list.
- */
-const PriceDisplay: React.FC<{
-  price: number;
-  originalPrice?: number | null;
-  cancelled?: boolean;
-  large?: boolean;
-}> = ({ price, originalPrice, cancelled, large }) => {
-  const changed = originalPrice != null && originalPrice !== price;
-  if (cancelled) {
-    return (
-      <span
-        className={`${large ? 'text-2xl font-bold' : 'text-sm font-semibold'} text-slate-400 line-through`}
-      >
-        {formatPrice(price)}
-      </span>
-    );
-  }
-  if (!changed) {
-    return (
-      <span className={large ? 'text-2xl font-bold text-slate-900' : 'text-sm font-semibold text-blue-600'}>
-        {formatPrice(price)}
-      </span>
-    );
-  }
-  return (
-    <span className="flex items-baseline gap-2 justify-end flex-wrap">
-      <span className={`${large ? 'text-base' : 'text-xs'} text-slate-400 line-through`}>
-        {formatPrice(originalPrice)}
-      </span>
-      <span className={large ? 'text-2xl font-bold text-slate-900' : 'text-sm font-semibold text-blue-600'}>
-        {formatPrice(price)}
-      </span>
-      <span className="text-[10px] uppercase tracking-wide bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-semibold">
-        Modifié
-      </span>
-    </span>
-  );
-};
 
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
   appointment,

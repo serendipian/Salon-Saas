@@ -3,7 +3,8 @@ import React, { useMemo } from 'react';
 import { EmptyState } from '../../../components/EmptyState';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { CategoryIcon } from '../../../lib/categoryIcons';
-import { formatDuration, formatName, formatPrice } from '../../../lib/format';
+import { formatDuration, formatName } from '../../../lib/format';
+import { PriceDisplay } from './PriceDisplay';
 import {
   type Appointment,
   AppointmentStatus,
@@ -211,15 +212,34 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                                 {formatDuration(appt.durationMinutes)}
                               </span>
                             </td>
-                            <td className="px-4 py-3 align-top border-r border-slate-100 text-sm font-medium text-slate-900 hidden md:table-cell">
-                              {formatPrice(appt.price)}
+                            <td className="px-4 py-3 align-top border-r border-slate-100 hidden md:table-cell">
+                              <PriceDisplay
+                                price={appt.price}
+                                originalPrice={appt.originalPrice}
+                                cancelled={appt.status === AppointmentStatus.CANCELLED}
+                                compact
+                                align="start"
+                              />
                             </td>
                             <td className="px-4 py-3 align-top border-r border-slate-100 hidden lg:table-cell">
                               {appt.staffId ? (
                                 (() => {
                                   const staff = staffMap.get(appt.staffId);
+                                  const originalStaff = appt.originalStaffId
+                                    ? staffMap.get(appt.originalStaffId)
+                                    : null;
+                                  const staffSwapped =
+                                    appt.originalStaffId &&
+                                    appt.originalStaffId !== appt.staffId &&
+                                    originalStaff;
+                                  const tooltip = staffSwapped
+                                    ? `Réservé avec ${originalStaff.firstName} ${originalStaff.lastName}`.trim()
+                                    : undefined;
                                   return (
-                                    <span className="flex items-center gap-1.5">
+                                    <span
+                                      className="flex items-center gap-1.5"
+                                      title={tooltip}
+                                    >
                                       <StaffAvatar
                                         firstName={
                                           staff?.firstName ?? appt.staffName.split(' ')[0] ?? ''
@@ -234,6 +254,12 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                                       <span className="text-sm text-slate-500">
                                         {appt.staffName}
                                       </span>
+                                      {staffSwapped && (
+                                        <span
+                                          className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"
+                                          aria-label="Personnel modifié"
+                                        />
+                                      )}
                                     </span>
                                   );
                                 })()

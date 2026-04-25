@@ -2,9 +2,11 @@ import { Trash2, User } from 'lucide-react';
 import type React from 'react';
 import { useMemo } from 'react';
 import { EmptyState } from '../../../components/EmptyState';
-import { formatName, formatPrice } from '../../../lib/format';
+import { formatName } from '../../../lib/format';
 import { type Appointment, AppointmentStatus } from '../../../types';
+import { useTeam } from '../../team/hooks/useTeam';
 import { groupByDayAndClient } from './groupAppointments';
+import { PriceDisplay } from './PriceDisplay';
 import { StatusBadge } from './StatusBadge';
 
 const ClientAvatar: React.FC<{ name: string }> = ({ name }) => {
@@ -51,10 +53,17 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
   onRequestCancel,
   onStatusChange,
 }) => {
+  const { allStaff } = useTeam(true);
+  const staffMap = useMemo(() => new Map(allStaff.map((s) => [s.id, s])), [allStaff]);
   const isMulti = appointments.length > 1;
   const first = appointments[0];
   const last = appointments[appointments.length - 1];
   const totalPrice = appointments.reduce((sum, a) => sum + a.price, 0);
+  const totalOriginalPrice = appointments.reduce(
+    (sum, a) => sum + (a.originalPrice ?? a.price),
+    0,
+  );
+  const totalChanged = totalOriginalPrice !== totalPrice;
   // Completed + already-cancelled rows aren't cancelable — server refuses both,
   // so don't offer the action for them.
   const cancellableIds = useMemo(
@@ -100,7 +109,11 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-sm font-semibold text-slate-900">{formatPrice(totalPrice)}</span>
+          <PriceDisplay
+            price={totalPrice}
+            originalPrice={totalChanged ? totalOriginalPrice : null}
+            compact
+          />
           {onRequestCancel && cancellableIds.length > 0 && (
             <button
               type="button"
@@ -117,7 +130,14 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
 
       {/* Rows */}
       <ul className="divide-y divide-slate-100">
-        {appointments.map((appt) => (
+        {appointments.map((appt) => {
+          const originalStaff = appt.originalStaffId ? staffMap.get(appt.originalStaffId) : null;
+          const staffSwapped =
+            appt.originalStaffId && appt.originalStaffId !== appt.staffId && originalStaff;
+          const staffTooltip = staffSwapped
+            ? `Réservé avec ${originalStaff.firstName} ${originalStaff.lastName}`.trim()
+            : undefined;
+          return (
           <li key={appt.id} className="relative">
             <button
               type="button"
@@ -133,16 +153,27 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
                   <span className="text-slate-700 truncate">{appt.serviceName || '—'}</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-slate-500">
-                  <span className="flex items-center gap-1 min-w-0">
+                  <span className="flex items-center gap-1 min-w-0" title={staffTooltip}>
                     <User size={11} className="text-slate-400 shrink-0" />
                     <span className="truncate">{appt.staffName || '—'}</span>
+                    {staffSwapped && (
+                      <span
+                        className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"
+                        aria-label="Personnel modifié"
+                      />
+                    )}
                   </span>
                   {appt.variantName && (
                     <span className="truncate text-slate-400">{appt.variantName}</span>
                   )}
                   {!isMulti && (
-                    <span className="ml-auto font-medium text-slate-700 shrink-0">
-                      {formatPrice(appt.price)}
+                    <span className="ml-auto shrink-0">
+                      <PriceDisplay
+                        price={appt.price}
+                        originalPrice={appt.originalPrice}
+                        cancelled={appt.status === AppointmentStatus.CANCELLED}
+                        compact
+                      />
                     </span>
                   )}
                 </div>
@@ -185,7 +216,8 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
               </div>
             </button>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );
