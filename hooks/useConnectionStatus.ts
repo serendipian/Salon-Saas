@@ -184,10 +184,17 @@ function startMonitoring() {
 }
 
 function stopMonitoring() {
-  if (monitorChannel) {
-    supabase.removeChannel(monitorChannel);
-    monitorChannel = null;
-  }
+  const ch = monitorChannel;
+  if (!ch) return;
+  // CRITICAL ordering: null out monitorChannel BEFORE removeChannel.
+  // If the channel is still in `joining` state (server hasn't replied to
+  // phx_join yet), phoenix's leave() can't push and instead fires onClose
+  // synchronously inside removeChannel — which dispatches our subscribe
+  // callback before the next line could run. The stale-channel guard
+  // (`if (ch !== monitorChannel) return`) only works if monitorChannel is
+  // already null/different at that moment.
+  monitorChannel = null;
+  supabase.removeChannel(ch);
 }
 
 // ---- Recovery orchestrator ---------------------------------------------
