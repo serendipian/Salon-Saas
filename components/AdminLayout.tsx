@@ -56,7 +56,9 @@ export const AdminLayout: React.FC = () => {
           >
             L
           </div>
-          <span className="text-[14px] font-semibold text-[#1a1f36] tracking-tight">Lumiere</span>
+          <span className="text-[14px] font-semibold text-[#1a1f36] tracking-tight">
+            BeautyFlow
+          </span>
           <span
             className="text-[10px] font-semibold px-1.5 py-0.5 rounded-[4px] ml-auto"
             style={{ backgroundColor: '#f0efff', color: '#635bff' }}

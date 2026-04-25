@@ -363,7 +363,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
                 <Menu size={22} strokeWidth={1.5} />
               </button>
               <span className="font-bold text-lg text-slate-900 tracking-tight">
-                {activeSalon?.name || 'Lumiere'}
+                {activeSalon?.name || 'BeautyFlow'}
               </span>
               <div className="flex items-center gap-1">
                 <ConnectionStatusDot />

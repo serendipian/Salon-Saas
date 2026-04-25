@@ -1,8 +1,9 @@
-import { Loader2, Lock, Mail, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Loader2, Lock, Mail, Sparkles } from 'lucide-react';
 import type React from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { AuthShell } from './auth/AuthShell';
 
 export const LoginPage: React.FC = () => {
   const {
@@ -22,9 +23,20 @@ export const LoginPage: React.FC = () => {
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [mode, setMode] = useState<'password' | 'magic'>('password');
 
+  // refs for sliding-thumb measurement on the toggle pill
+  const passwordBtnRef = useRef<HTMLButtonElement>(null);
+  const magicBtnRef = useRef<HTMLButtonElement>(null);
+  const activeBtn = mode === 'password' ? passwordBtnRef.current : magicBtnRef.current;
+  const thumbStyle: React.CSSProperties = activeBtn
+    ? {
+        left: activeBtn.offsetLeft,
+        width: activeBtn.offsetWidth,
+      }
+    : { left: 4, width: 0 };
+
   if (!authLoading && isAuthenticated) {
     if (redirect) return <Navigate to={redirect} replace />;
-    if (profile === null) return null; // profile still loading — ProtectedRoute will handle final redirect
+    if (profile === null) return null;
     return <Navigate to={profile.is_admin ? '/admin' : '/dashboard'} replace />;
   }
 
@@ -32,11 +44,8 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-
     const { error: signInError } = await signIn(email, password);
-    if (signInError) {
-      setError(signInError);
-    }
+    if (signInError) setError(signInError);
     setIsSubmitting(false);
   };
 
@@ -44,165 +53,156 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-
     const { error: linkError } = await signInWithMagicLink(email);
-    if (linkError) {
-      setError(linkError);
-    } else {
-      setMagicLinkSent(true);
-    }
+    if (linkError) setError(linkError);
+    else setMagicLinkSent(true);
     setIsSubmitting(false);
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 text-white font-bold text-2xl shadow-lg mb-4">
-            L
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900">Lumière Beauty</h1>
-          <p className="text-sm text-slate-500 mt-1">Connectez-vous à votre espace</p>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-8">
-          {magicLinkSent ? (
-            <div className="text-center py-4">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 mb-4">
-                <Mail size={24} />
-              </div>
-              <h2 className="text-lg font-semibold text-slate-900 mb-2">Vérifiez votre email</h2>
-              <p className="text-sm text-slate-500">
-                Un lien de connexion a été envoyé à <strong>{email}</strong>. Cliquez sur le lien
-                dans l'email pour vous connecter.
-              </p>
-              <button
-                onClick={() => setMagicLinkSent(false)}
-                className="mt-6 text-sm text-slate-600 hover:text-slate-900 underline"
-              >
-                Renvoyer ou utiliser un autre email
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="flex rounded-xl bg-slate-50 p-1 mb-6">
-                <button
-                  onClick={() => {
-                    setMode('password');
-                    setError(null);
-                  }}
-                  className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
-                    mode === 'password'
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  Mot de passe
-                </button>
-                <button
-                  onClick={() => {
-                    setMode('magic');
-                    setError(null);
-                  }}
-                  className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
-                    mode === 'magic'
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  Lien magique
-                </button>
-              </div>
-
-              <form onSubmit={mode === 'password' ? handlePasswordLogin : handleMagicLink}>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
-                  <div className="relative">
-                    <Mail
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                      size={18}
-                    />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="vous@exemple.com"
-                      required
-                      autoComplete="email"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-all"
-                    />
-                  </div>
-                </div>
-
-                {mode === 'password' && (
-                  <div className="mb-6">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-sm font-medium text-slate-700">
-                        Mot de passe
-                      </label>
-                      <Link
-                        to="/forgot-password"
-                        className="text-xs text-slate-500 hover:text-slate-900 transition-colors"
-                      >
-                        Mot de passe oublié ?
-                      </Link>
-                    </div>
-                    <div className="relative">
-                      <Lock
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                        size={18}
-                      />
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required
-                        minLength={8}
-                        autoComplete="current-password"
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-all"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {error && (
-                  <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-700">
-                    {error}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-2.5 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : mode === 'magic' ? (
-                    <>
-                      <Sparkles size={18} />
-                      Envoyer le lien magique
-                    </>
-                  ) : (
-                    'Se connecter'
-                  )}
-                </button>
-              </form>
-            </>
-          )}
-        </div>
-
-        <p className="text-center text-sm text-slate-500 mt-6">
-          Pas encore de compte ?{' '}
-          <Link
-            to={redirect ? `/signup?redirect=${encodeURIComponent(redirect)}` : '/signup'}
-            className="text-slate-900 font-medium hover:underline"
-          >
-            Créer un compte
-          </Link>
-        </p>
-      </div>
+  const footer = (
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      <span>Pas encore de compte ?</span>
+      <Link
+        to={redirect ? `/signup?redirect=${encodeURIComponent(redirect)}` : '/signup'}
+        className="auth-link inline-flex items-center gap-1.5 whitespace-nowrap font-medium text-[var(--auth-ink)]"
+      >
+        Cr&eacute;er un compte
+        <ArrowRight size={14} className="shrink-0" />
+      </Link>
     </div>
+  );
+
+  return (
+    <AuthShell
+      eyebrow="01 — Accès"
+      kicker="Espace professionnel"
+      headline={magicLinkSent ? 'Vérifiez votre boîte mail.' : 'Bon retour.'}
+      subhead={
+        magicLinkSent
+          ? `Un lien sécurisé a été envoyé à ${email}. Ouvrez-le sur cet appareil pour entrer dans votre atelier.`
+          : undefined
+      }
+      footer={magicLinkSent ? null : footer}
+    >
+      {magicLinkSent ? (
+        <div className="space-y-6">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--auth-ivory-2)] text-[var(--auth-rose-deep)]">
+            <CheckCircle2 size={26} strokeWidth={1.5} />
+          </div>
+          <button
+            type="button"
+            onClick={() => setMagicLinkSent(false)}
+            className="auth-link text-sm font-medium text-[var(--auth-ink)]"
+          >
+            Renvoyer ou utiliser un autre email
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Mode toggle pill */}
+          <div className="auth-toggle mb-8">
+            <span className="auth-toggle-thumb" style={thumbStyle} />
+            <button
+              ref={passwordBtnRef}
+              type="button"
+              data-active={mode === 'password'}
+              onClick={() => {
+                setMode('password');
+                setError(null);
+              }}
+            >
+              Mot de passe
+            </button>
+            <button
+              ref={magicBtnRef}
+              type="button"
+              data-active={mode === 'magic'}
+              onClick={() => {
+                setMode('magic');
+                setError(null);
+              }}
+            >
+              Lien magique
+            </button>
+          </div>
+
+          <form
+            onSubmit={mode === 'password' ? handlePasswordLogin : handleMagicLink}
+            className="space-y-7"
+          >
+            <div>
+              <label htmlFor="email" className="auth-label">
+                Adresse email
+              </label>
+              <div className="auth-field">
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="vous@exemple.com"
+                  required
+                  autoComplete="email"
+                  className="auth-input"
+                />
+                <Mail className="auth-field-icon" size={16} strokeWidth={1.5} />
+              </div>
+            </div>
+
+            {mode === 'password' && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="password" className="auth-label">
+                    Mot de passe
+                  </label>
+                  <Link
+                    to="/forgot-password"
+                    className="auth-link text-[11px] font-medium tracking-wide text-[var(--auth-ink-soft)]/70"
+                  >
+                    Oublié ?
+                  </Link>
+                </div>
+                <div className="auth-field">
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={8}
+                    autoComplete="current-password"
+                    className="auth-input"
+                  />
+                  <Lock className="auth-field-icon" size={16} strokeWidth={1.5} />
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div className="rounded-md border-l-2 border-[var(--auth-rose-deep)] bg-[var(--auth-rose-deep)]/[0.04] px-4 py-3 text-sm text-[var(--auth-rose-deep)]">
+                {error}
+              </div>
+            )}
+
+            <button type="submit" disabled={isSubmitting} className="auth-cta">
+              {isSubmitting ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : mode === 'magic' ? (
+                <>
+                  <Sparkles size={16} strokeWidth={1.5} />
+                  Envoyer le lien
+                </>
+              ) : (
+                <>
+                  Se connecter
+                  <ArrowRight size={16} strokeWidth={1.75} />
+                </>
+              )}
+            </button>
+          </form>
+        </>
+      )}
+    </AuthShell>
   );
 };
