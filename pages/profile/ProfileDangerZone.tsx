@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { supabase } from '../../lib/supabase';
-import { rawRpc } from '../../lib/supabaseRaw';
+import { rawRpc, rawSelect } from '../../lib/supabaseRaw';
 
 export const ProfileDangerZone: React.FC = () => {
   const { activeSalon, memberships } = useAuth();
@@ -22,15 +22,23 @@ export const ProfileDangerZone: React.FC = () => {
   const isOwner = currentMembership?.role === 'owner';
   const { data: isSoleOwner = isOwner } = useQuery({
     queryKey: ['sole-owner-check', salonId],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('salon_memberships')
-        .select('*', { count: 'exact', head: true })
-        .eq('salon_id', salonId)
-        .eq('role', 'owner')
-        .is('deleted_at', null);
-      if (error) return true; // Err on the safe side
-      return (count ?? 0) <= 1;
+    queryFn: async ({ signal }) => {
+      try {
+        const params = new URLSearchParams();
+        params.append('select', 'id');
+        params.append('salon_id', `eq.${salonId}`);
+        params.append('role', 'eq.owner');
+        params.append('deleted_at', 'is.null');
+        params.append('limit', '2');
+        const rows = await rawSelect<{ id: string }>(
+          'salon_memberships',
+          params.toString(),
+          signal,
+        );
+        return rows.length <= 1;
+      } catch {
+        return true; // Err on the safe side
+      }
     },
     enabled: !!salonId && isOwner,
   });

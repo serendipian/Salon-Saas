@@ -2,8 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { withMutationTimeout } from '../lib/mutations';
-import { supabase } from '../lib/supabase';
-import { rawSelect } from '../lib/supabaseRaw';
+import { rawRpc, rawSelect } from '../lib/supabaseRaw';
 import {
   type TransactionDeletion,
   type TransactionModification,
@@ -168,15 +167,16 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
         },
         signal: AbortSignal,
       ) => {
-        const { error } = await supabase
-          .rpc('void_transaction', {
+        await rawRpc(
+          'void_transaction',
+          {
             p_transaction_id: transactionId,
             p_salon_id: salonId,
             p_reason_category: reasonCategory,
             p_reason_note: reasonNote,
-          })
-          .abortSignal(signal);
-        if (error) throw error;
+          },
+          signal,
+        );
       },
     ),
     onSuccess: () => {
@@ -213,8 +213,9 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
         },
         signal: AbortSignal,
       ) => {
-        const { error } = await supabase
-          .rpc('refund_transaction', {
+        await rawRpc(
+          'refund_transaction',
+          {
             p_transaction_id: transactionId,
             p_salon_id: salonId,
             p_items: items,
@@ -222,9 +223,9 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
             p_reason_category: reasonCategory,
             p_reason_note: reasonNote,
             p_restock: restock,
-          })
-          .abortSignal(signal);
-        if (error) throw error;
+          },
+          signal,
+        );
       },
     ),
     onSuccess: () => {

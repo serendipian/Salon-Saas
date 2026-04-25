@@ -12,7 +12,7 @@ import { setSalonCurrency } from '../lib/format';
 import { useRealtimeEpoch } from '../lib/realtimeReset';
 import { Sentry } from '../lib/sentry';
 import { supabase } from '../lib/supabase';
-import { rawRpc, rawUpdate } from '../lib/supabaseRaw';
+import { rawRpc, rawSelect, rawUpdate } from '../lib/supabaseRaw';
 
 export type ProfileUpdates = Omit<
   Partial<Profile>,
@@ -103,48 +103,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Fetch profile from public.profiles
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select(
-        'id, email, first_name, last_name, avatar_url, phone, bio, language, notification_email, notification_sms, is_admin',
-      )
-      .eq('id', userId)
-      .single();
-
-    if (error) {
-      console.error('Failed to fetch profile:', error.message);
+    try {
+      const params = new URLSearchParams();
+      params.append(
+        'select',
+        'id,email,first_name,last_name,avatar_url,phone,bio,language,notification_email,notification_sms,is_admin',
+      );
+      params.append('id', `eq.${userId}`);
+      params.append('limit', '1');
+      const rows = await rawSelect<Profile>('profiles', params.toString());
+      return rows[0] ?? null;
+    } catch (error) {
+      console.error('Failed to fetch profile:', error instanceof Error ? error.message : error);
       return null;
     }
-    return data as Profile;
   }, []);
 
   // Fetch all salon memberships for the current user
   const fetchMemberships = useCallback(async (userId: string): Promise<SalonMembership[]> => {
-    const { data, error } = await supabase
-      .from('salon_memberships')
-      .select(`
-        id, salon_id, profile_id, role, status, created_at,
-        salon:salons!inner(id, name, slug, logo_url, currency, timezone, subscription_tier, is_suspended)
-      `)
-      .eq('profile_id', userId)
-      .eq('status', 'active')
-      .is('deleted_at', null);
-
-    if (error) {
-      console.error('Failed to fetch memberships:', error.message);
+    type JoinedRow = {
+      id: string;
+      salon_id: string;
+      profile_id: string;
+      role: string;
+      status: string;
+      created_at: string;
+      salon: SalonMembership['salon'] | SalonMembership['salon'][] | null;
+    };
+    try {
+      const params = new URLSearchParams();
+      params.append(
+        'select',
+        'id,salon_id,profile_id,role,status,created_at,salon:salons!inner(id,name,slug,logo_url,currency,timezone,subscription_tier,is_suspended)',
+      );
+      params.append('profile_id', `eq.${userId}`);
+      params.append('status', 'eq.active');
+      params.append('deleted_at', 'is.null');
+      const data = await rawSelect<JoinedRow>('salon_memberships', params.toString());
+      return data.flatMap((m) => {
+        const salon = Array.isArray(m.salon) ? m.salon[0] : m.salon;
+        if (!salon) return [];
+        return [
+          {
+            id: m.id,
+            salon_id: m.salon_id,
+            profile_id: m.profile_id,
+            role: m.role as Role,
+            status: m.status as SalonMembership['status'],
+            created_at: m.created_at,
+            salon,
+          },
+        ];
+      });
+    } catch (error) {
+      console.error('Failed to fetch memberships:', error instanceof Error ? error.message : error);
       return [];
     }
-
-    // Supabase returns salon as object (not array) due to !inner
-    return (data || []).map((m) => ({
-      id: m.id,
-      salon_id: m.salon_id,
-      profile_id: m.profile_id,
-      role: m.role as Role,
-      status: m.status as SalonMembership['status'],
-      created_at: m.created_at,
-      salon: m.salon as unknown as SalonMembership['salon'],
-    }));
   }, []);
 
   // Switch active salon

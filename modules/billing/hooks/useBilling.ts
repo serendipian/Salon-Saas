@@ -5,6 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import type { Subscription, SubscriptionTier } from '../../../lib/auth.types';
 import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -28,14 +29,15 @@ export function useBilling() {
 
   const { data: subscription, isLoading } = useQuery<Subscription>({
     queryKey: ['subscription', activeSalon?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('salon_id', activeSalon?.id ?? '')
-        .single();
-      if (error) throw error;
-      return data as Subscription;
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('salon_id', `eq.${activeSalon?.id ?? ''}`);
+      params.append('limit', '1');
+      const data = await rawSelect<Subscription>('subscriptions', params.toString(), signal);
+      const row = data[0];
+      if (!row) throw new Error('Subscription not found');
+      return row;
     },
     enabled: !!activeSalon,
   });

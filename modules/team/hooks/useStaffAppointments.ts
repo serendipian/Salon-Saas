@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { supabase } from '../../../lib/supabase';
+import { rawSelect } from '../../../lib/supabaseRaw';
 import type { WorkSchedule } from '../../../types';
 import { countWorkingDays } from '../utils';
 
@@ -21,19 +21,18 @@ export const useStaffAppointments = (staffId: string, schedule?: WorkSchedule) =
 
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ['staff_appointments', salonId, staffId, today.toISOString()],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select('*, clients(first_name, last_name), services(name)')
-        .eq('staff_id', staffId)
-        .eq('salon_id', salonId!)
-        .gte('date', today.toISOString())
-        .lte('date', weekEnd.toISOString())
-        .is('deleted_at', null)
-        .neq('status', 'CANCELLED')
-        .order('date', { ascending: true });
-      if (error) throw error;
-      return data || [];
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams();
+      params.append('select', '*,clients(first_name,last_name),services(name)');
+      params.append('staff_id', `eq.${staffId}`);
+      params.append('salon_id', `eq.${salonId!}`);
+      params.append('date', `gte.${today.toISOString()}`);
+      params.append('date', `lte.${weekEnd.toISOString()}`);
+      params.append('deleted_at', 'is.null');
+      params.append('status', 'neq.CANCELLED');
+      params.append('order', 'date.asc');
+      // biome-ignore lint/suspicious/noExplicitAny: row shape is downstream-only
+      return rawSelect<any>('appointments', params.toString(), signal);
     },
     enabled: !!salonId && !!staffId,
   });

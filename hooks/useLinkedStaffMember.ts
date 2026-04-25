@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
+import { rawSelect } from '../lib/supabaseRaw';
 import { toStaffMember } from '../modules/team/mappers';
 import type { StaffMember } from '../types';
 
@@ -13,18 +13,22 @@ export function useLinkedStaffMember() {
 
   const { data: linkedStaff = null, isLoading } = useQuery<StaffMember | null>({
     queryKey: ['linked-staff', salonId, membershipId],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!membershipId) return null;
-      const { data, error } = await supabase
-        .from('staff_members')
-        .select('*')
-        .eq('salon_id', salonId)
-        .eq('membership_id', membershipId)
-        .is('deleted_at', null)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) return null;
-      return toStaffMember(data as any);
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('salon_id', `eq.${salonId}`);
+      params.append('membership_id', `eq.${membershipId}`);
+      params.append('deleted_at', 'is.null');
+      params.append('limit', '1');
+      const data = await rawSelect<Parameters<typeof toStaffMember>[0]>(
+        'staff_members',
+        params.toString(),
+        signal,
+      );
+      const row = data[0];
+      if (!row) return null;
+      return toStaffMember(row);
     },
     enabled: !!salonId && !!membershipId,
   });
