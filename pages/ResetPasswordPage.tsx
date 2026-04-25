@@ -73,7 +73,6 @@ export const ResetPasswordPage: React.FC = () => {
   if (!isRecovery) {
     return (
       <AuthShell
-        eyebrow="03 — Récupération"
         kicker="Lien expiré"
         headline="Ce lien n’est plus valide."
         subhead="Pour des raisons de sécurité, les liens de réinitialisation expirent rapidement. Demandez-en un nouveau."
@@ -92,7 +91,6 @@ export const ResetPasswordPage: React.FC = () => {
 
   return (
     <AuthShell
-      eyebrow="04 — Sécurité"
       kicker="Nouveau mot de passe"
       headline={success ? 'Tout est prêt.' : 'Choisissez un mot de passe.'}
       subhead={

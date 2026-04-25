@@ -34,7 +34,6 @@ export const ForgotPasswordPage: React.FC = () => {
 
   return (
     <AuthShell
-      eyebrow="03 — Récupération"
       kicker="Mot de passe oublié"
       headline={emailSent ? 'Vérifiez votre boîte mail.' : 'Réinitialisez votre accès.'}
       subhead={

@@ -47,7 +47,6 @@ export const SignupPage: React.FC = () => {
 
   return (
     <AuthShell
-      eyebrow="02 — Inscription"
       kicker="Nouveau compte"
       headline={success ? 'Bientôt prête.' : 'Ouvrez votre atelier.'}
       subhead={

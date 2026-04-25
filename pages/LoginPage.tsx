@@ -74,7 +74,6 @@ export const LoginPage: React.FC = () => {
 
   return (
     <AuthShell
-      eyebrow="01 — Accès"
       kicker="Espace professionnel"
       headline={magicLinkSent ? 'Vérifiez votre boîte mail.' : 'Bon retour.'}
       subhead={

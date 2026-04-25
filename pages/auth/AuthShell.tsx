@@ -1,9 +1,6 @@
 import type React from 'react';
-import { useEffect, useState } from 'react';
 
 interface AuthShellProps {
-  /** Editorial eyebrow shown over the hero (e.g. "Bienvenue / 01") */
-  eyebrow?: string;
   /** Headline shown on the form side, in display serif */
   headline: string;
   /** Smaller line below headline */
@@ -22,34 +19,13 @@ const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=1600&q=80',
 ];
 
-const QUOTES = [
-  { fr: 'L’art du soin, sublimé.' },
-  { fr: 'Chaque cliente, une œuvre.' },
-  { fr: 'La beauté, en toute lumière.' },
-];
-
 export const AuthShell: React.FC<AuthShellProps> = ({
-  eyebrow,
   headline,
   subhead,
   kicker,
   children,
   footer,
 }) => {
-  // Live local time in Casablanca for the editorial caption.
-  const [now, setNow] = useState<string>('');
-  useEffect(() => {
-    const fmt = () =>
-      new Intl.DateTimeFormat('fr-FR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Africa/Casablanca',
-      }).format(new Date());
-    setNow(fmt());
-    const id = setInterval(() => setNow(fmt()), 30_000);
-    return () => clearInterval(id);
-  }, []);
-
   return (
     <div
       className="auth-root min-h-screen w-full overflow-hidden bg-[var(--auth-cream)] text-[var(--auth-ink)]"
@@ -103,74 +79,16 @@ export const AuthShell: React.FC<AuthShellProps> = ({
             }}
           />
 
-          {/* Top frame: wordmark + frame number */}
-          <div className="relative z-10 flex items-start justify-between px-12 pt-12">
+          {/* Centered wordmark + slogan — only text on the hero */}
+          <div className="relative z-10 flex h-full flex-col items-center justify-center px-12 text-center">
             <div className="auth-rise" style={{ ['--d' as string]: '120ms' }}>
-              <div className="flex items-baseline gap-3 text-white">
-                <span className="auth-display text-3xl italic leading-none">BeautyFlow</span>
-                <span className="text-[10px] font-medium uppercase tracking-[0.32em] text-white/70">
-                  Salon Management
-                </span>
-              </div>
-              <div className="mt-1 h-px w-24 bg-white/30" />
-            </div>
-
-            <div
-              className="auth-rise text-right text-[10px] font-medium uppercase tracking-[0.32em] text-white/60"
-              style={{ ['--d' as string]: '220ms' }}
-            >
-              <div>{eyebrow ?? '01 — Accès'}</div>
-              <div className="mt-1 text-white/40">MMXXVI</div>
-            </div>
-          </div>
-
-          {/* Vertical text spine on far left edge */}
-          <div className="pointer-events-none absolute left-6 top-1/2 z-10 -translate-y-1/2 [writing-mode:vertical-rl] rotate-180">
-            <span className="text-[10px] font-medium uppercase tracking-[0.5em] text-white/40">
-              Beauty Salon Management App
-            </span>
-          </div>
-
-          {/* Center: rotating editorial quote */}
-          <div className="relative z-10 flex h-[calc(100vh-13rem)] items-end px-12 pb-4">
-            <div className="relative w-full max-w-xl">
-              {QUOTES.map((q, i) => (
-                <div
-                  key={q.fr}
-                  className="auth-quote absolute inset-x-0 bottom-0"
-                  style={{ ['--d' as string]: `${i * 6}s` }}
-                >
-                  <p className="auth-display text-[44px] font-light leading-[1.05] text-white sm:text-[52px]">
-                    &ldquo;{q.fr}&rdquo;
-                  </p>
-                </div>
-              ))}
-              {/* Spacer to give the absolutely-positioned quote a height target */}
-              <div className="invisible">
-                <p className="auth-display text-[44px] leading-[1.05] sm:text-[52px]">
-                  &ldquo;{QUOTES[0].fr}&rdquo;
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom caption: live time + carousel dots */}
-          <div className="relative z-10 flex items-center justify-between px-12 pb-12">
-            <div
-              className="auth-rise flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.28em] text-white/65"
-              style={{ ['--d' as string]: '320ms' }}
-            >
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--auth-rose)] shadow-[0_0_12px_2px_rgba(179,72,104,0.6)]" />
-              Casablanca &middot; {now}
-            </div>
-            <div
-              className="auth-rise flex gap-1.5"
-              style={{ ['--d' as string]: '380ms' }}
-              aria-hidden
-            >
-              <span className="h-1 w-8 rounded-full bg-white/70" />
-              <span className="h-1 w-8 rounded-full bg-white/25" />
-              <span className="h-1 w-8 rounded-full bg-white/25" />
+              <h2 className="auth-display text-[64px] font-light italic leading-none text-white">
+                BeautyFlow
+              </h2>
+              <div className="mx-auto mt-5 h-px w-16 bg-white/35" />
+              <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.42em] text-white/70">
+                Beauty Salon Management App
+              </p>
             </div>
           </div>
         </aside>
@@ -217,62 +135,21 @@ export const AuthShell: React.FC<AuthShellProps> = ({
               }}
             />
 
-            {/* Top frame: wordmark + frame number */}
+            {/* Centered wordmark + slogan — only text on the hero */}
             <div
-              className="auth-rise relative z-10 flex items-start justify-between px-6"
+              className="auth-rise relative z-10 flex flex-1 flex-col items-center justify-center px-6 text-center"
               style={{
                 ['--d' as string]: '120ms',
-                paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)',
+                paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)',
               }}
             >
-              <div>
-                <div className="flex items-baseline gap-2 text-white">
-                  <span className="auth-display text-2xl italic leading-none">BeautyFlow</span>
-                </div>
-                <span className="mt-1 block text-[9px] font-medium uppercase tracking-[0.32em] text-white/65">
-                  Salon Management
-                </span>
-              </div>
-              <div className="text-right text-[9px] font-medium uppercase tracking-[0.32em] text-white/60">
-                <div>{eyebrow ?? '01 — Accès'}</div>
-                <div className="mt-1 text-white/40">MMXXVI</div>
-              </div>
-            </div>
-
-            {/* Center: rotating editorial quote */}
-            <div className="relative z-10 flex flex-1 items-end px-6 pb-6">
-              <div className="relative w-full">
-                {QUOTES.map((q, i) => (
-                  <div
-                    key={q.fr}
-                    className="auth-quote absolute inset-x-0 bottom-0"
-                    style={{ ['--d' as string]: `${i * 6}s` }}
-                  >
-                    <p className="auth-display text-[26px] font-light leading-[1.1] text-white sm:text-[32px]">
-                      &ldquo;{q.fr}&rdquo;
-                    </p>
-                  </div>
-                ))}
-                {/* Spacer */}
-                <div className="invisible">
-                  <p className="auth-display text-[26px] leading-[1.1] sm:text-[32px]">
-                    &ldquo;{QUOTES[0].fr}&rdquo;
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom caption: live time + dots */}
-            <div className="relative z-10 flex items-center justify-between px-6 pb-8">
-              <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.28em] text-white/65">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--auth-rose)] shadow-[0_0_12px_2px_rgba(179,72,104,0.6)]" />
-                Casablanca &middot; {now}
-              </div>
-              <div className="flex gap-1" aria-hidden>
-                <span className="h-0.5 w-5 rounded-full bg-white/70" />
-                <span className="h-0.5 w-5 rounded-full bg-white/25" />
-                <span className="h-0.5 w-5 rounded-full bg-white/25" />
-              </div>
+              <h2 className="auth-display text-[44px] font-light italic leading-none text-white">
+                BeautyFlow
+              </h2>
+              <div className="mx-auto mt-4 h-px w-12 bg-white/35" />
+              <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.4em] text-white/70">
+                Beauty Salon Management App
+              </p>
             </div>
 
             {/* Curved transition into the form */}
