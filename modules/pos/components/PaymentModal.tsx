@@ -96,6 +96,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const [payments, setPayments] = useState<PaymentEntry[]>([]);
 
   const [currentAmount, setCurrentAmount] = useState<string>(total.toFixed(2));
+  // Tracks whether the cashier has manually typed in the amount input.
+  // When false (default), the input auto-syncs to total + tipsTotal so the
+  // "tendered" value reflects the grand total to collect. When true, leave
+  // the cashier's value alone — they're declaring an explicit overpay or
+  // partial amount.
+  const [isAmountCustom, setIsAmountCustom] = useState(false);
   const [splitToggleError, setSplitToggleError] = useState<string | null>(null);
 
   // Tips state — section is collapsed by default; expands when cashier clicks
@@ -213,22 +219,29 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   }, [isMobile, onClose]);
 
   // In split mode, sync the input to the remaining due (keeps the "next
-  // payment is for this much" affordance). In single mode, leave the cashier's
-  // entered amount alone — they may be entering a tendered amount that
-  // exceeds the total to compute change.
+  // payment is for this much" affordance). In single mode, sync to
+  // total + tipsTotal so the "tendered" amount reflects the grand total to
+  // collect — UNLESS the cashier has manually overridden it (isAmountCustom).
   useEffect(() => {
     if (isSplitMode) {
       setCurrentAmount(remaining.toFixed(2));
+    } else if (!isAmountCustom) {
+      setCurrentAmount(round2(total + tipsTotal).toFixed(2));
     }
-  }, [isSplitMode, remaining]);
+    // tipsTotal is read inside; intentional dep
+  }, [isSplitMode, remaining, total, tipsTotal, isAmountCustom]);
 
   const parsedAmount = (() => {
     const n = parseFloat(currentAmount);
     return Number.isNaN(n) ? 0 : round2(n);
   })();
 
-  const change = round2(Math.max(0, parsedAmount - total));
-  const isSingleAmountValid = parsedAmount > 0 && parsedAmount >= total;
+  // Grand total to collect = services + tips. Change is what the cashier
+  // gives back from the tendered amount, after both services and tips are
+  // covered.
+  const grandTotal = round2(total + tipsTotal);
+  const change = round2(Math.max(0, parsedAmount - grandTotal));
+  const isSingleAmountValid = parsedAmount > 0 && parsedAmount >= grandTotal;
 
   // ---- Mode A: single payment ----
 
@@ -238,8 +251,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   const handleQuickAmount = (denomination: number | 'exact') => {
-    const value = denomination === 'exact' ? total : denomination;
+    // "Exact" means exactly the grand total to collect (services + tips).
+    // Numeric denominations are absolute note amounts (50, 100, 200) used
+    // when the cashier hands the customer a fixed-denomination note.
+    const value = denomination === 'exact' ? grandTotal : denomination;
     setCurrentAmount(value.toFixed(2));
+    setIsAmountCustom(true);
   };
 
   // ---- Mode B: split payment ----
@@ -288,7 +305,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const exitSplitMode = () => {
     if (payments.length > 0) return;
     setIsSplitMode(false);
-    setCurrentAmount(total.toFixed(2));
+    setIsAmountCustom(false); // back to auto-sync mode
   };
 
   // ---- Confirm ----
@@ -516,7 +533,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               type="number"
               inputMode="decimal"
               value={currentAmount}
-              onChange={(e) => setCurrentAmount(e.target.value)}
+              onChange={(e) => {
+                setCurrentAmount(e.target.value);
+                setIsAmountCustom(true);
+              }}
               className="w-full text-3xl font-bold text-slate-900 border-b-2 border-slate-200 focus:border-slate-900 outline-none py-1 bg-white"
               placeholder="0.00"
             />
@@ -532,7 +552,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               >
                 Exact
               </button>
-              {QUICK_DENOMINATIONS.filter((d) => d > total).map((d) => (
+              {QUICK_DENOMINATIONS.filter((d) => d > grandTotal).map((d) => (
                 <button
                   key={d}
                   type="button"
