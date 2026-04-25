@@ -139,10 +139,21 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
             : undefined;
           return (
           <li key={appt.id} className="relative">
-            <button
-              type="button"
+            {/* Use a div with role=button rather than a real <button>: the
+                StatusBadge and per-service trash button both render their own
+                <button> and nesting interactive elements is invalid HTML
+                (validateDOMNesting fires hundreds of warnings in dev). */}
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => onDetails(appt.id)}
-              className="w-full px-4 py-3 flex items-start justify-between gap-3 hover:bg-slate-50 active:bg-slate-100 text-left focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-slate-900 focus:outline-none transition-colors"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onDetails(appt.id);
+                }
+              }}
+              className="w-full px-4 py-3 flex items-start justify-between gap-3 hover:bg-slate-50 active:bg-slate-100 text-left focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-slate-900 focus:outline-none transition-colors cursor-pointer"
               aria-label={`Voir ${appt.serviceName} à ${formatTime(appt.date)}`}
             >
               <div className="min-w-0 flex-1 space-y-1">
@@ -214,7 +225,7 @@ const AppointmentGroupedCard: React.FC<GroupedCardProps> = ({
                   </span>
                 )}
               </div>
-            </button>
+            </div>
           </li>
           );
         })}
