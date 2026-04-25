@@ -447,14 +447,22 @@ async function triggerRecovery(
     // resetAllChannels() alone only recreates channel objects; if the socket
     // itself is zombied from throttling, new channels never SUBSCRIBE.
     try {
+      logRealtime('recovery.disconnect.start', {});
       supabase.realtime.disconnect();
+      logRealtime('recovery.disconnect.done', {});
       supabase.realtime.connect();
-    } catch {
+      logRealtime('recovery.connect.done', {});
+    } catch (err) {
+      logRealtime('recovery.cycle.error', {
+        message: err instanceof Error ? err.message : String(err),
+      });
       // best effort — never throw from recovery
     }
 
     // Realtime reset
+    logRealtime('recovery.resetChannels.start', {});
     resetAllChannels();
+    logRealtime('recovery.resetChannels.done', {});
 
     // Restart the monitor and wait for a fresh SUBSCRIBED via probe channel.
     stopMonitoring();
