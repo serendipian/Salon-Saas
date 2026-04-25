@@ -207,9 +207,18 @@ body {
 
 /* Form-area top padding — tight on mobile so the whole form sits above
    the fold on phones; comfortable on desktop where there's no hero stacked
-   on top. */
+   on top.
+   Mobile uses margin-top: -32px to slide the form panel up under the
+   hero's 32px cream cap (same color, seamless). Without this, the cream
+   cap occupies 32px of visible space *and* the form-area's padding stacks
+   on top of it, leaving a wide empty band above "Espace professionnel". */
 .auth-form-area {
   padding-top: 16px;
+}
+@media (max-width: 1023.98px) {
+  .auth-form-area {
+    margin-top: -32px;
+  }
 }
 @media (min-width: 1024px) {
   .auth-form-area {
