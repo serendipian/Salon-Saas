@@ -234,7 +234,7 @@ body {
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: rgba(42, 38, 34, 0.55);
-  margin-bottom: 8px;
+  margin-bottom: 2px;
 }
 .auth-field {
   position: relative;

@@ -63,7 +63,10 @@ export const SignupPage: React.FC = () => {
           <CheckCircle2 size={26} strokeWidth={1.5} />
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="mt-2 space-y-5 border-t border-[var(--auth-line)] pt-5 sm:space-y-6"
+        >
           <div className="grid grid-cols-2 gap-6">
             <div>
               <label htmlFor="firstName" className="auth-label">
