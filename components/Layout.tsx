@@ -173,7 +173,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
   const collapsed = sidebar.mode === 'collapsed';
 
   return (
-    <div className="flex h-screen bg-[#f7f2ea] overflow-hidden font-sans text-slate-900">
+    <div className="flex h-screen bg-[#f8fafc] overflow-hidden font-sans text-slate-900">
       {/* Sidebar — hidden on mobile */}
       {!isMobile && (
         <aside
@@ -346,7 +346,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
       )}
 
       {/* Main Content Wrapper */}
-      <div id="main-content" className="flex-1 flex flex-col min-w-0 bg-[#f7f2ea]">
+      <div id="main-content" className="flex-1 flex flex-col min-w-0 bg-[#f8fafc]">
         {/* Top Bar */}
         <header
           className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-between px-4 md:px-6 shrink-0 sticky top-0"

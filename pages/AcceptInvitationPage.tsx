@@ -165,7 +165,7 @@ export const AcceptInvitationPage: React.FC = () => {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#f7f2ea]">
+      <div className="flex items-center justify-center h-screen bg-[#f8fafc]">
         <div className="w-10 h-10 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin" />
       </div>
     );
@@ -176,7 +176,7 @@ export const AcceptInvitationPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f7f2ea] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-8">
           {status === 'loading' && (
