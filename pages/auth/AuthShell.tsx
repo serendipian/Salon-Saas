@@ -161,7 +161,7 @@ export const AuthShell: React.FC<AuthShellProps> = ({
               className="pointer-events-none absolute inset-x-0 bottom-0 h-8"
               style={{
                 background: 'var(--auth-ivory)',
-                borderRadius: '28px 28px 0 0',
+                borderRadius: '12px 12px 0 0',
               }}
             />
           </div>

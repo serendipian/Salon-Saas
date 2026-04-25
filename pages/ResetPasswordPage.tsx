@@ -146,7 +146,7 @@ export const ResetPasswordPage: React.FC = () => {
           </div>
 
           {error && (
-            <div className="rounded-md border-l-2 border-[var(--auth-rose-deep)] bg-[var(--auth-rose-deep)]/[0.04] px-4 py-3 text-sm text-[var(--auth-rose-deep)]">
+            <div className="rounded-sm border-l-2 border-[var(--auth-rose-deep)] bg-[var(--auth-rose-deep)]/[0.04] px-4 py-3 text-sm text-[var(--auth-rose-deep)]">
               {error}
             </div>
           )}

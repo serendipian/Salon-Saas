@@ -102,7 +102,7 @@ export const LoginPage: React.FC = () => {
       ) : (
         <>
           {/* Mode toggle pill */}
-          <div className="auth-toggle mb-5">
+          <div className="auth-toggle mb-8">
             <span className="auth-toggle-thumb" style={thumbStyle} />
             <button
               ref={passwordBtnRef}
@@ -182,7 +182,7 @@ export const LoginPage: React.FC = () => {
             )}
 
             {error && (
-              <div className="rounded-md border-l-2 border-[var(--auth-rose-deep)] bg-[var(--auth-rose-deep)]/[0.04] px-4 py-3 text-sm text-[var(--auth-rose-deep)]">
+              <div className="rounded-sm border-l-2 border-[var(--auth-rose-deep)] bg-[var(--auth-rose-deep)]/[0.04] px-4 py-3 text-sm text-[var(--auth-rose-deep)]">
                 {error}
               </div>
             )}
