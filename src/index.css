@@ -367,13 +367,22 @@ body {
   box-shadow: 0 0 0 3px rgba(179, 72, 104, 0.18);
 }
 
-/* "ou" divider between primary CTA and Google button */
+/* "ou" divider between primary CTA and Google button.
+   Uses !important to override the form's space-y-5 / space-y-6 gap and
+   the next-sibling's space-y top margin, so the divider sits visually
+   close to the buttons it separates instead of floating in 20–24px of
+   whitespace on each side. */
 .auth-divider {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  margin-top: 8px !important;
+  margin-bottom: 0 !important;
+}
+.auth-divider + * {
+  margin-top: 8px !important;
 }
 .auth-divider::before,
 .auth-divider::after {
