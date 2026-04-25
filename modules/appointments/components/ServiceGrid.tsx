@@ -26,6 +26,8 @@ interface ServiceGridProps {
    * disabled. `null` = no lock.
    */
   lockedCategoryId?: string | null;
+  /** Pack ids already used by other blocks — rendered disabled in favorites. */
+  disabledPackIds?: string[];
 }
 
 export default function ServiceGrid({
@@ -37,6 +39,7 @@ export default function ServiceGrid({
   onAddPackBlocks,
   activePackId = null,
   lockedCategoryId = null,
+  disabledPackIds = [],
 }: ServiceGridProps) {
   const showFavorites = favorites.length > 0;
   const [expandedServiceId, setExpandedServiceId] = useState<string | null>(null);
@@ -205,8 +208,10 @@ export default function ServiceGrid({
             const discount = getPackDiscount(pack);
             const isSelected = activePackId === pack.id;
             // Pack favorites stay clickable when their own pack is selected (to toggle off)
-            // but are disabled when non-pack services are already in the block.
-            const isDisabledByLock = lockedCategoryId !== null && !isSelected;
+            // but are disabled when non-pack services are already in the block,
+            // or when the same pack is already used by a sibling block.
+            const isUsedElsewhere = disabledPackIds.includes(pack.id);
+            const isDisabledByLock = (lockedCategoryId !== null && !isSelected) || isUsedElsewhere;
             const disabledClass = isDisabledByLock
               ? 'opacity-40 cursor-not-allowed pointer-events-none'
               : '';
@@ -214,6 +219,7 @@ export default function ServiceGrid({
               <div
                 key={`fav-pack-${pack.id}`}
                 aria-disabled={isDisabledByLock}
+                title={isUsedElsewhere ? 'Ce pack est déjà sélectionné' : undefined}
                 className={`rounded-lg p-3 transition-all cursor-pointer ${
                   isSelected
                     ? 'bg-emerald-50 border-2 border-emerald-400 shadow-sm'

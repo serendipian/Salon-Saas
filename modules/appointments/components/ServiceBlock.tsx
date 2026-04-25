@@ -27,6 +27,8 @@ interface ServiceBlockProps {
   summaryText?: string;
   packs?: Pack[];
   onAddPackBlocks?: (pack: Pack) => void;
+  /** Pack ids already used by other blocks — rendered as disabled tiles. */
+  disabledPackIds?: string[];
   stepOffset?: number;
   hasConflict?: boolean;
 }
@@ -46,6 +48,7 @@ export default function ServiceBlock({
   summaryText,
   packs = [],
   onAddPackBlocks,
+  disabledPackIds = [],
   stepOffset = 0,
   hasConflict = false,
 }: ServiceBlockProps) {
@@ -370,6 +373,7 @@ export default function ServiceBlock({
           onAddPackBlocks={onAddPackBlocks}
           activePackId={block.packId}
           lockedCategoryId={lockedCategoryId}
+          disabledPackIds={disabledPackIds}
         />
       )}
 
@@ -379,15 +383,21 @@ export default function ServiceBlock({
           {packs.map((pack) => {
             const discount = getPackDiscount(pack);
             const isSelected = block.packId === pack.id;
+            const isUsedElsewhere = disabledPackIds.includes(pack.id);
             return (
               <button
                 key={pack.id}
                 type="button"
                 onClick={() => onAddPackBlocks?.(pack)}
+                disabled={isUsedElsewhere}
+                aria-disabled={isUsedElsewhere}
+                title={isUsedElsewhere ? 'Ce pack est déjà sélectionné' : undefined}
                 className={`p-3 rounded-lg transition-all text-left ${
                   isSelected
                     ? 'bg-emerald-50 border-2 border-emerald-400 shadow-sm'
-                    : 'bg-white border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50'
+                    : isUsedElsewhere
+                      ? 'bg-slate-50 border border-slate-200 opacity-50 cursor-not-allowed'
+                      : 'bg-white border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50'
                 }`}
               >
                 <div className="flex items-center gap-1.5 mb-1">

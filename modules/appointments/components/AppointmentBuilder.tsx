@@ -69,6 +69,13 @@ export default function AppointmentBuilder({
     addToast({ type: 'warning', message });
   };
 
+  // Pack ids already used by some block — used to grey out duplicates in
+  // every other block's PACKS pill so the user can't pick the same pack twice.
+  const selectedPackIds = useMemo(
+    () => form.serviceBlocks.map((b) => b.packId).filter(Boolean) as string[],
+    [form.serviceBlocks],
+  );
+
   // Merge pack favorites into the favorites array (packs live in a separate
   // data source so they aren't included in useServices().favorites).
   const allFavorites = useMemo<FavoriteItem[]>(() => {
@@ -223,7 +230,8 @@ export default function AppointmentBuilder({
                     categories={hookProps.categories}
                     favorites={allFavorites}
                     packs={hookProps.packs ?? []}
-                    onAddPackBlocks={form.addPackBlocks}
+                    onAddPackBlocks={(pack) => form.addPackBlocks(pack, i)}
+                    disabledPackIds={selectedPackIds.filter((id) => id !== block.packId)}
                     onActivate={() => form.setActiveBlockIndex(i)}
                     onRemove={() => form.removeBlock(i)}
                     onUpdate={(updates) => form.updateBlock(i, updates)}

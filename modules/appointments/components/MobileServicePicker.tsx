@@ -19,6 +19,8 @@ interface MobileServicePickerProps {
   packs?: Pack[];
   initialCategoryId: string | null;
   initialItems: ServiceBlockItem[];
+  /** Pack ids already used by other blocks — rendered disabled in this sheet. */
+  disabledPackIds?: string[];
   onConfirm: (items: ServiceBlockItem[], categoryId: string | null) => void;
   onPackSelect?: (pack: Pack) => void;
   onClose: () => void;
@@ -31,6 +33,7 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
   packs = [],
   initialCategoryId,
   initialItems,
+  disabledPackIds = [],
   onConfirm,
   onPackSelect,
   onClose,
@@ -394,21 +397,30 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
           <div className="flex flex-col gap-2">
             {packs.map((pack) => {
               const discount = getPackDiscount(pack);
+              const isUsedElsewhere = disabledPackIds.includes(pack.id);
               return (
                 <button
                   key={pack.id}
                   type="button"
+                  disabled={isUsedElsewhere}
+                  aria-disabled={isUsedElsewhere}
                   onClick={() => {
+                    if (isUsedElsewhere) return;
                     onPackSelect?.(pack);
                     onClose();
                   }}
-                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-white border border-slate-200 min-h-[52px] transition-colors active:bg-emerald-50"
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl border min-h-[52px] transition-colors ${
+                    isUsedElsewhere
+                      ? 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
+                      : 'bg-white border-slate-200 active:bg-emerald-50'
+                  }`}
                 >
                   <div className="text-left">
                     <div className="text-sm font-medium text-slate-900">{pack.name}</div>
                     <div className="text-xs text-slate-500 mt-0.5">
                       {formatPackItemCount(pack)}
                       {discount > 0 && ` · -${discount}%`}
+                      {isUsedElsewhere && ' · Déjà sélectionné'}
                     </div>
                   </div>
                   <span className="text-sm font-semibold text-emerald-600 shrink-0 ml-2">
@@ -428,21 +440,30 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
                 if (isLocked) return null; // packs cannot be mixed with locked service items
                 const pack = fav.pack;
                 const discount = getPackDiscount(pack);
+                const isUsedElsewhere = disabledPackIds.includes(pack.id);
                 return (
                   <button
                     key={`fav-pack-${pack.id}`}
                     type="button"
+                    disabled={isUsedElsewhere}
+                    aria-disabled={isUsedElsewhere}
                     onClick={() => {
+                      if (isUsedElsewhere) return;
                       onPackSelect?.(pack);
                       onClose();
                     }}
-                    className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-white border border-slate-200 min-h-[52px] transition-colors active:bg-emerald-50"
+                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl border min-h-[52px] transition-colors ${
+                      isUsedElsewhere
+                        ? 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
+                        : 'bg-white border-slate-200 active:bg-emerald-50'
+                    }`}
                   >
                     <div className="text-left">
                       <div className="text-sm font-medium text-slate-900">{pack.name}</div>
                       <div className="text-xs text-slate-500 mt-0.5">
                         {formatPackItemCount(pack)}
                         {discount > 0 && ` · -${discount}%`}
+                        {isUsedElsewhere && ' · Déjà sélectionné'}
                       </div>
                     </div>
                     <span className="text-sm font-semibold text-emerald-600 shrink-0 ml-2">

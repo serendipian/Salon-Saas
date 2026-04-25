@@ -91,7 +91,7 @@ export interface AppointmentFormReturn {
   clearBlockItems: (index: number) => void;
   removeBlock: (index: number) => void;
   addBlock: () => void;
-  addPackBlocks: (pack: Pack) => void;
+  addPackBlocks: (pack: Pack, blockIndex: number) => void;
   clearFieldError: (field: string) => void;
 
   // Helpers
@@ -417,117 +417,74 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     setActiveBlockIndex(() => newLength - 1);
   }, []);
 
-  const addPackBlocks = useCallback((pack: Pack) => {
-    const totalOriginal = pack.items.reduce((sum, item) => sum + item.originalPrice, 0);
-    if (totalOriginal === 0 || pack.items.length === 0) return;
+  const addPackBlocks = useCallback(
+    (pack: Pack, blockIndex: number) => {
+      const totalOriginal = pack.items.reduce((sum, item) => sum + item.originalPrice, 0);
+      if (totalOriginal === 0 || pack.items.length === 0) return;
 
-    // Compute pro-rata prices with rounding fix
-    const proRataPrices = pack.items.map(
-      (item) => Math.round((item.originalPrice / totalOriginal) * pack.price * 100) / 100,
-    );
-    const roundedSum = proRataPrices.reduce((s, p) => s + p, 0);
-    const diff = Math.round((pack.price - roundedSum) * 100) / 100;
-    if (diff !== 0) {
-      let maxIdx = 0;
-      for (let i = 1; i < pack.items.length; i++) {
-        if (pack.items[i].originalPrice > pack.items[maxIdx].originalPrice) maxIdx = i;
+      // Reject if this pack is already selected in a different block — packs
+      // cannot be duplicated across the appointment group.
+      const existingIdx = serviceBlocks.findIndex((b) => b.packId === pack.id);
+      if (existingIdx >= 0 && existingIdx !== blockIndex) {
+        addToast({ type: 'warning', message: 'Ce pack est déjà sélectionné.' });
+        return;
       }
-      proRataPrices[maxIdx] = Math.round((proRataPrices[maxIdx] + diff) * 100) / 100;
-    }
 
-    let firstNewBlockIndex = 0;
+      // Compute pro-rata prices with rounding fix
+      const proRataPrices = pack.items.map(
+        (item) => Math.round((item.originalPrice / totalOriginal) * pack.price * 100) / 100,
+      );
+      const roundedSum = proRataPrices.reduce((s, p) => s + p, 0);
+      const diff = Math.round((pack.price - roundedSum) * 100) / 100;
+      if (diff !== 0) {
+        let maxIdx = 0;
+        for (let i = 1; i < pack.items.length; i++) {
+          if (pack.items[i].originalPrice > pack.items[maxIdx].originalPrice) maxIdx = i;
+        }
+        proRataPrices[maxIdx] = Math.round((proRataPrices[maxIdx] + diff) * 100) / 100;
+      }
 
-    setServiceBlocks((prev) => {
-      // Toggle: if the same pack is already selected, clear it in place.
-      // Preserve the first pack block's ID (with fields cleared) and drop the
-      // other blocks of that pack. Keeping the ID keeps the ServiceBlock
-      // component mounted, so its activeCategoryId state stays on 'PACKS'
-      // instead of falling back to Favoris on remount.
-      const hasPack = prev.some((b) => b.packId === pack.id);
-      if (hasPack) {
-        const firstPackIdx = prev.findIndex((b) => b.packId === pack.id);
-        // M-19: Preserve the first pack block's date so the user doesn't lose
-        // the day they had picked. Hour is dropped because the duration will
-        // change once a different service is chosen.
-        const carryDate = prev[firstPackIdx]?.date ?? null;
-        const next: ServiceBlockState[] = [];
-        let newActiveIdx = 0;
-        for (let i = 0; i < prev.length; i++) {
-          const b = prev[i];
-          if (i === firstPackIdx) {
-            newActiveIdx = next.length;
-            next.push({
+      setServiceBlocks((prev) => {
+        if (blockIndex < 0 || blockIndex >= prev.length) return prev;
+        return prev.map((b, i) => {
+          if (i !== blockIndex) return b;
+          // Toggle off when the same pack is tapped again in this block.
+          // Preserve the date so the user doesn't lose the day they picked.
+          if (b.packId === pack.id) {
+            return {
               ...b,
               categoryId: null,
               items: [],
               staffId: null,
-              date: carryDate,
+              staffConfirmed: false,
               hour: null,
               minute: 0,
               packId: null,
-            });
-          } else if (b.packId !== pack.id) {
-            next.push(b);
+            };
           }
-          // else: drop additional blocks of the same pack
-        }
-        firstNewBlockIndex = newActiveIdx;
-        return next;
-      }
-
-      // Strip any blocks from a previously selected pack (switching packs).
-      const hasLoneEmpty = prev.length === 1 && prev[0].items.length === 0;
-      // Capture existing pack block's ID before filtering, so we can reuse it
-      // (prevents remount → preserves user's active tab, e.g. Favoris).
-      const existingPackBlock = prev.find((b) => !!b.packId);
-      const base = hasLoneEmpty ? [] : prev.filter((b) => !b.packId);
-
-      const lastBlock = hasLoneEmpty ? prev[0] : base[base.length - 1];
-      const lastDate = lastBlock?.date ?? null;
-
-      const packItems = pack.items.map((item, i) => ({
-        serviceId: item.serviceId,
-        variantId: item.serviceVariantId,
-        priceOverride: proRataPrices[i],
-      }));
-
-      // If the current block is an empty placeholder or has a pack, update in
-      // place (preserves React key so ServiceBlock doesn't remount — keeps
-      // the user on whichever tab they were on, e.g. Favoris).
-      const reuseBlock = hasLoneEmpty ? prev[0] : existingPackBlock;
-      if (reuseBlock) {
-        firstNewBlockIndex = hasLoneEmpty ? 0 : base.length;
-        const updated: ServiceBlockState = {
-          ...reuseBlock,
-          categoryId: null,
-          items: packItems,
-          staffId: null,
-          date: lastDate,
-          hour: null,
-          minute: 0,
-          packId: pack.id,
-        };
-        return hasLoneEmpty ? [updated] : [...base, updated];
-      }
-
-      firstNewBlockIndex = base.length;
-
-      const packBlock: ServiceBlockState = {
-        id: crypto.randomUUID(),
-        categoryId: null,
-        items: packItems,
-        staffId: null,
-        date: lastDate,
-        hour: null,
-        minute: 0,
-        packId: pack.id,
-      };
-
-      return [...base, packBlock];
-    });
-    // Separate setState call — don't nest setState inside another updater
-    setActiveBlockIndex(firstNewBlockIndex);
-  }, []);
+          // Write pack into this block in place (replaces a different pack or
+          // any prior items). Date is preserved for the same reason.
+          const packItems = pack.items.map((item, idx) => ({
+            serviceId: item.serviceId,
+            variantId: item.serviceVariantId,
+            priceOverride: proRataPrices[idx],
+          }));
+          return {
+            ...b,
+            categoryId: null,
+            items: packItems,
+            staffId: null,
+            staffConfirmed: false,
+            hour: null,
+            minute: 0,
+            packId: pack.id,
+          };
+        });
+      });
+      setActiveBlockIndex(blockIndex);
+    },
+    [serviceBlocks, addToast],
+  );
 
   // Build summary text for collapsed blocks
   const getBlockSummary = useCallback(
