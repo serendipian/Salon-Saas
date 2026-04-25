@@ -62,115 +62,113 @@ export const SignupPage: React.FC = () => {
           <CheckCircle2 size={26} strokeWidth={1.5} />
         </div>
       ) : (
-        <div className="space-y-5 sm:space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="firstName" className="auth-label">
+                Prénom
+              </label>
+              <div className="auth-field">
+                <input
+                  id="firstName"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Marie"
+                  required
+                  autoComplete="given-name"
+                  className="auth-input"
+                />
+                <User className="auth-field-icon" size={16} strokeWidth={1.5} />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="lastName" className="auth-label">
+                Nom
+              </label>
+              <div className="auth-field">
+                <input
+                  id="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Dupont"
+                  required
+                  autoComplete="family-name"
+                  className="auth-input no-icon"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="email" className="auth-label">
+              Adresse email
+            </label>
+            <div className="auth-field">
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="vous@exemple.com"
+                required
+                autoComplete="email"
+                className="auth-input"
+              />
+              <Mail className="auth-field-icon" size={16} strokeWidth={1.5} />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="password" className="auth-label">
+              Mot de passe
+            </label>
+            <div className="auth-field">
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Minimum 8 caractères"
+                required
+                minLength={8}
+                autoComplete="new-password"
+                className="auth-input"
+              />
+              <Lock className="auth-field-icon" size={16} strokeWidth={1.5} />
+            </div>
+          </div>
+
+          {error && (
+            <div className="rounded-md border-l-2 border-[var(--auth-rose-deep)] bg-[var(--auth-rose-deep)]/[0.04] px-4 py-3 text-sm text-[var(--auth-rose-deep)]">
+              {error}
+            </div>
+          )}
+
+          <button type="submit" disabled={isSubmitting} className="auth-cta">
+            {isSubmitting ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <>
+                Créer mon compte
+                <ArrowRight size={16} strokeWidth={1.75} />
+              </>
+            )}
+          </button>
+
+          <AuthDivider label="ou" />
+
           <GoogleSignInButton
             redirect={redirect}
             label="S’inscrire avec Google"
             onError={setError}
           />
 
-          <AuthDivider label="ou avec votre email" />
-
-          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="firstName" className="auth-label">
-                  Prénom
-                </label>
-                <div className="auth-field">
-                  <input
-                    id="firstName"
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Marie"
-                    required
-                    autoComplete="given-name"
-                    className="auth-input"
-                  />
-                  <User className="auth-field-icon" size={16} strokeWidth={1.5} />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="lastName" className="auth-label">
-                  Nom
-                </label>
-                <div className="auth-field">
-                  <input
-                    id="lastName"
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Dupont"
-                    required
-                    autoComplete="family-name"
-                    className="auth-input no-icon"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="email" className="auth-label">
-                Adresse email
-              </label>
-              <div className="auth-field">
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="vous@exemple.com"
-                  required
-                  autoComplete="email"
-                  className="auth-input"
-                />
-                <Mail className="auth-field-icon" size={16} strokeWidth={1.5} />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="auth-label">
-                Mot de passe
-              </label>
-              <div className="auth-field">
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Minimum 8 caractères"
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  className="auth-input"
-                />
-                <Lock className="auth-field-icon" size={16} strokeWidth={1.5} />
-              </div>
-            </div>
-
-            {error && (
-              <div className="rounded-md border-l-2 border-[var(--auth-rose-deep)] bg-[var(--auth-rose-deep)]/[0.04] px-4 py-3 text-sm text-[var(--auth-rose-deep)]">
-                {error}
-              </div>
-            )}
-
-            <button type="submit" disabled={isSubmitting} className="auth-cta">
-              {isSubmitting ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <>
-                  Créer mon compte
-                  <ArrowRight size={16} strokeWidth={1.75} />
-                </>
-              )}
-            </button>
-
-            <p className="text-center text-[11px] tracking-wide text-[var(--auth-ink-soft)]/55">
-              En continuant, vous acceptez nos conditions et notre politique de confidentialité.
-            </p>
-          </form>
-        </div>
+          <p className="text-center text-[11px] tracking-wide text-[var(--auth-ink-soft)]/55">
+            En continuant, vous acceptez nos conditions et notre politique de confidentialité.
+          </p>
+        </form>
       )}
     </AuthShell>
   );
