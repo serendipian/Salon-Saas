@@ -48,9 +48,7 @@ export default function AppointmentBuilderMobile({
   const shake = useShake();
   const [pulseTrigger, setPulseTrigger] = useState(0);
   const [pendingScrollTarget, setPendingScrollTarget] = useState<
-    | { kind: 'client' }
-    | { kind: 'service' | 'staff'; blockIndex: number }
-    | null
+    { kind: 'client' } | { kind: 'service' | 'staff'; blockIndex: number } | null
   >(null);
 
   const clientSectionRef = useRef<HTMLDivElement | null>(null);
