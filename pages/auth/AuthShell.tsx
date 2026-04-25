@@ -176,9 +176,10 @@ export const AuthShell: React.FC<AuthShellProps> = ({
         </aside>
 
         {/* ─────────────── FORM (right) ─────────────── */}
-        <main className="relative flex min-h-screen flex-col bg-[var(--auth-ivory)]">
-          {/* Mobile hero strip — only visible <lg */}
-          <div className="relative h-44 w-full overflow-hidden lg:hidden">
+        <main className="relative flex min-h-[100dvh] flex-col bg-[var(--auth-ivory)]">
+          {/* Mobile cinematic hero — only visible <lg */}
+          <div className="auth-mobile-hero relative w-full overflow-hidden lg:hidden">
+            {/* Fallback gradient */}
             <div
               className="absolute inset-0"
               style={{
@@ -186,32 +187,102 @@ export const AuthShell: React.FC<AuthShellProps> = ({
                   'radial-gradient(120% 90% at 30% 20%, #2a1a22 0%, #15090f 55%, #0a0405 100%)',
               }}
             />
-            {HERO_IMAGES.map((src) => (
+            {/* Image carousel */}
+            {HERO_IMAGES.map((src, i) => (
               <img
                 key={src}
                 src={src}
                 alt=""
                 className="auth-hero-img absolute inset-0 h-full w-full object-cover"
-                loading="lazy"
+                loading={i === 0 ? 'eager' : 'lazy'}
                 decoding="async"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).style.display = 'none';
                 }}
               />
             ))}
+            {/* Editorial scrims */}
             <div
-              className="absolute inset-0"
+              className="pointer-events-none absolute inset-0"
               style={{
                 background:
-                  'linear-gradient(180deg, rgba(8,5,4,0.45) 0%, rgba(8,5,4,0.30) 50%, rgba(247,242,234,1) 100%)',
+                  'linear-gradient(180deg, rgba(8,5,4,0.55) 0%, rgba(8,5,4,0.18) 30%, rgba(8,5,4,0.35) 70%, var(--auth-ivory) 100%)',
               }}
             />
-            <div className="relative z-10 flex items-center justify-between px-6 pt-6">
-              <span className="auth-display text-2xl italic text-white">BeautyFlow</span>
-              <span className="text-[10px] font-medium uppercase tracking-[0.32em] text-white/70">
-                Salon Management
-              </span>
+            <div
+              className="pointer-events-none absolute inset-0 mix-blend-soft-light opacity-70"
+              style={{
+                background:
+                  'radial-gradient(60% 40% at 70% 30%, rgba(255,210,170,0.35), transparent 70%)',
+              }}
+            />
+
+            {/* Top frame: wordmark + frame number */}
+            <div
+              className="auth-rise relative z-10 flex items-start justify-between px-6"
+              style={{
+                ['--d' as string]: '120ms',
+                paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)',
+              }}
+            >
+              <div>
+                <div className="flex items-baseline gap-2 text-white">
+                  <span className="auth-display text-2xl italic leading-none">BeautyFlow</span>
+                </div>
+                <span className="mt-1 block text-[9px] font-medium uppercase tracking-[0.32em] text-white/65">
+                  Salon Management
+                </span>
+              </div>
+              <div className="text-right text-[9px] font-medium uppercase tracking-[0.32em] text-white/60">
+                <div>{eyebrow ?? '01 — Accès'}</div>
+                <div className="mt-1 text-white/40">MMXXVI</div>
+              </div>
             </div>
+
+            {/* Center: rotating editorial quote */}
+            <div className="relative z-10 flex flex-1 items-end px-6 pb-6">
+              <div className="relative w-full">
+                {QUOTES.map((q, i) => (
+                  <div
+                    key={q.fr}
+                    className="auth-quote absolute inset-x-0 bottom-0"
+                    style={{ ['--d' as string]: `${i * 6}s` }}
+                  >
+                    <p className="auth-display text-[26px] font-light leading-[1.1] text-white sm:text-[32px]">
+                      &ldquo;{q.fr}&rdquo;
+                    </p>
+                  </div>
+                ))}
+                {/* Spacer */}
+                <div className="invisible">
+                  <p className="auth-display text-[26px] leading-[1.1] sm:text-[32px]">
+                    &ldquo;{QUOTES[0].fr}&rdquo;
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom caption: live time + dots */}
+            <div className="relative z-10 flex items-center justify-between px-6 pb-8">
+              <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.28em] text-white/65">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--auth-rose)] shadow-[0_0_12px_2px_rgba(179,72,104,0.6)]" />
+                Casablanca &middot; {now}
+              </div>
+              <div className="flex gap-1" aria-hidden>
+                <span className="h-0.5 w-5 rounded-full bg-white/70" />
+                <span className="h-0.5 w-5 rounded-full bg-white/25" />
+                <span className="h-0.5 w-5 rounded-full bg-white/25" />
+              </div>
+            </div>
+
+            {/* Curved transition into the form */}
+            <div
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-8"
+              style={{
+                background: 'var(--auth-ivory)',
+                borderRadius: '28px 28px 0 0',
+              }}
+            />
           </div>
 
           {/* Subtle paper grain overlay */}
@@ -243,7 +314,13 @@ export const AuthShell: React.FC<AuthShellProps> = ({
             <circle cx="55" cy="55" r="2" fill="currentColor" />
           </svg>
 
-          <div className="relative z-10 flex flex-1 items-center justify-center px-6 py-10 sm:px-12">
+          <div
+            className="relative z-10 flex flex-1 items-center justify-center px-6 sm:px-12"
+            style={{
+              paddingTop: '32px',
+              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 32px)',
+            }}
+          >
             <div className="w-full max-w-[440px]">
               {kicker && (
                 <p
@@ -256,8 +333,11 @@ export const AuthShell: React.FC<AuthShellProps> = ({
               )}
 
               <h1
-                className="auth-rise auth-display text-[40px] font-light leading-[1.04] text-[var(--auth-ink)] sm:text-[46px]"
-                style={{ ['--d' as string]: '160ms' }}
+                className="auth-rise auth-display font-light leading-[1.04] text-[var(--auth-ink)]"
+                style={{
+                  ['--d' as string]: '160ms',
+                  fontSize: 'clamp(32px, 7vw, 46px)',
+                }}
               >
                 {headline}
               </h1>

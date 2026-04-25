@@ -100,6 +100,22 @@ body {
   letter-spacing: -0.02em;
 }
 
+/* Mobile hero — tall cinematic banner that flows into the form.
+   Uses dvh for accurate viewport height accounting for mobile chrome.
+   Auto-shrinks in landscape so the form stays in reach. */
+.auth-mobile-hero {
+  display: flex;
+  flex-direction: column;
+  min-height: 52dvh;
+  max-height: 60dvh;
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .auth-mobile-hero {
+    min-height: 56dvh;
+    max-height: 70dvh;
+  }
+}
+
 /* Carousel: 3 images cycle with crossfade + Ken Burns scale */
 @keyframes auth-kenburns-1 {
   0%   { opacity: 0; transform: scale(1.04); }
