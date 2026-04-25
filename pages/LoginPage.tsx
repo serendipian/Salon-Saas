@@ -1,6 +1,6 @@
 import { ArrowRight, CheckCircle2, Loader2, Lock, Mail, Sparkles } from 'lucide-react';
 import type React from 'react';
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AuthShell } from './auth/AuthShell';
@@ -23,16 +23,18 @@ export const LoginPage: React.FC = () => {
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [mode, setMode] = useState<'password' | 'magic'>('password');
 
-  // refs for sliding-thumb measurement on the toggle pill
+  // Sliding-thumb measurement on the toggle pill. We measure with
+  // useLayoutEffect (post-mount, before paint) and store in state so the
+  // default-selected pill renders with the white thumb on the very first
+  // visible frame.
   const passwordBtnRef = useRef<HTMLButtonElement>(null);
   const magicBtnRef = useRef<HTMLButtonElement>(null);
-  const activeBtn = mode === 'password' ? passwordBtnRef.current : magicBtnRef.current;
-  const thumbStyle: React.CSSProperties = activeBtn
-    ? {
-        left: activeBtn.offsetLeft,
-        width: activeBtn.offsetWidth,
-      }
-    : { left: 4, width: 0 };
+  const [thumb, setThumb] = useState<{ left: number; width: number }>({ left: 4, width: 0 });
+  useLayoutEffect(() => {
+    const el = mode === 'password' ? passwordBtnRef.current : magicBtnRef.current;
+    if (el) setThumb({ left: el.offsetLeft, width: el.offsetWidth });
+  }, [mode]);
+  const thumbStyle: React.CSSProperties = { left: thumb.left, width: thumb.width };
 
   if (!authLoading && isAuthenticated) {
     if (redirect) return <Navigate to={redirect} replace />;

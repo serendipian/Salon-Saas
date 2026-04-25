@@ -151,10 +151,15 @@ body {
   50%      { transform: translateY(-6px); }
 }
 
-/* Animated underline link */
+/* Animated underline link.
+   inline-flex (not inline-block) keeps a trailing arrow icon on the same line
+   as the label even in narrow flex containers. */
 .auth-link {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 .auth-link::after {
   content: '';

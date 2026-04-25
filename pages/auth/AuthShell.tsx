@@ -201,7 +201,7 @@ export const AuthShell: React.FC<AuthShellProps> = ({
             <div className="w-full max-w-[440px]">
               {kicker && (
                 <p
-                  className="auth-rise mb-5 inline-flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.32em] text-[var(--auth-rose-deep)]"
+                  className="auth-rise mb-2 inline-flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.32em] text-[var(--auth-rose-deep)]"
                   style={{ ['--d' as string]: '80ms' }}
                 >
                   <span className="inline-block h-px w-6 bg-[var(--auth-rose-deep)]/60" />
@@ -221,14 +221,14 @@ export const AuthShell: React.FC<AuthShellProps> = ({
 
               {subhead && (
                 <p
-                  className="auth-rise mt-3 max-w-md text-[15px] leading-relaxed text-[var(--auth-ink-soft)]/80"
+                  className="auth-rise mt-2 max-w-md text-[15px] leading-relaxed text-[var(--auth-ink-soft)]/80"
                   style={{ ['--d' as string]: '240ms' }}
                 >
                   {subhead}
                 </p>
               )}
 
-              <div className="auth-rise mt-9" style={{ ['--d' as string]: '320ms' }}>
+              <div className="auth-rise mt-6" style={{ ['--d' as string]: '320ms' }}>
                 {children}
               </div>
 
