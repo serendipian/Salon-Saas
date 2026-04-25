@@ -4,6 +4,7 @@ import {
   ChevronDown,
   CreditCard,
   Gift,
+  Heart,
   Plus,
   Tag,
   Trash2,
@@ -14,13 +15,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
 import { formatPrice } from '../../../lib/format';
-import type { CartItem, PaymentEntry } from '../../../types';
+import type { CartItem, PaymentEntry, StaffMember } from '../../../types';
+import type { TransactionTipPayload } from '../mappers';
 
 interface PaymentModalProps {
   total: number;
   cart?: CartItem[];
+  /** Staff list for tip-recipient dropdown. Filtered to active staff before display. */
+  staff?: StaffMember[];
   onClose: () => void;
-  onComplete: (payments: PaymentEntry[]) => void;
+  onComplete: (payments: PaymentEntry[], tips: TransactionTipPayload[]) => void;
   isProcessing?: boolean;
 }
 
@@ -37,7 +41,33 @@ const METHODS_SECONDARY = [
   { method: 'Autre', Icon: Tag },
 ] as const;
 
+const ALL_METHODS = [...METHODS_PRIMARY, ...METHODS_SECONDARY] as const;
+
 const QUICK_DENOMINATIONS = [50, 100, 200] as const;
+const TIP_PERCENT_CHIPS = [5, 10, 15, 20] as const;
+
+// Map UI labels to RPC-wire constants. Keep in sync with mappers.ts methodMap.
+const METHOD_TO_WIRE: Record<string, string> = {
+  Espèces: 'CASH',
+  'Carte Bancaire': 'CARD',
+  Virement: 'TRANSFER',
+  Chèque: 'CHECK',
+  Mobile: 'MOBILE',
+  'Carte Cadeau': 'OTHER',
+  Autre: 'OTHER',
+};
+
+interface TipRow {
+  /** Local row id, not persisted. */
+  id: string;
+  staffId: string;
+  /** Free-text amount input. Parsed to number at submit time. */
+  amount: string;
+  /** UI label (Espèces / Carte Bancaire / etc.). Mapped to wire format on submit. */
+  method: string;
+  /** Set true only on user-originated method change. Programmatic default-sync MUST NOT flip this. */
+  isMethodCustom: boolean;
+}
 
 const getIcon = (method: string) => {
   if (method.includes('Carte Bancaire')) return CreditCard;
@@ -50,6 +80,7 @@ const getIcon = (method: string) => {
 export const PaymentModal: React.FC<PaymentModalProps> = ({
   total,
   cart = [],
+  staff = [],
   onClose,
   onComplete,
   isProcessing,
@@ -66,6 +97,96 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   const [currentAmount, setCurrentAmount] = useState<string>(total.toFixed(2));
   const [splitToggleError, setSplitToggleError] = useState<string | null>(null);
+
+  // Tips state — section is collapsed by default; expands when cashier clicks
+  // "+ Ajouter un pourboire" or any existing row is present.
+  const [tipRows, setTipRows] = useState<TipRow[]>([]);
+  const [tipsExpanded, setTipsExpanded] = useState(false);
+
+  // Staff candidates: those who appear on the cart's items (the people who
+  // actually performed the services for this client). Falls back to the full
+  // active staff list when no cart items have a staff (walk-in product sale).
+  const tipStaffCandidates = useMemo(() => {
+    const idsOnCart = new Set(cart.filter((i) => i.staffId).map((i) => i.staffId as string));
+    const activeStaff = staff.filter((s) => s.active && !s.deletedAt);
+    if (idsOnCart.size === 0) return activeStaff;
+    const filtered = activeStaff.filter((s) => idsOnCart.has(s.id));
+    return filtered.length > 0 ? filtered : activeStaff;
+  }, [cart, staff]);
+
+  // Services subtotal — used to compute the % chip amounts. Products aren't
+  // tipped per cultural convention.
+  const servicesSubtotal = useMemo(
+    () =>
+      round2(
+        cart
+          .filter((i) => i.type === 'SERVICE')
+          .reduce((sum, i) => sum + i.price * i.quantity, 0),
+      ),
+    [cart],
+  );
+
+  const tipsTotal = useMemo(
+    () => round2(tipRows.reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)),
+    [tipRows],
+  );
+
+  // The "main method" used as the default for new tip rows and to sync rows
+  // that haven't been manually overridden. Mode A: selectedMethod. Mode B:
+  // first payment in the list. Fallback: Espèces.
+  const mainMethod = isSplitMode
+    ? (payments[0]?.method ?? 'Espèces')
+    : (selectedMethod ?? 'Espèces');
+
+  // Sync tip rows whose isMethodCustom is false to the current mainMethod.
+  // Programmatic update — does NOT flip isMethodCustom.
+  useEffect(() => {
+    setTipRows((prev) =>
+      prev.map((r) => (r.isMethodCustom ? r : { ...r, method: mainMethod })),
+    );
+  }, [mainMethod]);
+
+  const addTipRow = () => {
+    setTipRows((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        staffId: tipStaffCandidates[0]?.id ?? '',
+        amount: '',
+        method: mainMethod,
+        isMethodCustom: false,
+      },
+    ]);
+    setTipsExpanded(true);
+  };
+
+  const updateTipRow = (id: string, updates: Partial<TipRow>) => {
+    setTipRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...updates } : r)));
+  };
+
+  const removeTipRow = (id: string) => {
+    setTipRows((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const applyTipPercent = (rowId: string, percent: number) => {
+    const amt = round2(servicesSubtotal * (percent / 100));
+    updateTipRow(rowId, { amount: amt.toFixed(2) });
+  };
+
+  // Tip-row classification (per spec):
+  // - fully empty (no staff + no amount): silently dropped at submit
+  // - half-filled (one of the two): shown with red border + "Complétez" hint;
+  //   blocks confirm
+  // - valid (staff + amount > 0): emitted to RPC
+  const tipRowStatus = (r: TipRow): 'empty' | 'halfFilled' | 'valid' => {
+    const hasAmount = parseFloat(r.amount) > 0;
+    const hasStaff = !!r.staffId;
+    if (!hasAmount && !hasStaff) return 'empty';
+    if (hasAmount !== hasStaff) return 'halfFilled';
+    return 'valid';
+  };
+
+  const hasInvalidTipRow = tipRows.some((r) => tipRowStatus(r) === 'halfFilled');
 
   const totalPaidInSplit = useMemo(
     () => round2(payments.reduce((sum, p) => sum + p.amount, 0)),
@@ -172,22 +293,34 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   // ---- Confirm ----
 
-  const canConfirm = isProcessing
-    ? false
-    : isSplitMode
-      ? remaining === 0 && payments.length > 0
-      : selectedMethod !== null && isSingleAmountValid;
+  const canConfirm =
+    isProcessing || hasInvalidTipRow
+      ? false
+      : isSplitMode
+        ? remaining === 0 && payments.length > 0
+        : selectedMethod !== null && isSingleAmountValid;
+
+  const buildTipPayload = (): TransactionTipPayload[] =>
+    tipRows
+      .filter((r) => tipRowStatus(r) === 'valid')
+      .map((r) => ({
+        staff_id: r.staffId,
+        amount: round2(parseFloat(r.amount)),
+        method: METHOD_TO_WIRE[r.method] ?? 'OTHER',
+      }));
 
   const handleConfirm = () => {
     if (!canConfirm) return;
+    const tips = buildTipPayload();
     if (isSplitMode) {
-      onComplete(payments);
+      onComplete(payments, tips);
       return;
     }
     if (!selectedMethod) return;
-    onComplete([
-      { id: crypto.randomUUID(), method: selectedMethod, amount: parsedAmount },
-    ]);
+    onComplete(
+      [{ id: crypto.randomUUID(), method: selectedMethod, amount: parsedAmount }],
+      tips,
+    );
   };
 
   // ---- Confirm button copy ----
@@ -196,6 +329,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     if (isProcessing) {
       return { topLine: 'Traitement…', bottomLine: null as string | null };
     }
+    if (hasInvalidTipRow) {
+      return {
+        topLine: 'Complétez les pourboires en cours',
+        bottomLine: null,
+      };
+    }
+    const tipsBottom = tipsTotal > 0 ? ` + ${formatPrice(tipsTotal)} pourboire` : '';
     if (isSplitMode) {
       if (payments.length === 0) {
         return { topLine: 'Ajoutez un paiement', bottomLine: null };
@@ -203,11 +343,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       if (remaining > 0) {
         return {
           topLine: `Restant : ${formatPrice(remaining)}`,
-          bottomLine: `${payments.length} paiement${payments.length > 1 ? 's' : ''} enregistré${payments.length > 1 ? 's' : ''}`,
+          bottomLine: `${payments.length} paiement${payments.length > 1 ? 's' : ''} enregistré${payments.length > 1 ? 's' : ''}${tipsTotal > 0 ? ` (+ ${formatPrice(tipsTotal)} pourboire)` : ''}`,
         };
       }
       return {
-        topLine: 'Valider la transaction',
+        topLine: `Valider la transaction${tipsBottom}`,
         bottomLine: `${payments.length} paiement${payments.length > 1 ? 's' : ''}`,
       };
     }
@@ -219,12 +359,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     }
     if (change > 0) {
       return {
-        topLine: `Encaisser ${formatPrice(parsedAmount)} · ${selectedMethod}`,
+        topLine: `Encaisser ${formatPrice(parsedAmount)}${tipsBottom} · ${selectedMethod}`,
         bottomLine: `Rendre ${formatPrice(change)}`,
       };
     }
     return {
-      topLine: `Encaisser ${formatPrice(parsedAmount)} · ${selectedMethod}`,
+      topLine: `Encaisser ${formatPrice(parsedAmount)}${tipsBottom} · ${selectedMethod}`,
       bottomLine: null,
     };
   })();
@@ -415,6 +555,118 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             <span className="text-3xl font-bold text-emerald-900 tabular-nums">
               {formatPrice(change)}
             </span>
+          </div>
+        )}
+
+        {/* Tips section — collapsed by default */}
+        {tipRows.length === 0 && !tipsExpanded ? (
+          <button
+            type="button"
+            onClick={addTipRow}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-slate-300 text-sm text-slate-600 hover:border-slate-400 hover:bg-slate-50 transition-colors"
+          >
+            <Heart size={14} />
+            Ajouter un pourboire
+          </button>
+        ) : (
+          <div className="rounded-xl border border-slate-200 bg-slate-50/40 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <Heart size={12} />
+                Pourboires
+              </span>
+              {tipsTotal > 0 && (
+                <span className="text-sm font-semibold text-slate-900 tabular-nums">
+                  Total : {formatPrice(tipsTotal)}
+                </span>
+              )}
+            </div>
+
+            {tipRows.map((row) => {
+              const status = tipRowStatus(row);
+              const invalid = status === 'halfFilled';
+              return (
+                <div
+                  key={row.id}
+                  className={`bg-white rounded-lg border ${invalid ? 'border-red-300' : 'border-slate-200'} p-3 space-y-2`}
+                >
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <select
+                      value={row.staffId}
+                      onChange={(e) => updateTipRow(row.id, { staffId: e.target.value })}
+                      className="flex-1 min-w-[120px] text-sm border border-slate-300 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:border-slate-900"
+                    >
+                      <option value="" disabled>
+                        Choisir un membre
+                      </option>
+                      {tipStaffCandidates.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.firstName} {s.lastName}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      value={row.amount}
+                      placeholder="0.00"
+                      onChange={(e) => updateTipRow(row.id, { amount: e.target.value })}
+                      className="w-24 text-sm font-semibold border border-slate-300 rounded-md px-2 py-1.5 bg-white text-right tabular-nums focus:outline-none focus:border-slate-900"
+                    />
+                    <select
+                      value={row.method}
+                      onChange={(e) =>
+                        updateTipRow(row.id, { method: e.target.value, isMethodCustom: true })
+                      }
+                      className="text-sm border border-slate-300 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:border-slate-900"
+                    >
+                      {ALL_METHODS.map((m) => (
+                        <option key={m.method} value={m.method}>
+                          {m.method}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => removeTipRow(row.id)}
+                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      aria-label="Retirer ce pourboire"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  {/* Percentage chips — services-only, hidden when no services */}
+                  {servicesSubtotal > 0 && (
+                    <div className="flex gap-1.5 flex-wrap">
+                      {TIP_PERCENT_CHIPS.map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => applyTipPercent(row.id, p)}
+                          className="px-2.5 py-1 text-[11px] font-semibold rounded bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
+                        >
+                          {p}% ({formatPrice(round2(servicesSubtotal * (p / 100)))})
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {invalid && (
+                    <div className="text-[11px] text-red-600">
+                      Complétez ce pourboire (membre + montant) ou retirez-le.
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            <button
+              type="button"
+              onClick={addTipRow}
+              className="w-full flex items-center justify-center gap-1.5 py-2 rounded-md border border-dashed border-slate-300 text-xs text-slate-600 hover:border-slate-400 hover:bg-white transition-colors"
+            >
+              <Plus size={12} />
+              Ajouter
+            </button>
           </div>
         )}
 

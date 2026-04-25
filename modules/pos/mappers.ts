@@ -1,5 +1,5 @@
 // modules/pos/mappers.ts
-import type { CartItem, PaymentEntry, Transaction } from '../../types';
+import type { CartItem, PaymentEntry, Transaction, TransactionTip } from '../../types';
 
 // --- Row interfaces matching Supabase JOIN result ---
 
@@ -25,6 +25,15 @@ export interface TransactionPaymentRow {
   amount: number;
 }
 
+export interface TransactionTipRow {
+  id: string;
+  staff_id: string | null;
+  amount: number;
+  method: string;
+  created_at: string;
+  staff_members: { first_name: string; last_name: string } | null;
+}
+
 export interface TransactionRow {
   id: string;
   salon_id: string;
@@ -42,6 +51,7 @@ export interface TransactionRow {
   reason_note: string | null;
   transaction_items: TransactionItemRow[];
   transaction_payments: TransactionPaymentRow[];
+  transaction_tips?: TransactionTipRow[];
   clients: { first_name: string; last_name: string } | null;
   profiles: { first_name: string | null; last_name: string | null } | null;
 }
@@ -85,6 +95,17 @@ export function toTransaction(row: TransactionRow): Transaction {
     amount: p.amount,
   }));
 
+  const tips: TransactionTip[] = (row.transaction_tips ?? []).map((t) => ({
+    id: t.id,
+    staffId: t.staff_id,
+    staffName: t.staff_members
+      ? `${t.staff_members.first_name} ${t.staff_members.last_name}`.trim() || null
+      : null,
+    amount: t.amount,
+    method: t.method,
+    createdAt: t.created_at,
+  }));
+
   return {
     id: row.id,
     date: row.date,
@@ -95,6 +116,7 @@ export function toTransaction(row: TransactionRow): Transaction {
     appointmentId: row.appointment_id ?? undefined,
     items,
     payments,
+    tips,
     type: (row.type as 'SALE' | 'VOID' | 'REFUND') ?? 'SALE',
     originalTransactionId: row.original_transaction_id ?? undefined,
     reasonCategory: row.reason_category ?? undefined,
@@ -125,6 +147,13 @@ export interface TransactionModification {
   note?: string;
 }
 
+export interface TransactionTipPayload {
+  staff_id: string;
+  amount: number;
+  /** Wire format: CASH | CARD | TRANSFER | CHECK | MOBILE | OTHER */
+  method: string;
+}
+
 export function toTransactionRpcPayload(
   cart: CartItem[],
   payments: PaymentEntry[],
@@ -133,6 +162,7 @@ export function toTransactionRpcPayload(
   appointmentId?: string,
   deletedAppointments: TransactionDeletion[] = [],
   modifiedAppointments: TransactionModification[] = [],
+  tips: TransactionTipPayload[] = [],
 ) {
   const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -174,6 +204,7 @@ export function toTransactionRpcPayload(
     p_payments,
     p_deleted_appointments: deletedAppointments,
     p_modified_appointments: modifiedAppointments,
+    p_tips: tips,
   };
 }
 

@@ -20,6 +20,7 @@ import {
   filterAppointmentGroups,
   groupAppointments,
 } from '../utils/groupAndFilterAppointments';
+import type { TransactionTipPayload } from '../mappers';
 
 export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'APPOINTMENTS';
 
@@ -173,7 +174,10 @@ export const usePOS = () => {
 
   // --- Transaction Processing ---
 
-  const processTransaction = async (payments: PaymentEntry[]): Promise<Transaction> => {
+  const processTransaction = async (
+    payments: PaymentEntry[],
+    tips: TransactionTipPayload[] = [],
+  ): Promise<Transaction> => {
     // Read from refs to avoid stale closures (realtime events can cause re-renders)
     const deletedAppointments = Array.from(pendingDeletionsRef.current.entries()).map(
       ([id, { reason, note }]) => ({ id, reason, note }),
@@ -193,6 +197,7 @@ export const usePOS = () => {
       linkedAppointmentIdRef.current ?? undefined,
       deletedAppointments,
       modifiedAppointments,
+      tips,
     );
     clearCart();
     return tx;

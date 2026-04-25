@@ -26,9 +26,24 @@ export function ReceiptBody({
 }: ReceiptBodyProps) {
   const totalPaid = tx.payments.reduce((acc, p) => acc + p.amount, 0);
   const change = Math.max(0, totalPaid - tx.total);
+  // VAT base is services+products (tx.total) only — tips are personal
+  // compensation, not business revenue, so they don't enter the VAT formula.
   const vatAmount = (tx.total * (vatRate / 100)) / (1 + vatRate / 100);
+  const tips = tx.tips ?? [];
+  const tipsTotal = tips.reduce((sum, t) => sum + t.amount, 0);
+  const grandTotal = tx.total + tipsTotal;
   const watermark =
     status === 'voided' ? 'ANNULÉ' : status === 'fully_refunded' ? 'REMBOURSÉ' : null;
+
+  // Map wire codes back to French labels for display (mirrors mappers.ts)
+  const methodLabel: Record<string, string> = {
+    CASH: 'Espèces',
+    CARD: 'Carte',
+    TRANSFER: 'Virement',
+    CHECK: 'Chèque',
+    MOBILE: 'Mobile',
+    OTHER: 'Autre',
+  };
 
   return (
     <div className="bg-white border border-slate-200 shadow-sm p-6 rounded-lg text-center relative overflow-hidden">
@@ -86,6 +101,35 @@ export function ReceiptBody({
           <span>{formatPrice(tx.total)}</span>
         </div>
       </div>
+
+      {tips.length > 0 && (
+        <div className="mt-4 border-t-2 border-dashed border-slate-200 pt-4 text-left">
+          <div className="text-xs uppercase tracking-wider font-bold text-slate-500 mb-2">
+            Pourboires
+          </div>
+          <div className="space-y-1.5">
+            {tips.map((tip) => (
+              <div key={tip.id} className="flex justify-between text-sm">
+                <span className="text-slate-700">
+                  {tip.staffName ?? <em className="text-slate-400">Pourboire (staff supprimé)</em>}{' '}
+                  <span className="text-xs text-slate-400">({methodLabel[tip.method] ?? tip.method})</span>
+                </span>
+                <span className="font-medium text-slate-800 tabular-nums">
+                  {formatPrice(tip.amount)}
+                </span>
+              </div>
+            ))}
+            <div className="flex justify-between text-sm pt-2 border-t border-slate-100">
+              <span className="font-semibold text-slate-700">Total pourboires</span>
+              <span className="font-bold text-slate-900 tabular-nums">{formatPrice(tipsTotal)}</span>
+            </div>
+            <div className="flex justify-between text-base font-bold text-slate-900 pt-1.5 mt-1.5 border-t-2 border-dashed border-slate-200">
+              <span>TOTAL AVEC POURBOIRES</span>
+              <span>{formatPrice(grandTotal)}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {change > 0 && (
         <div className="mt-4 flex justify-between bg-emerald-50 p-3 rounded-lg text-emerald-700 text-sm font-bold">

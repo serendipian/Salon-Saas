@@ -7,6 +7,7 @@ import {
   type TransactionDeletion,
   type TransactionModification,
   type TransactionRow,
+  type TransactionTipPayload,
   toTransaction,
   toTransactionRpcPayload,
 } from '../modules/pos/mappers';
@@ -35,7 +36,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
       const params = new URLSearchParams();
       params.append(
         'select',
-        '*,transaction_items(*),transaction_payments(*),clients(first_name,last_name),profiles(first_name,last_name)',
+        '*,transaction_items(*),transaction_payments(*),transaction_tips(*,staff_members(first_name,last_name)),clients(first_name,last_name),profiles(first_name,last_name)',
       );
       params.append('salon_id', `eq.${salonId}`);
       params.append('order', 'date.desc');
@@ -57,6 +58,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
           appointmentId,
           deletedAppointments = [],
           modifiedAppointments = [],
+          tips = [],
         }: {
           items: CartItem[];
           payments: PaymentEntry[];
@@ -64,6 +66,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
           appointmentId?: string;
           deletedAppointments?: TransactionDeletion[];
           modifiedAppointments?: TransactionModification[];
+          tips?: TransactionTipPayload[];
         },
         signal: AbortSignal,
       ) => {
@@ -75,6 +78,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
           appointmentId,
           deletedAppointments,
           modifiedAppointments,
+          tips,
         );
 
         // Raw fetch — supabase.rpc() can hang indefinitely after background-tab
@@ -133,7 +137,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
         // a ready-to-render Transaction without an extra trip later.
         const rows = await rawSelect<TransactionRow>(
           'transactions',
-          `select=*,transaction_items(*),transaction_payments(*),clients(first_name,last_name),profiles(first_name,last_name)&id=eq.${newId}`,
+          `select=*,transaction_items(*),transaction_payments(*),transaction_tips(*,staff_members(first_name,last_name)),clients(first_name,last_name),profiles(first_name,last_name)&id=eq.${newId}`,
           signal,
         );
         if (!rows[0]) {
@@ -243,6 +247,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
     appointmentId?: string,
     deletedAppointments: TransactionDeletion[] = [],
     modifiedAppointments: TransactionModification[] = [],
+    tips: TransactionTipPayload[] = [],
   ): Promise<Transaction> =>
     addTransactionMutation.mutateAsync({
       items,
@@ -251,6 +256,7 @@ export const useTransactions = (options?: TransactionQueryOptions) => {
       appointmentId,
       deletedAppointments,
       modifiedAppointments,
+      tips,
     });
 
   const voidTransaction = (transactionId: string, reasonCategory: string, reasonNote: string) =>

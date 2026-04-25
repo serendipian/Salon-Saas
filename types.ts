@@ -452,6 +452,17 @@ export interface PaymentEntry {
   icon?: React.ComponentType; // Optional for UI, handled within component usually
 }
 
+export interface TransactionTip {
+  id: string;
+  staffId: string | null;
+  /** Resolved name from the staff_members join. Null when staff_id is null (staff hard-deleted) — UI should render "(staff supprimé)". */
+  staffName: string | null;
+  amount: number;
+  /** Wire format: CASH | CARD | TRANSFER | CHECK | MOBILE | OTHER */
+  method: string;
+  createdAt: string;
+}
+
 export interface Transaction {
   id: string;
   date: string; // ISO String
@@ -462,6 +473,8 @@ export interface Transaction {
   appointmentId?: string;
   items: CartItem[];
   payments: PaymentEntry[];
+  /** Hydrated from transaction_tips join. Empty array when none. */
+  tips: TransactionTip[];
   type: 'SALE' | 'VOID' | 'REFUND';
   originalTransactionId?: string;
   reasonCategory?: string;

@@ -22,6 +22,7 @@ import { expandPack } from '../services/utils/packExpansion';
 import { CartBottomSheet } from './components/CartBottomSheet';
 import { MiniCartBar } from './components/MiniCartBar';
 import { PaymentModal } from './components/PaymentModal';
+import type { TransactionTipPayload } from './mappers';
 import { POSCart } from './components/POSCart';
 import { POSCatalog } from './components/POSCatalog';
 import {
@@ -184,11 +185,14 @@ export const POSModule: React.FC = () => {
     setDeletionTarget(null);
   };
 
-  const handleCompletePayment = async (payments: PaymentEntry[]) => {
+  const handleCompletePayment = async (
+    payments: PaymentEntry[],
+    tips: TransactionTipPayload[] = [],
+  ) => {
     if (isProcessing) return;
     setIsProcessing(true);
     try {
-      const tx = await processTransaction(payments);
+      const tx = await processTransaction(payments, tips);
       setShowPaymentModal(false);
       setSuccessTx(tx);
     } catch {
@@ -356,6 +360,7 @@ export const POSModule: React.FC = () => {
           <PaymentModal
             total={totals.total}
             cart={cart}
+            staff={allStaff}
             onClose={() => setShowPaymentModal(false)}
             onComplete={handleCompletePayment}
             isProcessing={isProcessing}

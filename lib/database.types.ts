@@ -2540,6 +2540,82 @@ export type Database = {
           },
         ]
       }
+      transaction_tips: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          method: string
+          salon_id: string
+          staff_id: string | null
+          transaction_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          method: string
+          salon_id: string
+          staff_id?: string | null
+          transaction_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          method?: string
+          salon_id?: string
+          staff_id?: string | null
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_tips_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_tips_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_tips_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_tips_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_tips_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_tips_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           appointment_id: string | null
@@ -2929,6 +3005,20 @@ export type Database = {
             }
             Returns: string
           }
+        | {
+            Args: {
+              p_appointment_id?: string
+              p_client_id: string
+              p_deleted_appointments?: Json
+              p_items: Json
+              p_modified_appointments?: Json
+              p_notes?: string
+              p_payments: Json
+              p_salon_id: string
+              p_tips?: Json
+            }
+            Returns: string
+          }
       debug_auth: { Args: never; Returns: Json }
       decrypt_pii: { Args: { ciphertext: string }; Returns: string }
       delete_appointments_bulk: {
@@ -3105,6 +3195,7 @@ export type Database = {
         Args: { p_salon_id: string }
         Returns: undefined
       }
+      is_valid_payment_method: { Args: { m: string }; Returns: boolean }
       leave_salon: { Args: { p_salon_id: string }; Returns: undefined }
       refund_transaction: {
         Args: {
