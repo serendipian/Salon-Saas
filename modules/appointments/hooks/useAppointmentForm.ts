@@ -14,6 +14,8 @@ import type {
   StaffMember,
 } from '../../../types';
 import { appointmentGroupSchema, newClientSchema } from '../schemas';
+import { type BlockConflict, deriveBlockConflicts } from '../utils/deriveBlockConflicts';
+import { type MissingField, buildMissingFields } from '../utils/missingFields';
 import { useStaffAvailability } from './useStaffAvailability';
 
 export interface UseAppointmentFormProps {
@@ -66,6 +68,10 @@ export interface AppointmentFormReturn {
   activeStaff: StaffMember | null;
   activeBlockDuration: number;
   activeBlockPrice: number;
+  blockConflicts: Map<number, BlockConflict>;
+  hasAnyConflict: boolean;
+  missingFields: MissingField[];
+  canSubmit: boolean;
   unavailableHours: Set<number>;
   availabilityAppointments: Appointment[];
   totalDuration: number;
@@ -91,6 +97,13 @@ export interface AppointmentFormReturn {
   // Helpers
   getBlockSummary: (block: ServiceBlockState) => string;
   handleSubmit: () => Promise<void>;
+  isStaffAvailableForSlot: (
+    staffId: string,
+    date: string,
+    hour: number,
+    minute: number,
+    blockIndex: number,
+  ) => boolean;
 
   // Props passthrough for components
   initialData: UseAppointmentFormProps['initialData'];
@@ -206,6 +219,49 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     availabilityAppointments,
   );
 
+  // Per-block conflict derivation (covers DB conflicts, off-day, sibling overlap).
+  const blockConflicts = useMemo(
+    () =>
+      deriveBlockConflicts({
+        blocks: serviceBlocks,
+        team,
+        services,
+        existingAppointments: availabilityAppointments,
+        excludeAppointmentIds,
+      }),
+    [serviceBlocks, team, services, availabilityAppointments, excludeAppointmentIds],
+  );
+
+  const hasAnyConflict = blockConflicts.size > 0;
+
+  const missingFields = useMemo<MissingField[]>(
+    () => buildMissingFields({ clientId, newClient, blocks: serviceBlocks }),
+    [clientId, newClient, serviceBlocks],
+  );
+
+  /**
+   * Probe: would this staff be available if we placed them at the given
+   * (date, hour, minute) for the block at blockIndex's duration?
+   * Used by StaffPills to dim unavailable members for the active slot.
+   */
+  const isStaffAvailableForSlot = useCallback(
+    (staffId: string, date: string, hour: number, minute: number, blockIndex: number): boolean => {
+      const block = serviceBlocks[blockIndex];
+      if (!block) return true;
+      const probe: ServiceBlockState = { ...block, staffId, date, hour, minute };
+      const probeBlocks = serviceBlocks.map((b, i) => (i === blockIndex ? probe : b));
+      const result = deriveBlockConflicts({
+        blocks: probeBlocks,
+        team,
+        services,
+        existingAppointments: availabilityAppointments,
+        excludeAppointmentIds,
+      });
+      return !result.has(blockIndex);
+    },
+    [serviceBlocks, team, services, availabilityAppointments, excludeAppointmentIds],
+  );
+
   // Totals & completeness
   const totalDuration = useMemo(
     () => serviceBlocks.reduce((sum, b) => sum + getBlockDuration(b, services), 0),
@@ -223,15 +279,19 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     (b) => b.items.length > 0 && b.date && b.hour !== null,
   );
 
+  // Save is only allowed when nothing is missing AND there are no conflicts.
+  // Kept separate from `allBlocksScheduled` so existing callers (mobile screen 1
+  // gate) keep their narrower meaning.
+  const canSubmit = missingFields.length === 0 && !hasAnyConflict;
+
   // Handlers
   const updateBlock = useCallback((index: number, updates: Partial<ServiceBlockState>) => {
     setServiceBlocks((prev) =>
       prev.map((b, i) => {
         if (i !== index) return b;
-        // When staff changes, reset date & time (availability depends on staff)
-        if ('staffId' in updates && updates.staffId !== b.staffId) {
-          return { ...b, ...updates, date: null, hour: null, minute: 0 };
-        }
+        // M-25: Date/time intentionally NOT wiped on staff change. The new
+        // blockConflicts derivation surfaces stale-time mismatches as a
+        // visible amber banner instead of silently erasing user input.
         return { ...b, ...updates };
       }),
     );
@@ -505,6 +565,17 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
   const handleSubmit = useCallback(async () => {
     const effectiveClientId = newClient ? 'pending-new-client' : (clientId ?? '');
 
+    // Realtime safety: if remote data made the form conflict-prone since the
+    // user last looked, refuse to submit and let the visible banners do the
+    // talking.
+    if (hasAnyConflict) {
+      addToast({
+        type: 'warning',
+        message: 'Conflit de planning. Modifiez le membre ou le créneau pour continuer.',
+      });
+      return;
+    }
+
     // Flatten items for validation (schema expects items array per block)
     const formData = {
       clientId: effectiveClientId,
@@ -609,6 +680,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     services,
     onSave,
     addToast,
+    hasAnyConflict,
   ]);
 
   return {
@@ -628,6 +700,10 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     activeStaff,
     activeBlockDuration,
     activeBlockPrice,
+    blockConflicts,
+    hasAnyConflict,
+    missingFields,
+    canSubmit,
     unavailableHours,
     availabilityAppointments,
     totalDuration,
@@ -653,6 +729,7 @@ export function useAppointmentForm(props: UseAppointmentFormProps): AppointmentF
     // Helpers
     getBlockSummary,
     handleSubmit,
+    isStaffAvailableForSlot,
 
     // Props passthrough
     initialData,
