@@ -384,6 +384,14 @@ export interface Appointment {
   deletionReason?: DeletionReason | null;
   deletionNote?: string | null;
   cancelledAt?: string | null;
+  // Snapshot of price/staff at booking time. Populated by a BEFORE INSERT
+  // trigger and never overwritten. AppointmentDetails compares these to
+  // the live values to render a "was → became" diff.
+  originalPrice?: number | null;
+  originalStaffId?: string | null;
+  // Reason captured by POS when the cart-side staff/price was modified.
+  // Populated via create_transaction's p_modified_appointments[].note field.
+  changeNote?: string | null;
 }
 
 export interface AppointmentGroup {

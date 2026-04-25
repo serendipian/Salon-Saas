@@ -109,6 +109,7 @@ export type Database = {
       appointments: {
         Row: {
           cancelled_at: string | null
+          change_note: string | null
           client_id: string | null
           created_at: string
           created_by: string | null
@@ -120,6 +121,8 @@ export type Database = {
           group_id: string | null
           id: string
           notes: string | null
+          original_price: number | null
+          original_staff_id: string | null
           price: number
           salon_id: string
           service_id: string | null
@@ -131,6 +134,7 @@ export type Database = {
         }
         Insert: {
           cancelled_at?: string | null
+          change_note?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -142,6 +146,8 @@ export type Database = {
           group_id?: string | null
           id?: string
           notes?: string | null
+          original_price?: number | null
+          original_staff_id?: string | null
           price: number
           salon_id: string
           service_id?: string | null
@@ -153,6 +159,7 @@ export type Database = {
         }
         Update: {
           cancelled_at?: string | null
+          change_note?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -164,6 +171,8 @@ export type Database = {
           group_id?: string | null
           id?: string
           notes?: string | null
+          original_price?: number | null
+          original_staff_id?: string | null
           price?: number
           salon_id?: string
           service_id?: string | null
@@ -200,6 +209,13 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "appointment_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_original_staff_id_fkey"
+            columns: ["original_staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
             referencedColumns: ["id"]
           },
           {

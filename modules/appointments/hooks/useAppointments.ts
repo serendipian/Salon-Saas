@@ -41,7 +41,7 @@ export const useAppointments = (showDeleted = false) => {
       let query = supabase
         .from('appointments')
         .select(
-          '*, clients(first_name, last_name), services(name), service_variants(name), staff_members(first_name, last_name)',
+          '*, clients(first_name, last_name), services(name), service_variants(name), staff_members!staff_id(first_name, last_name)',
         )
         .eq('salon_id', salonId);
       if (showDeleted) {

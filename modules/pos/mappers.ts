@@ -118,6 +118,11 @@ export interface TransactionModification {
   id: string;
   staff_id?: string | null;
   price?: number;
+  // Captured by POS ItemEditorModal when the cashier sets a discount or note
+  // on a cart line that came from an appointment. Written to
+  // appointments.change_note via create_transaction. Carried as a free-text
+  // string ('-10%', 'Offert', or arbitrary cashier-entered text).
+  note?: string;
 }
 
 export function toTransactionRpcPayload(

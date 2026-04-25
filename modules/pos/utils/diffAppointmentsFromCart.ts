@@ -4,6 +4,10 @@ export interface AppointmentModification {
   id: string;
   staff_id?: string | null;
   price?: number;
+  // Cart-side note (set via ItemEditorModal — discount preset or free text).
+  // Carried only when the modification is non-empty (staff or price changed),
+  // since notes-only changes don't trigger a modification today.
+  note?: string;
 }
 
 /**
@@ -46,6 +50,7 @@ export const diffAppointmentsFromCart = (
       const mod: AppointmentModification = { id: source.id };
       if (staffDiff) mod.staff_id = item.staffId ?? null;
       if (priceDiff) mod.price = item.price;
+      if (item.note) mod.note = item.note;
       modifications.push(mod);
     }
     seenIds.add(item.appointmentId);

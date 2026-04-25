@@ -7,7 +7,8 @@ import type {
 } from '../../types';
 
 // Row type includes JOINed relations from:
-// .select('*, clients(first_name, last_name), services(name), staff_members(first_name, last_name)')
+// .select('*, clients(first_name, last_name), services(name), staff_members!staff_id(first_name, last_name)')
+// (staff_members FK is hinted via !staff_id since appointments has two FKs to it: staff_id and original_staff_id)
 interface AppointmentRow {
   id: string;
   salon_id: string;
@@ -29,6 +30,9 @@ interface AppointmentRow {
   deletion_reason: string | null;
   deletion_note: string | null;
   cancelled_at: string | null;
+  original_price: number | null;
+  original_staff_id: string | null;
+  change_note: string | null;
   // JOINed relations (nullable if FK is null)
   clients: { first_name: string; last_name: string } | null;
   services: { name: string } | null;
@@ -61,6 +65,9 @@ export function toAppointment(row: AppointmentRow): Appointment {
     deletionReason: (row.deletion_reason as DeletionReason | null) ?? null,
     deletionNote: row.deletion_note ?? null,
     cancelledAt: row.cancelled_at ?? null,
+    originalPrice: row.original_price ?? null,
+    originalStaffId: row.original_staff_id ?? null,
+    changeNote: row.change_note ?? null,
   };
 }
 

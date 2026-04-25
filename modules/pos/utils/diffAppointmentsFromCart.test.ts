@@ -82,6 +82,23 @@ describe('diffAppointmentsFromCart', () => {
     expect(result[0].staff_id).toBe('st2');
   });
 
+  it('carries cart-side note when a modification fires', () => {
+    const appt = mkAppt({ id: 'a1', price: 100 });
+    const item = mkItem({ appointmentId: 'a1', price: 80, note: '-20%' });
+    expect(diffAppointmentsFromCart([item], [appt])).toEqual([
+      { id: 'a1', price: 80, note: '-20%' },
+    ]);
+  });
+
+  it('omits note when none is set on the cart item', () => {
+    const appt = mkAppt({ id: 'a1', staffId: 'st1' });
+    const item = mkItem({ appointmentId: 'a1', staffId: 'st2' });
+    const result = diffAppointmentsFromCart([item], [appt]);
+    expect(result).toEqual([{ id: 'a1', staff_id: 'st2' }]);
+    // Confirm the field is absent, not undefined-as-key
+    expect('note' in result[0]).toBe(false);
+  });
+
   it('dedups by appointmentId — first cart line wins', () => {
     const appt = mkAppt({ id: 'a1', staffId: 'st1', price: 100 });
     const cart = [
