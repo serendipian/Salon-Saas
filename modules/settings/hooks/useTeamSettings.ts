@@ -2,8 +2,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { Role } from '../../../lib/auth.types';
-import { supabase } from '../../../lib/supabase';
-import { rawSelect } from '../../../lib/supabaseRaw';
+import {
+  rawInsertReturning,
+  rawRpc,
+  rawSelect,
+  rawUpdate,
+} from '../../../lib/supabaseRaw';
 
 /** Number of days before a generated invitation link expires. */
 export const INVITATION_EXPIRY_DAYS = 7;
@@ -104,20 +108,18 @@ export function useTeamSettings() {
 
   const changeRoleMutation = useMutation({
     mutationFn: async ({ membershipId, newRole }: { membershipId: string; newRole: Role }) => {
-      const { error: membershipError } = await supabase
-        .from('salon_memberships')
-        .update({ role: newRole })
-        .eq('id', membershipId)
-        .eq('salon_id', salonId!);
-      if (membershipError) throw membershipError;
+      const memParams = new URLSearchParams();
+      memParams.append('id', `eq.${membershipId}`);
+      memParams.append('salon_id', `eq.${salonId!}`);
+      await rawUpdate('salon_memberships', memParams.toString(), { role: newRole });
 
-      const { error: staffError } = await supabase
-        .from('staff_members')
-        .update({ role: STAFF_ROLE_MAP[newRole] || 'Stylist' })
-        .eq('membership_id', membershipId)
-        .eq('salon_id', salonId!)
-        .is('deleted_at', null);
-      if (staffError) throw staffError;
+      const staffParams = new URLSearchParams();
+      staffParams.append('membership_id', `eq.${membershipId}`);
+      staffParams.append('salon_id', `eq.${salonId!}`);
+      staffParams.append('deleted_at', 'is.null');
+      await rawUpdate('staff_members', staffParams.toString(), {
+        role: STAFF_ROLE_MAP[newRole] || 'Stylist',
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-settings-members', salonId] });
@@ -131,8 +133,7 @@ export function useTeamSettings() {
 
   const revokeMutation = useMutation({
     mutationFn: async (membershipId: string) => {
-      const { error } = await supabase.rpc('revoke_membership', { p_membership_id: membershipId });
-      if (error) throw error;
+      await rawRpc('revoke_membership', { p_membership_id: membershipId });
       return membershipId;
     },
     onSuccess: (revokedMembershipId) => {
@@ -152,11 +153,10 @@ export function useTeamSettings() {
 
   const transferMutation = useMutation({
     mutationFn: async (newOwnerProfileId: string) => {
-      const { error } = await supabase.rpc('transfer_ownership', {
+      await rawRpc('transfer_ownership', {
         p_salon_id: salonId!,
         p_new_owner_id: newOwnerProfileId,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-settings-members', salonId] });
@@ -172,19 +172,20 @@ export function useTeamSettings() {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + INVITATION_EXPIRY_DAYS);
 
-      const { data, error } = await supabase
-        .from('invitations')
-        .insert({
+      const inserted = await rawInsertReturning<{ token: string }>(
+        'invitations',
+        {
           salon_id: salonId!,
           role,
           token,
           invited_by: profile!.id,
           expires_at: expiresAt.toISOString(),
-        })
-        .select('token')
-        .single();
-      if (error) throw error;
-      return data.token;
+        },
+        'token',
+      );
+      const returnedToken = inserted[0]?.token;
+      if (!returnedToken) throw new Error('Invitation insert returned no token');
+      return returnedToken;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-settings-invitations', salonId] });
@@ -194,12 +195,12 @@ export function useTeamSettings() {
 
   const cancelInvitationMutation = useMutation({
     mutationFn: async (invitationId: string) => {
-      const { error } = await supabase
-        .from('invitations')
-        .update({ expires_at: new Date().toISOString() })
-        .eq('id', invitationId)
-        .eq('salon_id', salonId!);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${invitationId}`);
+      params.append('salon_id', `eq.${salonId!}`);
+      await rawUpdate('invitations', params.toString(), {
+        expires_at: new Date().toISOString(),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-settings-invitations', salonId] });
