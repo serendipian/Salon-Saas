@@ -1,9 +1,14 @@
-import { ArrowLeft, ChevronRight, Plus, Search, Trash2, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { AlertTriangle, ArrowLeft, ChevronRight, Plus, Search, Trash2, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useToast } from '../../../context/ToastContext';
+import { useShake } from '../../../hooks/useShake';
 import { formatDuration, formatName, formatPrice } from '../../../lib/format';
 import type { AppointmentStatus } from '../../../types';
 import { type UseAppointmentFormProps, useAppointmentForm } from '../hooks/useAppointmentForm';
+import { humanizeMissing } from '../utils/missingFields';
+import BlockConflictBanner from './BlockConflictBanner';
 import InlineCalendar from './InlineCalendar';
+import MissingFieldsHint from './MissingFieldsHint';
 import { MobileBottomSheet } from './MobileBottomSheet';
 import { MobileClientSearch } from './MobileClientSearch';
 import { MobileServicePicker } from './MobileServicePicker';
@@ -38,6 +43,41 @@ export default function AppointmentBuilderMobile({
   const form = useAppointmentForm(hookProps);
 
   const isEditing = !!hookProps.initialData?.serviceBlocks;
+
+  const { addToast } = useToast();
+  const shake = useShake();
+  const [pulseTrigger, setPulseTrigger] = useState(0);
+  const [pendingScrollTarget, setPendingScrollTarget] = useState<
+    | { kind: 'client' }
+    | { kind: 'service' | 'staff'; blockIndex: number }
+    | null
+  >(null);
+
+  const clientSectionRef = useRef<HTMLDivElement | null>(null);
+  const screen1BlockRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
+  const setScreen1BlockRef = (i: number) => (el: HTMLDivElement | null) => {
+    screen1BlockRefs.current.set(i, el);
+  };
+
+  const screen2CalendarRef = useRef<HTMLDivElement | null>(null);
+  const screen2BannerRef = useRef<HTMLDivElement | null>(null);
+
+  // When we navigate back to screen 1 to surface a missing field, shake the
+  // target on next paint.
+  useEffect(() => {
+    if (!pendingScrollTarget || screen !== 'services') return;
+    let target: HTMLElement | null = null;
+    if (pendingScrollTarget.kind === 'client') target = clientSectionRef.current;
+    else if (pendingScrollTarget.kind === 'service' || pendingScrollTarget.kind === 'staff') {
+      target = screen1BlockRefs.current.get(pendingScrollTarget.blockIndex) ?? null;
+    }
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      shake(target);
+    }
+    setPendingScrollTarget(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingScrollTarget, screen]);
 
   // Find selected client from props
   const selectedClient = useMemo(() => {
@@ -130,7 +170,7 @@ export default function AppointmentBuilderMobile({
         {/* Content */}
         <div className="flex-1 overflow-y-auto pb-44">
           {/* Client section */}
-          <div className="px-4 pt-4 pb-3">
+          <div ref={clientSectionRef} className="px-4 pt-4 pb-3">
             <label className="text-xs font-medium text-slate-500 mb-2 block">Client *</label>
 
             {selectedClient ? (
@@ -224,7 +264,10 @@ export default function AppointmentBuilderMobile({
                   return (
                     <div
                       key={block.id}
-                      className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+                      ref={setScreen1BlockRef(i)}
+                      className={`bg-white rounded-2xl border overflow-hidden ${
+                        form.blockConflicts.has(i) ? 'border-amber-200' : 'border-slate-200'
+                      }`}
                     >
                       {/* Service header */}
                       <div className="px-4 py-3 flex items-start gap-3">
@@ -265,7 +308,19 @@ export default function AppointmentBuilderMobile({
                           team={hookProps.team}
                           categoryId={info.firstCategoryId}
                           selectedStaffId={block.staffId}
-                          onSelect={(staffId) => form.updateBlock(i, { staffId })}
+                          onSelect={(staffId) =>
+                            form.updateBlock(i, { staffId, staffConfirmed: staffId !== null })
+                          }
+                          isStaffAvailable={(staffId) => {
+                            if (!block.date || block.hour === null) return true;
+                            return form.isStaffAvailableForSlot(
+                              staffId,
+                              block.date,
+                              block.hour,
+                              block.minute,
+                              i,
+                            );
+                          }}
                         />
                       </div>
                     </div>
@@ -274,20 +329,21 @@ export default function AppointmentBuilderMobile({
 
                 // No items yet
                 return (
-                  <button
-                    key={block.id}
-                    type="button"
-                    onClick={() => openServiceSheet(i)}
-                    className="w-full bg-white rounded-2xl border border-slate-200 px-4 py-3 flex items-center gap-3 min-h-[52px] hover:border-slate-300 transition-colors"
-                  >
-                    <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0">
-                      {i + 1}
-                    </div>
-                    <span className="text-sm text-slate-400 flex-1 text-left">
-                      Choisir un service...
-                    </span>
-                    <ChevronRight size={16} className="text-slate-300 shrink-0" />
-                  </button>
+                  <div key={block.id} ref={setScreen1BlockRef(i)}>
+                    <button
+                      type="button"
+                      onClick={() => openServiceSheet(i)}
+                      className="w-full bg-white rounded-2xl border border-slate-200 px-4 py-3 flex items-center gap-3 min-h-[52px] hover:border-slate-300 transition-colors"
+                    >
+                      <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0">
+                        {i + 1}
+                      </div>
+                      <span className="text-sm text-slate-400 flex-1 text-left">
+                        Choisir un service...
+                      </span>
+                      <ChevronRight size={16} className="text-slate-300 shrink-0" />
+                    </button>
+                  </div>
                 );
               })}
             </div>
@@ -354,17 +410,46 @@ export default function AppointmentBuilderMobile({
           className="fixed left-0 right-0 bg-white border-t border-slate-200 px-4 py-4 space-y-2 z-10"
           style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}
         >
-          {serviceCount > 0 && (
+          {form.missingFields.some((f) => f.kind === 'client' || f.kind === 'service') ? (
+            <MissingFieldsHint
+              missingFields={form.missingFields.filter(
+                (f) => f.kind === 'client' || f.kind === 'service',
+              )}
+              pulseTrigger={pulseTrigger}
+            />
+          ) : serviceCount > 0 ? (
             <p className="text-xs text-slate-500 text-center">
               {serviceCount} service{serviceCount > 1 ? 's' : ''} &middot;{' '}
               {formatDuration(form.totalDuration)} &middot; {formatPrice(form.totalPrice)}
             </p>
-          )}
+          ) : null}
           <button
             type="button"
-            disabled={!form.hasCompleteServiceBlock}
-            onClick={() => setScreen('scheduling')}
-            className="w-full bg-blue-500 text-white py-3.5 rounded-2xl min-h-[52px] font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:bg-blue-600"
+            aria-disabled={!form.hasCompleteServiceBlock}
+            onClick={() => {
+              if (form.hasCompleteServiceBlock && (form.clientId || form.newClient)) {
+                setScreen('scheduling');
+                return;
+              }
+              setPulseTrigger((n) => n + 1);
+              const missing = form.missingFields.filter(
+                (f) => f.kind === 'client' || f.kind === 'service',
+              );
+              const first = missing[0];
+              if (first?.kind === 'client') {
+                setPendingScrollTarget({ kind: 'client' });
+              } else if (first?.kind === 'service') {
+                setPendingScrollTarget({ kind: 'service', blockIndex: first.blockIndex });
+              }
+              const message =
+                missing.length > 0
+                  ? `Veuillez compléter : ${humanizeMissing(missing)}`
+                  : 'Veuillez compléter le formulaire.';
+              addToast({ type: 'warning', message });
+            }}
+            className={`w-full bg-blue-500 text-white py-3.5 rounded-2xl min-h-[52px] font-semibold text-sm flex items-center justify-center gap-2 transition-colors hover:bg-blue-600 ${
+              form.hasCompleteServiceBlock && (form.clientId || form.newClient) ? '' : 'opacity-50'
+            }`}
           >
             Continuer
             <ChevronRight size={18} />
@@ -475,20 +560,25 @@ export default function AppointmentBuilderMobile({
             {form.serviceBlocks.map((block, i) => {
               const info = getBlockInfo(block);
               const isActive = i === form.activeBlockIndex;
+              const hasConflict = form.blockConflicts.has(i);
               const isScheduled = block.date !== null && block.hour !== null;
+
+              const baseClass = isActive
+                ? hasConflict
+                  ? 'bg-blue-500 text-white shadow-sm ring-2 ring-amber-400'
+                  : 'bg-blue-500 text-white shadow-sm'
+                : hasConflict
+                  ? 'bg-amber-50 text-amber-800 border border-amber-300'
+                  : isScheduled
+                    ? 'bg-green-100 text-green-700 border border-green-200'
+                    : 'bg-slate-100 text-slate-600';
 
               return (
                 <button
                   key={block.id}
                   type="button"
                   onClick={() => form.setActiveBlockIndex(i)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap shrink-0 transition-colors ${
-                    isActive
-                      ? 'bg-blue-500 text-white shadow-sm'
-                      : isScheduled
-                        ? 'bg-green-100 text-green-700 border border-green-200'
-                        : 'bg-slate-100 text-slate-600'
-                  }`}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap shrink-0 transition-colors ${baseClass}`}
                 >
                   <span
                     className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
@@ -497,6 +587,7 @@ export default function AppointmentBuilderMobile({
                   >
                     {i + 1}
                   </span>
+                  {hasConflict && <AlertTriangle size={12} />}
                   {info?.label ?? `Service ${i + 1}`}
                 </button>
               );
@@ -505,7 +596,7 @@ export default function AppointmentBuilderMobile({
         )}
 
         {/* Context header */}
-        <div className="px-4 py-3">
+        <div className="px-4 py-3" ref={screen2BannerRef}>
           <div className="text-xs font-medium text-slate-500 mb-1">Planifier</div>
           {activeBlockInfo && (
             <div className="text-sm text-slate-700">
@@ -515,10 +606,15 @@ export default function AppointmentBuilderMobile({
               )}
             </div>
           )}
+          {form.blockConflicts.get(form.activeBlockIndex) && (
+            <div className="mt-2">
+              <BlockConflictBanner conflict={form.blockConflicts.get(form.activeBlockIndex)} />
+            </div>
+          )}
         </div>
 
         {/* Calendar */}
-        <div className="px-4 mb-4">
+        <div className="px-4 mb-4" ref={screen2CalendarRef}>
           <InlineCalendar
             value={activeBlock?.date ?? null}
             onChange={(date) => form.updateBlock(form.activeBlockIndex, { date })}
@@ -543,17 +639,57 @@ export default function AppointmentBuilderMobile({
         className="fixed left-0 right-0 bg-white border-t border-slate-200 px-4 py-4 space-y-2 z-10"
         style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}
       >
-        <p className="text-xs text-slate-500 text-center truncate">
-          {clientName && <span>{clientName} &middot; </span>}
-          {serviceNames}
-          {firstDate && <span> &middot; {formatDate(firstDate)}</span>}
-          {form.totalPrice > 0 && <span> &middot; {formatPrice(form.totalPrice)}</span>}
-        </p>
+        {form.canSubmit ? (
+          <p className="text-xs text-slate-500 text-center truncate">
+            {clientName && <span>{clientName} &middot; </span>}
+            {serviceNames}
+            {firstDate && <span> &middot; {formatDate(firstDate)}</span>}
+            {form.totalPrice > 0 && <span> &middot; {formatPrice(form.totalPrice)}</span>}
+          </p>
+        ) : (
+          <MissingFieldsHint missingFields={form.missingFields} pulseTrigger={pulseTrigger} />
+        )}
         <button
           type="button"
-          disabled={!form.allBlocksScheduled || form.isSaving}
-          onClick={form.handleSubmit}
-          className="w-full bg-blue-500 text-white py-3.5 rounded-2xl min-h-[52px] font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:bg-blue-600"
+          disabled={form.isSaving}
+          aria-disabled={!form.canSubmit}
+          onClick={() => {
+            if (form.canSubmit) {
+              form.handleSubmit();
+              return;
+            }
+            setPulseTrigger((n) => n + 1);
+            const missing = form.missingFields;
+            const first = missing[0];
+
+            const onScreen1 = first && (first.kind === 'client' || first.kind === 'service');
+            if (onScreen1) {
+              if (first.kind === 'client') setPendingScrollTarget({ kind: 'client' });
+              else setPendingScrollTarget({ kind: 'service', blockIndex: first.blockIndex });
+              setScreen('services');
+            } else if (first && first.kind === 'staff') {
+              setPendingScrollTarget({ kind: 'staff', blockIndex: first.blockIndex });
+              setScreen('services');
+            } else {
+              const target =
+                form.blockConflicts.size > 0
+                  ? screen2BannerRef.current
+                  : screen2CalendarRef.current;
+              if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                shake(target);
+              }
+            }
+
+            const message =
+              missing.length > 0
+                ? `Veuillez compléter : ${humanizeMissing(missing)}`
+                : 'Conflit de planning. Modifiez le membre ou le créneau.';
+            addToast({ type: 'warning', message });
+          }}
+          className={`w-full bg-blue-500 text-white py-3.5 rounded-2xl min-h-[52px] font-semibold text-sm flex items-center justify-center gap-2 transition-colors hover:bg-blue-600 ${
+            form.canSubmit ? '' : 'opacity-50'
+          }`}
         >
           {form.isSaving ? 'Enregistrement...' : 'Confirmer'}
         </button>
