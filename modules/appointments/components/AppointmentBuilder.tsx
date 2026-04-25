@@ -1,10 +1,14 @@
 import { ArrowLeft, Plus, Save, Trash2, Users } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { useToast } from '../../../context/ToastContext';
+import { useShake } from '../../../hooks/useShake';
 import type { FavoriteItem } from '../../../types';
 import type { UseAppointmentFormProps } from '../hooks/useAppointmentForm';
 import { useAppointmentForm } from '../hooks/useAppointmentForm';
+import { humanizeMissing } from '../utils/missingFields';
 import AppointmentSummary from './AppointmentSummary';
 import ClientField from './ClientField';
+import MissingFieldsHint from './MissingFieldsHint';
 import ServiceBlock from './ServiceBlock';
 import StaffCalendarPanel from './StaffCalendarPanel';
 
@@ -21,6 +25,49 @@ export default function AppointmentBuilder({
   const form = useAppointmentForm(hookProps);
   const [showNotes, setShowNotes] = useState(() => Boolean(form.notes));
   const [showExistingClientSearch, setShowExistingClientSearch] = useState(false);
+
+  const { addToast } = useToast();
+  const shake = useShake();
+  const [pulseTrigger, setPulseTrigger] = useState(0);
+
+  const clientPanelRef = useRef<HTMLDivElement | null>(null);
+  const blockRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
+  const conflictBannerRef = useRef<HTMLDivElement | null>(null);
+
+  const setBlockRef = (i: number) => (el: HTMLDivElement | null) => {
+    blockRefs.current.set(i, el);
+  };
+
+  const handleSaveClick = () => {
+    if (form.canSubmit) {
+      form.handleSubmit();
+      return;
+    }
+    setPulseTrigger((n) => n + 1);
+    const missing = form.missingFields;
+    const conflictBlockIndex =
+      form.blockConflicts.size > 0 ? Array.from(form.blockConflicts.keys())[0] : null;
+
+    let target: HTMLElement | null = null;
+    if (missing.length > 0) {
+      const first = missing[0];
+      if (first.kind === 'client') target = clientPanelRef.current;
+      else target = blockRefs.current.get(first.blockIndex) ?? null;
+    } else if (conflictBlockIndex !== null) {
+      target = conflictBannerRef.current ?? blockRefs.current.get(conflictBlockIndex) ?? null;
+    }
+
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      shake(target);
+    }
+
+    const message =
+      missing.length > 0
+        ? `Veuillez compléter : ${humanizeMissing(missing)}`
+        : 'Conflit de planning. Modifiez le membre ou le créneau.';
+    addToast({ type: 'warning', message });
+  };
 
   // Merge pack favorites into the favorites array (packs live in a separate
   // data source so they aren't included in useServices().favorites).
@@ -60,15 +107,25 @@ export default function AppointmentBuilder({
               <Trash2 size={16} className="text-red-500" />
             </button>
           )}
-          <button
-            type="button"
-            onClick={form.handleSubmit}
-            disabled={form.isSaving}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50 transition-colors shadow-sm flex items-center gap-2"
-          >
-            <Save size={15} />
-            {form.isSaving ? 'Enregistrement...' : 'Enregistrer'}
-          </button>
+          <div className="flex flex-col items-end gap-1">
+            <button
+              type="button"
+              onClick={handleSaveClick}
+              disabled={form.isSaving}
+              aria-disabled={!form.canSubmit}
+              className={`bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm flex items-center gap-2 ${
+                form.canSubmit ? '' : 'opacity-50'
+              }`}
+            >
+              <Save size={15} />
+              {form.isSaving ? 'Enregistrement...' : 'Enregistrer'}
+            </button>
+            <MissingFieldsHint
+              missingFields={form.missingFields}
+              pulseTrigger={pulseTrigger}
+              className="text-right"
+            />
+          </div>
         </div>
       </div>
 
@@ -86,7 +143,10 @@ export default function AppointmentBuilder({
         {/* LEFT SIDEBAR — 1/4 */}
         <div className="flex-[1] space-y-4 max-md:order-first">
           {/* Step 1 — Client */}
-          <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
+          <div
+            ref={clientPanelRef}
+            className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm"
+          >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2.5">
                 <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
@@ -154,7 +214,7 @@ export default function AppointmentBuilder({
             {/* Services subpanel — 2/3 */}
             <div className="flex-[2] space-y-3">
               {form.serviceBlocks.map((block, i) => (
-                <div key={block.id}>
+                <div key={block.id} ref={setBlockRef(i)}>
                   <ServiceBlock
                     block={block}
                     index={i}
@@ -173,6 +233,7 @@ export default function AppointmentBuilder({
                     onClearItems={() => form.clearBlockItems(i)}
                     summaryText={form.getBlockSummary(block)}
                     stepOffset={1}
+                    hasConflict={form.blockConflicts.has(i)}
                   />
                 </div>
               ))}
@@ -209,6 +270,19 @@ export default function AppointmentBuilder({
                   onUpdateBlock={form.updateBlock}
                   reminderMinutes={form.reminderMinutes}
                   onReminderChange={form.setReminderMinutes}
+                  conflict={form.blockConflicts.get(form.activeBlockIndex)}
+                  isStaffAvailableForSlot={(staffId) => {
+                    const b = form.activeBlock;
+                    if (!b?.date || b.hour === null) return true;
+                    return form.isStaffAvailableForSlot(
+                      staffId,
+                      b.date,
+                      b.hour,
+                      b.minute,
+                      form.activeBlockIndex,
+                    );
+                  }}
+                  conflictRef={conflictBannerRef}
                 />
               </div>
             </div>
