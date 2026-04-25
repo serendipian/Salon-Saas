@@ -18,6 +18,7 @@ export const SignupPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   if (!authLoading && isAuthenticated) {
     return <Navigate to={redirect || '/dashboard'} replace />;
@@ -146,7 +147,7 @@ export const SignupPage: React.FC = () => {
             </div>
           )}
 
-          <button type="submit" disabled={isSubmitting} className="auth-cta">
+          <button type="submit" disabled={isSubmitting || !acceptedTerms} className="auth-cta">
             {isSubmitting ? (
               <Loader2 size={18} className="animate-spin" />
             ) : (
@@ -157,6 +158,48 @@ export const SignupPage: React.FC = () => {
             )}
           </button>
 
+          <label className="auth-terms">
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              required
+              aria-describedby="terms-text"
+            />
+            <span className="auth-terms-box" aria-hidden>
+              <svg viewBox="0 0 12 10" width="11" height="9" fill="none">
+                <path
+                  d="M1 5.2L4.2 8.4L11 1.6"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            <span id="terms-text" className="auth-terms-text">
+              J’accepte les{' '}
+              <a
+                href="/legal/terms"
+                target="_blank"
+                rel="noreferrer"
+                className="auth-link text-[var(--auth-ink)]"
+              >
+                conditions d’utilisation
+              </a>{' '}
+              et la{' '}
+              <a
+                href="/legal/privacy"
+                target="_blank"
+                rel="noreferrer"
+                className="auth-link text-[var(--auth-ink)]"
+              >
+                politique de confidentialité
+              </a>
+              .
+            </span>
+          </label>
+
           <AuthDivider label="ou" />
 
           <GoogleSignInButton
@@ -164,10 +207,6 @@ export const SignupPage: React.FC = () => {
             label="S’inscrire avec Google"
             onError={setError}
           />
-
-          <p className="text-center text-[11px] tracking-wide text-[var(--auth-ink-soft)]/55">
-            En continuant, vous acceptez nos conditions et notre politique de confidentialité.
-          </p>
         </form>
       )}
     </AuthShell>

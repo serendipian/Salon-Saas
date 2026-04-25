@@ -392,6 +392,66 @@ body {
   background: transparent;
 }
 
+/* Terms checkbox — refined editorial pill, ink fill on check, rose
+   focus-ring. Hides the native input but keeps it the source of truth
+   for keyboard / screen-reader users. */
+.auth-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(42, 38, 34, 0.78);
+  user-select: none;
+}
+.auth-terms input[type='checkbox'] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.auth-terms-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border: 1.5px solid rgba(14, 12, 11, 0.28);
+  border-radius: 4px;
+  background: #fff;
+  color: transparent;
+  flex-shrink: 0;
+  transition: background 200ms ease,
+              border-color 200ms ease,
+              color 200ms ease,
+              transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.auth-terms-box svg {
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 180ms ease, transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.auth-terms:hover .auth-terms-box {
+  border-color: rgba(14, 12, 11, 0.55);
+}
+.auth-terms input[type='checkbox']:checked + .auth-terms-box {
+  background: var(--auth-ink, #0e0c0b);
+  border-color: var(--auth-ink, #0e0c0b);
+  color: #fdfbf6;
+}
+.auth-terms input[type='checkbox']:checked + .auth-terms-box svg {
+  opacity: 1;
+  transform: scale(1);
+}
+.auth-terms input[type='checkbox']:focus-visible + .auth-terms-box {
+  border-color: var(--auth-rose, #b34868);
+  box-shadow: 0 0 0 3px rgba(179, 72, 104, 0.18);
+}
+.auth-terms-text { display: inline; }
+
 /* Mode toggle pill */
 .auth-toggle {
   position: relative;
