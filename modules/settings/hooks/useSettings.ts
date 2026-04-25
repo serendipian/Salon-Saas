@@ -5,8 +5,7 @@ import { useCallback } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
-import { supabase } from '../../../lib/supabase';
-import { rawSelect } from '../../../lib/supabaseRaw';
+import { rawInsert, rawSelect, rawUpdate } from '../../../lib/supabaseRaw';
 import type { ExpenseCategorySetting, RecurringExpense, SalonSettings } from '../../../types';
 import {
   toExpenseCategory,
@@ -50,11 +49,9 @@ export const useSettings = () => {
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (settings: SalonSettings) => {
-      const { error } = await supabase
-        .from('salons')
-        .update(toSalonUpdate(settings) as any)
-        .eq('id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${salonId}`);
+      await rawUpdate('salons', params.toString(), toSalonUpdate(settings));
       return settings;
     },
     onSuccess: (settings) => {
@@ -89,25 +86,27 @@ export const useSettings = () => {
   const updateExpenseCategoriesMutation = useMutation({
     mutationFn: async (categories: ExpenseCategorySetting[]) => {
       // Fetch existing IDs
-      const { data: existing, error: fetchErr } = await supabase
-        .from('expense_categories')
-        .select('id')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null);
-      if (fetchErr) throw fetchErr;
+      const fetchParams = new URLSearchParams();
+      fetchParams.append('select', 'id');
+      fetchParams.append('salon_id', `eq.${salonId}`);
+      fetchParams.append('deleted_at', 'is.null');
+      const existing = await rawSelect<{ id: string }>(
+        'expense_categories',
+        fetchParams.toString(),
+      );
 
-      const existingIds = new Set((existing ?? []).map((c) => c.id));
+      const existingIds = new Set(existing.map((c) => c.id));
       const newIds = new Set(categories.map((c) => c.id));
 
       // Soft-delete removed categories
       const toDelete = [...existingIds].filter((id) => !newIds.has(id));
       if (toDelete.length > 0) {
-        const { error } = await supabase
-          .from('expense_categories')
-          .update({ deleted_at: new Date().toISOString() })
-          .in('id', toDelete)
-          .eq('salon_id', salonId);
-        if (error) throw error;
+        const delParams = new URLSearchParams();
+        delParams.append('id', `in.(${toDelete.join(',')})`);
+        delParams.append('salon_id', `eq.${salonId}`);
+        await rawUpdate('expense_categories', delParams.toString(), {
+          deleted_at: new Date().toISOString(),
+        });
       }
 
       // Upsert remaining categories
@@ -115,15 +114,16 @@ export const useSettings = () => {
         const cat = categories[i];
         const row = toExpenseCategoryInsert(cat, salonId, i);
         if (existingIds.has(cat.id)) {
-          const { error } = await supabase
-            .from('expense_categories')
-            .update({ name: row.name, color: row.color, sort_order: row.sort_order })
-            .eq('id', cat.id)
-            .eq('salon_id', salonId);
-          if (error) throw error;
+          const updParams = new URLSearchParams();
+          updParams.append('id', `eq.${cat.id}`);
+          updParams.append('salon_id', `eq.${salonId}`);
+          await rawUpdate('expense_categories', updParams.toString(), {
+            name: row.name,
+            color: row.color,
+            sort_order: row.sort_order,
+          });
         } else {
-          const { error } = await supabase.from('expense_categories').insert(row);
-          if (error) throw error;
+          await rawInsert('expense_categories', row);
         }
       }
     },
@@ -152,45 +152,44 @@ export const useSettings = () => {
   const updateRecurringExpensesMutation = useMutation({
     mutationFn: async (expenses: RecurringExpense[]) => {
       // Fetch existing IDs
-      const { data: existing, error: fetchErr } = await supabase
-        .from('recurring_expenses')
-        .select('id')
-        .eq('salon_id', salonId)
-        .is('deleted_at', null);
-      if (fetchErr) throw fetchErr;
+      const fetchParams = new URLSearchParams();
+      fetchParams.append('select', 'id');
+      fetchParams.append('salon_id', `eq.${salonId}`);
+      fetchParams.append('deleted_at', 'is.null');
+      const existing = await rawSelect<{ id: string }>(
+        'recurring_expenses',
+        fetchParams.toString(),
+      );
 
-      const existingIds = new Set((existing ?? []).map((e) => e.id));
+      const existingIds = new Set(existing.map((e) => e.id));
       const newIds = new Set(expenses.map((e) => e.id));
 
       // Soft-delete removed
       const toDelete = [...existingIds].filter((id) => !newIds.has(id));
       if (toDelete.length > 0) {
-        const { error } = await supabase
-          .from('recurring_expenses')
-          .update({ deleted_at: new Date().toISOString() })
-          .in('id', toDelete)
-          .eq('salon_id', salonId);
-        if (error) throw error;
+        const delParams = new URLSearchParams();
+        delParams.append('id', `in.(${toDelete.join(',')})`);
+        delParams.append('salon_id', `eq.${salonId}`);
+        await rawUpdate('recurring_expenses', delParams.toString(), {
+          deleted_at: new Date().toISOString(),
+        });
       }
 
       // Upsert remaining
       for (const expense of expenses) {
         const row = toRecurringExpenseInsert(expense, salonId);
         if (existingIds.has(expense.id)) {
-          const { error } = await supabase
-            .from('recurring_expenses')
-            .update({
-              name: row.name,
-              amount: row.amount,
-              frequency: row.frequency,
-              next_date: row.next_date,
-            })
-            .eq('id', expense.id)
-            .eq('salon_id', salonId);
-          if (error) throw error;
+          const updParams = new URLSearchParams();
+          updParams.append('id', `eq.${expense.id}`);
+          updParams.append('salon_id', `eq.${salonId}`);
+          await rawUpdate('recurring_expenses', updParams.toString(), {
+            name: row.name,
+            amount: row.amount,
+            frequency: row.frequency,
+            next_date: row.next_date,
+          });
         } else {
-          const { error } = await supabase.from('recurring_expenses').insert(row);
-          if (error) throw error;
+          await rawInsert('recurring_expenses', row);
         }
       }
     },
