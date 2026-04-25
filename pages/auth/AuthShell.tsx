@@ -231,7 +231,7 @@ export const AuthShell: React.FC<AuthShellProps> = ({
                 </p>
               )}
 
-              <div className="auth-rise mt-6" style={{ ['--d' as string]: '320ms' }}>
+              <div className="auth-rise mt-3" style={{ ['--d' as string]: '320ms' }}>
                 {children}
               </div>
 

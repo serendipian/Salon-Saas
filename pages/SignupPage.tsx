@@ -49,11 +49,11 @@ export const SignupPage: React.FC = () => {
   return (
     <AuthShell
       kicker="Nouveau compte"
-      headline={success ? 'Bientôt prête.' : 'Ouvrez votre atelier.'}
+      headline={success ? 'Bientôt prête.' : 'Gérez votre salon.'}
       subhead={
         success
           ? `Un email de confirmation a été envoyé à ${email}. Activez votre compte pour personnaliser votre salon en quelques minutes.`
-          : 'Créez votre espace en moins de deux minutes — agenda, fiche cliente, caisse, paie.'
+          : undefined
       }
       footer={success ? null : footer}
     >
