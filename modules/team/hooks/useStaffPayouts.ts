@@ -1,8 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
-import { supabase } from '../../../lib/supabase';
-import { rawSelect } from '../../../lib/supabaseRaw';
+import { rawInsert, rawSelect, rawUpdate } from '../../../lib/supabaseRaw';
 import type { PayoutType, StaffPayout } from '../../../types';
 
 export interface CreatePayoutInput {
@@ -58,7 +57,7 @@ export const useStaffPayouts = (staffId: string) => {
     mutationFn: async (input: CreatePayoutInput) => {
       // DB unique index on (staff_id, type, period_start, period_end) WHERE non-cancelled
       // enforces duplicates — no client-side check needed (caught via onError)
-      const { error } = await supabase.from('staff_payouts').insert({
+      await rawInsert('staff_payouts', {
         salon_id: salonId!,
         staff_id: staffId,
         type: input.type,
@@ -70,7 +69,6 @@ export const useStaffPayouts = (staffId: string) => {
         notes: input.notes,
         created_by: profile?.id,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff_payouts', salonId, staffId] });
@@ -80,13 +78,15 @@ export const useStaffPayouts = (staffId: string) => {
 
   const markAsPaidMutation = useMutation({
     mutationFn: async (payoutId: string) => {
-      const { error } = await supabase
-        .from('staff_payouts')
-        .update({ status: 'PAID', paid_at: new Date().toISOString(), updated_by: profile?.id })
-        .eq('id', payoutId)
-        .eq('salon_id', salonId!)
-        .eq('status', 'PENDING');
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${payoutId}`);
+      params.append('salon_id', `eq.${salonId!}`);
+      params.append('status', 'eq.PENDING');
+      await rawUpdate('staff_payouts', params.toString(), {
+        status: 'PAID',
+        paid_at: new Date().toISOString(),
+        updated_by: profile?.id,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff_payouts', salonId, staffId] });
@@ -96,13 +96,14 @@ export const useStaffPayouts = (staffId: string) => {
 
   const cancelPayoutMutation = useMutation({
     mutationFn: async (payoutId: string) => {
-      const { error } = await supabase
-        .from('staff_payouts')
-        .update({ status: 'CANCELLED', updated_by: profile?.id })
-        .eq('id', payoutId)
-        .eq('salon_id', salonId!)
-        .eq('status', 'PENDING');
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${payoutId}`);
+      params.append('salon_id', `eq.${salonId!}`);
+      params.append('status', 'eq.PENDING');
+      await rawUpdate('staff_payouts', params.toString(), {
+        status: 'CANCELLED',
+        updated_by: profile?.id,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff_payouts', salonId, staffId] });
