@@ -2,8 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
-import { supabase } from '../../../lib/supabase';
-import { rawSelect } from '../../../lib/supabaseRaw';
+import { rawRpc, rawSelect, rawUpdate } from '../../../lib/supabaseRaw';
 import type { StaffMember } from '../../../types';
 import { toStaffMember, toStaffMemberInsert } from '../mappers';
 
@@ -42,8 +41,11 @@ export const useStaffDetail = (slug: string) => {
 
   // Load PII fields for this staff member via decrypted RPC
   const loadPii = async (): Promise<Partial<StaffMember>> => {
-    const { data, error } = await supabase.rpc('get_staff_pii', { p_staff_id: staffId });
-    if (error) throw error;
+    const data = await rawRpc<
+      | { base_salary: string | null; iban: string | null; social_security_number: string | null }[]
+      | { base_salary: string | null; iban: string | null; social_security_number: string | null }
+      | null
+    >('get_staff_pii', { p_staff_id: staffId });
     const row = Array.isArray(data) ? data[0] : data;
     if (!row) return {};
     return {
@@ -55,7 +57,7 @@ export const useStaffDetail = (slug: string) => {
 
   // Save PII fields via encrypted RPC
   const savePiiFields = async (id: string, member: Partial<StaffMember>) => {
-    const { error } = await supabase.rpc('update_staff_pii', {
+    await rawRpc('update_staff_pii', {
       p_staff_id: id,
       p_base_salary: member.baseSalary != null ? String(member.baseSalary) : undefined,
       p_iban: member.iban || undefined,
@@ -64,7 +66,6 @@ export const useStaffDetail = (slug: string) => {
       p_clear_iban: !member.iban,
       p_clear_ssn: !member.socialSecurityNumber,
     });
-    if (error) throw error;
   };
 
   const updateSectionMutation = useMutation({
@@ -79,12 +80,10 @@ export const useStaffDetail = (slug: string) => {
         const current = staff;
         const merged = { ...current, ...rest };
         const { id: _id, salon_id: _sid, ...updatePayload } = toStaffMemberInsert(merged, salonId);
-        const { error } = await supabase
-          .from('staff_members')
-          .update(updatePayload)
-          .eq('id', staffId)
-          .eq('salon_id', salonId);
-        if (error) throw error;
+        const params = new URLSearchParams();
+        params.append('id', `eq.${staffId}`);
+        params.append('salon_id', `eq.${salonId}`);
+        await rawUpdate('staff_members', params.toString(), updatePayload);
       }
 
       // PII fields via RPC
@@ -103,27 +102,25 @@ export const useStaffDetail = (slug: string) => {
     mutationFn: async () => {
       if (staff?.membershipId) {
         // Linked staff: revoke membership (atomically deletes membership + staff)
-        const { error } = await supabase.rpc('revoke_membership', {
-          p_membership_id: staff.membershipId,
-        });
-        if (error) throw error;
+        await rawRpc('revoke_membership', { p_membership_id: staff.membershipId });
       } else {
         // Ghost staff: direct soft delete
-        const { error } = await supabase
-          .from('staff_members')
-          .update({ deleted_at: new Date().toISOString() })
-          .eq('id', staffId)
-          .eq('salon_id', salonId);
-        if (error) throw error;
+        const params = new URLSearchParams();
+        params.append('id', `eq.${staffId}`);
+        params.append('salon_id', `eq.${salonId}`);
+        await rawUpdate('staff_members', params.toString(), {
+          deleted_at: new Date().toISOString(),
+        });
       }
 
       // Cancel pending invitations
-      await supabase
-        .from('invitations')
-        .update({ expires_at: new Date().toISOString() })
-        .eq('staff_member_id', staffId)
-        .eq('salon_id', salonId)
-        .is('accepted_at', null);
+      const invParams = new URLSearchParams();
+      invParams.append('staff_member_id', `eq.${staffId}`);
+      invParams.append('salon_id', `eq.${salonId}`);
+      invParams.append('accepted_at', 'is.null');
+      await rawUpdate('invitations', invParams.toString(), {
+        expires_at: new Date().toISOString(),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff_members', salonId] });
@@ -133,12 +130,13 @@ export const useStaffDetail = (slug: string) => {
 
   const restoreMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from('staff_members')
-        .update({ deleted_at: null, active: true })
-        .eq('id', staffId)
-        .eq('salon_id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${staffId}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('staff_members', params.toString(), {
+        deleted_at: null,
+        active: true,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff_member', salonId, slug] });
