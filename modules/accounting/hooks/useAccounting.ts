@@ -27,7 +27,7 @@ export const useAccounting = () => {
     },
   });
 
-  const { salonSettings } = useSettings();
+  const { salonSettings, expenseCategories } = useSettings();
 
   // --- Date Range State ---
   const [dateRange, setDateRange] = useState<DateRange>(() => {
@@ -89,24 +89,67 @@ export const useAccounting = () => {
     enabled: !!salonId,
   });
 
-  // --- Add Expense Mutation (raw-fetch — bypasses SDK auth-lock wedge) ---
-  const addExpenseMutation = useMutation({
-    mutationFn: async (expense: Omit<Expense, 'id'>) => {
+  // --- Optimistic snapshot helpers (shared by add/update/delete) ---
+  type ExpensesSnapshot = Array<[readonly unknown[], Expense[] | undefined]>;
+  const restoreExpensesSnapshot = (snapshot: ExpensesSnapshot | undefined) => {
+    if (!snapshot) return;
+    for (const [key, data] of snapshot) queryClient.setQueryData(key, data);
+  };
+
+  // --- Add Expense Mutation (raw-fetch + optimistic) ---
+  const addExpenseMutation = useMutation<
+    void,
+    Error,
+    Omit<Expense, 'id'>,
+    { snapshot: ExpensesSnapshot }
+  >({
+    mutationFn: async (expense) => {
       const row = toExpenseInsert(expense, salonId);
       await rawInsert('expenses', row);
     },
+    onMutate: async (expense) => {
+      await queryClient.cancelQueries({ queryKey: ['expenses', salonId] });
+      const snapshot = queryClient.getQueriesData<Expense[]>({
+        queryKey: ['expenses', salonId],
+      });
+      // Enrich with category metadata so the optimistic row renders identically
+      // to a server-joined row (the real INSERT response will replace it on
+      // invalidation in onSettled).
+      const cat = expenseCategories.find((c) => c.id === expense.category);
+      const optimistic: Expense = {
+        ...expense,
+        id: `optimistic-${crypto.randomUUID()}`,
+        categoryName: cat?.name,
+        categoryColor: cat?.color,
+      };
+      queryClient.setQueriesData<Expense[]>({ queryKey: ['expenses', salonId] }, (old) => [
+        optimistic,
+        ...(old ?? []),
+      ]);
+      return { snapshot };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses', salonId] });
       toastOnSuccess('Dépense ajoutée')();
     },
-    onError: toastOnError("Impossible d'ajouter la dépense"),
+    onError: (err, _vars, context) => {
+      restoreExpensesSnapshot(context?.snapshot);
+      toastOnError("Impossible d'ajouter la dépense")(err);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses', salonId] });
+    },
   });
 
   const addExpense = (expense: Omit<Expense, 'id'>) => addExpenseMutation.mutateAsync(expense);
 
-  // --- Update Expense Mutation (raw-fetch) ---
-  const updateExpenseMutation = useMutation({
-    mutationFn: async (expense: Expense) => {
+  // --- Update Expense Mutation (raw-fetch + optimistic) ---
+  const updateExpenseMutation = useMutation<
+    void,
+    Error,
+    Expense,
+    { snapshot: ExpensesSnapshot }
+  >({
+    mutationFn: async (expense) => {
       const params = new URLSearchParams();
       params.append('id', `eq.${expense.id}`);
       params.append('salon_id', `eq.${salonId}`);
@@ -120,16 +163,41 @@ export const useAccounting = () => {
         payment_method: expense.paymentMethod ?? null,
       });
     },
+    onMutate: async (expense) => {
+      await queryClient.cancelQueries({ queryKey: ['expenses', salonId] });
+      const snapshot = queryClient.getQueriesData<Expense[]>({
+        queryKey: ['expenses', salonId],
+      });
+      const cat = expenseCategories.find((c) => c.id === expense.category);
+      queryClient.setQueriesData<Expense[]>({ queryKey: ['expenses', salonId] }, (old) =>
+        old?.map((e) =>
+          e.id === expense.id
+            ? { ...expense, categoryName: cat?.name, categoryColor: cat?.color }
+            : e,
+        ),
+      );
+      return { snapshot };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses', salonId] });
       toastOnSuccess('Dépense mise à jour')();
     },
-    onError: toastOnError('Impossible de modifier la dépense'),
+    onError: (err, _vars, context) => {
+      restoreExpensesSnapshot(context?.snapshot);
+      toastOnError('Impossible de modifier la dépense')(err);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses', salonId] });
+    },
   });
 
-  // --- Delete Expense Mutation (raw-fetch, soft-delete) ---
-  const deleteExpenseMutation = useMutation({
-    mutationFn: async (expenseId: string) => {
+  // --- Delete Expense Mutation (raw-fetch, soft-delete + optimistic) ---
+  const deleteExpenseMutation = useMutation<
+    void,
+    Error,
+    string,
+    { snapshot: ExpensesSnapshot }
+  >({
+    mutationFn: async (expenseId) => {
       const params = new URLSearchParams();
       params.append('id', `eq.${expenseId}`);
       params.append('salon_id', `eq.${salonId}`);
@@ -137,11 +205,26 @@ export const useAccounting = () => {
         deleted_at: new Date().toISOString(),
       });
     },
+    onMutate: async (expenseId) => {
+      await queryClient.cancelQueries({ queryKey: ['expenses', salonId] });
+      const snapshot = queryClient.getQueriesData<Expense[]>({
+        queryKey: ['expenses', salonId],
+      });
+      queryClient.setQueriesData<Expense[]>({ queryKey: ['expenses', salonId] }, (old) =>
+        old?.filter((e) => e.id !== expenseId),
+      );
+      return { snapshot };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses', salonId] });
       toastOnSuccess('Dépense supprimée')();
     },
-    onError: toastOnError('Impossible de supprimer la dépense'),
+    onError: (err, _vars, context) => {
+      restoreExpensesSnapshot(context?.snapshot);
+      toastOnError('Impossible de supprimer la dépense')(err);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses', salonId] });
+    },
   });
 
   // --- Filtering ---

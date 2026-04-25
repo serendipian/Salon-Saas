@@ -39,11 +39,16 @@ export const DepensesPage: React.FC = () => {
     return () => registerNewExpenseHandler(null);
   }, [registerNewExpenseHandler, openNewExpense]);
 
+  // Each handler awaits its mutation, then closes the form on success.
+  // On error, the catch swallows the rejection (the mutation's onError
+  // already toasted) and the form stays open so the user can retry.
   const handleAddExpense = async (expense: Parameters<typeof addExpense>[0]) => {
-    // Await before closing — if the mutation hangs or fails, the form stays
-    // open and the user gets the error toast from the mutation's onError.
-    await addExpense(expense);
-    setShowForm(false);
+    try {
+      await addExpense(expense);
+      setShowForm(false);
+    } catch {
+      // form stays open intentionally
+    }
   };
 
   const handleEdit = (id: string) => {
@@ -67,12 +72,20 @@ export const DepensesPage: React.FC = () => {
         allExpenses={filteredExpenses}
         onSave={handleAddExpense}
         onUpdate={async (expense) => {
-          await updateExpense(expense);
-          handleClose();
+          try {
+            await updateExpense(expense);
+            handleClose();
+          } catch {
+            // form stays open intentionally
+          }
         }}
         onDelete={async (id) => {
-          await deleteExpense(id);
-          handleClose();
+          try {
+            await deleteExpense(id);
+            handleClose();
+          } catch {
+            // form stays open intentionally
+          }
         }}
         onCancel={handleClose}
         isPending={isAddingExpense || isUpdatingExpense || isDeletingExpense}
