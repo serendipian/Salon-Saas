@@ -1,5 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
+import { installWebSocketDiagnostics } from './wsDiagnostics';
+
+// Patch global WebSocket BEFORE supabase-js creates its realtime client,
+// so we capture every Supabase realtime open/close/error with codes and
+// lifetimes. No-op outside the browser, idempotent across HMR reloads.
+installWebSocketDiagnostics();
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
