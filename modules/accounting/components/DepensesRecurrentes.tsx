@@ -25,13 +25,14 @@ function advanceDate(date: string, frequency: RecurringExpense['frequency']): st
 }
 
 interface Props {
-  onCreateExpense?: (expense: Omit<Expense, 'id'>) => void;
+  onCreateExpense?: (expense: Omit<Expense, 'id'>) => void | Promise<void>;
 }
 
 export const DepensesRecurrentes: React.FC<Props> = ({ onCreateExpense }) => {
   const { recurringExpenses, updateRecurringExpenses } = useSettings();
   const { addToast } = useToast();
   const [isAdding, setIsAdding] = useState(false);
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [newExpense, setNewExpense] = useState({
     name: '',
     amount: 0,
@@ -64,25 +65,32 @@ export const DepensesRecurrentes: React.FC<Props> = ({ onCreateExpense }) => {
     updateRecurringExpenses(recurringExpenses.filter((r) => r.id !== id));
   };
 
-  const handleGenerate = (rec: RecurringExpense) => {
+  const handleGenerate = async (rec: RecurringExpense) => {
     if (!onCreateExpense) return;
-    // Create the expense
-    onCreateExpense({
-      description: rec.name,
-      amount: rec.amount,
-      date: rec.nextDate,
-      category: '',
-    });
-    // Advance the next date
-    updateRecurringExpenses(
-      recurringExpenses.map((r) =>
-        r.id === rec.id ? { ...r, nextDate: advanceDate(r.nextDate, r.frequency) } : r,
-      ),
-    );
-    addToast({
-      type: 'success',
-      message: `Dépense « ${rec.name} » enregistrée. Prochaine échéance avancée.`,
-    });
+    if (generatingId) return;
+    setGeneratingId(rec.id);
+    try {
+      // Create the expense first — only advance the date and toast on success.
+      await onCreateExpense({
+        description: rec.name,
+        amount: rec.amount,
+        date: rec.nextDate,
+        category: '',
+      });
+      updateRecurringExpenses(
+        recurringExpenses.map((r) =>
+          r.id === rec.id ? { ...r, nextDate: advanceDate(r.nextDate, r.frequency) } : r,
+        ),
+      );
+      addToast({
+        type: 'success',
+        message: `Dépense « ${rec.name} » enregistrée. Prochaine échéance avancée.`,
+      });
+    } catch {
+      // Mutation's onError already showed an error toast — just unblock the UI.
+    } finally {
+      setGeneratingId(null);
+    }
   };
 
   // Average weeks per month — used to normalize weekly recurring expenses
@@ -133,9 +141,10 @@ export const DepensesRecurrentes: React.FC<Props> = ({ onCreateExpense }) => {
                   {onCreateExpense && (
                     <button
                       onClick={() => handleGenerate(rec)}
-                      className="text-red-700 hover:text-red-900 font-medium underline ml-2"
+                      disabled={generatingId !== null}
+                      className="text-red-700 hover:text-red-900 font-medium underline ml-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Enregistrer
+                      {generatingId === rec.id ? 'Enregistrement…' : 'Enregistrer'}
                     </button>
                   )}
                 </div>
@@ -271,8 +280,9 @@ export const DepensesRecurrentes: React.FC<Props> = ({ onCreateExpense }) => {
                       {onCreateExpense && (
                         <button
                           onClick={() => handleGenerate(rec)}
+                          disabled={generatingId !== null}
                           title="Enregistrer comme dépense"
-                          className="text-slate-300 hover:text-emerald-600 transition-colors p-1"
+                          className="text-slate-300 hover:text-emerald-600 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <CheckCircle size={16} />
                         </button>

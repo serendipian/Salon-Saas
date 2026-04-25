@@ -6,8 +6,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
 import { useTransactions } from '../../../hooks/useTransactions';
-import { supabase } from '../../../lib/supabase';
-import { rawSelect } from '../../../lib/supabaseRaw';
+import { rawInsert, rawSelect, rawUpdate } from '../../../lib/supabaseRaw';
 import type { CartItem, DateRange, Expense, LedgerEntry, Transaction } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { type ExpenseRow, toExpense, toExpenseInsert } from '../mappers';
@@ -90,12 +89,11 @@ export const useAccounting = () => {
     enabled: !!salonId,
   });
 
-  // --- Add Expense Mutation ---
+  // --- Add Expense Mutation (raw-fetch — bypasses SDK auth-lock wedge) ---
   const addExpenseMutation = useMutation({
     mutationFn: async (expense: Omit<Expense, 'id'>) => {
       const row = toExpenseInsert(expense, salonId);
-      const { error } = await supabase.from('expenses').insert(row);
-      if (error) throw error;
+      await rawInsert('expenses', row);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses', salonId] });
@@ -104,25 +102,23 @@ export const useAccounting = () => {
     onError: toastOnError("Impossible d'ajouter la dépense"),
   });
 
-  const addExpense = (expense: Omit<Expense, 'id'>) => addExpenseMutation.mutate(expense);
+  const addExpense = (expense: Omit<Expense, 'id'>) => addExpenseMutation.mutateAsync(expense);
 
-  // --- Update Expense Mutation ---
+  // --- Update Expense Mutation (raw-fetch) ---
   const updateExpenseMutation = useMutation({
     mutationFn: async (expense: Expense) => {
-      const { error } = await supabase
-        .from('expenses')
-        .update({
-          date: expense.date,
-          description: expense.description,
-          category_id: expense.category,
-          amount: expense.amount,
-          supplier_id: expense.supplierId ?? null,
-          proof_url: expense.proofUrl ?? null,
-          payment_method: expense.paymentMethod ?? null,
-        })
-        .eq('id', expense.id)
-        .eq('salon_id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${expense.id}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('expenses', params.toString(), {
+        date: expense.date,
+        description: expense.description,
+        category_id: expense.category,
+        amount: expense.amount,
+        supplier_id: expense.supplierId ?? null,
+        proof_url: expense.proofUrl ?? null,
+        payment_method: expense.paymentMethod ?? null,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses', salonId] });
@@ -131,15 +127,15 @@ export const useAccounting = () => {
     onError: toastOnError('Impossible de modifier la dépense'),
   });
 
-  // --- Delete Expense Mutation ---
+  // --- Delete Expense Mutation (raw-fetch, soft-delete) ---
   const deleteExpenseMutation = useMutation({
     mutationFn: async (expenseId: string) => {
-      const { error } = await supabase
-        .from('expenses')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', expenseId)
-        .eq('salon_id', salonId);
-      if (error) throw error;
+      const params = new URLSearchParams();
+      params.append('id', `eq.${expenseId}`);
+      params.append('salon_id', `eq.${salonId}`);
+      await rawUpdate('expenses', params.toString(), {
+        deleted_at: new Date().toISOString(),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses', salonId] });
@@ -381,9 +377,9 @@ export const useAccounting = () => {
     chartHighlight,
     addExpense,
     isAddingExpense: addExpenseMutation.isPending,
-    updateExpense: (expense: Expense) => updateExpenseMutation.mutate(expense),
+    updateExpense: (expense: Expense) => updateExpenseMutation.mutateAsync(expense),
     isUpdatingExpense: updateExpenseMutation.isPending,
-    deleteExpense: (expenseId: string) => deleteExpenseMutation.mutate(expenseId),
+    deleteExpense: (expenseId: string) => deleteExpenseMutation.mutateAsync(expenseId),
     isDeletingExpense: deleteExpenseMutation.isPending,
     clientMetrics,
   };

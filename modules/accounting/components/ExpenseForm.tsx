@@ -82,9 +82,9 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: React.ReactN
 interface ExpenseFormProps {
   existingExpense?: Expense;
   allExpenses?: Expense[];
-  onSave: (e: Omit<Expense, 'id'>) => void;
-  onUpdate?: (e: Expense) => void;
-  onDelete?: (id: string) => void;
+  onSave: (e: Omit<Expense, 'id'>) => void | Promise<void>;
+  onUpdate?: (e: Expense) => void | Promise<void>;
+  onDelete?: (id: string) => void | Promise<void>;
   onCancel: () => void;
   isPending?: boolean;
 }

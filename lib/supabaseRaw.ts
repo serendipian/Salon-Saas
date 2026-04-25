@@ -123,3 +123,40 @@ export async function rawRpc<T>(
   const text = await response.text();
   return text ? (JSON.parse(text) as T) : (null as T);
 }
+
+/**
+ * Raw-fetch a PostgREST INSERT. Sends `Prefer: return=minimal` so the
+ * server skips returning the inserted row — matches `supabase.from(t).insert(...)`
+ * without a trailing `.select()`. Body may be a single object or an array.
+ */
+export async function rawInsert(
+  table: string,
+  body: unknown,
+  signal?: AbortSignal,
+): Promise<void> {
+  await sendRequest(table, {
+    method: 'POST',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify(body),
+    signal,
+  });
+}
+
+/**
+ * Raw-fetch a PostgREST UPDATE. `params` is the fully-formed filter query
+ * string (no leading `?`), e.g. "id=eq.xxx&salon_id=eq.yyy". Returns void;
+ * matches `supabase.from(t).update(...).eq(...)` without `.select()`.
+ */
+export async function rawUpdate(
+  table: string,
+  params: string,
+  body: unknown,
+  signal?: AbortSignal,
+): Promise<void> {
+  await sendRequest(`${table}?${params}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify(body),
+    signal,
+  });
+}

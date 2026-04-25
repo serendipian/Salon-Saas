@@ -39,8 +39,10 @@ export const DepensesPage: React.FC = () => {
     return () => registerNewExpenseHandler(null);
   }, [registerNewExpenseHandler, openNewExpense]);
 
-  const handleAddExpense = (expense: Parameters<typeof addExpense>[0]) => {
-    addExpense(expense);
+  const handleAddExpense = async (expense: Parameters<typeof addExpense>[0]) => {
+    // Await before closing — if the mutation hangs or fails, the form stays
+    // open and the user gets the error toast from the mutation's onError.
+    await addExpense(expense);
     setShowForm(false);
   };
 
@@ -64,12 +66,12 @@ export const DepensesPage: React.FC = () => {
         existingExpense={editingExpense}
         allExpenses={filteredExpenses}
         onSave={handleAddExpense}
-        onUpdate={(expense) => {
-          updateExpense(expense);
+        onUpdate={async (expense) => {
+          await updateExpense(expense);
           handleClose();
         }}
-        onDelete={(id) => {
-          deleteExpense(id);
+        onDelete={async (id) => {
+          await deleteExpense(id);
           handleClose();
         }}
         onCancel={handleClose}
