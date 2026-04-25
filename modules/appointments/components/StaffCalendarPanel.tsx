@@ -1,6 +1,8 @@
 import { Bell, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import type { Service, ServiceBlockState, StaffMember } from '../../../types';
+import type { BlockConflict } from '../utils/deriveBlockConflicts';
+import BlockConflictBanner from './BlockConflictBanner';
 import InlineCalendar from './InlineCalendar';
 import StaffPills from './StaffPills';
 import TimePicker from './TimePicker';
@@ -14,6 +16,9 @@ interface StaffCalendarPanelProps {
   onUpdateBlock: (index: number, updates: Partial<ServiceBlockState>) => void;
   reminderMinutes: number | null;
   onReminderChange: (minutes: number | null) => void;
+  conflict?: BlockConflict;
+  isStaffAvailableForSlot?: (staffId: string) => boolean;
+  conflictRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function StaffCalendarPanel({
@@ -25,6 +30,9 @@ export default function StaffCalendarPanel({
   onUpdateBlock,
   reminderMinutes,
   onReminderChange,
+  conflict,
+  isStaffAvailableForSlot,
+  conflictRef,
 }: StaffCalendarPanelProps) {
   const hasService = (activeBlock?.items.length ?? 0) > 0;
   const hasStaff = hasService && activeBlock?.staffConfirmed === true;
@@ -83,6 +91,7 @@ export default function StaffCalendarPanel({
                 onUpdateBlock(activeBlockIndex, { staffId, staffConfirmed: staffId !== null })
               }
               hideLabel
+              isStaffAvailable={isStaffAvailableForSlot}
             />
           </div>
           {!hasService && (
@@ -152,8 +161,14 @@ export default function StaffCalendarPanel({
             ))}
           </div>
         )}
-        <div className="relative">
-          <div className={hasStaff ? '' : 'opacity-40 pointer-events-none'}>
+        <div className="relative" ref={conflictRef}>
+          {conflict && (
+            <div className="mb-3">
+              <BlockConflictBanner conflict={conflict} />
+            </div>
+          )}
+
+          {hasStaff ? (
             <div className="space-y-4">
               <InlineCalendar
                 value={activeBlock?.date ?? null}
@@ -168,12 +183,45 @@ export default function StaffCalendarPanel({
                 dateSelected={(activeBlock?.date ?? null) !== null}
               />
             </div>
-          </div>
-          {!hasStaff && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xs text-slate-400 font-medium bg-white/80 px-3 py-1.5 rounded-lg shadow-sm">
-                Choisissez un membre
-              </span>
+          ) : activeBlock?.date || activeBlock?.hour !== null ? (
+            // Read-only fallback when staff is null but date/time exist —
+            // keep prior values visible rather than hiding under an overlay.
+            <div className="space-y-4">
+              <div className="opacity-60 pointer-events-none">
+                <InlineCalendar value={activeBlock?.date ?? null} onChange={() => {}} />
+                <TimePicker
+                  hour={activeBlock?.hour ?? null}
+                  minute={activeBlock?.minute ?? 0}
+                  onHourChange={() => {}}
+                  onMinuteChange={() => {}}
+                  unavailableHours={new Set()}
+                  dateSelected={(activeBlock?.date ?? null) !== null}
+                />
+              </div>
+              <p className="text-xs text-slate-500 text-center italic">
+                Sélectionnez un membre pour modifier l'heure.
+              </p>
+            </div>
+          ) : (
+            <div className="relative">
+              <div className="opacity-40 pointer-events-none">
+                <div className="space-y-4">
+                  <InlineCalendar value={null} onChange={() => {}} />
+                  <TimePicker
+                    hour={null}
+                    minute={0}
+                    onHourChange={() => {}}
+                    onMinuteChange={() => {}}
+                    unavailableHours={new Set()}
+                    dateSelected={false}
+                  />
+                </div>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xs text-slate-400 font-medium bg-white/80 px-3 py-1.5 rounded-lg shadow-sm">
+                  Choisissez un membre
+                </span>
+              </div>
             </div>
           )}
         </div>
