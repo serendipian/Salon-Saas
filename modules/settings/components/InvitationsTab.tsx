@@ -7,6 +7,7 @@ import {
   type CreateInvitationInput,
   type InvitationRow,
 } from '../hooks/useTeamSettings';
+import { getInvitationDisplayInfo } from '../utils/getInvitationDisplayInfo';
 
 // Same email pattern used elsewhere in the app (signup/profile).
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -102,6 +103,22 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
       addToast({
         type: 'error',
         message: 'Impossible de copier le lien. Copiez-le manuellement depuis le champ.',
+      });
+    }
+  };
+
+  const [copiedRowId, setCopiedRowId] = useState<string | null>(null);
+
+  const handleCopyRowLink = async (token: string, rowId: string) => {
+    const url = `${window.location.origin}/accept-invitation?token=${token}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedRowId(rowId);
+      setTimeout(() => setCopiedRowId(null), 2000);
+    } catch {
+      addToast({
+        type: 'error',
+        message: 'Impossible de copier le lien. Réessayez ou recréez une invitation.',
       });
     }
   };
@@ -275,19 +292,36 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
         ) : (
           invitations.map((inv) => {
             const status = getStatus(inv);
+            const display = getInvitationDisplayInfo(inv);
+            const pending = isPending(inv);
+            const wasCopied = copiedRowId === inv.id;
             return (
               <div key={inv.id} className="flex items-center gap-4 p-4">
+                <div
+                  role="img"
+                  aria-label={display.primaryLine}
+                  className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-sm font-medium shrink-0"
+                >
+                  {display.initials}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-900 truncate">
+                    {display.primaryLine}
+                  </p>
+                  {display.secondaryLine && (
+                    <p className="text-xs text-slate-500 truncate">{display.secondaryLine}</p>
+                  )}
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Créée le {formatDate(inv.created_at)} · Expire le {formatDate(inv.expires_at)}
+                  </p>
+                </div>
+
                 <span
                   className={`text-xs font-medium px-2.5 py-1 rounded-full ${ROLE_COLORS[inv.role] || 'bg-slate-100 text-slate-600'}`}
                 >
                   {ROLE_LABELS[inv.role] || inv.role}
                 </span>
-
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-slate-500">
-                    Créée le {formatDate(inv.created_at)} · Expire le {formatDate(inv.expires_at)}
-                  </p>
-                </div>
 
                 <span
                   className={`text-xs font-medium px-2.5 py-1 rounded-full ${status.className}`}
@@ -295,15 +329,30 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
                   {status.label}
                 </span>
 
-                {isPending(inv) && (
-                  <button
-                    onClick={() => onCancel(inv.id)}
-                    disabled={isCancelling}
-                    className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Annuler l'invitation"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                {pending && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyRowLink(inv.token, inv.id)}
+                      className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                      title="Copier le lien d'invitation"
+                    >
+                      {wasCopied ? (
+                        <Check className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <LinkIcon className="w-4 h-4" />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onCancel(inv.id)}
+                      disabled={isCancelling}
+                      className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Annuler l'invitation"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </>
                 )}
               </div>
             );
