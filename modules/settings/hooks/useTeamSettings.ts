@@ -36,6 +36,16 @@ export interface InvitationRow {
   expires_at: string;
   accepted_at: string | null;
   staff_member_id: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+}
+
+export interface CreateInvitationInput {
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
 }
 
 const STAFF_ROLE_MAP: Record<string, string> = {
@@ -96,7 +106,10 @@ export function useTeamSettings() {
     queryKey: ['team-settings-invitations', salonId],
     queryFn: async ({ signal }) => {
       const params = new URLSearchParams();
-      params.append('select', 'id,role,token,created_at,expires_at,accepted_at,staff_member_id');
+      params.append(
+        'select',
+        'id,role,token,created_at,expires_at,accepted_at,staff_member_id,first_name,last_name,email',
+      );
       params.append('salon_id', `eq.${salonId!}`);
       params.append('order', 'created_at.desc');
       return rawSelect<InvitationRow>('invitations', params.toString(), signal);
@@ -167,7 +180,7 @@ export function useTeamSettings() {
   });
 
   const createInvitationMutation = useMutation({
-    mutationFn: async (role: string) => {
+    mutationFn: async (input: CreateInvitationInput) => {
       const token = crypto.randomUUID();
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + INVITATION_EXPIRY_DAYS);
@@ -176,10 +189,13 @@ export function useTeamSettings() {
         'invitations',
         {
           salon_id: salonId!,
-          role,
+          role: input.role,
           token,
           invited_by: profile!.id,
           expires_at: expiresAt.toISOString(),
+          first_name: input.firstName.trim(),
+          last_name: input.lastName.trim(),
+          email: input.email.trim().toLowerCase() || null,
         },
         'token',
       );
@@ -226,7 +242,7 @@ export function useTeamSettings() {
     transferOwnership: (newOwnerProfileId: string) =>
       transferMutation.mutateAsync(newOwnerProfileId),
     isTransferring: transferMutation.isPending,
-    createInvitation: (role: string) => createInvitationMutation.mutateAsync(role),
+    createInvitation: (input: CreateInvitationInput) => createInvitationMutation.mutateAsync(input),
     isCreatingInvitation: createInvitationMutation.isPending,
     cancelInvitation: (id: string) => cancelInvitationMutation.mutateAsync(id),
     isCancellingInvitation: cancelInvitationMutation.isPending,
