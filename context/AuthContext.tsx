@@ -30,6 +30,12 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
 
+  // Owner-only role preview: lets an owner "see" the app as another role
+  // for verifying permission changes. Only affects UI gates — RLS still
+  // runs against the user's actual role.
+  previewRole: Role | null;
+  setPreviewRole: (role: Role | null) => void;
+
   // Auth actions
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (
@@ -71,6 +77,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [role, setRole] = useState<Role | null>(null);
   const [memberships, setMemberships] = useState<SalonMembership[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [previewRole, setPreviewRoleState] = useState<Role | null>(null);
+
+  // Only owners can preview. Selecting the same role as the user's real role
+  // clears preview (toggle behavior).
+  const setPreviewRole = useCallback(
+    (next: Role | null) => {
+      if (roleRef.current !== 'owner') return;
+      setPreviewRoleState(next === roleRef.current ? null : next);
+    },
+    [],
+  );
+
+  // Clear preview when the user is no longer owner (salon switch, role demotion, signout).
+  useEffect(() => {
+    if (role !== 'owner' && previewRole !== null) {
+      setPreviewRoleState(null);
+    }
+  }, [role, previewRole]);
 
   const membershipChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const salonChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -628,6 +652,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     memberships,
     isLoading,
     isAuthenticated: !!session && !!user,
+    previewRole,
+    setPreviewRole,
     signIn,
     signUp,
     signInWithMagicLink,

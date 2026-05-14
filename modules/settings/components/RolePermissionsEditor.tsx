@@ -1,10 +1,11 @@
-import { RotateCcw } from 'lucide-react';
+import { Eye, RotateCcw } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useState } from 'react';
 import { ConfirmModal } from '../../../components/ConfirmModal';
+import { useAuth } from '../../../context/AuthContext';
 import { useRoleOverrides } from '../../../hooks/useRoleOverrides';
 import { buildPermissions } from '../../../hooks/usePermissions';
-import type { AuthAction, AuthResource, Role } from '../../../lib/auth.types';
+import type { AuthAction, AuthResource } from '../../../lib/auth.types';
 
 const EDITABLE_ROLES = ['manager', 'stylist', 'receptionist'] as const;
 type EditableRole = (typeof EDITABLE_ROLES)[number];
@@ -79,8 +80,6 @@ const RESOURCE_ORDER: AuthResource[] = [
 ];
 
 interface PermissionRowProps {
-  role: EditableRole;
-  resource: AuthResource;
   action: AuthAction;
   defaultGranted: boolean;
   effectiveGranted: boolean;
@@ -90,8 +89,6 @@ interface PermissionRowProps {
 }
 
 const PermissionRow: React.FC<PermissionRowProps> = ({
-  role: _role,
-  resource: _resource,
   action,
   defaultGranted,
   effectiveGranted,
@@ -130,6 +127,7 @@ const PermissionRow: React.FC<PermissionRowProps> = ({
 export const RolePermissionsEditor: React.FC = () => {
   const { overrides, setOverride, isSettingOverride, resetRole, isResettingRole } =
     useRoleOverrides();
+  const { setPreviewRole } = useAuth();
   const [activeRole, setActiveRole] = useState<EditableRole>('receptionist');
   const [pendingResetRole, setPendingResetRole] = useState<EditableRole | null>(null);
 
@@ -194,8 +192,8 @@ export const RolePermissionsEditor: React.FC = () => {
           ))}
         </div>
 
-        {/* Reset bar */}
-        <div className="flex items-center justify-between gap-3 px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg">
+        {/* Status + action bar */}
+        <div className="flex items-center justify-between gap-3 px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg flex-wrap">
           <div className="text-sm text-slate-600">
             {overrideCount === 0 ? (
               <>Aucune personnalisation — ce rôle utilise les permissions par défaut.</>
@@ -206,15 +204,25 @@ export const RolePermissionsEditor: React.FC = () => {
               </>
             )}
           </div>
-          <button
-            type="button"
-            onClick={() => setPendingResetRole(activeRole)}
-            disabled={overrideCount === 0 || isResettingRole}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <RotateCcw size={12} />
-            Réinitialiser
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPreviewRole(activeRole)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 hover:text-amber-900 bg-white hover:bg-amber-50 border border-amber-200 rounded-lg transition-colors shadow-sm"
+            >
+              <Eye size={12} />
+              Aperçu
+            </button>
+            <button
+              type="button"
+              onClick={() => setPendingResetRole(activeRole)}
+              disabled={overrideCount === 0 || isResettingRole}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <RotateCcw size={12} />
+              Réinitialiser
+            </button>
+          </div>
         </div>
 
         {/* Resource sections */}
@@ -239,8 +247,6 @@ export const RolePermissionsEditor: React.FC = () => {
                     return (
                       <PermissionRow
                         key={action}
-                        role={activeRole}
-                        resource={resource}
                         action={action}
                         defaultGranted={def}
                         effectiveGranted={eff}

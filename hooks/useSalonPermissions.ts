@@ -10,10 +10,15 @@ import { useRealtimeSync } from './useRealtimeSync';
  * the salon's per-role overrides, and returns the merged {can, accessLevel} API.
  * Realtime-synced — an owner toggling a permission propagates to other open
  * sessions without a refresh.
+ *
+ * Honors AuthContext's `previewRole` — when an owner enters preview mode,
+ * permissions resolve as if the user were the previewed role. RLS is unaffected
+ * (preview is a UX-only construct); only the UI gates shift.
  */
 export function useSalonPermissions(): PermissionResult {
-  const { role, activeSalon } = useAuth();
+  const { role, previewRole, activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
+  const effectiveRole = previewRole ?? role;
 
   useRealtimeSync('salon_role_overrides');
 
@@ -30,5 +35,8 @@ export function useSalonPermissions(): PermissionResult {
     enabled: !!salonId,
   });
 
-  return useMemo(() => buildPermissions(role, overrides ?? []), [role, overrides]);
+  return useMemo(
+    () => buildPermissions(effectiveRole, overrides ?? []),
+    [effectiveRole, overrides],
+  );
 }

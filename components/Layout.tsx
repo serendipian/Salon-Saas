@@ -32,6 +32,7 @@ import { PastDueBanner } from '../modules/billing/components/PastDueBanner';
 import { useBilling } from '../modules/billing/hooks/useBilling';
 import { BottomTabBar } from './BottomTabBar';
 import { ConnectionBanner, ConnectionStatusDot } from './ConnectionStatus';
+import { PreviewBanner } from './PreviewBanner';
 import { MobileDrawer } from './MobileDrawer';
 
 const PastDueBannerConnected: React.FC = () => {
@@ -667,6 +668,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
           }`}
         >
           {activeSalon?.subscription_tier === 'past_due' && <PastDueBannerConnected />}
+          <PreviewBanner />
           {children}
         </main>
       </div>
