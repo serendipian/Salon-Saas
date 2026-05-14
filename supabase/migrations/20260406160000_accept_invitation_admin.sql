@@ -1,5 +1,9 @@
 -- Admin version of accept_invitation that takes a user_id parameter
 -- Used by the accept-invitation-signup Edge Function (service role)
+--
+-- NOTE: This body is superseded by 20260514150000_invitation_capture_name_email.sql,
+-- which adds auto-link-by-email, the Tailwind color palette, and search_path pinning.
+-- Do not treat this file as the authoritative implementation.
 CREATE OR REPLACE FUNCTION accept_invitation_admin(p_token TEXT, p_user_id UUID)
 RETURNS UUID AS $$
 DECLARE
