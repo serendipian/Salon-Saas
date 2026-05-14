@@ -220,6 +220,7 @@ export const useSettings = () => {
     businessRegistration: '',
     currency: activeSalon?.currency ?? 'EUR',
     vatRate: 20,
+    timezone: 'Europe/Paris',
   };
 
   return {

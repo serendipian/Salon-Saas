@@ -46,6 +46,7 @@ export interface SalonSettings {
   businessRegistration: string;
   currency: string;
   vatRate: number;
+  timezone: string;
   schedule?: WorkSchedule;
 }
 

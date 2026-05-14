@@ -285,6 +285,20 @@ export const GeneralSettings: React.FC = () => {
                   { value: 'CHF', label: 'Franc Suisse (CHF)' },
                 ]}
               />
+              <Select
+                label="Fuseau horaire"
+                value={formData.timezone}
+                onChange={(val) => set('timezone', val as string)}
+                options={[
+                  { value: 'Africa/Casablanca', label: 'Casablanca (UTC+1)' },
+                  { value: 'Europe/Paris', label: 'Paris (UTC+1 / +2 été)' },
+                  { value: 'Europe/Brussels', label: 'Bruxelles (UTC+1 / +2 été)' },
+                  { value: 'Europe/London', label: 'Londres (UTC / +1 été)' },
+                  { value: 'Africa/Algiers', label: 'Alger (UTC+1)' },
+                  { value: 'Africa/Tunis', label: 'Tunis (UTC+1)' },
+                  { value: 'America/Montreal', label: 'Montréal (UTC−5 / −4 été)' },
+                ]}
+              />
             </div>
           </Section>
         </div>

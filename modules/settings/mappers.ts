@@ -60,6 +60,7 @@ export function toSalonSettings(row: SalonRow): SalonSettings {
     businessRegistration: row.business_registration ?? '',
     currency: row.currency,
     vatRate: row.vat_rate,
+    timezone: row.timezone,
     schedule: row.schedule ?? undefined,
   };
 }
@@ -85,6 +86,7 @@ export function toSalonUpdate(settings: SalonSettings) {
     business_registration: settings.businessRegistration || null,
     currency: settings.currency,
     vat_rate: settings.vatRate,
+    timezone: settings.timezone,
     schedule: settings.schedule ?? null,
   };
 }
