@@ -244,6 +244,16 @@ Advance cancellation and POS-cart removal are the same business event — a book
 - Pending pool is today-only by design — past-day stale rows belong in the Agenda cleanup flow, not POS
 - Clicking an already-linked appointment card clears the cart (toggle behavior)
 
+### Timezone Handling
+Every "what calendar day is this?" decision must use the salon's IANA timezone (`activeSalon.timezone`, e.g. `Africa/Casablanca`), not browser-local or UTC. The bug pattern: a sale at 00:30 local in a UTC+1 salon stored as 23:30 UTC the previous day → server sees "yesterday" while cashier sees "today".
+
+- **Helpers**: `lib/salonTime.ts` — pure functions. `salonDateString`, `isSameDayInSalon`, `isTodayInSalon`, `isTomorrowInSalon`, `todayInSalon`, `startOfDayInSalon`, `endOfDayInSalon`, `addDaysInSalon`, `startOfMonth/YearInSalon`, `endOfMonth/YearInSalon`, `getHour/DayOfMonth/DayOfWeek/Month/YearInSalon`, `salonInstantFromParts`. DST-safe via fixed-point convergence on `Intl.DateTimeFormat` parts.
+- **Hook**: `hooks/useSalonTimezone.ts` — reads `activeSalon.timezone` with `'Europe/Paris'` fallback (used during auth boot or for legacy rows).
+- **Setting**: Surfaced in **Paramètres généraux → Informations Légales & Financières → Fuseau horaire**. DB column `salons.timezone` is `NOT NULL DEFAULT 'Europe/Paris'`.
+- **Server side**: `void_transaction` RPC reads `salons.timezone` for its same-day check. `client_stats` view buckets first/last visit by salon-local day. Other RPCs use UTC `now()` (immutable timestamps don't need TZ).
+- **Wired everywhere**: void button visibility, dashboard "Aujourd'hui"/"Demain" labels, calendar view today highlight, accounting expense date validation, DateRangePicker presets ("Aujourd'hui", "Hier", "7/30 derniers jours", "Ce mois-ci", etc.), revenue chart hour/day-of-week/day-of-month/by-month bucketing, POS 30-day query window, transaction history's void-on-same-day gate, staff agenda day grouping, default "Aujourd'hui" dateRange state.
+- **Known scope deferral**: The combined revenue/expenses chart in `DashboardModule.chartData/chartHighlight` and `useAccounting.chartData/chartHighlight` still iterates in browser-local time (`current.setDate(getDate() + 1)`, `current.toLocaleDateString()` without `timeZone`). X-axis day labels and the highlighted-selected-range overlay can be off by ±1 day when browser TZ differs significantly from salon TZ. Data filtering above (via DateRangePicker) and queries below (via ISO timestamps) are correct, so the chart still works for users with browser TZ = salon TZ. Substantial refactor isolated as a follow-up rather than risking subtle bugs in the chart loops.
+
 ### Dead Code
 All previously listed dead monolithic components (`components/AccountingModule.tsx`, etc.) and `services/store.ts` have been deleted. No known dead code remains in the active codebase.
 
