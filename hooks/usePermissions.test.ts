@@ -37,6 +37,12 @@ describe('usePermissions — owner', () => {
     expect(can('refund', 'pos')).toBe(true);
   });
 
+  it('can view POS history, dashboard financials, and past dates', () => {
+    expect(can('view_history', 'pos')).toBe(true);
+    expect(can('view_financials', 'dashboard')).toBe(true);
+    expect(can('view_past_dates', 'dashboard')).toBe(true);
+  });
+
   it('has full access on core resources', () => {
     expect(accessLevel('appointments')).toBe('full');
     expect(accessLevel('clients')).toBe('full');
@@ -115,6 +121,12 @@ describe('usePermissions — receptionist', () => {
 
   it('has summary-level dashboard access', () => {
     expect(accessLevel('dashboard')).toBe('summary');
+  });
+
+  it('cannot view POS history, dashboard financials, or past dates', () => {
+    expect(can('view_history', 'pos')).toBe(false);
+    expect(can('view_financials', 'dashboard')).toBe(false);
+    expect(can('view_past_dates', 'dashboard')).toBe(false);
   });
 });
 

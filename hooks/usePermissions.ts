@@ -14,10 +14,10 @@ const PERMISSIONS: Record<
   Record<AuthResource, { actions: AuthAction[]; level: AccessLevel }>
 > = {
   owner: {
-    dashboard: { actions: ['view'], level: 'full' },
+    dashboard: { actions: ['view', 'view_financials', 'view_past_dates'], level: 'full' },
     appointments: { actions: ['view', 'create', 'edit', 'delete'], level: 'full' },
     clients: { actions: ['view', 'create', 'edit', 'delete'], level: 'full' },
-    pos: { actions: ['view', 'create', 'void', 'refund'], level: 'full' },
+    pos: { actions: ['view', 'create', 'void', 'refund', 'view_history'], level: 'full' },
     services: { actions: ['view', 'create', 'edit', 'delete'], level: 'full' },
     products: { actions: ['view', 'create', 'edit', 'delete'], level: 'full' },
     team: { actions: ['view', 'create', 'edit', 'delete', 'manage'], level: 'full' },
@@ -29,10 +29,10 @@ const PERMISSIONS: Record<
     audit_log: { actions: ['view'], level: 'full' },
   },
   manager: {
-    dashboard: { actions: ['view'], level: 'full' },
+    dashboard: { actions: ['view', 'view_financials', 'view_past_dates'], level: 'full' },
     appointments: { actions: ['view', 'create', 'edit', 'delete'], level: 'full' },
     clients: { actions: ['view', 'create', 'edit', 'delete'], level: 'full' },
-    pos: { actions: ['view', 'create', 'void', 'refund'], level: 'full' },
+    pos: { actions: ['view', 'create', 'void', 'refund', 'view_history'], level: 'full' },
     services: { actions: ['view', 'create', 'edit', 'delete'], level: 'full' },
     products: { actions: ['view', 'create', 'edit', 'delete'], level: 'full' },
     team: { actions: ['view', 'create', 'edit', 'delete', 'manage'], level: 'full' },
@@ -44,10 +44,10 @@ const PERMISSIONS: Record<
     audit_log: { actions: ['view'], level: 'full' },
   },
   stylist: {
-    dashboard: { actions: ['view'], level: 'own' },
+    dashboard: { actions: ['view', 'view_financials', 'view_past_dates'], level: 'own' },
     appointments: { actions: ['view'], level: 'own' },
     clients: { actions: ['view'], level: 'linked' },
-    pos: { actions: ['view', 'create'], level: 'full' },
+    pos: { actions: ['view', 'create', 'view_history'], level: 'full' },
     services: { actions: ['view'], level: 'full' },
     products: { actions: ['view'], level: 'full' },
     team: { actions: ['view', 'edit'], level: 'own' },

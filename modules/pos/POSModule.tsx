@@ -97,6 +97,7 @@ export const POSModule: React.FC = () => {
   const { can } = usePermissions(role);
   const canVoid = can('void', 'pos');
   const canRefund = can('refund', 'pos');
+  const canViewHistory = can('view_history', 'pos');
   const navigate = useNavigate();
   // Modal States
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -242,7 +243,7 @@ export const POSModule: React.FC = () => {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900">Caisse</h1>
-        {role !== 'receptionist' && (
+        {canViewHistory && (
           <button
             onClick={() => navigate('/pos/historique')}
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors shadow-sm"

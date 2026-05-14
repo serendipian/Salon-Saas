@@ -230,7 +230,7 @@ const AppContent = () => {
         <Route
           path="/pos/historique"
           element={
-            <ProtectedRoute action="view" resource="pos" deniedRoles={['receptionist']}>
+            <ProtectedRoute action="view_history" resource="pos">
               <ErrorBoundary moduleName="Historique">
                 <TransactionHistoryPage />
               </ErrorBoundary>

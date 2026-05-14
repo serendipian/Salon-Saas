@@ -59,7 +59,17 @@ export interface AuthState {
   isAuthenticated: boolean;
 }
 
-export type AuthAction = 'view' | 'create' | 'edit' | 'delete' | 'manage' | 'void' | 'refund';
+export type AuthAction =
+  | 'view'
+  | 'create'
+  | 'edit'
+  | 'delete'
+  | 'manage'
+  | 'void'
+  | 'refund'
+  | 'view_history'
+  | 'view_financials'
+  | 'view_past_dates';
 export type AuthResource =
   | 'dashboard'
   | 'appointments'
