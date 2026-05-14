@@ -710,8 +710,10 @@ export type Database = {
           email: string | null
           email_sent_at: string | null
           expires_at: string
+          first_name: string | null
           id: string
           invited_by: string
+          last_name: string | null
           role: string
           salon_id: string
           staff_member_id: string | null
@@ -723,8 +725,10 @@ export type Database = {
           email?: string | null
           email_sent_at?: string | null
           expires_at?: string
+          first_name?: string | null
           id?: string
           invited_by: string
+          last_name?: string | null
           role: string
           salon_id: string
           staff_member_id?: string | null
@@ -736,8 +740,10 @@ export type Database = {
           email?: string | null
           email_sent_at?: string | null
           expires_at?: string
+          first_name?: string | null
           id?: string
           invited_by?: string
+          last_name?: string | null
           role?: string
           salon_id?: string
           staff_member_id?: string | null
