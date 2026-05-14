@@ -1,21 +1,24 @@
-import { ArrowLeft, Mail, Users } from 'lucide-react';
+import { ArrowLeft, Mail, ShieldCheck, Users } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 import { useTeamSettings } from '../hooks/useTeamSettings';
 import { InvitationsTab } from './InvitationsTab';
 import { MembersTab } from './MembersTab';
-import { PermissionsReference } from './PermissionsReference';
+import { RolePermissionsEditor } from './RolePermissionsEditor';
 
-const tabs = [
-  { id: 'members', label: 'Membres', icon: Users },
-  { id: 'invitations', label: 'Invitations', icon: Mail },
-] as const;
-
-type TabId = (typeof tabs)[number]['id'];
+type TabId = 'members' | 'invitations' | 'permissions';
 
 export const TeamPermissionsSettings: React.FC = () => {
   const navigate = useNavigate();
+  const { role } = useAuth();
+  const isOwner = role === 'owner';
+  const tabs = [
+    { id: 'members' as const, label: 'Membres', icon: Users },
+    { id: 'invitations' as const, label: 'Invitations', icon: Mail },
+    ...(isOwner ? [{ id: 'permissions' as const, label: 'Permissions', icon: ShieldCheck }] : []),
+  ];
   const [activeTab, setActiveTab] = useState<TabId>('members');
   const {
     members,
@@ -101,7 +104,7 @@ export const TeamPermissionsSettings: React.FC = () => {
             />
           )}
 
-          <PermissionsReference />
+          {activeTab === 'permissions' && isOwner && <RolePermissionsEditor />}
         </div>
       )}
     </div>
