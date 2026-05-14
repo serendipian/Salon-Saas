@@ -2,7 +2,14 @@ import { Check, Copy, Link as LinkIcon, Loader2, Plus, X } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useToast } from '../../../context/ToastContext';
-import { INVITATION_EXPIRY_DAYS, type InvitationRow } from '../hooks/useTeamSettings';
+import {
+  INVITATION_EXPIRY_DAYS,
+  type CreateInvitationInput,
+  type InvitationRow,
+} from '../hooks/useTeamSettings';
+
+// Same email pattern used elsewhere in the app (signup/profile).
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const ROLE_LABELS: Record<string, string> = {
   manager: 'Manager',
@@ -29,7 +36,7 @@ function isPending(inv: InvitationRow): boolean {
 
 interface InvitationsTabProps {
   invitations: InvitationRow[];
-  onCreate: (role: string) => Promise<string>;
+  onCreate: (input: CreateInvitationInput) => Promise<string>;
   isCreating: boolean;
   onCancel: (id: string) => Promise<void>;
   isCancelling: boolean;
@@ -44,21 +51,42 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
 }) => {
   const { addToast } = useToast();
   const [showForm, setShowForm] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
   const [selectedRole, setSelectedRole] = useState('stylist');
+  const [formError, setFormError] = useState<string | null>(null);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const handleCreate = async () => {
-    // M-4: mutation's onError already toasts via useMutationToast, but we
-    // catch here so an unexpected rejection (network blip, auth lock) can't
-    // leave the async call dangling and so the generated-link UI only
-    // appears on success.
+    const trimmedFirst = firstName.trim();
+    const trimmedLast = lastName.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedFirst || !trimmedLast) {
+      setFormError('Prénom et nom sont obligatoires.');
+      return;
+    }
+    if (!EMAIL_RE.test(trimmedEmail)) {
+      setFormError('Email invalide.');
+      return;
+    }
+    setFormError(null);
+
+    // Mutation's onError already toasts via useMutationToast, but we catch
+    // here so an unexpected rejection can't leave the async call dangling
+    // and so the generated-link UI only appears on success.
     try {
-      const token = await onCreate(selectedRole);
+      const token = await onCreate({
+        firstName: trimmedFirst,
+        lastName: trimmedLast,
+        email: trimmedEmail,
+        role: selectedRole,
+      });
       setGeneratedLink(`${window.location.origin}/accept-invitation?token=${token}`);
     } catch {
-      // Error is already surfaced via the mutation's toastOnError; swallow
-      // so the promise chain stays clean.
+      // Error already surfaced via toastOnError; swallow.
     }
   };
 
@@ -81,7 +109,11 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
   const handleClose = () => {
     setShowForm(false);
     setGeneratedLink(null);
+    setFirstName('');
+    setLastName('');
+    setEmail('');
     setSelectedRole('stylist');
+    setFormError(null);
     setCopied(false);
   };
 
@@ -92,6 +124,7 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
     <div className="space-y-4">
       {!showForm ? (
         <button
+          type="button"
           onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors"
         >
@@ -102,9 +135,69 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
         <div className="border border-slate-200 rounded-xl bg-white p-4 space-y-4">
           {!generatedLink ? (
             <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label
+                    htmlFor="inv-first-name"
+                    className="block text-sm font-medium text-slate-700 mb-1"
+                  >
+                    Prénom
+                  </label>
+                  <input
+                    id="inv-first-name"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => {
+                      setFirstName(e.target.value);
+                      if (formError) setFormError(null);
+                    }}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="inv-last-name"
+                    className="block text-sm font-medium text-slate-700 mb-1"
+                  >
+                    Nom
+                  </label>
+                  <input
+                    id="inv-last-name"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => {
+                      setLastName(e.target.value);
+                      if (formError) setFormError(null);
+                    }}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"
+                  />
+                </div>
+              </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Rôle</label>
+                <label
+                  htmlFor="inv-email"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
+                  Email
+                </label>
+                <input
+                  id="inv-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (formError) setFormError(null);
+                  }}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"
+                  autoComplete="email"
+                />
+              </div>
+              <div>
+                <label htmlFor="inv-role" className="block text-sm font-medium text-slate-700 mb-1">
+                  Rôle
+                </label>
                 <select
+                  id="inv-role"
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value)}
                   className="w-full sm:w-48 px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"
@@ -114,8 +207,10 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
                   <option value="receptionist">Réceptionniste</option>
                 </select>
               </div>
+              {formError && <p className="text-sm text-red-600">{formError}</p>}
               <div className="flex gap-2">
                 <button
+                  type="button"
                   onClick={handleCreate}
                   disabled={isCreating}
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 disabled:opacity-50"
@@ -128,6 +223,7 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
                   Générer le lien
                 </button>
                 <button
+                  type="button"
                   onClick={handleClose}
                   className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900"
                 >
@@ -149,6 +245,7 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
                   className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 text-slate-700 truncate"
                 />
                 <button
+                  type="button"
                   onClick={handleCopy}
                   className="flex items-center gap-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium shrink-0"
                 >
@@ -160,7 +257,11 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
                   {copied ? 'Copié' : 'Copier'}
                 </button>
               </div>
-              <button onClick={handleClose} className="text-sm text-slate-500 hover:text-slate-700">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="text-sm text-slate-500 hover:text-slate-700"
+              >
                 Fermer
               </button>
             </>
