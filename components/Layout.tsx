@@ -4,6 +4,7 @@ import {
   Bell,
   Calendar,
   ChevronDown,
+  ChevronRight,
   ClipboardList,
   CreditCard,
   LayoutDashboard,
@@ -20,7 +21,7 @@ import {
   UserCircle,
   Users,
 } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useMediaQuery } from '../context/MediaQueryContext';
@@ -55,8 +56,13 @@ interface SidebarItemProps {
   icon: LucideIcon;
   label: string;
   active: boolean;
+  /** Whether the sidebar is currently showing labels (hover-peek or pinned). */
+  isOpen: boolean;
   onClick: () => void;
-  collapsed: boolean;
+  /** If true, render a chevron toggle for an expandable submenu. */
+  hasSubmenu?: boolean;
+  submenuOpen?: boolean;
+  onSubmenuToggle?: (e: React.MouseEvent) => void;
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -70,52 +76,141 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   icon: Icon,
   label,
   active,
+  isOpen,
   onClick,
-  collapsed,
+  hasSubmenu,
+  submenuOpen,
+  onSubmenuToggle,
 }) => (
-  <button
-    onClick={onClick}
+  <div
     className={`
-      group relative flex items-center w-full rounded-xl transition-all duration-200 ease-out my-1
-      ${collapsed ? 'justify-center px-0 py-3' : 'px-4 py-3 gap-3.5'}
-      ${
-        active
-          ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/10'
-          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-      }
+      group relative flex items-center w-full h-11 rounded-xl transition-colors duration-150
+      ${active ? 'bg-blue-50/70' : 'hover:bg-slate-50/80'}
     `}
-    title={collapsed ? label : ''}
   >
-    <Icon
-      size={collapsed ? 24 : 20}
-      strokeWidth={active ? 2 : 1.5}
-      className={`
-        shrink-0 transition-colors duration-200
-        ${active ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'}
-      `}
-    />
-    {!collapsed && (
+    {/* Active accent pill — sits at the sidebar's left edge, breaking out of the item's mx-3 padding. */}
+    {active && (
       <span
-        className={`text-sm font-medium tracking-wide whitespace-nowrap ${active ? 'font-semibold' : ''}`}
+        aria-hidden
+        className="absolute -left-3 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-blue-500"
+      />
+    )}
+    <button
+      onClick={onClick}
+      className="flex-1 flex items-center h-full min-w-0 pl-[14px] pr-2 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
+      title={!isOpen ? label : undefined}
+      aria-current={active ? 'page' : undefined}
+    >
+      <Icon
+        size={20}
+        strokeWidth={active ? 2 : 1.6}
+        className={`shrink-0 transition-colors duration-150 ${
+          active ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-700'
+        }`}
+      />
+      <span
+        className={`
+          ml-3 text-[13.5px] tracking-[-0.005em] whitespace-nowrap truncate
+          transition-[opacity,transform] duration-200
+          ${isOpen ? 'opacity-100 translate-x-0 delay-75' : 'opacity-0 -translate-x-1 pointer-events-none'}
+          ${active ? 'text-slate-900 font-semibold' : 'text-slate-600 font-medium group-hover:text-slate-900'}
+        `}
       >
         {label}
       </span>
+    </button>
+    {hasSubmenu && (
+      <button
+        onClick={onSubmenuToggle}
+        aria-expanded={submenuOpen}
+        aria-label={submenuOpen ? 'Masquer le sous-menu Finances' : 'Afficher le sous-menu Finances'}
+        className={`
+          mr-1.5 p-1.5 rounded-md text-slate-400 transition-all duration-200
+          hover:bg-slate-100 hover:text-slate-700
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60
+          ${isOpen ? 'opacity-100 delay-100' : 'opacity-0 pointer-events-none'}
+        `}
+      >
+        <ChevronRight
+          size={14}
+          strokeWidth={2}
+          className={`transition-transform duration-200 ${submenuOpen ? 'rotate-90' : ''}`}
+        />
+      </button>
     )}
-    {collapsed && active && (
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-slate-900 rounded-l-full" />
-    )}
-  </button>
+  </div>
 );
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNavigate }) => {
   const { profile, activeSalon, role, memberships, switchSalon, signOut } = useAuth();
   const { can } = usePermissions(role);
-  const { isMobile } = useMediaQuery();
+  const { isMobile, isTabletPortrait } = useMediaQuery();
   const navigate = useNavigate();
   const sidebar = useSidebar();
   const [showSalonMenu, setShowSalonMenu] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Pin/hover state. The rail is the default; users can hover to peek, or click the
+  // topbar toggle to pin it open. Tablet-portrait forces collapsed (no pin), but
+  // hover-peek still works for that breakpoint.
+  const isPinned = sidebar.isExpanded;
+  const canPin = !isMobile && !isTabletPortrait;
+  const [isHovering, setIsHovering] = useState(false);
+  const enterTimer = useRef<number | null>(null);
+  const leaveTimer = useRef<number | null>(null);
+
+  const openOnHover = useCallback(() => {
+    if (isPinned) return;
+    if (leaveTimer.current) {
+      clearTimeout(leaveTimer.current);
+      leaveTimer.current = null;
+    }
+    if (enterTimer.current || isHovering) return;
+    enterTimer.current = window.setTimeout(() => {
+      setIsHovering(true);
+      enterTimer.current = null;
+    }, 120);
+  }, [isPinned, isHovering]);
+
+  const closeOnHover = useCallback(() => {
+    if (isPinned) return;
+    if (enterTimer.current) {
+      clearTimeout(enterTimer.current);
+      enterTimer.current = null;
+    }
+    if (leaveTimer.current) return;
+    leaveTimer.current = window.setTimeout(() => {
+      setIsHovering(false);
+      leaveTimer.current = null;
+    }, 100);
+  }, [isPinned]);
+
+  useEffect(
+    () => () => {
+      if (enterTimer.current) clearTimeout(enterTimer.current);
+      if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    },
+    [],
+  );
+
+  // When the user pins the sidebar (or unpins), kill any pending hover-peek timers so
+  // the panel doesn't shimmy between hover-driven and pin-driven open states.
+  useEffect(() => {
+    if (enterTimer.current) {
+      clearTimeout(enterTimer.current);
+      enterTimer.current = null;
+    }
+    if (leaveTimer.current) {
+      clearTimeout(leaveTimer.current);
+      leaveTimer.current = null;
+    }
+    setIsHovering(false);
+  }, [isPinned]);
+
+  // Finance submenu accordion. Always open by default so the 4 sub-items appear
+  // immediately on hover-peek; user can still collapse it via the chevron.
+  const [financeOpen, setFinanceOpen] = useState(true);
 
   useEffect(() => {
     if (!showProfileMenu) return;
@@ -170,178 +265,250 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
     : '??';
   const roleLabel = role ? ROLE_LABELS[role] || role : '';
 
-  const collapsed = sidebar.mode === 'collapsed';
+  // Effective open state: pinned (locked open) OR hovering (peek open).
+  const isOpen = isPinned || isHovering;
+  const railWidth = 72;
+  const expandedWidth = 272;
+
+  // Width that participates in flex layout. Hover-peek floats over content (only pin reflows).
+  const reservedWidth = isPinned ? expandedWidth : railWidth;
+  // Visible width of the fixed aside panel.
+  const panelWidth = isOpen ? expandedWidth : railWidth;
 
   return (
     <div className="flex h-screen bg-[#f8fafc] overflow-hidden font-sans text-slate-900">
-      {/* Sidebar — hidden on mobile */}
+      {/* Layout spacer reserves room for the rail (or pinned panel). */}
+      {!isMobile && (
+        <div
+          aria-hidden
+          className="shrink-0 transition-[width] duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{ width: reservedWidth }}
+        />
+      )}
+
+      {/* Fixed sidebar — overlays content on hover-peek, reflows on pin. */}
       {!isMobile && (
         <aside
-          className={`bg-white border-r border-slate-100 flex flex-col transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1.0)] relative shadow-[4px_0_24px_-12px_rgba(0,0,0,0.02)] ${
-            collapsed ? 'w-24' : 'w-72'
-          }`}
-          style={{ zIndex: 'var(--z-sidebar)' }}
+          aria-label="Navigation principale"
+          onMouseEnter={openOnHover}
+          onMouseLeave={closeOnHover}
+          onFocus={openOnHover}
+          onBlur={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) closeOnHover();
+          }}
+          className="fixed inset-y-0 left-0 bg-white/95 backdrop-blur-sm border-r border-slate-100/80 flex flex-col transition-[width,box-shadow] duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{
+            width: panelWidth,
+            zIndex: 'var(--z-sidebar)',
+            boxShadow:
+              isOpen && !isPinned
+                ? '24px 0 48px -24px rgba(15, 23, 42, 0.12), 8px 0 16px -8px rgba(15, 23, 42, 0.04)'
+                : '4px 0 24px -16px rgba(15, 23, 42, 0.04)',
+          }}
         >
-          {/* Header: Salon name + switcher */}
-          <div
-            className={`h-20 flex items-center transition-all shrink-0 ${collapsed ? 'justify-center px-0' : 'px-6'}`}
-          >
-            {!collapsed ? (
-              <div className="relative flex items-center gap-3 animate-in fade-in duration-300">
-                {activeSalon?.logo_url ? (
-                  <img
-                    src={activeSalon.logo_url}
-                    alt=""
-                    className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-md"
-                  />
-                ) : (
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center text-white font-bold text-base shrink-0 shadow-md shadow-slate-900/20">
-                    {activeSalon?.name ? activeSalon.name.charAt(0) : 'L'}
-                  </div>
-                )}
-                <div className="flex flex-col">
-                  {memberships.length > 1 ? (
-                    <button
-                      onClick={() => setShowSalonMenu(!showSalonMenu)}
-                      className="flex items-center gap-1 hover:opacity-80 transition-opacity"
-                    >
-                      <span className="font-bold text-lg tracking-tight text-slate-900 leading-none">
-                        {activeSalon?.name || 'Salon'}
-                      </span>
-                      <ChevronDown size={14} className="text-slate-400" />
-                    </button>
-                  ) : (
-                    <span className="font-bold text-lg tracking-tight text-slate-900 leading-none">
+          {/* Salon header — logo fixed at left, name fades in. */}
+          <div className="h-16 flex items-center shrink-0 relative">
+            <div className="flex items-center w-full pl-[14px] pr-2">
+              {activeSalon?.logo_url ? (
+                <img
+                  src={activeSalon.logo_url}
+                  alt=""
+                  className="w-9 h-9 rounded-[10px] object-cover shrink-0 shadow-sm ring-1 ring-slate-200/60"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center text-white font-bold text-[15px] shrink-0 shadow-sm ring-1 ring-slate-900/20 tracking-tight">
+                  {activeSalon?.name ? activeSalon.name.charAt(0) : 'L'}
+                </div>
+              )}
+              <div
+                className={`ml-3 flex-1 min-w-0 transition-[opacity,transform] duration-200 ${
+                  isOpen ? 'opacity-100 translate-x-0 delay-75' : 'opacity-0 -translate-x-1 pointer-events-none'
+                }`}
+              >
+                {memberships.length > 1 ? (
+                  <button
+                    onClick={() => setShowSalonMenu(!showSalonMenu)}
+                    className="flex items-center gap-1 max-w-full hover:opacity-70 transition-opacity outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60 rounded"
+                  >
+                    <span className="font-bold text-[15px] tracking-tight text-slate-900 leading-none truncate">
                       {activeSalon?.name || 'Salon'}
                     </span>
-                  )}
-                </div>
-
-                {showSalonMenu && memberships.length > 1 && (
-                  <div
-                    className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-lg py-2"
-                    style={{ zIndex: 'var(--z-drawer-panel)' }}
-                  >
-                    {memberships.map((m) => (
-                      <button
-                        key={m.id}
-                        onClick={() => {
-                          void switchSalon(m.salon_id);
-                          setShowSalonMenu(false);
-                        }}
-                        className={`w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-3 ${
-                          m.salon_id === activeSalon?.id ? 'bg-slate-50 font-medium' : ''
-                        }`}
-                      >
-                        {m.salon.logo_url ? (
-                          <img
-                            src={m.salon.logo_url}
-                            alt=""
-                            className="w-7 h-7 rounded-lg object-cover shrink-0"
-                          />
-                        ) : (
-                          <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                            {m.salon.name.charAt(0)}
-                          </div>
-                        )}
-                        <div>
-                          <div className="text-slate-900">{m.salon.name}</div>
-                          <div className="text-xs text-slate-400">{ROLE_LABELS[m.role]}</div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* Collapsed: show salon initial */
-              <div className="flex flex-col items-center gap-1">
-                {activeSalon?.logo_url ? (
-                  <img
-                    src={activeSalon.logo_url}
-                    alt=""
-                    className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-md"
-                  />
+                    <ChevronDown size={13} className="text-slate-400 shrink-0" strokeWidth={2} />
+                  </button>
                 ) : (
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center text-white font-bold text-base shrink-0 shadow-md shadow-slate-900/20">
-                    {activeSalon?.name ? activeSalon.name.charAt(0) : 'L'}
-                  </div>
+                  <span className="font-bold text-[15px] tracking-tight text-slate-900 leading-none truncate block">
+                    {activeSalon?.name || 'Salon'}
+                  </span>
                 )}
+                {role && (
+                  <span className="block text-[10.5px] font-medium text-slate-400 tracking-[0.04em] mt-0.5 truncate">
+                    {ROLE_LABELS[role] || role}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Salon switcher dropdown — only when expanded. */}
+            {showSalonMenu && isOpen && memberships.length > 1 && (
+              <div
+                className="absolute top-full left-3 mt-1 w-[244px] bg-white rounded-xl border border-slate-200/80 shadow-[0_20px_48px_-16px_rgba(15,23,42,0.18),0_8px_16px_-8px_rgba(15,23,42,0.06)] py-1.5 animate-in fade-in slide-in-from-top-1 duration-150"
+                style={{ zIndex: 'var(--z-drawer-panel)' }}
+              >
+                {memberships.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => {
+                      void switchSalon(m.salon_id);
+                      setShowSalonMenu(false);
+                    }}
+                    className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-2.5 ${
+                      m.salon_id === activeSalon?.id ? 'bg-blue-50/40' : ''
+                    }`}
+                  >
+                    {m.salon.logo_url ? (
+                      <img
+                        src={m.salon.logo_url}
+                        alt=""
+                        className="w-7 h-7 rounded-lg object-cover shrink-0"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                        {m.salon.name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-slate-900 font-medium truncate text-[13px]">
+                        {m.salon.name}
+                      </div>
+                      <div className="text-[11px] text-slate-400 truncate">
+                        {ROLE_LABELS[m.role]}
+                      </div>
+                    </div>
+                    {m.salon_id === activeSalon?.id && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                    )}
+                  </button>
+                ))}
               </div>
             )}
           </div>
 
-          {/* Navigation Items */}
-          <div className="flex-1 overflow-y-auto py-6 px-4 custom-scrollbar space-y-1">
-            {!collapsed && (
-              <div className="px-4 mb-4 text-[11px] font-bold uppercase text-slate-400 tracking-widest">
-                Menu Principal
-              </div>
-            )}
-            {visibleMainNav.map((item) => (
-              <React.Fragment key={item.id}>
-                <SidebarItem
-                  icon={item.icon}
-                  label={item.label}
-                  active={activeModule === item.id || activeModule.startsWith(`${item.id}/`)}
-                  onClick={() => onNavigate(item.id)}
-                  collapsed={collapsed}
-                />
-                {/* Finances sub-items */}
-                {item.id === 'finances' && !collapsed && (
-                  <div className="ml-4 pl-4 border-l border-slate-100 space-y-0.5">
-                    {financesSubItems.map((sub) => (
-                      <button
-                        key={sub.id}
-                        onClick={() => onNavigate(sub.id)}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
-                          activeModule === sub.id
-                            ? 'text-slate-900 bg-slate-100'
-                            : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'
-                        }`}
+          {/* Hairline separator under the header. */}
+          <div className="mx-3 h-px bg-gradient-to-r from-transparent via-slate-200/70 to-transparent" />
+
+          {/* Main navigation. */}
+          <nav className="flex-1 overflow-y-auto overflow-x-hidden pt-4 pb-2 px-3 custom-scrollbar">
+            <div
+              className={`h-4 mb-2 pl-[14px] text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 transition-opacity duration-200 ${
+                isOpen ? 'opacity-100 delay-100' : 'opacity-0'
+              }`}
+            >
+              Menu principal
+            </div>
+
+            <ul className="space-y-0.5">
+              {visibleMainNav.map((item) => {
+                const isActive =
+                  activeModule === item.id || activeModule.startsWith(`${item.id}/`);
+                const isFinance = item.id === 'finances';
+                return (
+                  <li key={item.id}>
+                    <SidebarItem
+                      icon={item.icon}
+                      label={item.label}
+                      active={isActive}
+                      isOpen={isOpen}
+                      onClick={() => onNavigate(item.id)}
+                      hasSubmenu={isFinance}
+                      submenuOpen={financeOpen}
+                      onSubmenuToggle={(e) => {
+                        e.stopPropagation();
+                        setFinanceOpen((v) => !v);
+                      }}
+                    />
+                    {isFinance && (
+                      <div
+                        className="overflow-hidden transition-[max-height,opacity] duration-[260ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+                        style={{
+                          maxHeight:
+                            isOpen && financeOpen ? `${financesSubItems.length * 32 + 8}px` : '0',
+                          opacity: isOpen && financeOpen ? 1 : 0,
+                        }}
+                        aria-hidden={!isOpen || !financeOpen}
                       >
-                        {sub.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
+                        <ul className="mt-1 ml-[27px] pl-3 border-l border-slate-200/70 py-1 space-y-px">
+                          {financesSubItems.map((sub) => {
+                            const isSubActive = activeModule === sub.id;
+                            return (
+                              <li key={sub.id}>
+                                <button
+                                  onClick={() => onNavigate(sub.id)}
+                                  tabIndex={isOpen && financeOpen ? 0 : -1}
+                                  className={`relative w-full text-left pl-3 pr-2 py-1.5 rounded-md text-[12.5px] tracking-[-0.005em] transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60 ${
+                                    isSubActive
+                                      ? 'text-slate-900 font-semibold'
+                                      : 'text-slate-500 hover:text-slate-900 font-medium'
+                                  }`}
+                                >
+                                  {isSubActive && (
+                                    <span
+                                      aria-hidden
+                                      className="absolute -left-[13px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-500 ring-2 ring-white"
+                                    />
+                                  )}
+                                  {sub.label}
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
 
-          {/* Footer: Management & Settings */}
-          <div className="p-4 border-t border-slate-100 bg-white space-y-1">
-            {!collapsed && visibleMgmtNav.length > 0 && (
-              <div className="px-4 mb-2 text-[11px] font-bold uppercase text-slate-400 tracking-widest">
-                Gestion
+          </nav>
+
+          {/* Footer — Gestion group (management items + Settings), anchored to bottom. */}
+          {(visibleMgmtNav.length > 0 || canViewSettings) && (
+            <div className="shrink-0 px-3 pt-3 pb-2 border-t border-slate-100/80">
+              <div
+                className={`overflow-hidden transition-[max-height,opacity] duration-200 ${
+                  isOpen ? 'max-h-6 opacity-100 delay-100' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <div className="h-4 mb-2 pl-[14px] text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                  Gestion
+                </div>
               </div>
-            )}
-            {visibleMgmtNav.map((item) => (
-              <SidebarItem
-                key={item.id}
-                icon={item.icon}
-                label={item.label}
-                active={activeModule === item.id}
-                onClick={() => onNavigate(item.id)}
-                collapsed={collapsed}
-              />
-            ))}
-
-            {canViewSettings && (
-              <>
-                {visibleMgmtNav.length > 0 && (
-                  <div className="my-2 border-t border-slate-50 mx-2" />
+              <ul className="space-y-0.5">
+                {visibleMgmtNav.map((item) => (
+                  <li key={item.id}>
+                    <SidebarItem
+                      icon={item.icon}
+                      label={item.label}
+                      active={activeModule === item.id}
+                      isOpen={isOpen}
+                      onClick={() => onNavigate(item.id)}
+                    />
+                  </li>
+                ))}
+                {canViewSettings && (
+                  <li>
+                    <SidebarItem
+                      icon={Settings}
+                      label="Réglages"
+                      active={activeModule === 'settings' || activeModule.startsWith('settings/')}
+                      isOpen={isOpen}
+                      onClick={() => onNavigate('settings')}
+                    />
+                  </li>
                 )}
-                <SidebarItem
-                  icon={Settings}
-                  label="Réglages"
-                  active={activeModule === 'settings'}
-                  onClick={() => onNavigate('settings')}
-                  collapsed={collapsed}
-                />
-              </>
-            )}
-          </div>
+              </ul>
+            </div>
+          )}
         </aside>
       )}
 
@@ -376,17 +543,20 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
             <>
               {/* Desktop/Tablet top bar */}
               <div className="flex items-center gap-3">
-                <button
-                  onClick={sidebar.toggleExpanded}
-                  className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all"
-                  aria-label={collapsed ? 'Déplier le menu' : 'Replier le menu'}
-                >
-                  {collapsed ? (
-                    <PanelLeftOpen size={20} strokeWidth={1.5} />
-                  ) : (
-                    <PanelLeftClose size={20} strokeWidth={1.5} />
-                  )}
-                </button>
+                {canPin && (
+                  <button
+                    onClick={sidebar.toggleExpanded}
+                    className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
+                    aria-label={isPinned ? 'Replier le menu' : 'Épingler le menu'}
+                    title={isPinned ? 'Replier le menu' : 'Épingler le menu'}
+                  >
+                    {isPinned ? (
+                      <PanelLeftClose size={20} strokeWidth={1.5} />
+                    ) : (
+                      <PanelLeftOpen size={20} strokeWidth={1.5} />
+                    )}
+                  </button>
+                )}
                 <div className="relative max-w-md w-full hidden md:block group">
                   <Search
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-600 transition-colors"

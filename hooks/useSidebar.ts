@@ -15,7 +15,7 @@ export interface SidebarState {
 export const useSidebar = (): SidebarState => {
   const { isMobile, isTabletPortrait } = useMediaQuery();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   const mode: SidebarMode = useMemo(() => {
     if (isMobile) return 'drawer';
