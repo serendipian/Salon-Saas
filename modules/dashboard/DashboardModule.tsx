@@ -172,9 +172,10 @@ const EXPENSE_METHOD_COLORS: Record<string, string> = {
 
 export const DashboardModule: React.FC = () => {
   const navigate = useNavigate();
-  const { activeSalon } = useAuth();
+  const { activeSalon, role } = useAuth();
   const salonId = activeSalon?.id ?? '';
   const salonTimezone = activeSalon?.timezone ?? 'Europe/Paris';
+  const isReceptionist = role === 'receptionist';
   const { allAppointments: appointments, updateAppointment } = useAppointments();
   const { allClients: clients } = useClients();
   const { services, serviceCategories } = useServices();
@@ -703,7 +704,11 @@ export const DashboardModule: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <DateRangePicker dateRange={dateRange} onChange={setDateRange} />
+          <DateRangePicker
+            dateRange={dateRange}
+            onChange={setDateRange}
+            minDate={isReceptionist ? startOfDayInSalon(new Date(), salonTimezone) : undefined}
+          />
           <button
             onClick={() => navigate('/calendar/new')}
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors shadow-sm"
@@ -715,6 +720,7 @@ export const DashboardModule: React.FC = () => {
       </div>
 
       {/* Revenue / Expenses / Bonus / Résultat Net Cards */}
+      {!isReceptionist && (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Chiffre d'Affaires + Payment Breakdown */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
@@ -1102,6 +1108,7 @@ export const DashboardModule: React.FC = () => {
           </div>
         </div>
       </div>
+      )}
 
       {/* KPIs */}
       <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -1362,6 +1369,7 @@ export const DashboardModule: React.FC = () => {
       </div>
 
       {/* Financial Chart + Rankings */}
+      {!isReceptionist && (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Financial Chart */}
         <div className="lg:col-span-1 bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
@@ -1556,6 +1564,7 @@ export const DashboardModule: React.FC = () => {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 };

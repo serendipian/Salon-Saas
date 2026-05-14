@@ -91,17 +91,26 @@ describe('usePermissions — stylist', () => {
 describe('usePermissions — receptionist', () => {
   const { can, accessLevel } = rolesOf('receptionist');
 
-  it('can manage appointments and clients fully', () => {
+  it('can manage appointments fully', () => {
     expect(can('create', 'appointments')).toBe(true);
     expect(can('edit', 'appointments')).toBe(true);
-    expect(can('create', 'clients')).toBe(true);
     expect(accessLevel('appointments')).toBe('full');
-    expect(accessLevel('clients')).toBe('full');
   });
 
   it('cannot delete anything', () => {
     expect(can('delete', 'appointments')).toBe(false);
     expect(can('delete', 'clients')).toBe(false);
+  });
+
+  it('has no access to clients, services, products, or team', () => {
+    expect(accessLevel('clients')).toBe('none');
+    expect(accessLevel('services')).toBe('none');
+    expect(accessLevel('products')).toBe('none');
+    expect(accessLevel('team')).toBe('none');
+    expect(can('view', 'clients')).toBe(false);
+    expect(can('view', 'services')).toBe(false);
+    expect(can('view', 'products')).toBe(false);
+    expect(can('view', 'team')).toBe(false);
   });
 
   it('has summary-level dashboard access', () => {

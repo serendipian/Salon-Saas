@@ -27,6 +27,7 @@ import type { DateRange } from '../types';
 interface DateRangePickerProps {
   dateRange: DateRange;
   onChange: (range: DateRange) => void;
+  minDate?: Date;
 }
 
 // --- Logic & Helpers ---
@@ -176,8 +177,9 @@ const DayCell: React.FC<{
   monthDate: Date;
   tempRange: DateRange;
   tz: string;
+  minDateStr?: string;
   onClick: (year: number, month1: number, day: number) => void;
-}> = ({ day, monthDate, tempRange, tz, onClick }) => {
+}> = ({ day, monthDate, tempRange, tz, minDateStr, onClick }) => {
   if (!day) return <div />;
 
   // Compare salon-local day strings — independent of browser TZ. The cell's
@@ -190,6 +192,7 @@ const DayCell: React.FC<{
   const isSelected = cellDayStr >= fromDayStr && cellDayStr <= toDayStr;
   const isStart = cellDayStr === fromDayStr;
   const isEnd = cellDayStr === toDayStr;
+  const isDisabled = !!minDateStr && cellDayStr < minDateStr;
 
   let roundedClass = 'rounded-lg';
   if (isStart && isEnd) roundedClass = 'rounded-lg';
@@ -201,15 +204,17 @@ const DayCell: React.FC<{
     <div className="relative p-[1px]">
       <button
         type="button"
+        disabled={isDisabled}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
+          if (isDisabled) return;
           onClick(monthDate.getFullYear(), monthDate.getMonth() + 1, day);
         }}
         className={`
           w-full h-8 text-sm font-medium transition-colors relative z-10 flex items-center justify-center
-          ${isSelected ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}
-          ${isStart || isEnd ? '!bg-slate-900 !text-white z-20 shadow-md scale-105' : ''}
+          ${isDisabled ? 'text-slate-300 cursor-not-allowed' : isSelected ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}
+          ${!isDisabled && (isStart || isEnd) ? '!bg-slate-900 !text-white z-20 shadow-md scale-105' : ''}
           ${roundedClass}
         `}
       >
@@ -223,8 +228,9 @@ const MonthGrid: React.FC<{
   monthDate: Date;
   tempRange: DateRange;
   tz: string;
+  minDateStr?: string;
   onDayClick: (year: number, month1: number, day: number) => void;
-}> = ({ monthDate, tempRange, tz, onDayClick }) => {
+}> = ({ monthDate, tempRange, tz, minDateStr, onDayClick }) => {
   return (
     <div className="w-full">
       <div className="grid grid-cols-7 gap-0 mb-2 text-center">
@@ -243,6 +249,7 @@ const MonthGrid: React.FC<{
             monthDate={monthDate}
             tempRange={tempRange}
             tz={tz}
+            minDateStr={minDateStr}
             onClick={onDayClick}
           />
         ))}
@@ -253,12 +260,17 @@ const MonthGrid: React.FC<{
 
 // --- Main Component ---
 
-export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onChange }) => {
+export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onChange, minDate }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { isMobile } = useMediaQuery();
   const tz = useSalonTimezone();
-  const presets = useMemo(() => buildPresets(tz), [tz]);
+  const minDateStr = useMemo(() => (minDate ? salonDateString(minDate, tz) : undefined), [minDate, tz]);
+  const presets = useMemo(() => {
+    const all = buildPresets(tz);
+    if (!minDateStr) return all;
+    return all.filter((p) => salonDateString(p.getValue().from, tz) >= minDateStr);
+  }, [tz, minDateStr]);
 
   // State
   // Normalize initial viewDate to the 1st of the month to avoid 31st->Next Month skips
@@ -428,6 +440,8 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
     const newFrom = addDaysInSalon(fromStart, direction * spanDays, tz);
     const newTo = endOfDayInSalon(addDaysInSalon(newFrom, spanDays - 1, tz), tz);
 
+    if (minDateStr && salonDateString(newFrom, tz) < minDateStr) return;
+
     // Label: only "Hier" / "Aujourd'hui" / "Demain" for single-day ranges, in salon-local
     let label: string | undefined;
     if (spanDays === 1) {
@@ -570,7 +584,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
                     {viewDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
                   </span>
                 </div>
-                <MonthGrid monthDate={viewDate} tempRange={tempRange} tz={tz} onDayClick={handleDayClick} />
+                <MonthGrid monthDate={viewDate} tempRange={tempRange} tz={tz} minDateStr={minDateStr} onDayClick={handleDayClick} />
               </div>
 
               {/* Separator */}
@@ -598,6 +612,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
                   monthDate={nextMonthDate}
                   tempRange={tempRange}
                   tz={tz}
+                  minDateStr={minDateStr}
                   onDayClick={handleDayClick}
                 />
               </div>
@@ -733,7 +748,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
                     <ChevronRight size={18} />
                   </button>
                 </div>
-                <MonthGrid monthDate={viewDate} tempRange={tempRange} tz={tz} onDayClick={handleDayClick} />
+                <MonthGrid monthDate={viewDate} tempRange={tempRange} tz={tz} minDateStr={minDateStr} onDayClick={handleDayClick} />
               </div>
 
               {/* Sticky footer */}
