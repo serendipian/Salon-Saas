@@ -1516,6 +1516,61 @@ export type Database = {
           },
         ]
       }
+      salon_role_overrides: {
+        Row: {
+          action: string
+          created_at: string
+          granted: boolean
+          id: string
+          resource: string
+          role: string
+          salon_id: string
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          granted: boolean
+          id?: string
+          resource: string
+          role: string
+          salon_id: string
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          granted?: boolean
+          id?: string
+          resource?: string
+          role?: string
+          salon_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_role_overrides_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_accounts_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_role_overrides_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "admin_trials_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_role_overrides_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       salon_ticket_counters: {
         Row: {
           next_ticket_number: number

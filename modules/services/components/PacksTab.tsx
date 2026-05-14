@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '../../../context/AuthContext';
-import { usePermissions } from '../../../hooks/usePermissions';
+import { useSalonPermissions } from '../../../hooks/useSalonPermissions';
 import type { Pack, PackGroup } from '../../../types';
 import { usePackGroups } from '../hooks/usePackGroups';
 import { usePacks } from '../hooks/usePacks';
@@ -30,8 +29,7 @@ export function PacksTab() {
     deletePackGroup,
     toggleActive: toggleGroupActive,
   } = usePackGroups();
-  const { role } = useAuth();
-  const { can } = usePermissions(role);
+  const { can } = useSalonPermissions();
   const canEdit = can('edit', 'services');
 
   const [view, setView] = useState<View>('list');

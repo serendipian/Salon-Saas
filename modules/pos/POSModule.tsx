@@ -2,9 +2,8 @@ import { History } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { useMediaQuery } from '../../context/MediaQueryContext';
-import { usePermissions } from '../../hooks/usePermissions';
+import { useSalonPermissions } from '../../hooks/useSalonPermissions';
 import type {
   CartItem,
   DeletionReason,
@@ -92,9 +91,8 @@ export const POSModule: React.FC = () => {
     return [...favorites, ...packFavs].sort((a, b) => a.sortOrder - b.sortOrder);
   }, [favorites, validPacks]);
 
-  // Auth & Permissions
-  const { role } = useAuth();
-  const { can } = usePermissions(role);
+  // Permissions
+  const { can } = useSalonPermissions();
   const canVoid = can('void', 'pos');
   const canRefund = can('refund', 'pos');
   const canViewHistory = can('view_history', 'pos');

@@ -2,7 +2,7 @@
 import type React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { usePermissions } from '../hooks/usePermissions';
+import { useSalonPermissions } from '../hooks/useSalonPermissions';
 import type { AuthAction, AuthResource } from '../lib/auth.types';
 import { SuspendedPage } from '../pages/SuspendedPage';
 
@@ -13,8 +13,8 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, action, resource }) => {
-  const { isAuthenticated, isLoading, activeSalon, memberships, role, profile } = useAuth();
-  const { can } = usePermissions(role);
+  const { isAuthenticated, isLoading, activeSalon, memberships, profile } = useAuth();
+  const { can } = useSalonPermissions();
   const location = useLocation();
 
   // Also hold spinner if authenticated but profile not yet loaded (SIGNED_IN fires before profile fetch completes)

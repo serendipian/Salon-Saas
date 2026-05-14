@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { Role } from '../lib/auth.types';
-import { usePermissions } from './usePermissions';
+import { buildPermissions, type RoleOverride, usePermissions } from './usePermissions';
 
 const rolesOf = (role: Role | null) => renderHook(() => usePermissions(role)).result.current;
 
@@ -137,5 +137,48 @@ describe('usePermissions — no role', () => {
     expect(can('view', 'dashboard')).toBe(false);
     expect(can('create', 'appointments')).toBe(false);
     expect(accessLevel('clients')).toBe('none');
+  });
+});
+
+describe('buildPermissions — overrides', () => {
+  it('grant override flips a default denial to allow', () => {
+    const overrides: RoleOverride[] = [
+      { role: 'receptionist', resource: 'clients', action: 'view', granted: true },
+    ];
+    const { can } = buildPermissions('receptionist', overrides);
+    expect(can('view', 'clients')).toBe(true);
+  });
+
+  it('deny override flips a default grant to denial', () => {
+    const overrides: RoleOverride[] = [
+      { role: 'receptionist', resource: 'pos', action: 'view', granted: false },
+    ];
+    const { can } = buildPermissions('receptionist', overrides);
+    expect(can('view', 'pos')).toBe(false);
+  });
+
+  it('owner overrides are ignored (owner is non-overridable)', () => {
+    const overrides: RoleOverride[] = [
+      { role: 'owner', resource: 'settings', action: 'view', granted: false },
+    ];
+    const { can } = buildPermissions('owner', overrides);
+    expect(can('view', 'settings')).toBe(true);
+  });
+
+  it('only applies overrides whose role matches the current user', () => {
+    const overrides: RoleOverride[] = [
+      { role: 'stylist', resource: 'clients', action: 'view', granted: true },
+    ];
+    const { can } = buildPermissions('receptionist', overrides);
+    expect(can('view', 'clients')).toBe(false);
+  });
+
+  it('falls back to defaults for actions/resources with no override', () => {
+    const overrides: RoleOverride[] = [
+      { role: 'receptionist', resource: 'clients', action: 'view', granted: true },
+    ];
+    const { can } = buildPermissions('receptionist', overrides);
+    expect(can('view', 'appointments')).toBe(true);
+    expect(can('view', 'team')).toBe(false);
   });
 });

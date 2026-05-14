@@ -2,8 +2,7 @@ import { Plus, Search, Settings } from 'lucide-react';
 import type React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ViewToggle } from '../../../components/ViewToggle';
-import { useAuth } from '../../../context/AuthContext';
-import { usePermissions } from '../../../hooks/usePermissions';
+import { useSalonPermissions } from '../../../hooks/useSalonPermissions';
 import { useViewMode } from '../../../hooks/useViewMode';
 import type { Brand, Product, ProductCategory } from '../../../types';
 import { ProductCard } from './ProductCard';
@@ -29,8 +28,7 @@ export const ProductList: React.FC<ProductListProps> = ({
   onEdit,
 }) => {
   const navigate = useNavigate();
-  const { role } = useAuth();
-  const { can } = usePermissions(role);
+  const { can } = useSalonPermissions();
   const canEditProducts = can('edit', 'products');
   const { viewMode, setViewMode } = useViewMode('products');
 

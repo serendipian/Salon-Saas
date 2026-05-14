@@ -1,14 +1,23 @@
 import { useMemo } from 'react';
 import type { AccessLevel, AuthAction, AuthResource, Role } from '../lib/auth.types';
 
-interface PermissionResult {
+export interface PermissionResult {
   can: (action: AuthAction, resource: AuthResource) => boolean;
   accessLevel: (resource: AuthResource) => AccessLevel;
   role: Role | null;
 }
 
+export interface RoleOverride {
+  role: Role;
+  resource: AuthResource;
+  action: AuthAction;
+  granted: boolean;
+}
+
 // Static permission matrix — RLS is the authoritative enforcement layer.
 // This hook is for UX only (hiding sidebar items, disabling buttons).
+// Per-salon overrides on top of this matrix live in `salon_role_overrides`;
+// `buildPermissions` merges them in via the optional `overrides` argument.
 const PERMISSIONS: Record<
   Role,
   Record<AuthResource, { actions: AuthAction[]; level: AccessLevel }>
@@ -75,21 +84,46 @@ const PERMISSIONS: Record<
   },
 };
 
-export function usePermissions(role: Role | null): PermissionResult {
-  return useMemo(
-    () => ({
-      role,
-      can: (action: AuthAction, resource: AuthResource): boolean => {
-        if (!role) return false;
-        const resourcePerms = PERMISSIONS[role]?.[resource];
-        if (!resourcePerms) return false;
-        return resourcePerms.actions.includes(action);
-      },
-      accessLevel: (resource: AuthResource): AccessLevel => {
-        if (!role) return 'none';
-        return PERMISSIONS[role]?.[resource]?.level ?? 'none';
-      },
-    }),
-    [role],
-  );
+const EMPTY_OVERRIDES: RoleOverride[] = [];
+
+/**
+ * Pure function: derives a {can, accessLevel} API from a role and an optional
+ * list of per-salon overrides. Overrides are sparse — only entries that diverge
+ * from `PERMISSIONS` are stored — and `granted` flips the default either way.
+ *
+ * Owner role cannot be overridden (the DB CHECK constraint blocks it too).
+ */
+export function buildPermissions(
+  role: Role | null,
+  overrides: RoleOverride[] = EMPTY_OVERRIDES,
+): PermissionResult {
+  const overrideMap = new Map<string, boolean>();
+  for (const o of overrides) {
+    if (o.role === 'owner') continue; // safety: owner is not overridable
+    overrideMap.set(`${o.role}:${o.resource}:${o.action}`, o.granted);
+  }
+
+  return {
+    role,
+    can: (action: AuthAction, resource: AuthResource): boolean => {
+      if (!role) return false;
+      if (role !== 'owner') {
+        const override = overrideMap.get(`${role}:${resource}:${action}`);
+        if (override !== undefined) return override;
+      }
+      const resourcePerms = PERMISSIONS[role]?.[resource];
+      return resourcePerms?.actions.includes(action) ?? false;
+    },
+    accessLevel: (resource: AuthResource): AccessLevel => {
+      if (!role) return 'none';
+      return PERMISSIONS[role]?.[resource]?.level ?? 'none';
+    },
+  };
+}
+
+export function usePermissions(
+  role: Role | null,
+  overrides: RoleOverride[] = EMPTY_OVERRIDES,
+): PermissionResult {
+  return useMemo(() => buildPermissions(role, overrides), [role, overrides]);
 }

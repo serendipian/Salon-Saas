@@ -3,8 +3,7 @@ import type React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ViewToggle } from '../../../components/ViewToggle';
-import { useAuth } from '../../../context/AuthContext';
-import { usePermissions } from '../../../hooks/usePermissions';
+import { useSalonPermissions } from '../../../hooks/useSalonPermissions';
 import { useViewMode } from '../../../hooks/useViewMode';
 import { CategoryIcon } from '../../../lib/categoryIcons';
 import type { Service, ServiceCategory } from '../../../types';
@@ -32,8 +31,7 @@ export const ServiceList: React.FC<ServiceListProps> = ({
   onToggleFavorite,
 }) => {
   const navigate = useNavigate();
-  const { role } = useAuth();
-  const { can } = usePermissions(role);
+  const { can } = useSalonPermissions();
   const canEditServices = can('edit', 'services');
   const { serviceSettings } = useServiceSettings();
   const { viewMode, setViewMode } = useViewMode('services', serviceSettings.defaultView);

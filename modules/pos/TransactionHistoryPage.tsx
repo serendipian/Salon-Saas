@@ -23,7 +23,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useMediaQuery } from '../../context/MediaQueryContext';
-import { usePermissions } from '../../hooks/usePermissions';
+import { useSalonPermissions } from '../../hooks/useSalonPermissions';
 import { useTransactions } from '../../hooks/useTransactions';
 import { formatName, formatPrice, formatTicketNumber } from '../../lib/format';
 import {
@@ -54,9 +54,9 @@ const toLocalDate = (d: Date) =>
 export const TransactionHistoryPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const { role, activeSalon } = useAuth();
+  const { activeSalon } = useAuth();
   const salonTimezone = activeSalon?.timezone ?? 'Europe/Paris';
-  const { can } = usePermissions(role);
+  const { can } = useSalonPermissions();
   const canVoid = can('void', 'pos');
   const canRefund = can('refund', 'pos');
   const { isMobile } = useMediaQuery();

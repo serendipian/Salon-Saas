@@ -43,8 +43,8 @@ import { FreshnessIndicator } from '../../components/FreshnessIndicator';
 import { SafeResponsiveContainer as ResponsiveContainer } from '../../components/SafeResponsiveContainer';
 import { useAuth } from '../../context/AuthContext';
 import { useFreshness } from '../../hooks/useFreshness';
-import { usePermissions } from '../../hooks/usePermissions';
 import { useRealtimeSync } from '../../hooks/useRealtimeSync';
+import { useSalonPermissions } from '../../hooks/useSalonPermissions';
 import { useTransactions } from '../../hooks/useTransactions';
 import { formatName, formatPrice } from '../../lib/format';
 import {
@@ -173,8 +173,8 @@ const EXPENSE_METHOD_COLORS: Record<string, string> = {
 
 export const DashboardModule: React.FC = () => {
   const navigate = useNavigate();
-  const { activeSalon, role } = useAuth();
-  const { can } = usePermissions(role);
+  const { activeSalon } = useAuth();
+  const { can } = useSalonPermissions();
   const salonId = activeSalon?.id ?? '';
   const salonTimezone = activeSalon?.timezone ?? 'Europe/Paris';
   const canViewFinancials = can('view_financials', 'dashboard');

@@ -25,7 +25,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useMediaQuery } from '../context/MediaQueryContext';
-import { usePermissions } from '../hooks/usePermissions';
+import { useSalonPermissions } from '../hooks/useSalonPermissions';
 import { useSidebar } from '../hooks/useSidebar';
 import type { AuthResource } from '../lib/auth.types';
 import { PastDueBanner } from '../modules/billing/components/PastDueBanner';
@@ -143,7 +143,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNavigate }) => {
   const { profile, activeSalon, role, memberships, switchSalon, signOut } = useAuth();
-  const { can } = usePermissions(role);
+  const { can } = useSalonPermissions();
   const { isMobile, isTabletPortrait } = useMediaQuery();
   const navigate = useNavigate();
   const sidebar = useSidebar();

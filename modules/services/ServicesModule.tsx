@@ -1,8 +1,7 @@
 import { Loader2 } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { usePermissions } from '../../hooks/usePermissions';
+import { useSalonPermissions } from '../../hooks/useSalonPermissions';
 import type { Service, ViewState } from '../../types';
 import { ServiceForm } from './components/ServiceForm';
 import { ServiceList } from './components/ServiceList';
@@ -20,8 +19,7 @@ export const ServicesModule: React.FC = () => {
     deleteService,
     toggleFavorite,
   } = useServices();
-  const { role } = useAuth();
-  const { can } = usePermissions(role);
+  const { can } = useSalonPermissions();
   const canEditServices = can('edit', 'services');
 
   const [view, setView] = useState<ViewState>('LIST');

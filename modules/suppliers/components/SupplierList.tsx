@@ -3,8 +3,7 @@ import type React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ViewToggle } from '../../../components/ViewToggle';
-import { useAuth } from '../../../context/AuthContext';
-import { usePermissions } from '../../../hooks/usePermissions';
+import { useSalonPermissions } from '../../../hooks/useSalonPermissions';
 import { useViewMode } from '../../../hooks/useViewMode';
 import type { Supplier, SupplierCategory } from '../../../types';
 import { useSupplierSettings } from '../hooks/useSupplierSettings';
@@ -29,8 +28,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
   onEdit,
 }) => {
   const navigate = useNavigate();
-  const { role } = useAuth();
-  const { can } = usePermissions(role);
+  const { can } = useSalonPermissions();
   const canEditSuppliers = can('edit', 'suppliers');
   const { supplierSettings } = useSupplierSettings();
   const { viewMode, setViewMode } = useViewMode('suppliers', supplierSettings.defaultView);
