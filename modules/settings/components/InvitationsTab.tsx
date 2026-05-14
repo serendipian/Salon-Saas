@@ -1,4 +1,4 @@
-import { Check, Copy, Link as LinkIcon, Loader2, Plus, X } from 'lucide-react';
+import { Check, Copy, Link as LinkIcon, Loader2, Plus, Trash2, X } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useToast } from '../../../context/ToastContext';
@@ -41,6 +41,8 @@ interface InvitationsTabProps {
   isCreating: boolean;
   onCancel: (id: string) => Promise<void>;
   isCancelling: boolean;
+  onDelete: (id: string) => Promise<void>;
+  isDeleting: boolean;
 }
 
 export const InvitationsTab: React.FC<InvitationsTabProps> = ({
@@ -49,6 +51,8 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
   isCreating,
   onCancel,
   isCancelling,
+  onDelete,
+  isDeleting,
 }) => {
   const { addToast } = useToast();
   const [showForm, setShowForm] = useState(false);
@@ -329,7 +333,7 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
                   {status.label}
                 </span>
 
-                {pending && (
+                {pending ? (
                   <>
                     <button
                       type="button"
@@ -353,6 +357,16 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
                       <X className="w-4 h-4" />
                     </button>
                   </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onDelete(inv.id)}
+                    disabled={isDeleting}
+                    className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Supprimer l'invitation"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 )}
               </div>
             );

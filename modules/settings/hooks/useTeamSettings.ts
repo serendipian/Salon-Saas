@@ -3,6 +3,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import type { Role } from '../../../lib/auth.types';
 import {
+  rawDelete,
   rawInsertReturning,
   rawRpc,
   rawSelect,
@@ -225,6 +226,20 @@ export function useTeamSettings() {
     onError: toastOnError("Erreur lors de l'annulation"),
   });
 
+  const deleteInvitationMutation = useMutation({
+    mutationFn: async (invitationId: string) => {
+      const params = new URLSearchParams();
+      params.append('id', `eq.${invitationId}`);
+      params.append('salon_id', `eq.${salonId!}`);
+      await rawDelete('invitations', params.toString());
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team-settings-invitations', salonId] });
+      toastOnSuccess('Invitation supprimée')();
+    },
+    onError: toastOnError('Erreur lors de la suppression'),
+  });
+
   return {
     members,
     invitations,
@@ -246,5 +261,7 @@ export function useTeamSettings() {
     isCreatingInvitation: createInvitationMutation.isPending,
     cancelInvitation: (id: string) => cancelInvitationMutation.mutateAsync(id),
     isCancellingInvitation: cancelInvitationMutation.isPending,
+    deleteInvitation: (id: string) => deleteInvitationMutation.mutateAsync(id),
+    isDeletingInvitation: deleteInvitationMutation.isPending,
   };
 }

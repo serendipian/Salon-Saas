@@ -34,6 +34,8 @@ export const TeamPermissionsSettings: React.FC = () => {
     isCreatingInvitation,
     cancelInvitation,
     isCancellingInvitation,
+    deleteInvitation,
+    isDeletingInvitation,
   } = useTeamSettings();
 
   const isLoading = membersLoading || invitationsLoading;
@@ -94,6 +96,8 @@ export const TeamPermissionsSettings: React.FC = () => {
               isCreating={isCreatingInvitation}
               onCancel={cancelInvitation}
               isCancelling={isCancellingInvitation}
+              onDelete={deleteInvitation}
+              isDeleting={isDeletingInvitation}
             />
           )}
 
