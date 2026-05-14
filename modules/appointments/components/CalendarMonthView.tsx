@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useSalonTimezone } from '../../../hooks/useSalonTimezone';
 import type { Appointment, ServiceCategory } from '../../../types';
 import { CalendarEventBlock } from './CalendarEventBlock';
 import { isSameDay, isToday, mergeAppointmentGroups } from './calendarUtils';
@@ -54,6 +55,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
   onEventClick,
   onDateClick,
 }) => {
+  const tz = useSalonTimezone();
   const cells = getMonthGrid(currentDate.getFullYear(), currentDate.getMonth());
   const categoryMap = new Map(serviceCategories.map((c) => [c.id, c]));
   const serviceCatMap = new Map(services.map((s) => [s.id, s.categoryId]));
@@ -82,9 +84,9 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
       {/* Month grid */}
       <div className="grid grid-cols-7">
         {cells.map((cell, i) => {
-          const today = isToday(cell.date);
+          const today = isToday(cell.date, tz);
           const dayAppts = mergedAppointments
-            .filter((a) => isSameDay(new Date(a.date), cell.date))
+            .filter((a) => isSameDay(new Date(a.date), cell.date, tz))
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
           const visible = dayAppts.slice(0, MAX_VISIBLE_EVENTS);

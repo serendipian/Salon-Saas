@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useSalonTimezone } from '../../../hooks/useSalonTimezone';
 import type { Appointment, ServiceCategory } from '../../../types';
 import { CalendarEventBlock } from './CalendarEventBlock';
 import {
@@ -28,8 +29,9 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
   services,
   onEventClick,
 }) => {
+  const tz = useSalonTimezone();
   const dayAppointments = appointments.filter((appt) =>
-    isSameDay(new Date(appt.date), currentDate),
+    isSameDay(new Date(appt.date), currentDate, tz),
   );
   // M-13: collapse multi-item service blocks into a single visual event so the
   // calendar matches the list-view grouping. Each merged event keeps the first
@@ -40,7 +42,7 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
   const categoryMap = new Map(serviceCategories.map((c) => [c.id, c]));
   const serviceCatMap = new Map(services.map((s) => [s.id, s.categoryId]));
 
-  const todayFlag = isToday(currentDate);
+  const todayFlag = isToday(currentDate, tz);
 
   return (
     <div className="flex-1 overflow-auto bg-white">

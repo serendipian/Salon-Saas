@@ -3,6 +3,8 @@ import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMediaQuery } from '../context/MediaQueryContext';
+import { useSalonTimezone } from '../hooks/useSalonTimezone';
+import { todayInSalon } from '../lib/salonTime';
 
 interface DatePickerProps {
   label?: string;
@@ -40,6 +42,7 @@ const CalendarGrid: React.FC<{
   onDayClick: (day: number) => void;
   onChangeMonth: (delta: number) => void;
 }> = ({ viewDate, value, onDayClick, onChangeMonth }) => {
+  const salonToday = todayInSalon(useSalonTimezone());
   return (
     <>
       {/* Header */}
@@ -79,7 +82,7 @@ const CalendarGrid: React.FC<{
 
           const currentDayStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const isSelected = value === currentDayStr;
-          const isToday = new Date().toISOString().slice(0, 10) === currentDayStr;
+          const isToday = salonToday === currentDayStr;
 
           return (
             <button

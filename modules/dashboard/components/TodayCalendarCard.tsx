@@ -13,7 +13,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { useToast } from '../../../context/ToastContext';
+import { useSalonTimezone } from '../../../hooks/useSalonTimezone';
 import { formatName, formatPrice } from '../../../lib/format';
+import { isTodayInSalon } from '../../../lib/salonTime';
 import { getSalonHourRange } from '../../../lib/scheduleHours';
 import {
   type Appointment,
@@ -263,20 +265,14 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   targetDate: targetDateProp,
   embedded = false,
 }) => {
+  const tz = useSalonTimezone();
   const targetDate = useMemo(() => {
     if (!targetDateProp) return new Date();
     const d = new Date(targetDateProp);
     d.setHours(0, 0, 0, 0);
     return d;
   }, [targetDateProp]);
-  const isToday = useMemo(() => {
-    const now = new Date();
-    return (
-      targetDate.getFullYear() === now.getFullYear() &&
-      targetDate.getMonth() === now.getMonth() &&
-      targetDate.getDate() === now.getDate()
-    );
-  }, [targetDate]);
+  const isToday = useMemo(() => isTodayInSalon(targetDate, tz), [targetDate, tz]);
   const navigate = useNavigate();
   const { addToast } = useToast();
   const { salonSettings } = useSettings();
@@ -339,7 +335,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
 
   const todayAppts = useMemo(() => {
     return appointments.filter((a) => {
-      if (!isSameDay(new Date(a.date), targetDate)) return false;
+      if (!isSameDay(new Date(a.date), targetDate, tz)) return false;
       if (a.status === AppointmentStatus.CANCELLED) return false;
       if (categoryServiceIds && !categoryServiceIds.has(a.serviceId)) return false;
       return true;
@@ -371,7 +367,8 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
   // Categories that have appointments today (for filter options)
   const availableCategories = useMemo(() => {
     const dayAppts = appointments.filter(
-      (a) => isSameDay(new Date(a.date), targetDate) && a.status !== AppointmentStatus.CANCELLED,
+      (a) =>
+        isSameDay(new Date(a.date), targetDate, tz) && a.status !== AppointmentStatus.CANCELLED,
     );
     const catIds = new Set<string>();
     dayAppts.forEach((a) => {

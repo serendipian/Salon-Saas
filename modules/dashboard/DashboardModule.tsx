@@ -46,6 +46,7 @@ import { useFreshness } from '../../hooks/useFreshness';
 import { useRealtimeSync } from '../../hooks/useRealtimeSync';
 import { useTransactions } from '../../hooks/useTransactions';
 import { formatName, formatPrice } from '../../lib/format';
+import { isTodayInSalon, isTomorrowInSalon } from '../../lib/salonTime';
 import { supabase } from '../../lib/supabase';
 import {
   AppointmentStatus,
@@ -168,6 +169,7 @@ export const DashboardModule: React.FC = () => {
   const navigate = useNavigate();
   const { activeSalon } = useAuth();
   const salonId = activeSalon?.id ?? '';
+  const salonTimezone = activeSalon?.timezone ?? 'Europe/Paris';
   const { allAppointments: appointments, updateAppointment } = useAppointments();
   const { allClients: clients } = useClients();
   const { services, serviceCategories } = useServices();
@@ -1196,9 +1198,8 @@ export const DashboardModule: React.FC = () => {
                         hour: '2-digit',
                         minute: '2-digit',
                       });
-                      const isToday = date.toDateString() === new Date().toDateString();
-                      const isTomorrow =
-                        date.toDateString() === new Date(Date.now() + 86400000).toDateString();
+                      const isToday = isTodayInSalon(date, salonTimezone);
+                      const isTomorrow = isTomorrowInSalon(date, salonTimezone);
                       const dayLabel = isToday
                         ? "Aujourd'hui"
                         : isTomorrow

@@ -1,5 +1,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useSalonTimezone } from '../../../hooks/useSalonTimezone';
+import { todayInSalon } from '../../../lib/salonTime';
 
 interface InlineCalendarProps {
   value: string | null;
@@ -37,10 +39,12 @@ function formatDateStr(year: number, month: number, day: number): string {
 }
 
 export default function InlineCalendar({ value, onChange, disabledDates }: InlineCalendarProps) {
-  const today = new Date();
-  const todayStr = formatDateStr(today.getFullYear(), today.getMonth(), today.getDate());
+  const tz = useSalonTimezone();
+  // Salon-local "today" — drives the highlight and the past/future split. Without
+  // this, a user on a different-TZ device would see the wrong day highlighted.
+  const todayStr = todayInSalon(tz);
 
-  const initial = value ? new Date(`${value}T00:00:00`) : today;
+  const initial = value ? new Date(`${value}T00:00:00`) : new Date(`${todayStr}T00:00:00`);
   const [viewYear, setViewYear] = useState(initial.getFullYear());
   const [viewMonth, setViewMonth] = useState(initial.getMonth());
 

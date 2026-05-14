@@ -1,11 +1,13 @@
+import { isSameDayInSalon, isTodayInSalon } from '../../../lib/salonTime';
 import { type Appointment, AppointmentStatus } from '../../../types';
 
-export function isSameDay(d1: Date, d2: Date): boolean {
-  return (
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate()
-  );
+/**
+ * Compare two instants by the salon's calendar day. `timezone` is the salon's
+ * IANA TZ string (e.g. `Africa/Casablanca`). See `lib/salonTime.ts` for the
+ * underlying logic and why browser-local comparison was wrong.
+ */
+export function isSameDay(d1: Date, d2: Date, timezone: string): boolean {
+  return isSameDayInSalon(d1, d2, timezone);
 }
 
 /**
@@ -84,8 +86,8 @@ export function mergeAppointmentGroups(appointments: Appointment[]): Appointment
   return merged;
 }
 
-export function isToday(date: Date): boolean {
-  return isSameDay(date, new Date());
+export function isToday(date: Date, timezone: string): boolean {
+  return isTodayInSalon(date, timezone);
 }
 
 export function formatHourLabel(hour: number): string {

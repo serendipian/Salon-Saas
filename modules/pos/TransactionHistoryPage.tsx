@@ -26,6 +26,7 @@ import { useMediaQuery } from '../../context/MediaQueryContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useTransactions } from '../../hooks/useTransactions';
 import { formatName, formatPrice, formatTicketNumber } from '../../lib/format';
+import { isTodayInSalon } from '../../lib/salonTime';
 import type { Transaction } from '../../types';
 import { ReceiptModal, TransactionDetailModal } from './components/POSModals';
 import { RefundModal } from './components/RefundModal';
@@ -48,7 +49,8 @@ const toLocalDate = (d: Date) =>
 export const TransactionHistoryPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const { role } = useAuth();
+  const { role, activeSalon } = useAuth();
+  const salonTimezone = activeSalon?.timezone ?? 'Europe/Paris';
   const { can } = usePermissions(role);
   const canVoid = can('void', 'pos');
   const canRefund = can('refund', 'pos');
@@ -276,7 +278,10 @@ export const TransactionHistoryPage: React.FC = () => {
     return { total, count: activeSales.length, serviceCount, productCount, byMethod };
   }, [groupedTransactions, transactions]);
 
-  const isToday = (date: string) => new Date(date).toDateString() === new Date().toDateString();
+  // Same-day check must match the server's void_transaction RPC, which uses
+  // the salon's timezone — otherwise we'd offer the void button for sales
+  // that the server will reject right after midnight UTC.
+  const isToday = (date: string) => isTodayInSalon(date, salonTimezone);
 
   const statusBadge = (status: TransactionStatus, trx: Transaction) => {
     if (trx.type === 'VOID')

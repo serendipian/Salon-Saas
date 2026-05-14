@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useSalonTimezone } from '../../../hooks/useSalonTimezone';
 import type { Appointment, ServiceCategory } from '../../../types';
 import { CalendarEventBlock } from './CalendarEventBlock';
 import {
@@ -41,6 +42,7 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   services,
   onEventClick,
 }) => {
+  const tz = useSalonTimezone();
   const weekDays = getWeekDays(currentDate);
   const categoryMap = new Map(serviceCategories.map((c) => [c.id, c]));
   const serviceCatMap = new Map(services.map((s) => [s.id, s.categoryId]));
@@ -58,7 +60,7 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
           {tzLabel}
         </div>
         {weekDays.map((day, i) => {
-          const today = isToday(day);
+          const today = isToday(day, tz);
           const isSat = day.getDay() === 6;
           return (
             <div
@@ -95,7 +97,7 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
 
         {/* Day columns */}
         {weekDays.map((day, dayIndex) => {
-          const dayAppts = appointments.filter((a) => isSameDay(new Date(a.date), day));
+          const dayAppts = appointments.filter((a) => isSameDay(new Date(a.date), day, tz));
           // M-13: merge multi-item service blocks into single visual events
           const mergedAppts = mergeAppointmentGroups(dayAppts);
           const positioned = layoutDayEvents(mergedAppts);

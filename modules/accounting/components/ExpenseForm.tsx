@@ -40,11 +40,13 @@ import { Input, Section, Select } from '../../../components/FormElements';
 import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { useFormValidation } from '../../../hooks/useFormValidation';
+import { useSalonTimezone } from '../../../hooks/useSalonTimezone';
 import { supabase } from '../../../lib/supabase';
+import { todayInSalon } from '../../../lib/salonTime';
 import type { Expense, ExpenseCategory, PaymentMethod } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useSuppliers } from '../../suppliers/hooks/useSuppliers';
-import { expenseSchema } from '../schemas';
+import { buildExpenseSchema } from '../schemas';
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   loyer: <Home size={14} />,
@@ -102,6 +104,8 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   const { allSuppliers: suppliers, isLoading: isLoadingSuppliers } = useSuppliers();
   const { activeSalon } = useAuth();
   const { addToast } = useToast();
+  const tz = useSalonTimezone();
+  const expenseSchema = useMemo(() => buildExpenseSchema(tz), [tz]);
   const { errors, validate, clearFieldError } = useFormValidation(expenseSchema);
   const isEdit = !!existingExpense;
 
@@ -109,7 +113,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
     existingExpense || {
       description: '',
       amount: 0,
-      date: new Date().toISOString().slice(0, 10),
+      date: todayInSalon(tz),
       category: '',
       supplierId: undefined,
       paymentMethod: undefined,
