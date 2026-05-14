@@ -18,7 +18,9 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Input } from '../../../components/FormElements';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
+import { useSalonTimezone } from '../../../hooks/useSalonTimezone';
 import { formatName, formatPrice, formatTicketNumber } from '../../../lib/format';
+import { isTodayInSalon } from '../../../lib/salonTime';
 import type { CartItem, Service, ServiceVariant, Transaction } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { REFUND_CATEGORIES, VOID_CATEGORIES } from '../constants';
@@ -569,7 +571,8 @@ export const TransactionDetailModal: React.FC<{
   useMobileModalA11y(isMobile, onClose);
 
   const status = getTransactionStatus(transaction, allTransactions);
-  const isToday = new Date(transaction.date).toDateString() === new Date().toDateString();
+  const tz = useSalonTimezone();
+  const isToday = isTodayInSalon(transaction.date, tz);
   const showVoid = onVoidClick && transaction.type === 'SALE' && status === 'active' && isToday;
   const showRefund =
     onRefundClick &&

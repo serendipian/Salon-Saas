@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSalonTimezone } from '../../../hooks/useSalonTimezone';
 import { useTransactions } from '../../../hooks/useTransactions';
+import { addDaysInSalon, endOfDayInSalon, startOfDayInSalon } from '../../../lib/salonTime';
 import type {
   Appointment,
   CartItem,
@@ -25,14 +27,12 @@ import type { TransactionTipPayload } from '../mappers';
 export type POSViewMode = 'SERVICES' | 'PRODUCTS' | 'APPOINTMENTS';
 
 export const usePOS = () => {
+  const tz = useSalonTimezone();
   const posRange = useMemo(() => {
-    const from = new Date();
-    from.setDate(from.getDate() - 30);
-    from.setHours(0, 0, 0, 0);
-    const to = new Date();
-    to.setHours(23, 59, 59, 999);
+    const from = addDaysInSalon(startOfDayInSalon(new Date(), tz), -30, tz);
+    const to = endOfDayInSalon(new Date(), tz);
     return { from: from.toISOString(), to: to.toISOString() };
-  }, []);
+  }, [tz]);
 
   const {
     transactions,

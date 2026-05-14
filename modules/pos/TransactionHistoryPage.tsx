@@ -26,7 +26,12 @@ import { useMediaQuery } from '../../context/MediaQueryContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useTransactions } from '../../hooks/useTransactions';
 import { formatName, formatPrice, formatTicketNumber } from '../../lib/format';
-import { isTodayInSalon } from '../../lib/salonTime';
+import {
+  addDaysInSalon,
+  endOfDayInSalon,
+  isTodayInSalon,
+  startOfDayInSalon,
+} from '../../lib/salonTime';
 import type { Transaction } from '../../types';
 import { ReceiptModal, TransactionDetailModal } from './components/POSModals';
 import { RefundModal } from './components/RefundModal';
@@ -103,15 +108,12 @@ export const TransactionHistoryPage: React.FC = () => {
     setSortDesc(true);
   };
 
-  // Data
+  // Data — 30-day window anchored to the salon's calendar day, not the browser's.
   const posRange = React.useMemo(() => {
-    const from = new Date();
-    from.setDate(from.getDate() - 30);
-    from.setHours(0, 0, 0, 0);
-    const to = new Date();
-    to.setHours(23, 59, 59, 999);
+    const from = addDaysInSalon(startOfDayInSalon(new Date(), salonTimezone), -30, salonTimezone);
+    const to = endOfDayInSalon(new Date(), salonTimezone);
     return { from: from.toISOString(), to: to.toISOString() };
-  }, []);
+  }, [salonTimezone]);
 
   const { transactions, voidTransaction, refundTransaction, isVoiding, isRefunding } =
     useTransactions(posRange);

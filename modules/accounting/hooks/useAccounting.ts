@@ -5,7 +5,9 @@ import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { useMutationToast } from '../../../hooks/useMutationToast';
 import { useRealtimeSync } from '../../../hooks/useRealtimeSync';
+import { useSalonTimezone } from '../../../hooks/useSalonTimezone';
 import { useTransactions } from '../../../hooks/useTransactions';
+import { endOfDayInSalon, startOfDayInSalon } from '../../../lib/salonTime';
 import { rawInsert, rawSelect, rawUpdate } from '../../../lib/supabaseRaw';
 import type { CartItem, DateRange, Expense, LedgerEntry, Transaction } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
@@ -42,14 +44,12 @@ export const useAccounting = () => {
   const { salonSettings, expenseCategories } = useSettings();
 
   // --- Date Range State ---
-  const [dateRange, setDateRange] = useState<DateRange>(() => {
-    const today = new Date();
-    return {
-      from: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
-      to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999),
-      label: "Aujourd'hui",
-    };
-  });
+  const tz = useSalonTimezone();
+  const [dateRange, setDateRange] = useState<DateRange>(() => ({
+    from: startOfDayInSalon(new Date(), tz),
+    to: endOfDayInSalon(new Date(), tz),
+    label: "Aujourd'hui",
+  }));
 
   // Chart range: always show at least 7 data points for context
   const chartRange = useMemo(() => {

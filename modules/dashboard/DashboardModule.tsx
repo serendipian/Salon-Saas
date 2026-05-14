@@ -46,7 +46,12 @@ import { useFreshness } from '../../hooks/useFreshness';
 import { useRealtimeSync } from '../../hooks/useRealtimeSync';
 import { useTransactions } from '../../hooks/useTransactions';
 import { formatName, formatPrice } from '../../lib/format';
-import { isTodayInSalon, isTomorrowInSalon } from '../../lib/salonTime';
+import {
+  endOfDayInSalon,
+  isTodayInSalon,
+  isTomorrowInSalon,
+  startOfDayInSalon,
+} from '../../lib/salonTime';
 import { supabase } from '../../lib/supabase';
 import {
   AppointmentStatus,
@@ -181,15 +186,12 @@ export const DashboardModule: React.FC = () => {
     salonId,
   });
 
-  // State for Date Range (Default: Today)
-  const [dateRange, setDateRange] = useState<DateRange>(() => {
-    const today = new Date();
-    return {
-      from: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0),
-      to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999),
-      label: "Aujourd'hui",
-    };
-  });
+  // State for Date Range (Default: Today, in the salon's timezone)
+  const [dateRange, setDateRange] = useState<DateRange>(() => ({
+    from: startOfDayInSalon(new Date(), salonTimezone),
+    to: endOfDayInSalon(new Date(), salonTimezone),
+    label: "Aujourd'hui",
+  }));
 
   // Chart range: always show at least 7 data points for context
   const chartRange = useMemo(() => {

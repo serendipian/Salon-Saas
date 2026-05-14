@@ -8,9 +8,20 @@ import {
   X,
 } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMediaQuery } from '../context/MediaQueryContext';
+import { useSalonTimezone } from '../hooks/useSalonTimezone';
+import {
+  addDaysInSalon,
+  endOfDayInSalon,
+  endOfMonthInSalon,
+  salonDateString,
+  salonInstantFromParts,
+  startOfDayInSalon,
+  startOfMonthInSalon,
+  startOfYearInSalon,
+} from '../lib/salonTime';
 import type { DateRange } from '../types';
 
 interface DateRangePickerProps {
@@ -20,82 +31,68 @@ interface DateRangePickerProps {
 
 // --- Logic & Helpers ---
 
-const PRESETS = [
-  {
-    label: "Aujourd'hui",
-    getValue: () => {
-      const from = new Date();
-      from.setHours(0, 0, 0, 0);
-      const to = new Date();
-      to.setHours(23, 59, 59, 999);
-      return { from, to };
+interface Preset {
+  label: string;
+  getValue: () => { from: Date; to: Date };
+}
+
+/**
+ * Presets are timezone-bound: each `getValue` resolves "today", "this month",
+ * etc. against the salon's calendar day, not the browser's. Same query result
+ * regardless of where the user's laptop is.
+ */
+function buildPresets(tz: string): Preset[] {
+  return [
+    {
+      label: "Aujourd'hui",
+      getValue: () => ({ from: startOfDayInSalon(new Date(), tz), to: endOfDayInSalon(new Date(), tz) }),
     },
-  },
-  {
-    label: 'Hier',
-    getValue: () => {
-      const from = new Date();
-      from.setDate(from.getDate() - 1);
-      from.setHours(0, 0, 0, 0);
-      const to = new Date();
-      to.setDate(to.getDate() - 1);
-      to.setHours(23, 59, 59, 999);
-      return { from, to };
+    {
+      label: 'Hier',
+      getValue: () => {
+        const yesterday = addDaysInSalon(new Date(), -1, tz);
+        return { from: yesterday, to: endOfDayInSalon(yesterday, tz) };
+      },
     },
-  },
-  {
-    label: '7 derniers jours',
-    getValue: () => {
-      const to = new Date();
-      const from = new Date();
-      from.setDate(to.getDate() - 6);
-      return {
-        from: new Date(from.setHours(0, 0, 0, 0)),
-        to: new Date(to.setHours(23, 59, 59, 999)),
-      };
+    {
+      label: '7 derniers jours',
+      getValue: () => ({
+        from: addDaysInSalon(new Date(), -6, tz),
+        to: endOfDayInSalon(new Date(), tz),
+      }),
     },
-  },
-  {
-    label: '30 derniers jours',
-    getValue: () => {
-      const to = new Date();
-      const from = new Date();
-      from.setDate(to.getDate() - 29);
-      return {
-        from: new Date(from.setHours(0, 0, 0, 0)),
-        to: new Date(to.setHours(23, 59, 59, 999)),
-      };
+    {
+      label: '30 derniers jours',
+      getValue: () => ({
+        from: addDaysInSalon(new Date(), -29, tz),
+        to: endOfDayInSalon(new Date(), tz),
+      }),
     },
-  },
-  {
-    label: 'Ce mois-ci',
-    getValue: () => {
-      const now = new Date();
-      const to = new Date(now);
-      to.setHours(23, 59, 59, 999);
-      return { from: new Date(now.getFullYear(), now.getMonth(), 1), to };
+    {
+      label: 'Ce mois-ci',
+      getValue: () => ({
+        from: startOfMonthInSalon(new Date(), tz),
+        to: endOfDayInSalon(new Date(), tz),
+      }),
     },
-  },
-  {
-    label: 'Le mois dernier',
-    getValue: () => {
-      const now = new Date();
-      const from = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const to = new Date(now.getFullYear(), now.getMonth(), 0);
-      to.setHours(23, 59, 59, 999);
-      return { from, to };
+    {
+      label: 'Le mois dernier',
+      getValue: () => {
+        // First-of-last-month: shift today back to first-of-this-month then -1 day → last day of previous month, then start-of-month again.
+        const startThisMonth = startOfMonthInSalon(new Date(), tz);
+        const lastDayPrev = addDaysInSalon(startThisMonth, -1, tz);
+        return { from: startOfMonthInSalon(lastDayPrev, tz), to: endOfMonthInSalon(lastDayPrev, tz) };
+      },
     },
-  },
-  {
-    label: 'Cette année',
-    getValue: () => {
-      const now = new Date();
-      const to = new Date(now);
-      to.setHours(23, 59, 59, 999);
-      return { from: new Date(now.getFullYear(), 0, 1), to };
+    {
+      label: 'Cette année',
+      getValue: () => ({
+        from: startOfYearInSalon(new Date(), tz),
+        to: endOfDayInSalon(new Date(), tz),
+      }),
     },
-  },
-];
+  ];
+}
 
 const getDaysInMonth = (date: Date) => {
   if (Number.isNaN(date.getTime())) return [];
@@ -123,9 +120,10 @@ const formatDateDisplay = (date: Date) => {
 // --- Sub-Components ---
 
 const PresetSidebar: React.FC<{
+  presets: Preset[];
   currentLabel?: string;
-  onSelect: (preset: (typeof PRESETS)[0]) => void;
-}> = ({ currentLabel, onSelect }) => (
+  onSelect: (preset: Preset) => void;
+}> = ({ presets, currentLabel, onSelect }) => (
   <div className="w-48 bg-slate-50 border-r border-slate-200 p-2 flex flex-col gap-1 shrink-0">
     <div className="px-3 pt-2 pb-2 text-[10px] font-bold uppercase text-slate-400 tracking-wider">
       Période
@@ -151,7 +149,7 @@ const PresetSidebar: React.FC<{
     <div className="h-px bg-slate-200 my-1 mx-2" />
 
     {/* Presets */}
-    {PRESETS.map((preset) => (
+    {presets.map((preset) => (
       <button
         key={preset.label}
         type="button"
@@ -177,20 +175,21 @@ const DayCell: React.FC<{
   day: number | null;
   monthDate: Date;
   tempRange: DateRange;
-  onClick: (date: Date) => void;
-}> = ({ day, monthDate, tempRange, onClick }) => {
+  tz: string;
+  onClick: (year: number, month1: number, day: number) => void;
+}> = ({ day, monthDate, tempRange, tz, onClick }) => {
   if (!day) return <div />;
 
-  const currentDayDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
-  currentDayDate.setHours(0, 0, 0, 0);
-  const currentDayTime = currentDayDate.getTime();
+  // Compare salon-local day strings — independent of browser TZ. The cell's
+  // y/m/d come from the calendar grid (not tied to any TZ), so we format them
+  // as ISO `YYYY-MM-DD` directly.
+  const cellDayStr = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const fromDayStr = salonDateString(tempRange.from, tz);
+  const toDayStr = salonDateString(tempRange.to, tz);
 
-  const fromTime = new Date(tempRange.from).setHours(0, 0, 0, 0);
-  const toTime = new Date(tempRange.to).setHours(0, 0, 0, 0);
-
-  const isSelected = currentDayTime >= fromTime && currentDayTime <= toTime;
-  const isStart = currentDayTime === fromTime;
-  const isEnd = currentDayTime === toTime;
+  const isSelected = cellDayStr >= fromDayStr && cellDayStr <= toDayStr;
+  const isStart = cellDayStr === fromDayStr;
+  const isEnd = cellDayStr === toDayStr;
 
   let roundedClass = 'rounded-lg';
   if (isStart && isEnd) roundedClass = 'rounded-lg';
@@ -205,7 +204,7 @@ const DayCell: React.FC<{
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          onClick(currentDayDate);
+          onClick(monthDate.getFullYear(), monthDate.getMonth() + 1, day);
         }}
         className={`
           w-full h-8 text-sm font-medium transition-colors relative z-10 flex items-center justify-center
@@ -223,8 +222,9 @@ const DayCell: React.FC<{
 const MonthGrid: React.FC<{
   monthDate: Date;
   tempRange: DateRange;
-  onDayClick: (date: Date) => void;
-}> = ({ monthDate, tempRange, onDayClick }) => {
+  tz: string;
+  onDayClick: (year: number, month1: number, day: number) => void;
+}> = ({ monthDate, tempRange, tz, onDayClick }) => {
   return (
     <div className="w-full">
       <div className="grid grid-cols-7 gap-0 mb-2 text-center">
@@ -242,6 +242,7 @@ const MonthGrid: React.FC<{
             day={day}
             monthDate={monthDate}
             tempRange={tempRange}
+            tz={tz}
             onClick={onDayClick}
           />
         ))}
@@ -256,6 +257,8 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { isMobile } = useMediaQuery();
+  const tz = useSalonTimezone();
+  const presets = useMemo(() => buildPresets(tz), [tz]);
 
   // State
   // Normalize initial viewDate to the 1st of the month to avoid 31st->Next Month skips
@@ -318,7 +321,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
     };
   }, [isMobile, isOpen]);
 
-  const handlePresetSelect = (preset: (typeof PRESETS)[0]) => {
+  const handlePresetSelect = (preset: Preset) => {
     const range = preset.getValue();
     const newRange = { ...range, label: preset.label };
     setTempRange(newRange);
@@ -333,7 +336,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
   };
 
   // For mobile: set range but don't close
-  const handleMobilePresetSelect = (preset: (typeof PRESETS)[0]) => {
+  const handleMobilePresetSelect = (preset: Preset) => {
     const range = preset.getValue();
     const newRange = { ...range, label: preset.label };
     setTempRange(newRange);
@@ -349,34 +352,35 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
     setViewDate(newDate);
   };
 
-  const handleDayClick = (clickedDate: Date) => {
+  const handleDayClick = (year: number, month1: number, day: number) => {
+    // Materialize the clicked cell into salon-local start-of-day and end-of-day.
+    const clickedStart = salonInstantFromParts(year, month1, day, 0, 0, 0, 0, tz);
+    const clickedEnd = salonInstantFromParts(year, month1, day, 23, 59, 59, 999, tz);
+
     let nextFrom = new Date(tempRange.from);
     let nextTo = new Date(tempRange.to);
     let nextEditMode = editMode;
 
     if (editMode === 'START') {
-      nextFrom = clickedDate;
-      if (nextFrom.getTime() > nextTo.getTime()) nextTo = new Date(nextFrom);
-      nextTo.setHours(23, 59, 59, 999);
+      nextFrom = clickedStart;
+      if (nextFrom.getTime() > nextTo.getTime()) nextTo = clickedEnd;
       nextEditMode = 'END';
     } else if (editMode === 'END') {
-      nextTo = clickedDate;
-      nextTo.setHours(23, 59, 59, 999);
-      if (nextTo.getTime() < nextFrom.getTime()) nextFrom = new Date(clickedDate);
+      nextTo = clickedEnd;
+      if (nextTo.getTime() < nextFrom.getTime()) nextFrom = clickedStart;
       nextEditMode = null;
     } else {
-      const currentFromStr = new Date(tempRange.from).toDateString();
-      const currentToStr = new Date(tempRange.to).toDateString();
+      const currentFromStr = salonDateString(tempRange.from, tz);
+      const currentToStr = salonDateString(tempRange.to, tz);
       const isRangeSelected = currentFromStr !== currentToStr;
 
       if (isRangeSelected) {
-        nextFrom = clickedDate;
-        nextTo = new Date(clickedDate);
-        nextTo.setHours(23, 59, 59, 999);
+        nextFrom = clickedStart;
+        nextTo = clickedEnd;
+      } else if (clickedStart.getTime() < nextFrom.getTime()) {
+        nextFrom = clickedStart;
       } else {
-        if (clickedDate.getTime() < nextFrom.getTime()) nextFrom = clickedDate;
-        else nextTo = clickedDate;
-        nextTo.setHours(23, 59, 59, 999);
+        nextTo = clickedEnd;
       }
     }
 
@@ -399,46 +403,41 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
 
   const formatButtonLabel = () => {
     if (dateRange.label && dateRange.label !== 'Personnalisé') return dateRange.label;
-    // Single-day range: show just one date
-    const fromDate = new Date(dateRange.from);
-    const toDate = new Date(dateRange.to);
-    fromDate.setHours(0, 0, 0, 0);
-    toDate.setHours(0, 0, 0, 0);
-    if (fromDate.getTime() === toDate.getTime()) {
-      return fromDate.toLocaleDateString('fr-FR', {
+    // Single-day range — compared in salon-local time so an "Aujourd'hui" range
+    // doesn't get rendered as a two-date span just because the from/to instants
+    // straddle browser-local midnight.
+    if (salonDateString(dateRange.from, tz) === salonDateString(dateRange.to, tz)) {
+      return new Date(dateRange.from).toLocaleDateString('fr-FR', {
         day: 'numeric',
         month: 'short',
         year: '2-digit',
+        timeZone: tz,
       });
     }
     return `${formatDateDisplay(dateRange.from)} - ${formatDateDisplay(dateRange.to)}`;
   };
 
   const shiftPeriod = (direction: -1 | 1) => {
-    const from = new Date(dateRange.from);
-    from.setHours(0, 0, 0, 0);
-    const to = new Date(dateRange.to);
-    to.setHours(0, 0, 0, 0);
+    const fromStart = startOfDayInSalon(dateRange.from, tz);
+    const toStart = startOfDayInSalon(dateRange.to, tz);
 
-    // Count calendar days in the range (same day = 1)
-    const spanDays = Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    // Span in salon-local days (rounded — DST transitions make a "day" 23 or 25h).
+    const spanDays =
+      Math.round((toStart.getTime() - fromStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-    const newFrom = new Date(from);
-    newFrom.setDate(newFrom.getDate() + direction * spanDays);
-    newFrom.setHours(0, 0, 0, 0);
-    const newTo = new Date(newFrom);
-    newTo.setDate(newTo.getDate() + spanDays - 1);
-    newTo.setHours(23, 59, 59, 999);
+    const newFrom = addDaysInSalon(fromStart, direction * spanDays, tz);
+    const newTo = endOfDayInSalon(addDaysInSalon(newFrom, spanDays - 1, tz), tz);
 
-    // Label: only "Hier" / "Aujourd'hui" / "Demain" for single-day ranges
+    // Label: only "Hier" / "Aujourd'hui" / "Demain" for single-day ranges, in salon-local
     let label: string | undefined;
     if (spanDays === 1) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const diffDays = Math.round((newFrom.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffDays === 0) label = "Aujourd'hui";
-      else if (diffDays === -1) label = 'Hier';
-      else if (diffDays === 1) label = 'Demain';
+      const newFromStr = salonDateString(newFrom, tz);
+      const todayStr = salonDateString(new Date(), tz);
+      const tomorrowStr = salonDateString(addDaysInSalon(new Date(), 1, tz), tz);
+      const yesterdayStr = salonDateString(addDaysInSalon(new Date(), -1, tz), tz);
+      if (newFromStr === todayStr) label = "Aujourd'hui";
+      else if (newFromStr === yesterdayStr) label = 'Hier';
+      else if (newFromStr === tomorrowStr) label = 'Demain';
     }
 
     onChange({ from: newFrom, to: newTo, label });
@@ -487,7 +486,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
           className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 ring-1 ring-black/5 flex overflow-hidden w-[800px] animate-in fade-in zoom-in-95 duration-200 origin-top-right"
           style={{ zIndex: 'var(--z-drawer-panel)' }}
         >
-          <PresetSidebar currentLabel={dateRange.label} onSelect={handlePresetSelect} />
+          <PresetSidebar presets={presets} currentLabel={dateRange.label} onSelect={handlePresetSelect} />
 
           <div className="flex-1 p-5 flex flex-col">
             {/* Header Inputs */}
@@ -571,7 +570,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
                     {viewDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
                   </span>
                 </div>
-                <MonthGrid monthDate={viewDate} tempRange={tempRange} onDayClick={handleDayClick} />
+                <MonthGrid monthDate={viewDate} tempRange={tempRange} tz={tz} onDayClick={handleDayClick} />
               </div>
 
               {/* Separator */}
@@ -598,6 +597,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
                 <MonthGrid
                   monthDate={nextMonthDate}
                   tempRange={tempRange}
+                  tz={tz}
                   onDayClick={handleDayClick}
                 />
               </div>
@@ -663,7 +663,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
                 className="px-5 py-3 border-b border-slate-100 overflow-x-auto flex gap-2"
                 style={{ scrollbarWidth: 'none' }}
               >
-                {PRESETS.map((preset) => (
+                {presets.map((preset) => (
                   <button
                     key={preset.label}
                     type="button"
@@ -733,7 +733,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ dateRange, onC
                     <ChevronRight size={18} />
                   </button>
                 </div>
-                <MonthGrid monthDate={viewDate} tempRange={tempRange} onDayClick={handleDayClick} />
+                <MonthGrid monthDate={viewDate} tempRange={tempRange} tz={tz} onDayClick={handleDayClick} />
               </div>
 
               {/* Sticky footer */}

@@ -1,7 +1,9 @@
 import { Calendar, Clock, TrendingUp, User } from 'lucide-react';
 import type React from 'react';
 import { useMemo } from 'react';
+import { useSalonTimezone } from '../../../hooks/useSalonTimezone';
 import { formatName } from '../../../lib/format';
+import { salonDateString, todayInSalon } from '../../../lib/salonTime';
 import type { StaffMember, WorkSchedule } from '../../../types';
 import { useStaffAppointments } from '../hooks/useStaffAppointments';
 
@@ -44,18 +46,19 @@ export const StaffAgendaTab: React.FC<StaffAgendaTabProps> = ({ staff }) => {
     staff.schedule,
   );
 
-  // Group upcoming appointments by day (excluding today)
-  const todayStr = new Date().toDateString();
+  // Group upcoming appointments by day (excluding today, in the salon's timezone)
+  const tz = useSalonTimezone();
+  const todayStr = todayInSalon(tz);
   const upcomingByDay = useMemo(() => {
     const groups: Record<string, any[]> = {};
     for (const apt of upcoming) {
-      const d = new Date(apt.date).toDateString();
+      const d = salonDateString(apt.date, tz);
       if (d === todayStr) continue;
       if (!groups[d]) groups[d] = [];
       groups[d].push(apt);
     }
-    return Object.entries(groups).sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime());
-  }, [upcoming, todayStr]);
+    return Object.entries(groups).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  }, [upcoming, todayStr, tz]);
 
   if (isLoading) {
     return (
