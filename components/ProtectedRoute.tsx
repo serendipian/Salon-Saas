@@ -3,16 +3,17 @@ import type React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
-import type { AuthAction, AuthResource } from '../lib/auth.types';
+import type { AuthAction, AuthResource, Role } from '../lib/auth.types';
 import { SuspendedPage } from '../pages/SuspendedPage';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   action?: AuthAction;
   resource?: AuthResource;
+  deniedRoles?: Role[];
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, action, resource }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, action, resource, deniedRoles }) => {
   const { isAuthenticated, isLoading, activeSalon, memberships, role, profile } = useAuth();
   const { can } = usePermissions(role);
   const location = useLocation();
@@ -44,6 +45,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, action
   if (activeSalon.is_suspended) return <SuspendedPage />;
 
   if (action && resource && !can(action, resource)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (role && deniedRoles?.includes(role)) {
     return <Navigate to="/dashboard" replace />;
   }
 
