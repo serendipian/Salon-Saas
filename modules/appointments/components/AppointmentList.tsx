@@ -1,6 +1,7 @@
 import { Plus, Search, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { FreshnessIndicator } from '../../../components/FreshnessIndicator';
+import { PageHeader } from '../../../components/PageHeader';
 import { ViewToggle } from '../../../components/ViewToggle';
 import { useMediaQuery } from '../../../context/MediaQueryContext';
 import { useViewMode } from '../../../hooks/useViewMode';
@@ -59,11 +60,10 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
 
   return (
     <div className="animate-in fade-in">
-      {/* Header */}
-      <div className="space-y-3 mb-4 sm:mb-6">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 truncate">Rendez-vous</h1>
+      <PageHeader
+        title="Rendez-vous"
+        meta={
+          <>
             {freshnessUpdatedAt !== undefined && (
               <div className="hidden sm:block">
                 <FreshnessIndicator updatedAt={freshnessUpdatedAt} />
@@ -75,8 +75,10 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                 Supprimés
               </span>
             )}
-          </div>
-          <div className="flex items-center gap-2">
+          </>
+        }
+        actions={
+          <>
             {onToggleDeleted && (
               <button
                 onClick={onToggleDeleted}
@@ -102,9 +104,9 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                 <span>Nouveau RDV</span>
               </button>
             )}
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div
         className={`bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col ${showDeleted ? 'opacity-80' : ''}`}

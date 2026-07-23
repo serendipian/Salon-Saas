@@ -40,6 +40,7 @@ import {
 } from 'recharts';
 import { DateRangePicker } from '../../components/DateRangePicker';
 import { FreshnessIndicator } from '../../components/FreshnessIndicator';
+import { PageHeader } from '../../components/PageHeader';
 import { SafeResponsiveContainer as ResponsiveContainer } from '../../components/SafeResponsiveContainer';
 import { useAuth } from '../../context/AuthContext';
 import { useFreshness } from '../../hooks/useFreshness';
@@ -698,29 +699,30 @@ export const DashboardModule: React.FC = () => {
 
   return (
     <div className="w-full space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-slate-900">Tableau de Bord</h1>
+      <PageHeader
+        title="Tableau de Bord"
+        meta={
           <div className="hidden sm:block">
             <FreshnessIndicator updatedAt={lastUpdated} />
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <DateRangePicker
-            dateRange={dateRange}
-            onChange={setDateRange}
-            minDate={canViewPastDates ? undefined : startOfDayInSalon(new Date(), salonTimezone)}
-          />
-          <button
-            onClick={() => navigate('/calendar/new')}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors shadow-sm"
-          >
-            <Plus size={16} />
-            <span className="hidden sm:inline">Rendez-vous</span>
-          </button>
-        </div>
-      </div>
+        }
+        actions={
+          <>
+            <DateRangePicker
+              dateRange={dateRange}
+              onChange={setDateRange}
+              minDate={canViewPastDates ? undefined : startOfDayInSalon(new Date(), salonTimezone)}
+            />
+            <button
+              onClick={() => navigate('/calendar/new')}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors shadow-sm"
+            >
+              <Plus size={16} />
+              <span className="hidden sm:inline">Rendez-vous</span>
+            </button>
+          </>
+        }
+      />
 
       {/* Revenue / Expenses / Bonus / Résultat Net Cards */}
       {canViewFinancials && (

@@ -1,7 +1,8 @@
-import { Activity, CalendarDays, ChevronLeft, TrendingUp, User, Wallet } from 'lucide-react';
+import { Activity, CalendarDays, TrendingUp, User, Wallet } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { PageHeader } from '../../../components/PageHeader';
 import { useTransactions } from '../../../hooks/useTransactions';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
 import { useSettings } from '../../settings/hooks/useSettings';
@@ -112,12 +113,7 @@ export const StaffDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <button
-        onClick={() => navigate('/team')}
-        className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
-      >
-        <ChevronLeft className="w-4 h-4" /> Équipe
-      </button>
+      <PageHeader title={`${staff.firstName} ${staff.lastName}`} backTo="/team" backLabel="Équipe" />
 
       <StaffHeader
         staff={staff}

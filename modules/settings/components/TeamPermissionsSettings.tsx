@@ -1,7 +1,7 @@
-import { ArrowLeft, Mail, ShieldCheck, Users } from 'lucide-react';
+import { Mail, ShieldCheck, Users } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { PageHeader } from '../../../components/PageHeader';
 import { useAuth } from '../../../context/AuthContext';
 import { useTeamSettings } from '../hooks/useTeamSettings';
 import { InvitationsTab } from './InvitationsTab';
@@ -11,7 +11,6 @@ import { RolePermissionsEditor } from './RolePermissionsEditor';
 type TabId = 'members' | 'invitations' | 'permissions';
 
 export const TeamPermissionsSettings: React.FC = () => {
-  const navigate = useNavigate();
   const { role } = useAuth();
   const isOwner = role === 'owner';
   const tabs = [
@@ -45,15 +44,7 @@ export const TeamPermissionsSettings: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full animate-in slide-in-from-right-8 duration-300 w-full">
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => navigate('/settings')}
-          className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold text-slate-900">Équipe & Permissions</h1>
-      </div>
+      <PageHeader title="Équipe & Permissions" backTo="/settings" backLabel="Retour aux réglages" />
 
       <div className="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit mb-6">
         {tabs.map((tab) => (

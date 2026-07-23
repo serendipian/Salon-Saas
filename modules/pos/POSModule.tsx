@@ -2,6 +2,7 @@ import { History } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PageHeader } from '../../components/PageHeader';
 import { useMediaQuery } from '../../context/MediaQueryContext';
 import { useSalonPermissions } from '../../hooks/useSalonPermissions';
 import type {
@@ -238,22 +239,23 @@ export const POSModule: React.FC = () => {
 
   return (
     <div className="w-full flex flex-col gap-4" style={isMobile ? { height: '100%' } : {}}>
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Caisse</h1>
-        {canViewHistory && (
-          <button
-            onClick={() => navigate('/pos/historique')}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors shadow-sm"
-          >
-            <History size={16} />
-            Historique
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Caisse"
+        actions={
+          canViewHistory && (
+            <button
+              onClick={() => navigate('/pos/historique')}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors shadow-sm"
+            >
+              <History size={16} />
+              Historique
+            </button>
+          )
+        }
+      />
 
       <div
-        className={`flex w-full bg-slate-100 overflow-hidden ${isMobile ? 'flex-col flex-1 min-h-0' : 'h-[calc(100vh-10rem)] rounded-xl border border-slate-200 shadow-sm'}`}
+        className={`flex w-full bg-slate-100 overflow-hidden ${isMobile ? 'flex-col flex-1 min-h-0' : 'h-[calc(100vh-11rem)] rounded-xl border border-slate-200 shadow-sm'}`}
       >
         <POSCatalog
           viewMode={viewMode}

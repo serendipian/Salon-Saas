@@ -1,7 +1,7 @@
-import { ChevronLeft } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PageHeader } from '../../../components/PageHeader';
 import { useToast } from '../../../context/ToastContext';
 import type { StaffMember } from '../../../types';
 import { TeamForm } from '../components/TeamForm';
@@ -40,13 +40,7 @@ export const NewStaffPage: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <button
-        onClick={() => navigate('/team')}
-        className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
-      >
-        <ChevronLeft className="w-4 h-4" />
-        Retour
-      </button>
+      <PageHeader title="Nouveau membre" backTo="/team" backLabel="Retour à l'équipe" />
       <TeamForm
         onSave={handleSave}
         onCancel={() => navigate('/team')}

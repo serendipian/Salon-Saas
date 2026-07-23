@@ -25,6 +25,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useMediaQuery } from '../context/MediaQueryContext';
+import { PageHeaderProvider, usePageHeaderSlot } from '../context/PageHeaderContext';
 import { useSalonPermissions } from '../hooks/useSalonPermissions';
 import { useSidebar } from '../hooks/useSidebar';
 import type { AuthResource } from '../lib/auth.types';
@@ -142,7 +143,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   </div>
 );
 
-export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNavigate }) => {
+const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate }) => {
+  const { setSlot, count: pageHeaderCount } = usePageHeaderSlot();
   const { profile, activeSalon, role, memberships, switchSalon, signOut } = useAuth();
   const { can } = useSalonPermissions();
   const { isMobile, isTabletPortrait } = useMediaQuery();
@@ -661,6 +663,17 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
 
         <ConnectionBanner />
 
+        {/* Shared page title bar — full-bleed white strip flush under the topbar.
+            Content is portaled in by each page's <PageHeader>; hidden when empty. */}
+        <div
+          ref={setSlot}
+          className={
+            pageHeaderCount > 0
+              ? 'shrink-0 bg-white border-b border-slate-200/70'
+              : 'hidden'
+          }
+        />
+
         {/* Scrollable Content */}
         <main
           className={`flex-1 overflow-auto relative p-4 md:p-6 scroll-smooth custom-scrollbar ${
@@ -711,3 +724,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeModule, onNaviga
     </div>
   );
 };
+
+export const Layout: React.FC<LayoutProps> = (props) => (
+  <PageHeaderProvider>
+    <LayoutInner {...props} />
+  </PageHeaderProvider>
+);

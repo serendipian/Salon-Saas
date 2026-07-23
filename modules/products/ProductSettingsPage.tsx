@@ -1,7 +1,7 @@
-import { ArrowLeft, Layers, Settings, Tag } from 'lucide-react';
+import { Layers, Settings, Tag } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { PageHeader } from '../../components/PageHeader';
 import { BrandsTab } from './components/BrandsTab';
 import { ProductCategoriesTab } from './components/ProductCategoriesTab';
 import { ProductGeneralTab } from './components/ProductGeneralTab';
@@ -9,7 +9,6 @@ import { ProductGeneralTab } from './components/ProductGeneralTab';
 type Tab = 'categories' | 'brands' | 'general';
 
 export function ProductSettingsPage() {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('categories');
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
@@ -20,17 +19,7 @@ export function ProductSettingsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header with back link */}
-      <div>
-        <button
-          onClick={() => navigate('/products')}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors mb-3"
-        >
-          <ArrowLeft size={16} />
-          Produits
-        </button>
-        <h1 className="text-2xl font-bold text-slate-900">Paramètres des produits</h1>
-      </div>
+      <PageHeader title="Paramètres des produits" backTo="/products" backLabel="Retour aux produits" />
 
       {/* Tabs */}
       <div className="border-b border-slate-200">

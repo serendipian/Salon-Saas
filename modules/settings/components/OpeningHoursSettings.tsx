@@ -1,8 +1,9 @@
-import { ArrowLeft, Clock, Loader2, Save } from 'lucide-react';
+import { Clock, Loader2, Save } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Section } from '../../../components/FormElements';
+import { PageHeader } from '../../../components/PageHeader';
 import { WorkScheduleEditor } from '../../../components/WorkScheduleEditor';
 import type { WorkSchedule } from '../../../types';
 import { useSettings } from '../hooks/useSettings';
@@ -44,15 +45,11 @@ export const OpeningHoursSettings: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full animate-in slide-in-from-right-8 duration-300 w-full">
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => navigate('/settings')}
-          className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold text-slate-900">Horaires d'ouverture</h1>
-        <div className="ml-auto">
+      <PageHeader
+        title="Horaires d'ouverture"
+        backTo="/settings"
+        backLabel="Retour aux réglages"
+        actions={
           <button
             onClick={handleSave}
             disabled={isSaving}
@@ -61,8 +58,8 @@ export const OpeningHoursSettings: React.FC = () => {
             {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="space-y-6">
         <Section title="Heures d'ouverture du salon">

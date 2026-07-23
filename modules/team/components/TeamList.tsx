@@ -1,5 +1,6 @@
 import { BarChart2, Plus, Search, Users } from 'lucide-react';
 import type React from 'react';
+import { PageHeader } from '../../../components/PageHeader';
 import { ViewToggle } from '../../../components/ViewToggle';
 import { useViewMode } from '../../../hooks/useViewMode';
 import type { Appointment, ServiceCategory, StaffMember } from '../../../types';
@@ -43,33 +44,9 @@ export const TeamList: React.FC<TeamListProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-900">Équipe</h1>
-        <div className="flex items-center gap-3">
-          <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
-            <button
-              onClick={() => onTabChange('members')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeTab === 'members'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Users size={15} />
-              Membres
-            </button>
-            <button
-              onClick={() => onTabChange('performance')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeTab === 'performance'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <BarChart2 size={15} />
-              Performance
-            </button>
-          </div>
+      <PageHeader
+        title="Équipe"
+        actions={
           <button
             onClick={onAdd}
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
@@ -77,7 +54,32 @@ export const TeamList: React.FC<TeamListProps> = ({
             <Plus size={16} />
             <span className="hidden sm:inline">Nouveau Membre</span>
           </button>
-        </div>
+        }
+      />
+
+      <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
+        <button
+          onClick={() => onTabChange('members')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'members'
+              ? 'bg-white text-slate-900 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Users size={15} />
+          Membres
+        </button>
+        <button
+          onClick={() => onTabChange('performance')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'performance'
+              ? 'bg-white text-slate-900 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <BarChart2 size={15} />
+          Performance
+        </button>
       </div>
 
       {activeTab === 'performance' && performanceContent}

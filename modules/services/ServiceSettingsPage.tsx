@@ -1,6 +1,6 @@
-import { ArrowLeft, Layers, Package, Settings, Star } from 'lucide-react';
+import { Layers, Package, Settings, Star } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { PageHeader } from '../../components/PageHeader';
 import { CategoriesTab } from './components/CategoriesTab';
 import { FavoritesTab } from './components/FavoritesTab';
 import { GeneralTab } from './components/GeneralTab';
@@ -9,22 +9,11 @@ import { PacksTab } from './components/PacksTab';
 type Tab = 'favorites' | 'packs' | 'categories' | 'general';
 
 export function ServiceSettingsPage() {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('favorites');
 
   return (
     <div className="space-y-6">
-      {/* Header with back link */}
-      <div>
-        <button
-          onClick={() => navigate('/services')}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors mb-3"
-        >
-          <ArrowLeft size={16} />
-          Services
-        </button>
-        <h1 className="text-2xl font-bold text-slate-900">Paramètres des services</h1>
-      </div>
+      <PageHeader title="Paramètres des services" backTo="/services" backLabel="Retour aux services" />
 
       {/* Tabs */}
       <div className="border-b border-slate-200">

@@ -1,8 +1,9 @@
-import { ArrowLeft, Camera, Loader2, Save, Store } from 'lucide-react';
+import { Camera, Loader2, Save, Store } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, Section, Select } from '../../../components/FormElements';
+import { PageHeader } from '../../../components/PageHeader';
 import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { supabase } from '../../../lib/supabase';
@@ -90,15 +91,11 @@ export const GeneralSettings: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full animate-in slide-in-from-right-8 duration-300 w-full">
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => navigate('/settings')}
-          className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold text-slate-900">Paramètres Généraux</h1>
-        <div className="ml-auto">
+      <PageHeader
+        title="Paramètres Généraux"
+        backTo="/settings"
+        backLabel="Retour aux réglages"
+        actions={
           <button
             onClick={handleSave}
             className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
@@ -106,8 +103,8 @@ export const GeneralSettings: React.FC = () => {
             <Save size={16} />
             Enregistrer
           </button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left column — main content */}

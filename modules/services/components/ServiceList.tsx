@@ -2,6 +2,7 @@ import { Plus, Search, Settings } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PageHeader } from '../../../components/PageHeader';
 import { ViewToggle } from '../../../components/ViewToggle';
 import { useSalonPermissions } from '../../../hooks/useSalonPermissions';
 import { useViewMode } from '../../../hooks/useViewMode';
@@ -44,28 +45,30 @@ export const ServiceList: React.FC<ServiceListProps> = ({
   const groupByCategory = selectedCategoryId === null;
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-      <div className="flex justify-between items-end">
-        <h1 className="text-2xl font-bold text-slate-900">Services</h1>
-        <div className="flex gap-3">
-          {canEditServices && (
+    <div className="animate-in fade-in slide-in-from-bottom-2">
+      <PageHeader
+        title="Services"
+        actions={
+          <>
+            {canEditServices && (
+              <button
+                onClick={() => navigate('/services/settings')}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors"
+                title="Paramètres des services"
+              >
+                <Settings size={18} className="text-slate-600" />
+              </button>
+            )}
             <button
-              onClick={() => navigate('/services/settings')}
-              className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors"
-              title="Paramètres des services"
+              onClick={onAdd}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
             >
-              <Settings size={18} className="text-slate-600" />
+              <Plus size={16} />
+              <span className="hidden sm:inline">Nouveau Service</span>
             </button>
-          )}
-          <button
-            onClick={onAdd}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
-          >
-            <Plus size={16} />
-            Nouveau Service
-          </button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
         {/* Search + View toggle */}

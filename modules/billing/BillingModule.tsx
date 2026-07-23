@@ -1,10 +1,10 @@
 // modules/billing/BillingModule.tsx
 
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { PageHeader } from '../../components/PageHeader';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { CurrentPlanCard } from './components/CurrentPlanCard';
@@ -16,7 +16,6 @@ import { UpgradeSuccess } from './components/UpgradeSuccess';
 import { useBilling } from './hooks/useBilling';
 
 export const BillingModule: React.FC = () => {
-  const navigate = useNavigate();
   const { activeSalon } = useAuth();
   const [searchParams] = useSearchParams();
   const isSuccess = searchParams.get('success') === 'true';
@@ -106,16 +105,11 @@ export const BillingModule: React.FC = () => {
         </div>
       )}
 
-      {/* Back + title */}
-      <div className="flex items-center gap-4 mb-8">
-        <button
-          onClick={() => navigate('/settings')}
-          className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-2xl font-bold text-slate-900">Abonnement & Facturation</h1>
-      </div>
+      <PageHeader
+        title="Abonnement & Facturation"
+        backTo="/settings"
+        backLabel="Retour aux réglages"
+      />
 
       <div className="space-y-6">
         <CurrentPlanCard

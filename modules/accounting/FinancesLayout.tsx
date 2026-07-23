@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { DateRangePicker } from '../../components/DateRangePicker';
 import { FreshnessIndicator } from '../../components/FreshnessIndicator';
+import { PageHeader } from '../../components/PageHeader';
 import { useAuth } from '../../context/AuthContext';
 import { useFreshness } from '../../hooks/useFreshness';
 import { useAccounting } from './hooks/useAccounting';
@@ -54,16 +55,33 @@ export const FinancesLayout: React.FC = () => {
 
   return (
     <div className="w-full relative">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pt-2">
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
-            {isRevenus && (
-              <div className="hidden sm:block">
-                <FreshnessIndicator updatedAt={lastUpdated} />
-              </div>
+      <PageHeader
+        title={pageTitle}
+        meta={
+          isRevenus && (
+            <div className="hidden sm:block">
+              <FreshnessIndicator updatedAt={lastUpdated} />
+            </div>
+          )
+        }
+        actions={
+          <>
+            <DateRangePicker dateRange={accounting.dateRange} onChange={accounting.setDateRange} />
+            {isDepenses && expenseTab === 'COURANTES' && newExpenseHandler && (
+              <button
+                onClick={newExpenseHandler}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors shadow-sm"
+              >
+                <Plus size={16} />
+                <span className="hidden sm:inline">Nouvelle Dépense</span>
+              </button>
             )}
-          </div>
+          </>
+        }
+      />
+
+      {(isRevenus || isDepenses) && (
+        <div className="mb-6">
           {isRevenus && (
             <div className="inline-flex gap-1 bg-slate-100/80 p-1 rounded-xl ring-1 ring-slate-200/60">
               {[
@@ -105,19 +123,7 @@ export const FinancesLayout: React.FC = () => {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <DateRangePicker dateRange={accounting.dateRange} onChange={accounting.setDateRange} />
-          {isDepenses && expenseTab === 'COURANTES' && newExpenseHandler && (
-            <button
-              onClick={newExpenseHandler}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors shadow-sm"
-            >
-              <Plus size={16} />
-              <span className="hidden sm:inline">Nouvelle Dépense</span>
-            </button>
-          )}
-        </div>
-      </div>
+      )}
       <Outlet
         context={{
           ...accounting,

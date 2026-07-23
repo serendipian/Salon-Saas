@@ -1,6 +1,7 @@
 import { Plus, Search } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
+import { PageHeader } from '../../../components/PageHeader';
 import { ViewToggle } from '../../../components/ViewToggle';
 import { useViewMode } from '../../../hooks/useViewMode';
 import type { Client } from '../../../types';
@@ -35,17 +36,19 @@ export const ClientList: React.FC<ClientListProps> = ({
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in">
-      <div className="flex justify-between items-end">
-        <h1 className="text-2xl font-bold text-slate-900">Clients</h1>
-        <button
-          onClick={onAdd}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
-        >
-          <Plus size={16} />
-          Nouveau Client
-        </button>
-      </div>
+    <div className="animate-in fade-in">
+      <PageHeader
+        title="Clients"
+        actions={
+          <button
+            onClick={onAdd}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
+          >
+            <Plus size={16} />
+            <span className="hidden sm:inline">Nouveau Client</span>
+          </button>
+        }
+      />
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
         {/* Filter Bar */}

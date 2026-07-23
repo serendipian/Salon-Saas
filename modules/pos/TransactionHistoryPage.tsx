@@ -1,6 +1,5 @@
 import {
   ArrowDown,
-  ArrowLeft,
   ArrowRightLeft,
   ArrowUp,
   ArrowUpDown,
@@ -20,7 +19,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { PageHeader } from '../../components/PageHeader';
 import { useAuth } from '../../context/AuthContext';
 import { useMediaQuery } from '../../context/MediaQueryContext';
 import { useSalonPermissions } from '../../hooks/useSalonPermissions';
@@ -52,8 +51,6 @@ const toLocalDate = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 export const TransactionHistoryPage: React.FC = () => {
-  const navigate = useNavigate();
-
   const { activeSalon } = useAuth();
   const salonTimezone = activeSalon?.timezone ?? 'Europe/Paris';
   const { can } = useSalonPermissions();
@@ -374,20 +371,12 @@ export const TransactionHistoryPage: React.FC = () => {
 
   return (
     <div className="w-full space-y-4 md:space-y-6">
-      {/* Header: stacks on mobile (title row + date nav row) */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-2 md:gap-3">
-          <button
-            onClick={() => navigate('/pos')}
-            className="p-2 -ml-1 rounded-lg hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-900"
-            aria-label="Retour à la caisse"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-            Historique
-          </h1>
-          {!isHistoryToday && (
+      <PageHeader
+        title="Historique"
+        backTo="/pos"
+        backLabel="Retour à la caisse"
+        meta={
+          !isHistoryToday && (
             <button
               onClick={() => {
                 setHistoryDate(new Date());
@@ -397,51 +386,53 @@ export const TransactionHistoryPage: React.FC = () => {
                 setSortBy('time');
                 setSortDesc(true);
               }}
-              className="md:hidden ml-auto text-xs font-medium text-blue-500 hover:text-blue-700 active:text-blue-800 transition-colors"
+              className="md:hidden text-xs font-medium text-blue-500 hover:text-blue-700 active:text-blue-800 transition-colors"
             >
               Aujourd'hui
             </button>
-          )}
-        </div>
-        <div className="flex items-center gap-1 md:gap-2">
-          <button
-            onClick={goToPrevDay}
-            className="p-2 md:p-1.5 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition-colors text-slate-500 hover:text-slate-900"
-            aria-label="Jour précédent"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <span className="flex-1 md:flex-none rounded-full bg-slate-100 px-3 py-1.5 md:py-1 text-sm font-medium text-slate-700 md:min-w-[120px] text-center tabular-nums">
-            {historyDateLabel}
-            <span className="ml-1.5 text-xs text-slate-400 font-normal">
-              {filteredTransactions.length}
+          )
+        }
+        actions={
+          <>
+            <button
+              onClick={goToPrevDay}
+              className="p-2 md:p-1.5 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition-colors text-slate-500 hover:text-slate-900"
+              aria-label="Jour précédent"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className="md:flex-none rounded-full bg-slate-100 px-3 py-1.5 md:py-1 text-sm font-medium text-slate-700 md:min-w-[120px] text-center tabular-nums">
+              {historyDateLabel}
+              <span className="ml-1.5 text-xs text-slate-400 font-normal">
+                {filteredTransactions.length}
+              </span>
             </span>
-          </span>
-          <button
-            onClick={goToNextDay}
-            disabled={isHistoryToday}
-            className={`p-2 md:p-1.5 rounded-lg transition-colors ${isHistoryToday ? 'text-slate-200 cursor-not-allowed' : 'hover:bg-slate-100 active:bg-slate-200 text-slate-500 hover:text-slate-900'}`}
-            aria-label="Jour suivant"
-          >
-            <ChevronRight size={18} />
-          </button>
-          {!isHistoryToday && (
             <button
-              onClick={() => {
-                setHistoryDate(new Date());
-                setSearchTerm('');
-                setStatusFilter('all');
-                setPaymentFilter(null);
-                setSortBy('time');
-                setSortDesc(true);
-              }}
-              className="hidden md:inline text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors ml-1"
+              onClick={goToNextDay}
+              disabled={isHistoryToday}
+              className={`p-2 md:p-1.5 rounded-lg transition-colors ${isHistoryToday ? 'text-slate-200 cursor-not-allowed' : 'hover:bg-slate-100 active:bg-slate-200 text-slate-500 hover:text-slate-900'}`}
+              aria-label="Jour suivant"
             >
-              Aujourd'hui
+              <ChevronRight size={18} />
             </button>
-          )}
-        </div>
-      </div>
+            {!isHistoryToday && (
+              <button
+                onClick={() => {
+                  setHistoryDate(new Date());
+                  setSearchTerm('');
+                  setStatusFilter('all');
+                  setPaymentFilter(null);
+                  setSortBy('time');
+                  setSortDesc(true);
+                }}
+                className="hidden md:inline text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors ml-1"
+              >
+                Aujourd'hui
+              </button>
+            )}
+          </>
+        }
+      />
 
       {/* Stat Cards */}
       {dailySummary && (

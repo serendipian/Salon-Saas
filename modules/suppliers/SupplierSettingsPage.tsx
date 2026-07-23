@@ -1,28 +1,21 @@
-import { ArrowLeft, Layers, Settings } from 'lucide-react';
+import { Layers, Settings } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { PageHeader } from '../../components/PageHeader';
 import { SupplierCategoriesTab } from './components/SupplierCategoriesTab';
 import { SupplierGeneralTab } from './components/SupplierGeneralTab';
 
 type Tab = 'categories' | 'general';
 
 export function SupplierSettingsPage() {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('categories');
 
   return (
     <div className="space-y-6">
-      {/* Header with back link */}
-      <div>
-        <button
-          onClick={() => navigate('/suppliers')}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors mb-3"
-        >
-          <ArrowLeft size={16} />
-          Fournisseurs
-        </button>
-        <h1 className="text-2xl font-bold text-slate-900">Paramètres</h1>
-      </div>
+      <PageHeader
+        title="Paramètres des fournisseurs"
+        backTo="/suppliers"
+        backLabel="Retour aux fournisseurs"
+      />
 
       {/* Tabs */}
       <div className="border-b border-slate-200">

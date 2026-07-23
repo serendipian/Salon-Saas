@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import type React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PageHeader } from '../../../components/PageHeader';
 
 const SettingCard = ({
   icon: Icon,
@@ -95,9 +96,7 @@ export const SettingsIndexPage: React.FC = () => {
 
   return (
     <div className="w-full pb-10 animate-in fade-in duration-500">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Réglages</h1>
-      </div>
+      <PageHeader title="Réglages" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {sections.map((section) => (

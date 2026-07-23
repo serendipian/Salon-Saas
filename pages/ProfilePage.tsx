@@ -1,6 +1,7 @@
 import { Building2, Settings2, Shield, User } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
+import { PageHeader } from '../components/PageHeader';
 import { useAuth } from '../context/AuthContext';
 import { useLinkedStaffMember } from '../hooks/useLinkedStaffMember';
 import { ProfileDangerZone } from './profile/ProfileDangerZone';
@@ -33,10 +34,10 @@ export const ProfilePage: React.FC = () => {
 
   return (
     <div className="w-full pb-10 animate-in fade-in duration-500">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Mon Profil</h1>
-        <p className="text-slate-500 mt-1">Gérez vos informations personnelles et préférences</p>
-      </div>
+      <PageHeader
+        title="Mon Profil"
+        subtitle="Gérez vos informations personnelles et préférences"
+      />
 
       {/* Horizontal Tabs */}
       <div className="border-b border-slate-200 mb-6">
