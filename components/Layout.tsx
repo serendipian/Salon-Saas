@@ -581,19 +581,24 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
                 aria-label="Menu du compte"
                 aria-expanded={showProfileMenu}
                 title={!isOpen ? displayName : undefined}
-                className={`group relative flex items-center w-full h-11 rounded-xl pl-[10px] pr-2 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-accent-300/60 ${
+                className={`group relative flex items-center w-full h-12 rounded-xl pl-[6px] pr-1 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-accent-300/60 ${
                   showProfileMenu ? 'bg-slate-100/70' : 'hover:bg-slate-50/80'
                 }`}
               >
+                {/* Same size and shape as the salon logo in the header (36px,
+                    rounded-[10px]), so the rail is bookended by matching marks.
+                    pl-6 puts its centre on the same optical axis as the 20px nav
+                    icons above (6 + 18 = 14 + 10) and keeps it inside the 48px
+                    content box of the collapsed rail. */}
                 {profile?.avatar_url ? (
                   <img
                     src={profile.avatar_url}
                     alt=""
-                    className="w-7 h-7 rounded-[8px] object-cover shrink-0 ring-1 ring-slate-200"
+                    className="w-9 h-9 rounded-[10px] object-cover shrink-0 shadow-sm ring-1 ring-slate-200/60"
                   />
                 ) : (
-                  <div className="w-7 h-7 rounded-[8px] bg-slate-900 text-white flex items-center justify-center shrink-0 ring-1 ring-slate-900/10">
-                    <span className="font-bold text-[10px]">{initials}</span>
+                  <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center text-white font-bold text-[13px] shrink-0 shadow-sm ring-1 ring-slate-900/20 tracking-tight">
+                    {initials}
                   </div>
                 )}
                 <span
@@ -610,9 +615,11 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
                     {roleLabel}
                   </span>
                 </span>
+                {/* Collapses to zero width when the rail is closed — left in the
+                    layout it would steal the 36px the avatar needs. */}
                 <span
-                  className={`shrink-0 mr-1 transition-opacity duration-200 ${
-                    isOpen ? 'opacity-100 delay-100' : 'opacity-0'
+                  className={`shrink-0 overflow-hidden transition-opacity duration-200 ${
+                    isOpen ? 'opacity-100 delay-100 w-2 mr-2' : 'opacity-0 w-0 mr-0'
                   }`}
                 >
                   <ConnectionStatusDot />

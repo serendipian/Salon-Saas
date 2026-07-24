@@ -737,9 +737,9 @@ export const DashboardModule: React.FC = () => {
 
       {isMobile && <div>{dateRangePicker}</div>}
 
-      {/* Today's Calendar + Side Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+      {/* Today's Calendar (3/4) + Side Cards (1/4) */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3">
           <TodayCalendarCard
             appointments={appointments}
             services={services}
