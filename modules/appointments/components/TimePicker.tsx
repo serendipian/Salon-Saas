@@ -49,7 +49,7 @@ export default function TimePicker({
           rounded-lg py-2.5 px-1 text-center transition-all
           ${
             isSelected
-              ? 'bg-blue-500 text-white shadow-sm'
+              ? 'bg-accent-500 text-white shadow-sm'
               : isDisabled
                 ? 'bg-slate-50 text-slate-300 cursor-not-allowed'
                 : 'bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:bg-blue-50 cursor-pointer'
@@ -85,7 +85,7 @@ export default function TimePicker({
                   rounded-lg py-2.5 px-1 text-center text-xs font-medium transition-all
                   ${
                     m === minute
-                      ? 'bg-blue-500 text-white shadow-sm'
+                      ? 'bg-accent-500 text-white shadow-sm'
                       : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50 cursor-pointer'
                   }
                 `}

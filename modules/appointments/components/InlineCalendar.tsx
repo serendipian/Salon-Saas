@@ -110,7 +110,7 @@ export default function InlineCalendar({ value, onChange, disabledDates }: Inlin
                 text-xs p-2 rounded-lg transition-all font-medium
                 ${
                   isSelected
-                    ? 'bg-blue-500 text-white shadow-sm'
+                    ? 'bg-accent-500 text-white shadow-sm'
                     : isToday
                       ? 'text-blue-600 ring-1 ring-blue-400 bg-blue-50'
                       : isPast

@@ -98,7 +98,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
             {!showDeleted && (
               <button
                 onClick={onAdd}
-                className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white h-10 px-3.5 sm:px-4 rounded-lg font-medium text-sm shadow-sm transition-all shrink-0 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus:outline-none"
+                className="inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 active:bg-accent-700 text-white h-10 px-3.5 sm:px-4 rounded-lg font-medium text-sm shadow-sm transition-all shrink-0 focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-2 focus:outline-none"
               >
                 <Plus size={16} />
                 <span>Nouveau RDV</span>

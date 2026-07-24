@@ -108,7 +108,7 @@ const PermissionRow: React.FC<PermissionRowProps> = ({
           checked={effectiveGranted}
           disabled={disabled}
           onChange={(e) => onToggle(e.target.checked)}
-          className="w-4 h-4 rounded border-slate-300 text-blue-500 focus:ring-blue-500"
+          className="w-4 h-4 rounded border-slate-300 text-blue-500 focus:ring-accent-500"
         />
         <span className="text-sm text-slate-700 truncate">{ACTION_LABELS[action]}</span>
         {isOverridden && (

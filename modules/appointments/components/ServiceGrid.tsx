@@ -116,7 +116,7 @@ export default function ServiceGrid({
                       {svc.name}
                     </span>
                     {isSelected && (
-                      <span className="w-4 h-4 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0">
+                      <span className="w-4 h-4 bg-accent-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0">
                         <Check size={10} strokeWidth={2.5} />
                       </span>
                     )}
@@ -184,7 +184,7 @@ export default function ServiceGrid({
                   </span>
                   <span className="text-xs text-slate-400">{svc.variants.length} var.</span>
                   {isSelected && (
-                    <span className="w-4 h-4 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0">
+                    <span className="w-4 h-4 bg-accent-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0">
                       <Check size={10} strokeWidth={2.5} />
                     </span>
                   )}
@@ -297,7 +297,7 @@ export default function ServiceGrid({
                   </span>
                   <span className="text-sm text-slate-400 truncate">— {variant.name}</span>
                   {isSelected && (
-                    <span className="w-4 h-4 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0 ml-auto">
+                    <span className="w-4 h-4 bg-accent-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0 ml-auto">
                       <Check size={10} strokeWidth={2.5} />
                     </span>
                   )}
@@ -347,7 +347,7 @@ export default function ServiceGrid({
                   {svc.name}
                 </span>
                 {isSelected && (
-                  <span className="w-4 h-4 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0">
+                  <span className="w-4 h-4 bg-accent-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0">
                     <Check size={10} strokeWidth={2.5} />
                   </span>
                 )}
@@ -402,7 +402,7 @@ export default function ServiceGrid({
               <span className="text-sm font-medium text-slate-900 truncate flex-1">{svc.name}</span>
               <span className="text-xs text-slate-400">{svc.variants.length} var.</span>
               {isSelected && (
-                <span className="w-4 h-4 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0">
+                <span className="w-4 h-4 bg-accent-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm shrink-0">
                   <Check size={10} strokeWidth={2.5} />
                 </span>
               )}

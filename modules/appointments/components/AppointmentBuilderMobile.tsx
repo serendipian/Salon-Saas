@@ -23,7 +23,7 @@ interface AppointmentBuilderMobileProps extends UseAppointmentFormProps {
 }
 
 const STATUS_OPTIONS: { value: AppointmentStatus; label: string; color: string }[] = [
-  { value: 'SCHEDULED' as AppointmentStatus, label: 'Planifi\u00e9', color: 'bg-blue-500' },
+  { value: 'SCHEDULED' as AppointmentStatus, label: 'Planifi\u00e9', color: 'bg-accent-500' },
   { value: 'IN_PROGRESS' as AppointmentStatus, label: 'En cours', color: 'bg-violet-500' },
   { value: 'COMPLETED' as AppointmentStatus, label: 'Compl\u00e9t\u00e9', color: 'bg-green-500' },
   { value: 'CANCELLED' as AppointmentStatus, label: 'Annul\u00e9', color: 'bg-red-500' },
@@ -166,7 +166,7 @@ export default function AppointmentBuilderMobile({
 
             {selectedClient ? (
               <div className="bg-white rounded-2xl border border-slate-200 p-3 flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">
+                <div className="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">
                   {selectedClient.firstName.charAt(0)}
                   {selectedClient.lastName.charAt(0)}
                 </div>
@@ -191,7 +191,7 @@ export default function AppointmentBuilderMobile({
               </div>
             ) : form.newClient ? (
               <div className="bg-blue-50 rounded-2xl border border-blue-200 p-3 flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">
+                <div className="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">
                   {form.newClient.firstName.charAt(0)}
                   {form.newClient.lastName ? form.newClient.lastName.charAt(0) : ''}
                 </div>
@@ -228,7 +228,7 @@ export default function AppointmentBuilderMobile({
                     setClientSheetOpen(true);
                     setNewClientOnOpen(true);
                   }}
-                  className="w-[52px] h-[52px] bg-blue-500 rounded-2xl flex items-center justify-center shrink-0 hover:bg-blue-600 transition-colors"
+                  className="w-[52px] h-[52px] bg-accent-500 rounded-2xl flex items-center justify-center shrink-0 hover:bg-accent-600 transition-colors"
                 >
                   <Plus size={20} className="text-white" />
                 </button>
@@ -262,7 +262,7 @@ export default function AppointmentBuilderMobile({
                     >
                       {/* Service header */}
                       <div className="px-4 py-3 flex items-start gap-3">
-                        <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 mt-0.5">
+                        <div className="w-7 h-7 bg-accent-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 mt-0.5">
                           {i + 1}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -326,7 +326,7 @@ export default function AppointmentBuilderMobile({
                       onClick={() => openServiceSheet(i)}
                       className="w-full bg-white rounded-2xl border border-slate-200 px-4 py-3 flex items-center gap-3 min-h-[52px] hover:border-slate-300 transition-colors"
                     >
-                      <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0">
+                      <div className="w-7 h-7 bg-accent-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0">
                         {i + 1}
                       </div>
                       <span className="text-sm text-slate-400 flex-1 text-left">
@@ -438,7 +438,7 @@ export default function AppointmentBuilderMobile({
                   : 'Veuillez compléter le formulaire.';
               addToast({ type: 'warning', message });
             }}
-            className={`w-full bg-blue-500 text-white py-3.5 rounded-2xl min-h-[52px] font-semibold text-sm flex items-center justify-center gap-2 transition-colors hover:bg-blue-600 ${
+            className={`w-full bg-accent-500 text-white py-3.5 rounded-2xl min-h-[52px] font-semibold text-sm flex items-center justify-center gap-2 transition-colors hover:bg-accent-600 ${
               form.hasCompleteServiceBlock && (form.clientId || form.newClient) ? '' : 'opacity-50'
             }`}
           >
@@ -555,8 +555,8 @@ export default function AppointmentBuilderMobile({
 
               const baseClass = isActive
                 ? hasConflict
-                  ? 'bg-blue-500 text-white shadow-sm ring-2 ring-amber-400'
-                  : 'bg-blue-500 text-white shadow-sm'
+                  ? 'bg-accent-500 text-white shadow-sm ring-2 ring-amber-400'
+                  : 'bg-accent-500 text-white shadow-sm'
                 : hasConflict
                   ? 'bg-amber-50 text-amber-800 border border-amber-300'
                   : isScheduled
@@ -677,7 +677,7 @@ export default function AppointmentBuilderMobile({
                 : 'Conflit de planning. Modifiez le membre ou le créneau.';
             addToast({ type: 'warning', message });
           }}
-          className={`w-full bg-blue-500 text-white py-3.5 rounded-2xl min-h-[52px] font-semibold text-sm flex items-center justify-center gap-2 transition-colors hover:bg-blue-600 ${
+          className={`w-full bg-accent-500 text-white py-3.5 rounded-2xl min-h-[52px] font-semibold text-sm flex items-center justify-center gap-2 transition-colors hover:bg-accent-600 ${
             form.canSubmit ? '' : 'opacity-50'
           }`}
         >

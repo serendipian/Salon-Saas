@@ -232,7 +232,7 @@ export default function ServiceBlock({
     >
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
+          <span className="bg-accent-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
             {index + 1 + stepOffset}
           </span>
           <span className="text-slate-900 text-base font-semibold">{headerTitle}</span>

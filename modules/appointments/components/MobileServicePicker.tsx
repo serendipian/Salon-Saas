@@ -365,7 +365,7 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
               onClick={() => handleCategoryTap(cat.id)}
               className={`${pillBaseClass} ${
                 activeCategoryId === cat.id
-                  ? 'bg-blue-500 text-white shadow-sm'
+                  ? 'bg-accent-500 text-white shadow-sm'
                   : 'bg-slate-100 text-slate-600'
               } ${disabled ? pillDisabledClass : ''}`}
             >
@@ -511,7 +511,7 @@ export const MobileServicePicker: React.FC<MobileServicePickerProps> = ({
           type="button"
           disabled={selectedItems.length === 0}
           onClick={handleConfirm}
-          className="w-full bg-blue-500 text-white py-3 rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-600 transition-colors"
+          className="w-full bg-accent-500 text-white py-3 rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent-600 transition-colors"
         >
           Valider ({selectedItems.length})
         </button>

@@ -18,10 +18,36 @@
 
   /* Extra slate shade */
   --color-slate-850: #1e293b;
+
+  /* Accent — the app's main colour, chosen in Réglages → Apparence.
+     These point at runtime variables (below) so switching the palette is a
+     matter of restyling :root, with no rebuild. Use `accent-*` utilities for
+     brand surfaces (primary buttons, active nav, focus rings) — NOT for
+     categorical meaning like appointment status or payment method, which
+     keep their own literal colours. */
+  --color-accent-50: var(--accent-50);
+  --color-accent-100: var(--accent-100);
+  --color-accent-200: var(--accent-200);
+  --color-accent-300: var(--accent-300);
+  --color-accent-400: var(--accent-400);
+  --color-accent-500: var(--accent-500);
+  --color-accent-600: var(--accent-600);
+  --color-accent-700: var(--accent-700);
 }
 
 /* z-index scale for consistent layering */
 :root {
+  /* Default accent = the blue the app already shipped with. Overridden at
+     runtime by lib/appearancePrefs.ts when another palette is selected. */
+  --accent-50: #eff6ff;
+  --accent-100: #dbeafe;
+  --accent-200: #bfdbfe;
+  --accent-300: #93c5fd;
+  --accent-400: #60a5fa;
+  --accent-500: #3b82f6;
+  --accent-600: #2563eb;
+  --accent-700: #1d4ed8;
+
   --z-content: 0;
   --z-topbar: 20;
   --z-peek-bar: 21; /* above BottomTabBar (topbar) */

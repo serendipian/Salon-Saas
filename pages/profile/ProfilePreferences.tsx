@@ -59,7 +59,7 @@ export const ProfilePreferences: React.FC = () => {
               onChange={() =>
                 handleToggle('notification_email', profile?.notification_email ?? true)
               }
-              className="w-5 h-5 rounded border-slate-300 text-blue-500 focus:ring-blue-500"
+              className="w-5 h-5 rounded border-slate-300 text-blue-500 focus:ring-accent-500"
             />
           </label>
 
@@ -72,7 +72,7 @@ export const ProfilePreferences: React.FC = () => {
               type="checkbox"
               checked={profile?.notification_sms ?? false}
               onChange={() => handleToggle('notification_sms', profile?.notification_sms ?? false)}
-              className="w-5 h-5 rounded border-slate-300 text-blue-500 focus:ring-blue-500"
+              className="w-5 h-5 rounded border-slate-300 text-blue-500 focus:ring-accent-500"
             />
           </label>
         </div>

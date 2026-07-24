@@ -103,7 +103,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
                 <span
                   className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-sm ${
                     today
-                      ? 'bg-blue-500 text-white font-bold'
+                      ? 'bg-accent-500 text-white font-bold'
                       : cell.isCurrentMonth
                         ? 'text-slate-900 font-medium hover:bg-slate-100'
                         : 'text-slate-400'

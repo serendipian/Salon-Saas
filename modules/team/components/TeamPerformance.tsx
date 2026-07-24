@@ -18,7 +18,7 @@ function RatioBar({ ratio }: { ratio: number | null }) {
     ratio >= 2.5
       ? 'bg-emerald-500'
       : ratio >= 1.5
-        ? 'bg-blue-500'
+        ? 'bg-accent-500'
         : ratio >= 1
           ? 'bg-amber-500'
           : 'bg-rose-500';

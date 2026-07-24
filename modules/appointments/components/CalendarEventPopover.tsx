@@ -96,7 +96,7 @@ export const CalendarEventPopover: React.FC<CalendarEventPopoverProps> = ({
         </button>
         <button
           onClick={() => onEdit(appointment.id)}
-          className="flex-1 px-3 py-1.5 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+          className="flex-1 px-3 py-1.5 text-sm font-medium bg-accent-500 hover:bg-accent-600 text-white rounded-lg transition-colors"
         >
           Modifier
         </button>

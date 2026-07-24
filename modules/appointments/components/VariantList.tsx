@@ -24,7 +24,7 @@ export default function VariantList({ variants, selectedVariantId, onSelect }: V
             }`}
           >
             <span
-              className={`w-3 h-3 rounded-full flex-shrink-0 transition-colors ${isSelected ? 'bg-blue-500 shadow-sm' : 'border-2 border-slate-300'}`}
+              className={`w-3 h-3 rounded-full flex-shrink-0 transition-colors ${isSelected ? 'bg-accent-500 shadow-sm' : 'border-2 border-slate-300'}`}
             />
             <span
               className={`text-[11px] flex-1 ${isSelected ? 'text-slate-900 font-medium' : 'text-slate-700'}`}

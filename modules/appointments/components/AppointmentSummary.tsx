@@ -139,7 +139,7 @@ export default function AppointmentSummary({
             onClick={onToggleNotes}
             className={`px-3.5 py-2 rounded-xl text-xs transition-all flex items-center gap-2 ${
               showNotes
-                ? 'bg-blue-500 text-white font-medium shadow-sm'
+                ? 'bg-accent-500 text-white font-medium shadow-sm'
                 : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'
             }`}
           >

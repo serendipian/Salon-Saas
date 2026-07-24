@@ -353,7 +353,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                     <span className="text-sm font-medium text-blue-600">Envoi en cours...</span>
                     <div className="w-48 h-1.5 bg-blue-100 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-blue-500 rounded-full animate-pulse"
+                        className="h-full bg-accent-500 rounded-full animate-pulse"
                         style={{ width: '70%' }}
                       />
                     </div>

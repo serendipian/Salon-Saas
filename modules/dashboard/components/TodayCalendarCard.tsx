@@ -245,7 +245,7 @@ const AppointmentPopover: React.FC<{
         </button>
         <button
           onClick={onEdit}
-          className="flex-1 px-3 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+          className="flex-1 px-3 py-2 text-sm font-medium bg-accent-500 hover:bg-accent-600 text-white rounded-lg transition-colors"
         >
           Modifier
         </button>
@@ -601,7 +601,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="appearance-none text-[11px] font-medium pl-6 pr-5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-300 cursor-pointer"
+                  className="appearance-none text-[11px] font-medium pl-6 pr-5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-accent-300 cursor-pointer"
                 >
                   <option value="">Toutes catégories</option>
                   {availableCategories.map((c) => (
@@ -772,7 +772,7 @@ export const TodayCalendarCard: React.FC<TodayCalendarCardProps> = ({
                             border-l-[3px]
                             ${onUpdateAppointment && !done ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}
                             ${isBeingDragged ? 'opacity-30 scale-95' : ''}
-                            ${isSelected ? 'ring-2 ring-blue-300/40 shadow-lg z-20' : ''}
+                            ${isSelected ? 'ring-2 ring-accent-300/40 shadow-lg z-20' : ''}
                             ${
                               done
                                 ? 'border-slate-300 bg-slate-50/80 text-slate-400 hover:bg-slate-100/80'

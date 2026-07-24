@@ -356,7 +356,7 @@ export const PackForm: React.FC<PackFormProps> = ({
                                         type="button"
                                         onClick={() => addVariant(svc.id, variant.id)}
                                         aria-label="Ajouter"
-                                        className="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                                        className="w-7 h-7 rounded-lg flex items-center justify-center bg-accent-500 text-white hover:bg-accent-600 transition-colors"
                                       >
                                         <Plus size={14} />
                                       </button>

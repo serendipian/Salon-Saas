@@ -493,7 +493,7 @@ export const TransactionHistoryPage: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Rechercher..."
-                className="w-full pl-8 pr-3 h-10 md:h-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full pl-8 pr-3 h-10 md:h-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-500/20"
               />
             </div>
             {/* Mobile sort inline with search */}

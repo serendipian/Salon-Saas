@@ -110,7 +110,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               onClick={() => onViewModeChange(key)}
               className={`h-9 px-2.5 sm:px-3 text-sm font-medium transition-colors ${
                 viewMode === key
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-accent-500 text-white'
                   : 'bg-white text-slate-600 hover:bg-slate-50'
               } ${idx > 0 ? 'border-l border-slate-300' : ''}`}
               aria-pressed={viewMode === key}

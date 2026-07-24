@@ -174,13 +174,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     onMouseMove={() => setActiveIndex(index)}
                     onClick={() => commit(item.id)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
-                      isActive ? 'bg-blue-50/70' : ''
+                      isActive ? 'bg-accent-50/70' : ''
                     }`}
                   >
                     <Icon
                       size={17}
                       strokeWidth={1.75}
-                      className={isActive ? 'text-blue-600' : 'text-slate-400'}
+                      className={isActive ? 'text-accent-600' : 'text-slate-400'}
                     />
                     <span
                       className={`flex-1 text-[13.5px] ${

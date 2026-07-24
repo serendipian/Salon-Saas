@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './src/index.css';
 import App from './App';
+import { applyAccent, getAccentId } from './lib/appearancePrefs';
 import { setupCrossTabSync } from './lib/crossTabSync';
 import { initSentry } from './lib/sentry';
 
@@ -36,6 +37,9 @@ const queryClient = new QueryClient({
 });
 
 setupCrossTabSync(queryClient);
+
+// Paint the saved accent before first render so there is no colour flash.
+applyAccent(getAccentId());
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

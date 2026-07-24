@@ -95,19 +95,19 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     className={`
       group relative flex items-center w-full rounded-xl transition-colors duration-150
       ${compact ? 'h-9' : 'h-11'}
-      ${active ? 'bg-blue-50/70' : 'hover:bg-slate-50/80'}
+      ${active ? 'bg-accent-50/70' : 'hover:bg-slate-50/80'}
     `}
   >
     {/* Active accent pill — sits at the sidebar's left edge, breaking out of the item's mx-3 padding. */}
     {active && (
       <span
         aria-hidden
-        className="absolute -left-3 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-blue-500"
+        className="absolute -left-3 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-accent-500"
       />
     )}
     <button
       onClick={onClick}
-      className="flex-1 flex items-center h-full min-w-0 pl-[14px] pr-2 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
+      className="flex-1 flex items-center h-full min-w-0 pl-[14px] pr-2 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-accent-300/60"
       title={!isOpen ? label : undefined}
       aria-current={active ? 'page' : undefined}
     >
@@ -116,7 +116,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         strokeWidth={active ? 2 : 1.6}
         className={`shrink-0 transition-colors duration-150 ${
           compact ? 'ml-[1px]' : ''
-        } ${active ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-700'}`}
+        } ${active ? 'text-accent-600' : 'text-slate-400 group-hover:text-slate-700'}`}
       />
       <span
         className={`
@@ -146,7 +146,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         className={`
           mr-1.5 p-1.5 rounded-md text-slate-400 transition-all duration-200
           hover:bg-slate-100 hover:text-slate-700
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-300/60
           ${isOpen ? 'opacity-100 delay-100' : 'opacity-0 pointer-events-none'}
         `}
       >
@@ -392,7 +392,7 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
                 {memberships.length > 1 ? (
                   <button
                     onClick={() => setShowSalonMenu(!showSalonMenu)}
-                    className="flex items-center gap-1 max-w-full hover:opacity-70 transition-opacity outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60 rounded"
+                    className="flex items-center gap-1 max-w-full hover:opacity-70 transition-opacity outline-none focus-visible:ring-2 focus-visible:ring-accent-300/60 rounded"
                   >
                     <span className="font-bold text-[15px] tracking-tight text-slate-900 leading-none truncate">
                       {activeSalon?.name || 'Salon'}
@@ -426,7 +426,7 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
                       setShowSalonMenu(false);
                     }}
                     className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-2.5 ${
-                      m.salon_id === activeSalon?.id ? 'bg-blue-50/40' : ''
+                      m.salon_id === activeSalon?.id ? 'bg-accent-50/40' : ''
                     }`}
                   >
                     {m.salon.logo_url ? (
@@ -449,7 +449,7 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
                       </div>
                     </div>
                     {m.salon_id === activeSalon?.id && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent-500 shrink-0" />
                     )}
                   </button>
                 ))}
@@ -500,7 +500,7 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
                                 <button
                                   onClick={() => onNavigate(sub.id)}
                                   tabIndex={isOpen && financeOpen ? 0 : -1}
-                                  className={`relative w-full text-left pl-3 pr-2 py-1.5 rounded-md text-[12.5px] tracking-[-0.005em] transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60 ${
+                                  className={`relative w-full text-left pl-3 pr-2 py-1.5 rounded-md text-[12.5px] tracking-[-0.005em] transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-accent-300/60 ${
                                     isSubActive
                                       ? 'text-slate-900 font-semibold'
                                       : 'text-slate-500 hover:text-slate-900 font-medium'
@@ -509,7 +509,7 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
                                   {isSubActive && (
                                     <span
                                       aria-hidden
-                                      className="absolute -left-[13px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-500 ring-2 ring-white"
+                                      className="absolute -left-[13px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-accent-500 ring-2 ring-white"
                                     />
                                   )}
                                   {sub.label}
@@ -587,7 +587,7 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
                 aria-label="Menu du compte"
                 aria-expanded={showProfileMenu}
                 title={!isOpen ? displayName : undefined}
-                className={`group relative flex items-center w-full h-9 rounded-xl pl-[11px] pr-2 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60 ${
+                className={`group relative flex items-center w-full h-9 rounded-xl pl-[11px] pr-2 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-accent-300/60 ${
                   showProfileMenu ? 'bg-slate-100/70' : 'hover:bg-slate-50/80'
                 }`}
               >
@@ -716,7 +716,7 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
               onClick={() => setShowCommandPalette(true)}
               aria-label="Rechercher (Ctrl+K)"
               title="Rechercher  ⌘K"
-              className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
+              className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all outline-none focus-visible:ring-2 focus-visible:ring-accent-300/60"
             >
               <Search size={19} strokeWidth={1.6} />
             </button>

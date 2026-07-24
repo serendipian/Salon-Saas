@@ -86,7 +86,7 @@ export const DeleteAppointmentModal: React.FC<DeleteAppointmentModalProps> = ({
                   key={opt.code}
                   className={`flex items-start gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-colors ${
                     isActive
-                      ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                      ? 'border-accent-500 bg-blue-50 ring-2 ring-blue-200'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >

@@ -75,7 +75,7 @@ export default function ClientField({
     return (
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shadow-sm">
+          <div className="w-9 h-9 bg-accent-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shadow-sm">
             {initials}
           </div>
           <div>
@@ -158,7 +158,7 @@ export default function ClientField({
               setSearchTerm('');
               onNewClientChange({ firstName: '', lastName: '', phone: '' });
             }}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap flex items-center gap-1.5 min-h-[44px] transition-colors shadow-sm"
+            className="bg-accent-500 hover:bg-accent-600 text-white px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap flex items-center gap-1.5 min-h-[44px] transition-colors shadow-sm"
           >
             <UserPlus size={14} /> Nouveau
           </button>

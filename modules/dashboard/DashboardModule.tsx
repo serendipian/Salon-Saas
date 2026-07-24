@@ -726,7 +726,7 @@ export const DashboardModule: React.FC = () => {
             {!isMobile && dateRangePicker}
             <button
               onClick={() => navigate('/calendar/new')}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-accent-500 hover:bg-accent-600 text-white rounded-lg transition-colors shadow-sm"
             >
               <Plus size={16} />
               <span className="hidden sm:inline">Rendez-vous</span>
@@ -1284,7 +1284,7 @@ export const DashboardModule: React.FC = () => {
             {/* Revenue line */}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                <div className="w-2 h-2 rounded-full bg-accent-500 shrink-0" />
                 <span className="text-xs font-medium text-slate-600">Chiffre d'Affaires</span>
               </div>
               <span className="text-xs font-bold text-blue-600">{formatPrice(stats.revenue)}</span>
@@ -1514,7 +1514,7 @@ export const DashboardModule: React.FC = () => {
                       </div>
                       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                          className="h-full bg-accent-500 rounded-full transition-all duration-500"
                           style={{ width: `${barWidth}%` }}
                         />
                       </div>

@@ -70,7 +70,7 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
               <div className="text-xs font-semibold uppercase">{DAYS_HEADER[i]}</div>
               <div
                 className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold mt-0.5 ${
-                  today ? 'bg-blue-500 text-white' : ''
+                  today ? 'bg-accent-500 text-white' : ''
                 }`}
               >
                 {day.getDate()}

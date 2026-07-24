@@ -79,7 +79,7 @@ export const FinancesLayout: React.FC = () => {
             {isDepenses && expenseTab === 'COURANTES' && newExpenseHandler && (
               <button
                 onClick={newExpenseHandler}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors shadow-sm"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-accent-500 hover:bg-accent-600 text-white rounded-lg transition-colors shadow-sm"
               >
                 <Plus size={16} />
                 <span className="hidden sm:inline">Nouvelle Dépense</span>

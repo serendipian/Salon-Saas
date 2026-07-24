@@ -26,7 +26,7 @@ export default function ReminderToggle({ value, onChange, compact = false }: Rem
         <button
           type="button"
           onClick={toggle}
-          className={`w-10 h-[22px] rounded-full relative transition-colors ${isOn ? 'bg-blue-500' : 'bg-slate-300'}`}
+          className={`w-10 h-[22px] rounded-full relative transition-colors ${isOn ? 'bg-accent-500' : 'bg-slate-300'}`}
         >
           <div
             className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all shadow-sm ${isOn ? 'right-[2px]' : 'left-[2px]'}`}
@@ -46,7 +46,7 @@ export default function ReminderToggle({ value, onChange, compact = false }: Rem
         <button
           type="button"
           onClick={toggle}
-          className={`w-10 h-[22px] rounded-full relative transition-colors ${isOn ? 'bg-blue-500' : 'bg-slate-300'}`}
+          className={`w-10 h-[22px] rounded-full relative transition-colors ${isOn ? 'bg-accent-500' : 'bg-slate-300'}`}
         >
           <div
             className={`w-[18px] h-[18px] bg-white rounded-full absolute top-[2px] transition-all shadow-sm ${isOn ? 'right-[2px]' : 'left-[2px]'}`}
@@ -62,7 +62,7 @@ export default function ReminderToggle({ value, onChange, compact = false }: Rem
               onClick={() => onChange(opt.value)}
               className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
                 value === opt.value
-                  ? 'bg-blue-500 text-white shadow-sm'
+                  ? 'bg-accent-500 text-white shadow-sm'
                   : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'
               }`}
             >

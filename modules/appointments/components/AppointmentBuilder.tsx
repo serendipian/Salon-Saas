@@ -119,7 +119,7 @@ export default function AppointmentBuilder({
               onClick={handleSaveClick}
               disabled={form.isSaving}
               aria-disabled={!form.canSubmit}
-              className={`bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm flex items-center gap-2 shrink-0 ${
+              className={`bg-accent-500 hover:bg-accent-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm flex items-center gap-2 shrink-0 ${
                 form.canSubmit ? '' : 'opacity-50'
               }`}
             >
@@ -159,7 +159,7 @@ export default function AppointmentBuilder({
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2.5">
-                <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
+                <span className="bg-accent-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
                   1
                 </span>
                 <span className="text-slate-900 text-base font-semibold">Client</span>
@@ -171,7 +171,7 @@ export default function AppointmentBuilder({
                     setShowExistingClientSearch(true);
                     form.setNewClient(null);
                   }}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-sm"
+                  className="bg-accent-500 hover:bg-accent-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-sm"
                 >
                   <Users size={12} />
                   Existant

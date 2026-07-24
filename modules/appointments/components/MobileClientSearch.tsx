@@ -171,7 +171,7 @@ export const MobileClientSearch: React.FC<MobileClientSearchProps> = ({
             type="button"
             onClick={handleCreate}
             disabled={!firstName.trim()}
-            className="flex-1 min-h-[48px] rounded-xl bg-blue-600 text-sm font-medium text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 min-h-[48px] rounded-xl bg-accent-600 text-sm font-medium text-white hover:bg-accent-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Ajouter
           </button>

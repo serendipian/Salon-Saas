@@ -68,7 +68,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
               onClick={handleBack}
               aria-label={backLabel}
               title={backLabel}
-              className="-ml-1.5 shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
+              className="-ml-1.5 shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent-300/60"
             >
               <ChevronLeft size={20} strokeWidth={2} />
             </button>

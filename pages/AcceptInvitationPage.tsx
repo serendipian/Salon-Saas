@@ -243,7 +243,7 @@ export const AcceptInvitationPage: React.FC = () => {
                           setErrorMessage(null);
                         }}
                         placeholder="Minimum 8 caractères"
-                        className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
+                        className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-accent-500 pr-10"
                         required
                         minLength={8}
                       />

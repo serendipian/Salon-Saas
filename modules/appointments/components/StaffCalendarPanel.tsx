@@ -50,7 +50,7 @@ export default function StaffCalendarPanel({
       <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">
-            <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
+            <span className="bg-accent-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
               3
             </span>
             <span className="text-slate-900 text-base font-semibold">Équipe</span>
@@ -70,7 +70,7 @@ export default function StaffCalendarPanel({
                   }}
                   className={`px-3.5 py-2 rounded-xl text-xs transition-all flex items-center gap-2 ${
                     isActive
-                      ? 'bg-blue-500 text-white font-medium shadow-sm'
+                      ? 'bg-accent-500 text-white font-medium shadow-sm'
                       : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'
                   }`}
                 >
@@ -114,7 +114,7 @@ export default function StaffCalendarPanel({
       <div className="border-2 border-blue-400 rounded-2xl p-4 bg-blue-50/30 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">
-            <span className="bg-blue-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
+            <span className="bg-accent-500 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
               4
             </span>
             <span className="text-slate-900 text-base font-semibold">Date & Heure</span>
@@ -127,7 +127,7 @@ export default function StaffCalendarPanel({
               !hasStaff
                 ? 'opacity-40 cursor-not-allowed bg-white border border-slate-200 text-slate-400'
                 : reminderMinutes !== null
-                  ? 'bg-blue-500 text-white font-medium shadow-sm'
+                  ? 'bg-accent-500 text-white font-medium shadow-sm'
                   : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'
             }`}
           >
@@ -152,7 +152,7 @@ export default function StaffCalendarPanel({
                 onClick={() => onReminderChange(opt.value)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
                   reminderMinutes === opt.value
-                    ? 'bg-blue-500 text-white shadow-sm'
+                    ? 'bg-accent-500 text-white shadow-sm'
                     : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'
                 }`}
               >
