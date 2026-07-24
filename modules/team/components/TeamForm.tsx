@@ -1,5 +1,4 @@
 import {
-  ArrowLeft,
   Camera,
   Check,
   CreditCard,
@@ -127,17 +126,6 @@ export const TeamForm: React.FC<TeamFormProps> = ({
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 pb-10">
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={onCancel}
-          className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold text-slate-900">
-          {existingMember ? 'Modifier le Membre' : 'Nouveau Membre'}
-        </h1>
-      </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column (2/3) */}

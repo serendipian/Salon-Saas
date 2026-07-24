@@ -1,8 +1,9 @@
-import { ArrowLeft, Clock, Save, Trash2 } from 'lucide-react';
+import { Clock, Save, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { ConfirmModal } from '../../../components/ConfirmModal';
 import { Input, Section, Select, TextArea } from '../../../components/FormElements';
+import { PageHeader } from '../../../components/PageHeader';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import type { Service, ServiceCategory, ServiceVariant } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
@@ -91,17 +92,10 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 pb-10">
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={onCancel}
-          className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold text-slate-900">
-          {existingService ? 'Modifier le Service' : 'Nouveau Service'}
-        </h1>
-      </div>
+      <PageHeader
+        title={existingService ? 'Modifier le Service' : 'Nouveau Service'}
+        onBack={onCancel}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

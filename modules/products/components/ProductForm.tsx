@@ -1,7 +1,8 @@
-import { AlertTriangle, ArrowLeft, Save } from 'lucide-react';
+import { AlertTriangle, Save } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { Input, Section, Select, TextArea } from '../../../components/FormElements';
+import { PageHeader } from '../../../components/PageHeader';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import type { Product, ProductCategory, UsageType } from '../../../types';
 import { useSettings } from '../../settings/hooks/useSettings';
@@ -70,17 +71,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 pb-10">
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={onCancel}
-          className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold text-slate-900">
-          {existingProduct ? 'Modifier le Produit' : 'Nouveau Produit'}
-        </h1>
-      </div>
+      <PageHeader
+        title={existingProduct ? 'Modifier le Produit' : 'Nouveau Produit'}
+        onBack={onCancel}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

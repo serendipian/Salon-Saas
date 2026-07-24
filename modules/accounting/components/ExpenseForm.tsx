@@ -1,6 +1,5 @@
 import {
   Armchair,
-  ArrowLeft,
   ArrowRightLeft,
   Banknote,
   Building2,
@@ -37,6 +36,7 @@ import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { ConfirmModal } from '../../../components/ConfirmModal';
 import { Input, Section, Select } from '../../../components/FormElements';
+import { PageHeader } from '../../../components/PageHeader';
 import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { useFormValidation } from '../../../hooks/useFormValidation';
@@ -226,18 +226,10 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 pb-10">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={onCancel}
-          className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold text-slate-900">
-          {isEdit ? 'Modifier la Dépense' : 'Nouvelle Dépense'}
-        </h1>
-        <div className="ml-auto">
+      <PageHeader
+        title={isEdit ? 'Modifier la Dépense' : 'Nouvelle Dépense'}
+        onBack={onCancel}
+        actions={
           <button
             onClick={handleSubmit}
             disabled={isPending}
@@ -246,8 +238,8 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
             <Save size={16} />
             {isPending ? 'Enregistrement...' : 'Enregistrer'}
           </button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column — Core details */}

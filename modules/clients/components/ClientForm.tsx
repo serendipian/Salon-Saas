@@ -1,8 +1,9 @@
-import { AlertCircle, ArrowLeft, Instagram, Save, Trash2, User } from 'lucide-react';
+import { AlertCircle, Instagram, Save, Trash2, User } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { DatePicker } from '../../../components/DatePicker';
 import { Input, Section, Select, TextArea } from '../../../components/FormElements';
+import { PageHeader } from '../../../components/PageHeader';
 import { PhoneInput } from '../../../components/PhoneInput';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import type { Client, ClientPermissions } from '../../../types';
@@ -103,44 +104,38 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
   return (
     <div className="w-full pb-10 animate-in fade-in slide-in-from-bottom-4">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={onCancel}
-          className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold text-slate-900">
-          {existingClient ? 'Modifier le Client' : 'Nouveau Client'}
-        </h1>
-        <div className="ml-auto flex gap-3">
-          {onDelete && (
+      <PageHeader
+        title={existingClient ? 'Modifier le Client' : 'Nouveau Client'}
+        onBack={onCancel}
+        actions={
+          <>
+            {onDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                className="px-4 py-2 bg-white text-red-600 border border-red-200 rounded-lg font-medium text-sm hover:bg-red-50 transition-all flex items-center gap-2"
+              >
+                <Trash2 size={16} />
+                <span className="hidden sm:inline">Supprimer</span>
+              </button>
+            )}
             <button
               type="button"
-              onClick={onDelete}
-              className="px-4 py-2 bg-white text-red-600 border border-red-200 rounded-lg font-medium text-sm hover:bg-red-50 transition-all flex items-center gap-2"
+              onClick={onCancel}
+              className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium transition-all text-sm"
             >
-              <Trash2 size={16} />
-              Supprimer
+              Annuler
             </button>
-          )}
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium transition-all text-sm"
-          >
-            Annuler
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
-          >
-            <Save size={16} />
-            Enregistrer
-          </button>
-        </div>
-      </div>
+            <button
+              onClick={handleSubmit}
+              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium shadow-sm transition-all flex justify-center items-center gap-2 text-sm"
+            >
+              <Save size={16} />
+              <span className="hidden sm:inline">Enregistrer</span>
+            </button>
+          </>
+        }
+      />
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* --- LEFT COLUMN (2/3) --- */}

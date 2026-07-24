@@ -1,12 +1,11 @@
-import { ArrowLeft, Calculator, Info, Trash2, Users } from 'lucide-react';
+import { Calculator, Info, Trash2, Users } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Input } from '../../../components/FormElements';
+import { PageHeader } from '../../../components/PageHeader';
 import { useSettings } from '../hooks/useSettings';
 
 export const AccountingSettings: React.FC = () => {
-  const navigate = useNavigate();
   const { expenseCategories, updateExpenseCategories, salonSettings, updateSalonSettings } =
     useSettings();
 
@@ -51,18 +50,12 @@ export const AccountingSettings: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full animate-in slide-in-from-right-8 duration-300 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="p-4 border-b border-slate-200 flex items-center gap-4 bg-white">
-        <button
-          onClick={() => navigate('/settings')}
-          className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">Paramètres Comptables</h2>
-          <p className="text-xs text-slate-500">Gérez vos taxes et catégories de dépenses</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Paramètres Comptables"
+        subtitle="Gérez vos taxes et catégories de dépenses"
+        backTo="/settings"
+        backLabel="Retour aux réglages"
+      />
 
       <div className="flex flex-1 overflow-hidden">
         <div className="w-64 bg-slate-50 border-r border-slate-200 p-3 space-y-1 overflow-y-auto">

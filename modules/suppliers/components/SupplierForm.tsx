@@ -1,9 +1,10 @@
-import { ArrowLeft, Save, Settings, Trash2 } from 'lucide-react';
+import { Save, Settings, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmModal } from '../../../components/ConfirmModal';
 import { Input, Section, Select, TextArea } from '../../../components/FormElements';
+import { PageHeader } from '../../../components/PageHeader';
 import { PhoneInput } from '../../../components/PhoneInput';
 import { useFormValidation } from '../../../hooks/useFormValidation';
 import type { Supplier, SupplierCategory } from '../../../types';
@@ -59,17 +60,10 @@ export const SupplierForm: React.FC<SupplierFormProps> = ({
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 pb-10">
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={onCancel}
-          className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold text-slate-900">
-          {existingSupplier ? 'Modifier le Bénéficiaire' : 'Nouveau Bénéficiaire'}
-        </h1>
-      </div>
+      <PageHeader
+        title={existingSupplier ? 'Modifier le Bénéficiaire' : 'Nouveau Bénéficiaire'}
+        onBack={onCancel}
+      />
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

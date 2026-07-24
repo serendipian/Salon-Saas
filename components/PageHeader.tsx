@@ -16,6 +16,8 @@ interface PageHeaderProps {
   actions?: React.ReactNode;
   /** Route to navigate to from the back chevron. Omit for no back button. */
   backTo?: string;
+  /** Callback-based back (for inline views that use onCancel, not routing). Takes precedence over backTo. */
+  onBack?: () => void;
   /** Accessible label for the back button (also its tooltip). */
   backLabel?: string;
 }
@@ -33,6 +35,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   meta,
   actions,
   backTo,
+  onBack,
   backLabel = 'Retour',
 }) => {
   const { slot, register, unregister } = usePageHeaderSlot();
@@ -45,13 +48,19 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 
   if (!slot) return null;
 
+  const hasBack = Boolean(onBack || backTo);
+  const handleBack = () => {
+    if (onBack) onBack();
+    else if (backTo) navigate(backTo);
+  };
+
   return createPortal(
     <div className="flex items-center justify-between gap-3 sm:gap-4 px-4 md:px-6 h-full min-h-[60px]">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-        {backTo && (
+        {hasBack && (
           <button
             type="button"
-            onClick={() => navigate(backTo)}
+            onClick={handleBack}
             aria-label={backLabel}
             title={backLabel}
             className="-ml-1 shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
