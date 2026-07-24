@@ -68,8 +68,6 @@ interface SidebarItemProps {
   onSubmenuToggle?: (e: React.MouseEvent) => void;
   /** Small node pinned to the right of the label, revealed with it (e.g. a ⌘K hint). */
   trailing?: React.ReactNode;
-  /** Shorter row for the utility group, so the main nav keeps its vertical room. */
-  compact?: boolean;
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -89,12 +87,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   submenuOpen,
   onSubmenuToggle,
   trailing,
-  compact,
 }) => (
   <div
     className={`
-      group relative flex items-center w-full rounded-xl transition-colors duration-150
-      ${compact ? 'h-9' : 'h-11'}
+      group relative flex items-center w-full h-11 rounded-xl transition-colors duration-150
       ${active ? 'bg-accent-50/70' : 'hover:bg-slate-50/80'}
     `}
   >
@@ -112,11 +108,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       aria-current={active ? 'page' : undefined}
     >
       <Icon
-        size={compact ? 18 : 20}
+        size={20}
         strokeWidth={active ? 2 : 1.6}
         className={`shrink-0 transition-colors duration-150 ${
-          compact ? 'ml-[1px]' : ''
-        } ${active ? 'text-accent-600' : 'text-slate-400 group-hover:text-slate-700'}`}
+          active ? 'text-accent-600' : 'text-slate-400 group-hover:text-slate-700'
+        }`}
       />
       <span
         className={`
@@ -553,7 +549,6 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
             <div className="relative">
               <span data-notification-trigger>
                 <SidebarItem
-                  compact
                   icon={Bell}
                   label="Notifications"
                   active={showNotifications}
@@ -570,7 +565,6 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
             </div>
             {canViewSettings && (
               <SidebarItem
-                compact
                 icon={Settings}
                 label="Réglages"
                 active={activeModule === 'settings' || activeModule.startsWith('settings/')}
@@ -587,7 +581,7 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
                 aria-label="Menu du compte"
                 aria-expanded={showProfileMenu}
                 title={!isOpen ? displayName : undefined}
-                className={`group relative flex items-center w-full h-9 rounded-xl pl-[11px] pr-2 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-accent-300/60 ${
+                className={`group relative flex items-center w-full h-11 rounded-xl pl-[10px] pr-2 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-accent-300/60 ${
                   showProfileMenu ? 'bg-slate-100/70' : 'hover:bg-slate-50/80'
                 }`}
               >
@@ -595,15 +589,15 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
                   <img
                     src={profile.avatar_url}
                     alt=""
-                    className="w-[26px] h-[26px] rounded-[7px] object-cover shrink-0 ring-1 ring-slate-200"
+                    className="w-7 h-7 rounded-[8px] object-cover shrink-0 ring-1 ring-slate-200"
                   />
                 ) : (
-                  <div className="w-[26px] h-[26px] rounded-[7px] bg-slate-900 text-white flex items-center justify-center shrink-0 ring-1 ring-slate-900/10">
+                  <div className="w-7 h-7 rounded-[8px] bg-slate-900 text-white flex items-center justify-center shrink-0 ring-1 ring-slate-900/10">
                     <span className="font-bold text-[10px]">{initials}</span>
                   </div>
                 )}
                 <span
-                  className={`ml-[13px] flex-1 min-w-0 text-left leading-tight transition-[opacity,transform] duration-200 ${
+                  className={`ml-2 flex-1 min-w-0 text-left leading-tight transition-[opacity,transform] duration-200 ${
                     isOpen
                       ? 'opacity-100 translate-x-0 delay-75'
                       : 'opacity-0 -translate-x-1 pointer-events-none'
