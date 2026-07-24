@@ -91,10 +91,8 @@ export const StaffHeader: React.FC<StaffHeaderProps> = ({
               />
             </div>
             <div className="flex-1 min-w-0">
+              {/* The staff name lives in the shared title bar, so it isn't repeated here. */}
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-xl font-bold text-slate-900">
-                  {staff.firstName} {staff.lastName}
-                </h1>
                 <span
                   className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${roleColors[staff.role] || 'bg-slate-100 text-slate-700 border-slate-200'}`}
                 >

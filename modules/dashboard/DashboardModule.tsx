@@ -597,13 +597,15 @@ export const DashboardModule: React.FC = () => {
   // --- 4. Operational Data ---
   const [upcomingExpanded, setUpcomingExpanded] = useState(false);
   const upcomingAppointments = useMemo(() => {
-    // Show appointments after the selected period's end
-    const after = new Date(dateRange.to);
+    // Anchored on "now", not on the selected period: the card answers "what's
+    // next?" — the rest of today first, then the following days. Instant
+    // comparison, so no timezone conversion is needed here.
+    const now = Date.now();
     return appointments
-      .filter((a) => new Date(a.date) > after && a.status !== AppointmentStatus.CANCELLED)
+      .filter((a) => new Date(a.date).getTime() > now && a.status !== AppointmentStatus.CANCELLED)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(0, 10);
-  }, [appointments, dateRange]);
+  }, [appointments]);
 
   // --- 5. Top Services by Revenue ---
   const topServices = useMemo(() => {
@@ -734,6 +736,214 @@ export const DashboardModule: React.FC = () => {
       />
 
       {isMobile && <div>{dateRangePicker}</div>}
+
+      {/* Today's Calendar + Side Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <TodayCalendarCard
+            appointments={appointments}
+            services={services}
+            serviceCategories={serviceCategories}
+            staff={allStaff}
+            onUpdateAppointment={updateAppointment}
+            targetDate={dateRange.from}
+          />
+        </div>
+
+        <div className="space-y-6">
+          {/* Upcoming Appointments */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-5 pt-5 pb-3 flex justify-between items-center">
+              <h3 className="font-bold text-slate-800">Prochains RDV</h3>
+              <button
+                onClick={() => navigate('/calendar')}
+                className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"
+              >
+                Voir tout <ChevronRight size={12} />
+              </button>
+            </div>
+
+            <div className="px-3 pb-2">
+              {upcomingAppointments.length > 0 ? (
+                <>
+                  <div className="space-y-0.5">
+                    {(upcomingExpanded
+                      ? upcomingAppointments
+                      : upcomingAppointments.slice(0, 3)
+                    ).map((apt, _i) => {
+                      const date = new Date(apt.date);
+                      const endDate = new Date(date.getTime() + apt.durationMinutes * 60000);
+                      const timeStr = date.toLocaleTimeString('fr-FR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      });
+                      const endStr = endDate.toLocaleTimeString('fr-FR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      });
+                      const isToday = isTodayInSalon(date, salonTimezone);
+                      const isTomorrow = isTomorrowInSalon(date, salonTimezone);
+                      const dayLabel = isToday
+                        ? "Aujourd'hui"
+                        : isTomorrow
+                          ? 'Demain'
+                          : date.toLocaleDateString('fr-FR', {
+                              weekday: 'short',
+                              day: 'numeric',
+                              month: 'short',
+                            });
+
+                      return (
+                        <div
+                          key={apt.id}
+                          onClick={() => navigate(`/calendar/${apt.id}`)}
+                          className="group flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 cursor-pointer transition-all duration-150"
+                        >
+                          {/* Time block */}
+                          <div className="w-[52px] shrink-0 text-center">
+                            <div className="text-sm font-bold text-slate-900 leading-tight">
+                              {timeStr}
+                            </div>
+                            <div className="text-[10px] text-slate-400 leading-tight">{endStr}</div>
+                          </div>
+
+                          {/* Accent line */}
+                          <div
+                            className={`w-0.5 h-9 rounded-full shrink-0 ${isToday ? 'bg-blue-400' : 'bg-slate-200'}`}
+                          />
+
+                          {/* Details */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-sm font-semibold text-slate-800 truncate">
+                                {formatName(apt.clientName)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-xs text-slate-500 truncate flex items-center gap-1">
+                                <Scissors size={10} className="text-slate-400 shrink-0" />
+                                {apt.serviceName}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Day badge */}
+                          <span
+                            className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${isToday ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-500'}`}
+                          >
+                            {dayLabel}
+                          </span>
+
+                          <ChevronRight
+                            size={14}
+                            className="text-slate-300 group-hover:text-slate-500 transition-colors shrink-0"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Expand / Collapse */}
+                  {upcomingAppointments.length > 3 && (
+                    <button
+                      onClick={() => setUpcomingExpanded(!upcomingExpanded)}
+                      className="w-full mt-1 py-2 text-xs font-medium text-slate-500 hover:text-slate-700 flex items-center justify-center gap-1 transition-colors"
+                    >
+                      {upcomingExpanded ? (
+                        <>
+                          Voir moins <ChevronUp size={14} />
+                        </>
+                      ) : (
+                        <>
+                          +{upcomingAppointments.length - 3} autres <ChevronDown size={14} />
+                        </>
+                      )}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8 px-4">
+                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-2">
+                    <Calendar size={18} className="text-slate-300" />
+                  </div>
+                  <p className="text-sm text-slate-400">Aucun rendez-vous à venir</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    À partir de maintenant, toutes dates confondues
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Volume Chart */}
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-bold text-slate-800">Rendez-vous</h3>
+              <button
+                onClick={() => navigate('/calendar')}
+                className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"
+              >
+                Détails <ChevronRight size={12} />
+              </button>
+            </div>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                <BarChart data={chartData} barCategoryGap="25%">
+                  <defs>
+                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.4} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    dy={5}
+                    minTickGap={30}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    width={28}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(59, 130, 246, 0.04)', radius: 4 }}
+                    contentStyle={{
+                      borderRadius: '10px',
+                      border: '1px solid #e2e8f0',
+                      boxShadow: '0 4px 12px rgb(0 0 0 / 0.08)',
+                      fontSize: 12,
+                    }}
+                    formatter={(value) =>
+                      [`${typeof value === 'number' ? value : Number(value)} rdv`, ''] as [
+                        string,
+                        string,
+                      ]
+                    }
+                    labelStyle={{ fontWeight: 600, color: '#1e293b', marginBottom: 2 }}
+                  />
+                  <Bar
+                    dataKey="rdv"
+                    fill="#cbd5e1"
+                    radius={[6, 6, 0, 0]}
+                    maxBarSize={24}
+                    isAnimationActive={false}
+                  >
+                    {chartData.map((_entry, i) => (
+                      <Cell key={`rdv-${i}`} fill={chartHighlight.has(i) ? '#3b82f6' : '#cbd5e1'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Revenue / Expenses / Bonus / Résultat Net Cards */}
       {canViewFinancials && (
@@ -1177,211 +1387,6 @@ export const DashboardModule: React.FC = () => {
           subtitle="vs période préc."
           icon={XCircle}
         />
-      </div>
-
-      {/* Today's Calendar + Side Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <TodayCalendarCard
-            appointments={appointments}
-            services={services}
-            serviceCategories={serviceCategories}
-            staff={allStaff}
-            onUpdateAppointment={updateAppointment}
-            targetDate={dateRange.from}
-          />
-        </div>
-
-        <div className="space-y-6">
-          {/* Upcoming Appointments */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-5 pt-5 pb-3 flex justify-between items-center">
-              <h3 className="font-bold text-slate-800">Prochains RDV</h3>
-              <button
-                onClick={() => navigate('/calendar')}
-                className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"
-              >
-                Voir tout <ChevronRight size={12} />
-              </button>
-            </div>
-
-            <div className="px-3 pb-2">
-              {upcomingAppointments.length > 0 ? (
-                <>
-                  <div className="space-y-0.5">
-                    {(upcomingExpanded
-                      ? upcomingAppointments
-                      : upcomingAppointments.slice(0, 3)
-                    ).map((apt, _i) => {
-                      const date = new Date(apt.date);
-                      const endDate = new Date(date.getTime() + apt.durationMinutes * 60000);
-                      const timeStr = date.toLocaleTimeString('fr-FR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      });
-                      const endStr = endDate.toLocaleTimeString('fr-FR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      });
-                      const isToday = isTodayInSalon(date, salonTimezone);
-                      const isTomorrow = isTomorrowInSalon(date, salonTimezone);
-                      const dayLabel = isToday
-                        ? "Aujourd'hui"
-                        : isTomorrow
-                          ? 'Demain'
-                          : date.toLocaleDateString('fr-FR', {
-                              weekday: 'short',
-                              day: 'numeric',
-                              month: 'short',
-                            });
-
-                      return (
-                        <div
-                          key={apt.id}
-                          onClick={() => navigate(`/calendar/${apt.id}`)}
-                          className="group flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 cursor-pointer transition-all duration-150"
-                        >
-                          {/* Time block */}
-                          <div className="w-[52px] shrink-0 text-center">
-                            <div className="text-sm font-bold text-slate-900 leading-tight">
-                              {timeStr}
-                            </div>
-                            <div className="text-[10px] text-slate-400 leading-tight">{endStr}</div>
-                          </div>
-
-                          {/* Accent line */}
-                          <div
-                            className={`w-0.5 h-9 rounded-full shrink-0 ${isToday ? 'bg-blue-400' : 'bg-slate-200'}`}
-                          />
-
-                          {/* Details */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-sm font-semibold text-slate-800 truncate">
-                                {formatName(apt.clientName)}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-xs text-slate-500 truncate flex items-center gap-1">
-                                <Scissors size={10} className="text-slate-400 shrink-0" />
-                                {apt.serviceName}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Day badge */}
-                          <span
-                            className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${isToday ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-500'}`}
-                          >
-                            {dayLabel}
-                          </span>
-
-                          <ChevronRight
-                            size={14}
-                            className="text-slate-300 group-hover:text-slate-500 transition-colors shrink-0"
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Expand / Collapse */}
-                  {upcomingAppointments.length > 3 && (
-                    <button
-                      onClick={() => setUpcomingExpanded(!upcomingExpanded)}
-                      className="w-full mt-1 py-2 text-xs font-medium text-slate-500 hover:text-slate-700 flex items-center justify-center gap-1 transition-colors"
-                    >
-                      {upcomingExpanded ? (
-                        <>
-                          Voir moins <ChevronUp size={14} />
-                        </>
-                      ) : (
-                        <>
-                          +{upcomingAppointments.length - 3} autres <ChevronDown size={14} />
-                        </>
-                      )}
-                    </button>
-                  )}
-                </>
-              ) : (
-                <div className="text-center py-8 px-4">
-                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-2">
-                    <Calendar size={18} className="text-slate-300" />
-                  </div>
-                  <p className="text-sm text-slate-400">Aucun rendez-vous à venir</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Volume Chart */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-slate-800">Rendez-vous</h3>
-              <button
-                onClick={() => navigate('/calendar')}
-                className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"
-              >
-                Détails <ChevronRight size={12} />
-              </button>
-            </div>
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                <BarChart data={chartData} barCategoryGap="25%">
-                  <defs>
-                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.4} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#94a3b8', fontSize: 10 }}
-                    dy={5}
-                    minTickGap={30}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#94a3b8', fontSize: 10 }}
-                    width={28}
-                    allowDecimals={false}
-                  />
-                  <Tooltip
-                    cursor={{ fill: 'rgba(59, 130, 246, 0.04)', radius: 4 }}
-                    contentStyle={{
-                      borderRadius: '10px',
-                      border: '1px solid #e2e8f0',
-                      boxShadow: '0 4px 12px rgb(0 0 0 / 0.08)',
-                      fontSize: 12,
-                    }}
-                    formatter={(value) =>
-                      [`${typeof value === 'number' ? value : Number(value)} rdv`, ''] as [
-                        string,
-                        string,
-                      ]
-                    }
-                    labelStyle={{ fontWeight: 600, color: '#1e293b', marginBottom: 2 }}
-                  />
-                  <Bar
-                    dataKey="rdv"
-                    fill="#cbd5e1"
-                    radius={[6, 6, 0, 0]}
-                    maxBarSize={24}
-                    isAnimationActive={false}
-                  >
-                    {chartData.map((_entry, i) => (
-                      <Cell key={`rdv-${i}`} fill={chartHighlight.has(i) ? '#3b82f6' : '#cbd5e1'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Financial Chart + Rankings */}

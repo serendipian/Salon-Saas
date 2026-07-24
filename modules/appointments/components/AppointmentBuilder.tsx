@@ -1,5 +1,6 @@
-import { ArrowLeft, Plus, Save, Trash2, Users } from 'lucide-react';
+import { Plus, Save, Trash2, Users } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
+import { PageHeader } from '../../../components/PageHeader';
 import { useToast } from '../../../context/ToastContext';
 import { useShake } from '../../../hooks/useShake';
 import type { FavoriteItem } from '../../../types';
@@ -90,51 +91,53 @@ export default function AppointmentBuilder({
 
   return (
     <div>
-      {/* Page Header */}
-      <div className="flex justify-between items-center mb-5">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors"
-          >
-            <ArrowLeft size={18} className="text-slate-500" />
-          </button>
-          <h1 className="text-xl font-bold text-slate-900">
-            {form.initialData?.serviceBlocks ? 'Modifier le Rendez-Vous' : 'Nouveau Rendez-Vous'}
-          </h1>
-        </div>
-        <div className="flex gap-2">
-          {onDelete && (
-            <button
-              type="button"
-              onClick={onDelete}
-              className="w-9 h-9 rounded-xl border border-red-200 hover:bg-red-50 flex items-center justify-center transition-colors"
-            >
-              <Trash2 size={16} className="text-red-500" />
-            </button>
-          )}
-          <div className="flex flex-col items-end gap-1">
+      <PageHeader
+        title={
+          form.initialData?.serviceBlocks ? 'Modifier le Rendez-Vous' : 'Nouveau Rendez-Vous'
+        }
+        onBack={onCancel}
+        actions={
+          <>
+            {/* The hint sits inline before Save in the bar; too wide for narrow screens. */}
+            <MissingFieldsHint
+              missingFields={form.missingFields}
+              pulseTrigger={pulseTrigger}
+              className="hidden lg:block text-right"
+            />
+            {onDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                aria-label="Supprimer le rendez-vous"
+                className="w-9 h-9 rounded-xl border border-red-200 hover:bg-red-50 flex items-center justify-center transition-colors shrink-0"
+              >
+                <Trash2 size={16} className="text-red-500" />
+              </button>
+            )}
             <button
               type="button"
               onClick={handleSaveClick}
               disabled={form.isSaving}
               aria-disabled={!form.canSubmit}
-              className={`bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm flex items-center gap-2 ${
+              className={`bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm flex items-center gap-2 shrink-0 ${
                 form.canSubmit ? '' : 'opacity-50'
               }`}
             >
               <Save size={15} />
-              {form.isSaving ? 'Enregistrement...' : 'Enregistrer'}
+              <span className="hidden sm:inline">
+                {form.isSaving ? 'Enregistrement...' : 'Enregistrer'}
+              </span>
             </button>
-            <MissingFieldsHint
-              missingFields={form.missingFields}
-              pulseTrigger={pulseTrigger}
-              className="text-right"
-            />
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
+
+      {/* Below lg the bar has no room for the hint, so it shows above the form instead. */}
+      <MissingFieldsHint
+        missingFields={form.missingFields}
+        pulseTrigger={pulseTrigger}
+        className="lg:hidden mb-3"
+      />
 
       <div className="flex gap-5 max-md:flex-col relative">
         {/* Horizontal connector: Step 1 → Step 2 — spans the gap between left sidebar and right area */}

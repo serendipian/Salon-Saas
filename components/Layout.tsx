@@ -32,6 +32,8 @@ import type { AuthResource } from '../lib/auth.types';
 import { PastDueBanner } from '../modules/billing/components/PastDueBanner';
 import { useBilling } from '../modules/billing/hooks/useBilling';
 import { BottomTabBar } from './BottomTabBar';
+import type { CommandItem } from './CommandPalette';
+import { CommandPalette } from './CommandPalette';
 import { ConnectionBanner, ConnectionStatusDot } from './ConnectionStatus';
 import { PreviewBanner } from './PreviewBanner';
 import { MobileDrawer } from './MobileDrawer';
@@ -152,6 +154,7 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
   const sidebar = useSidebar();
   const [showSalonMenu, setShowSalonMenu] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   // Pin/hover state. The rail is the default; users can hover to peek, or click the
@@ -259,6 +262,49 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
   const visibleMainNav = mainNavItems.filter((item) => can('view', item.resource));
   const visibleMgmtNav = managementNavItems.filter((item) => can('view', item.resource));
   const canViewSettings = can('view', 'settings');
+
+  // Command palette destinations — same permission-filtered set as the sidebar,
+  // plus the Finances sub-pages and the profile route.
+  const commandItems: CommandItem[] = [
+    ...visibleMainNav.map((item) => ({
+      id: item.id,
+      label: item.label,
+      icon: item.icon,
+      group: 'Menu principal',
+    })),
+    ...(can('view', 'accounting')
+      ? financesSubItems.map((sub) => ({
+          id: sub.id,
+          label: `Finances · ${sub.label}`,
+          icon: BarChart3,
+          group: 'Menu principal',
+        }))
+      : []),
+    ...visibleMgmtNav.map((item) => ({
+      id: item.id,
+      label: item.label,
+      icon: item.icon,
+      group: 'Gestion',
+    })),
+    ...(canViewSettings
+      ? [{ id: 'settings', label: 'Réglages', icon: Settings, group: 'Gestion' }]
+      : []),
+  ];
+
+  // ⌘K / Ctrl+K opens the palette from anywhere, except while typing in a field.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== 'k' || !(e.metaKey || e.ctrlKey)) return;
+      const target = e.target as HTMLElement | null;
+      if (target?.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target?.tagName || '')) {
+        return;
+      }
+      e.preventDefault();
+      setShowCommandPalette((open) => !open);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const displayName = profile
     ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email
@@ -517,162 +563,149 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
 
       {/* Main Content Wrapper */}
       <div id="main-content" className="flex-1 flex flex-col min-w-0 bg-[#f8fafc]">
-        {/* Top Bar */}
+        {/* Single top bar — the page title/actions (portaled in by <PageHeader>) and the
+            global controls share one 56px row. Previously these were two stacked bars
+            costing 124px of vertical chrome. */}
         <header
-          className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-between px-4 md:px-6 shrink-0 sticky top-0"
+          className="h-14 bg-white/85 backdrop-blur-md border-b border-slate-200/60 flex items-center gap-2 sm:gap-3 px-3 md:px-6 shrink-0"
           style={{ zIndex: 'var(--z-topbar)' }}
         >
+          {/* Leading control: hamburger on mobile, sidebar pin on desktop. */}
           {isMobile ? (
-            <>
-              {/* Mobile top bar: hamburger + logo + bell */}
-              <button
-                onClick={sidebar.openDrawer}
-                className="p-2 rounded-lg text-slate-600 hover:bg-slate-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label="Ouvrir le menu"
-              >
-                <Menu size={22} strokeWidth={1.5} />
-              </button>
-              <span className="font-bold text-lg text-slate-900 tracking-tight">
-                {activeSalon?.name || 'BeautyFlow'}
-              </span>
-              <div className="flex items-center gap-1">
-                <ConnectionStatusDot />
-                <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-full min-w-[44px] min-h-[44px] flex items-center justify-center">
-                  <Bell size={20} strokeWidth={1.5} />
-                </button>
-              </div>
-            </>
+            <button
+              onClick={sidebar.openDrawer}
+              className="shrink-0 -ml-1 p-2 rounded-lg text-slate-600 hover:bg-slate-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Ouvrir le menu"
+            >
+              <Menu size={22} strokeWidth={1.5} />
+            </button>
           ) : (
-            <>
-              {/* Desktop/Tablet top bar */}
-              <div className="flex items-center gap-3">
-                {canPin && (
-                  <button
-                    onClick={sidebar.toggleExpanded}
-                    className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
-                    aria-label={isPinned ? 'Replier le menu' : 'Épingler le menu'}
-                    title={isPinned ? 'Replier le menu' : 'Épingler le menu'}
-                  >
-                    {isPinned ? (
-                      <PanelLeftClose size={20} strokeWidth={1.5} />
-                    ) : (
-                      <PanelLeftOpen size={20} strokeWidth={1.5} />
-                    )}
-                  </button>
+            canPin && (
+              <button
+                onClick={sidebar.toggleExpanded}
+                className="shrink-0 -ml-1 p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
+                aria-label={isPinned ? 'Replier le menu' : 'Épingler le menu'}
+                title={isPinned ? 'Replier le menu' : 'Épingler le menu'}
+              >
+                {isPinned ? (
+                  <PanelLeftClose size={20} strokeWidth={1.5} />
+                ) : (
+                  <PanelLeftOpen size={20} strokeWidth={1.5} />
                 )}
-                <div className="relative max-w-md w-full hidden md:block group">
-                  <Search
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-600 transition-colors"
-                    size={18}
-                    strokeWidth={1.5}
-                  />
-                  <input
-                    type="search"
-                    name="global-search"
-                    aria-label="Rechercher dans l'application"
-                    placeholder="Rechercher (Clients, Services, Factures...)"
-                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm outline-none ring-1 ring-transparent focus:ring-slate-200 focus:bg-white transition-all placeholder:text-slate-400"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-5 ml-auto">
-                <ConnectionStatusDot />
-                <button className="relative p-2 text-slate-500 hover:bg-slate-50 hover:text-slate-700 rounded-full transition-all">
-                  <Bell size={20} strokeWidth={1.5} />
-                </button>
-
-                <div className="h-8 w-px bg-slate-200" />
-
-                <div className="relative" ref={profileMenuRef}>
-                  <button
-                    onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-slate-50 transition-all"
-                  >
-                    <div className="text-right hidden sm:block leading-tight">
-                      <div className="text-sm font-bold text-slate-800">{displayName}</div>
-                      <div className="text-[11px] text-slate-500 font-medium">{roleLabel}</div>
-                    </div>
-                    {profile?.avatar_url ? (
-                      <img
-                        src={profile.avatar_url}
-                        alt=""
-                        className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-md"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md ring-2 ring-white">
-                        <span className="font-bold text-sm">{initials}</span>
-                      </div>
-                    )}
-                    <ChevronDown
-                      size={14}
-                      className={`text-slate-400 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`}
-                    />
-                  </button>
-
-                  {showProfileMenu && (
-                    <div
-                      className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200/60 py-2"
-                      style={{ zIndex: 'var(--z-dropdown, 50)' }}
-                    >
-                      <div className="px-4 py-3 border-b border-slate-100">
-                        <p className="text-sm font-semibold text-slate-900">{displayName}</p>
-                        <p className="text-xs text-slate-500 truncate">{profile?.email}</p>
-                        <span
-                          className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${
-                            role === 'owner'
-                              ? 'bg-slate-100 text-slate-700'
-                              : role === 'manager'
-                                ? 'bg-blue-50 text-blue-700'
-                                : role === 'stylist'
-                                  ? 'bg-violet-50 text-violet-700'
-                                  : 'bg-amber-50 text-amber-700'
-                          }`}
-                        >
-                          {roleLabel}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => {
-                          void navigate('/profile');
-                          setShowProfileMenu(false);
-                        }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-all"
-                      >
-                        <UserCircle size={16} className="text-slate-400" />
-                        Mon profil
-                      </button>
-                      <div className="my-1 border-t border-slate-100" />
-                      <button
-                        onClick={() => {
-                          void signOut();
-                          setShowProfileMenu(false);
-                        }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-all"
-                      >
-                        <LogOut size={16} />
-                        Déconnexion
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
+              </button>
+            )
           )}
+
+          {/* Page title + page actions land here via portal. Falls back to the salon
+              name on the rare route that mounts no <PageHeader>. */}
+          <div
+            ref={setSlot}
+            className={
+              pageHeaderCount > 0 ? 'flex-1 min-w-0 h-full flex items-center' : 'hidden'
+            }
+          />
+          {pageHeaderCount === 0 && (
+            <span className="flex-1 min-w-0 font-bold text-base sm:text-lg text-slate-900 tracking-tight truncate">
+              {activeSalon?.name || 'BeautyFlow'}
+            </span>
+          )}
+
+          {/* Global controls. */}
+          <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
+            <button
+              onClick={() => setShowCommandPalette(true)}
+              aria-label="Rechercher (Ctrl+K)"
+              title="Rechercher  ⌘K"
+              className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
+            >
+              <Search size={19} strokeWidth={1.6} />
+            </button>
+            <button
+              aria-label="Notifications"
+              className="relative p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all"
+            >
+              <Bell size={19} strokeWidth={1.6} />
+            </button>
+            <div className="px-1.5 flex items-center">
+              <ConnectionStatusDot />
+            </div>
+
+            <div className="h-6 w-px bg-slate-200 mx-1 sm:mx-1.5" />
+
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                aria-label="Menu du compte"
+                aria-expanded={showProfileMenu}
+                className="flex items-center gap-1 p-0.5 rounded-full hover:bg-slate-50 transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
+              >
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt=""
+                    className="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center ring-1 ring-slate-900/10">
+                    <span className="font-bold text-[11px]">{initials}</span>
+                  </div>
+                )}
+                <ChevronDown
+                  size={13}
+                  className={`hidden sm:block text-slate-400 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {showProfileMenu && (
+                <div
+                  className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200/60 py-2"
+                  style={{ zIndex: 'var(--z-dropdown, 50)' }}
+                >
+                  <div className="px-4 py-3 border-b border-slate-100">
+                    <p className="text-sm font-semibold text-slate-900">{displayName}</p>
+                    <p className="text-xs text-slate-500 truncate">{profile?.email}</p>
+                    <span
+                      className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                        role === 'owner'
+                          ? 'bg-slate-100 text-slate-700'
+                          : role === 'manager'
+                            ? 'bg-blue-50 text-blue-700'
+                            : role === 'stylist'
+                              ? 'bg-violet-50 text-violet-700'
+                              : 'bg-amber-50 text-amber-700'
+                      }`}
+                    >
+                      {roleLabel}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      void navigate('/profile');
+                      setShowProfileMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-all"
+                  >
+                    <UserCircle size={16} className="text-slate-400" />
+                    Mon profil
+                  </button>
+                  <div className="my-1 border-t border-slate-100" />
+                  <button
+                    onClick={() => {
+                      void signOut();
+                      setShowProfileMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-all"
+                  >
+                    <LogOut size={16} />
+                    Déconnexion
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </header>
 
         <ConnectionBanner />
-
-        {/* Shared page title bar — full-bleed white strip flush under the topbar.
-            Content is portaled in by each page's <PageHeader>; hidden when empty. */}
-        <div
-          ref={setSlot}
-          className={
-            pageHeaderCount > 0
-              ? 'shrink-0 bg-white border-b border-slate-200/70'
-              : 'hidden'
-          }
-        />
 
         {/* Scrollable Content */}
         <main
@@ -712,6 +745,13 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
           onProfilePress={() => navigate('/profile')}
         />
       )}
+
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        items={commandItems}
+        onSelect={onNavigate}
+      />
 
       {/* Click-outside to close salon menu (desktop only) */}
       {showSalonMenu && !isMobile && (

@@ -1,13 +1,52 @@
 import type React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { DateRangePicker } from '../../../components/DateRangePicker';
+import type { ServiceCategory, StaffMember } from '../../../types';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
 import { useServices } from '../../services/hooks/useServices';
 import { TeamList } from '../components/TeamList';
 import { TeamPerformance } from '../components/TeamPerformance';
 import { useTeam } from '../hooks/useTeam';
+import { useTeamPerformance } from '../hooks/useTeamPerformance';
 
 type Tab = 'members' | 'performance';
+
+/**
+ * Owns the performance query so it only runs while the Performance tab is open
+ * (it decrypts PII), and feeds the tab's date picker into the shared title bar.
+ */
+const TeamPerformanceTab: React.FC<{
+  allStaff: StaffMember[];
+  serviceCategories: ServiceCategory[];
+  searchTerm: string;
+  onSearchChange: (val: string) => void;
+  onAdd: () => void;
+  showArchived: boolean;
+  onToggleArchived: () => void;
+  activeTab: Tab;
+  onTabChange: (tab: Tab) => void;
+}> = ({ allStaff, ...listProps }) => {
+  const { performances, dateRange, setDateRange, totalRevenue, isLoadingPii } =
+    useTeamPerformance(allStaff);
+
+  return (
+    <TeamList
+      {...listProps}
+      team={[]}
+      appointments={[]}
+      onSelect={() => {}}
+      performanceActions={<DateRangePicker dateRange={dateRange} onChange={setDateRange} />}
+      performanceContent={
+        <TeamPerformance
+          performances={performances}
+          totalRevenue={totalRevenue}
+          isLoadingPii={isLoadingPii}
+        />
+      }
+    />
+  );
+};
 
 export const TeamListPage: React.FC = () => {
   const [showArchived, setShowArchived] = useState(false);
@@ -53,19 +92,16 @@ export const TeamListPage: React.FC = () => {
       )}
 
       {activeTab === 'performance' && (
-        <TeamList
-          team={[]}
-          appointments={[]}
+        <TeamPerformanceTab
+          allStaff={allStaff}
           serviceCategories={serviceCategories}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onAdd={() => navigate('/team/new')}
-          onSelect={() => {}}
           showArchived={showArchived}
           onToggleArchived={() => setShowArchived(!showArchived)}
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          performanceContent={<TeamPerformance staff={allStaff} />}
         />
       )}
     </div>

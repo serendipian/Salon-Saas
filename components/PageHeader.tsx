@@ -23,11 +23,15 @@ interface PageHeaderProps {
 }
 
 /**
- * Renders a page's title + actions into the shared title bar in Layout.
+ * Renders a page's title + actions into the app's single top bar in Layout.
  *
  * Mount exactly one of these per page. It portals its content into the bar
- * (so buttons stay wired to the page's own state) and toggles the bar's
- * visibility while mounted. Renders nothing inline.
+ * (so buttons stay wired to the page's own state) and registers itself while
+ * mounted. Renders nothing inline.
+ *
+ * The bar is shared with the global controls (search, notifications, account),
+ * so this fills a flex slot rather than a full-width strip — keep `actions`
+ * compact and collapse long button labels below `sm`.
  */
 export const PageHeader: React.FC<PageHeaderProps> = ({
   title,
@@ -55,27 +59,27 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   };
 
   return createPortal(
-    <div className="flex items-center justify-between gap-3 sm:gap-4 px-4 md:px-6 h-full min-h-[60px]">
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+    <div className="flex items-center justify-between gap-2 sm:gap-4 w-full min-w-0 h-full">
+      <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
         {hasBack && (
           <button
             type="button"
             onClick={handleBack}
             aria-label={backLabel}
             title={backLabel}
-            className="-ml-1 shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
+            className="-ml-1.5 shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
           >
             <ChevronLeft size={20} strokeWidth={2} />
           </button>
         )}
-        <div className="min-w-0">
+        <div className="min-w-0 leading-tight">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight truncate">
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate">
               {title}
             </h1>
             {meta}
           </div>
-          {subtitle && <p className="text-[13px] text-slate-500 truncate">{subtitle}</p>}
+          {subtitle && <p className="text-xs text-slate-500 truncate">{subtitle}</p>}
         </div>
       </div>
       {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}

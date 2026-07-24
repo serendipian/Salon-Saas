@@ -23,6 +23,8 @@ interface TeamListProps {
   onTabChange: (tab: Tab) => void;
   isLoading?: boolean;
   performanceContent?: React.ReactNode;
+  /** Extra controls for the title bar (the performance tab's date range picker). */
+  performanceActions?: React.ReactNode;
 }
 
 export const TeamList: React.FC<TeamListProps> = ({
@@ -39,6 +41,7 @@ export const TeamList: React.FC<TeamListProps> = ({
   onTabChange,
   isLoading,
   performanceContent,
+  performanceActions,
 }) => {
   const { viewMode, setViewMode } = useViewMode('team');
 
@@ -47,13 +50,16 @@ export const TeamList: React.FC<TeamListProps> = ({
       <PageHeader
         title="Équipe"
         actions={
-          <button
-            onClick={onAdd}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
-          >
-            <Plus size={16} />
-            <span className="hidden sm:inline">Nouveau Membre</span>
-          </button>
+          <>
+            {performanceActions}
+            <button
+              onClick={onAdd}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 font-medium text-sm shadow-sm transition-all"
+            >
+              <Plus size={16} />
+              <span className="hidden sm:inline">Nouveau Membre</span>
+            </button>
+          </>
         }
       />
 

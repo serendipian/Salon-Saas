@@ -1,5 +1,6 @@
-import { AlertTriangle, ArrowLeft, ChevronRight, Plus, Search, Trash2, X } from 'lucide-react';
+import { AlertTriangle, ChevronRight, Plus, Search, Trash2, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { PageHeader } from '../../../components/PageHeader';
 import { useToast } from '../../../context/ToastContext';
 import { useShake } from '../../../hooks/useShake';
 import { formatDuration, formatName, formatPrice } from '../../../lib/format';
@@ -140,30 +141,22 @@ export default function AppointmentBuilderMobile({
   if (screen === 'services') {
     return (
       <div className="bg-slate-50 flex flex-col min-h-screen">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between z-10">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors"
-            >
-              <ArrowLeft size={20} className="text-slate-600" />
-            </button>
-            <h1 className="text-lg font-semibold text-slate-900">
-              {isEditing ? 'Modifier le RDV' : 'Nouveau RDV'}
-            </h1>
-          </div>
-          {onDelete && (
-            <button
-              type="button"
-              onClick={onDelete}
-              className="w-10 h-10 rounded-xl border border-red-200 flex items-center justify-center hover:bg-red-50 transition-colors"
-            >
-              <Trash2 size={18} className="text-red-500" />
-            </button>
-          )}
-        </div>
+        <PageHeader
+          title={isEditing ? 'Modifier le RDV' : 'Nouveau RDV'}
+          onBack={onCancel}
+          actions={
+            onDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                aria-label="Supprimer le rendez-vous"
+                className="w-10 h-10 rounded-xl border border-red-200 flex items-center justify-center hover:bg-red-50 transition-colors"
+              >
+                <Trash2 size={18} className="text-red-500" />
+              </button>
+            )
+          }
+        />
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto pb-44">
@@ -543,17 +536,11 @@ export default function AppointmentBuilderMobile({
 
   return (
     <div className="bg-slate-50 flex flex-col min-h-screen">
-      {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-3 z-10">
-        <button
-          type="button"
-          onClick={() => setScreen('services')}
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors"
-        >
-          <ArrowLeft size={20} className="text-slate-600" />
-        </button>
-        <h1 className="text-lg font-semibold text-slate-900">Quand ?</h1>
-      </div>
+      <PageHeader
+        title="Quand ?"
+        onBack={() => setScreen('services')}
+        backLabel="Retour aux prestations"
+      />
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto pb-44">

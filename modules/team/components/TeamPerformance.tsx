@@ -1,14 +1,14 @@
 import { Award, BarChart2, ChevronRight, TrendingUp, Wallet } from 'lucide-react';
 import type React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DateRangePicker } from '../../../components/DateRangePicker';
 import { StaffAvatar } from '../../../components/StaffAvatar';
 import { formatPrice } from '../../../lib/format';
-import type { StaffMember } from '../../../types';
-import { type StaffPerformance, useTeamPerformance } from '../hooks/useTeamPerformance';
+import type { StaffPerformance } from '../hooks/useTeamPerformance';
 
 interface TeamPerformanceProps {
-  staff: StaffMember[];
+  performances: StaffPerformance[];
+  totalRevenue: number;
+  isLoadingPii: boolean;
 }
 
 function RatioBar({ ratio }: { ratio: number | null }) {
@@ -103,9 +103,10 @@ function PerformanceCard({ perf, onClick }: { perf: StaffPerformance; onClick: (
             <Wallet size={13} className="text-slate-500" />
             <span className="text-xs text-slate-500">Ratio</span>
           </div>
-          <p className="text-sm">
+          {/* div, not p — RatioBar renders block elements, which are invalid inside <p>. */}
+          <div className="text-sm">
             <RatioBar ratio={perf.ratio} />
-          </p>
+          </div>
         </div>
       </div>
       {baseSalary != null && (
@@ -185,9 +186,11 @@ function PerformanceRow({
   );
 }
 
-export const TeamPerformance: React.FC<TeamPerformanceProps> = ({ staff }) => {
-  const { performances, dateRange, setDateRange, totalRevenue, isLoadingPii } =
-    useTeamPerformance(staff);
+export const TeamPerformance: React.FC<TeamPerformanceProps> = ({
+  performances,
+  totalRevenue,
+  isLoadingPii,
+}) => {
   const navigate = useNavigate();
 
   const activeStaff = performances
@@ -196,11 +199,6 @@ export const TeamPerformance: React.FC<TeamPerformanceProps> = ({ staff }) => {
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      {/* Header */}
-      <div className="flex flex-wrap justify-between items-end gap-3">
-        <h1 className="text-2xl font-bold text-slate-900">Performance Équipe</h1>
-        <DateRangePicker dateRange={dateRange} onChange={setDateRange} />
-      </div>
 
       {/* Summary KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
