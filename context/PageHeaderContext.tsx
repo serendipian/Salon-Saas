@@ -12,9 +12,15 @@ import React, { createContext, useCallback, useContext, useMemo, useState } from
  * so page-specific buttons stay wired to each page's own state/modals.
  */
 interface PageHeaderContextValue {
-  /** The bar's inner DOM element — the portal target. Null until Layout mounts. */
+  /** The bar's title element — the portal target. Null until Layout mounts. */
   slot: HTMLElement | null;
   setSlot: (el: HTMLElement | null) => void;
+  /**
+   * Separate target for the page's action buttons, placed after the global
+   * search button so search always sits to the *left* of the page actions.
+   */
+  actionsSlot: HTMLElement | null;
+  setActionsSlot: (el: HTMLElement | null) => void;
   /** Number of currently-mounted PageHeaders (normally 0 or 1). */
   count: number;
   register: () => void;
@@ -25,14 +31,15 @@ const PageHeaderContext = createContext<PageHeaderContextValue | null>(null);
 
 export const PageHeaderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [slot, setSlot] = useState<HTMLElement | null>(null);
+  const [actionsSlot, setActionsSlot] = useState<HTMLElement | null>(null);
   const [count, setCount] = useState(0);
 
   const register = useCallback(() => setCount((c) => c + 1), []);
   const unregister = useCallback(() => setCount((c) => Math.max(0, c - 1)), []);
 
   const value = useMemo(
-    () => ({ slot, setSlot, count, register, unregister }),
-    [slot, count, register, unregister],
+    () => ({ slot, setSlot, actionsSlot, setActionsSlot, count, register, unregister }),
+    [slot, actionsSlot, count, register, unregister],
   );
 
   return <PageHeaderContext.Provider value={value}>{children}</PageHeaderContext.Provider>;

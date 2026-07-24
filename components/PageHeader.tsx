@@ -42,7 +42,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   onBack,
   backLabel = 'Retour',
 }) => {
-  const { slot, register, unregister } = usePageHeaderSlot();
+  const { slot, actionsSlot, register, unregister } = usePageHeaderSlot();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -58,32 +58,34 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     else if (backTo) navigate(backTo);
   };
 
-  return createPortal(
-    <div className="flex items-center justify-between gap-2 sm:gap-4 w-full min-w-0 h-full">
-      <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
-        {hasBack && (
-          <button
-            type="button"
-            onClick={handleBack}
-            aria-label={backLabel}
-            title={backLabel}
-            className="-ml-1.5 shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
-          >
-            <ChevronLeft size={20} strokeWidth={2} />
-          </button>
-        )}
-        <div className="min-w-0 leading-tight">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate">
-              {title}
-            </h1>
-            {meta}
+  return (
+    <>
+      {createPortal(
+        <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 h-full">
+          {hasBack && (
+            <button
+              type="button"
+              onClick={handleBack}
+              aria-label={backLabel}
+              title={backLabel}
+              className="-ml-1.5 shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
+            >
+              <ChevronLeft size={20} strokeWidth={2} />
+            </button>
+          )}
+          <div className="min-w-0 leading-tight">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate">
+                {title}
+              </h1>
+              {meta}
+            </div>
+            {subtitle && <p className="text-xs text-slate-500 truncate">{subtitle}</p>}
           </div>
-          {subtitle && <p className="text-xs text-slate-500 truncate">{subtitle}</p>}
-        </div>
-      </div>
-      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
-    </div>,
-    slot,
+        </div>,
+        slot,
+      )}
+      {actions && actionsSlot && createPortal(actions, actionsSlot)}
+    </>
   );
 };

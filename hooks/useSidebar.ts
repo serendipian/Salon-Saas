@@ -1,5 +1,10 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react';
 import { useMediaQuery } from '../context/MediaQueryContext';
+import {
+  getSidebarPinned,
+  setSidebarPinned,
+  subscribeSidebarPinned,
+} from '../lib/appearancePrefs';
 
 export type SidebarMode = 'drawer' | 'collapsed' | 'expanded';
 
@@ -15,7 +20,9 @@ export interface SidebarState {
 export const useSidebar = (): SidebarState => {
   const { isMobile, isTabletPortrait } = useMediaQuery();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+
+  // Persisted preference, editable from Réglages → Apparence.
+  const expanded = useSyncExternalStore(subscribeSidebarPinned, getSidebarPinned, () => false);
 
   const mode: SidebarMode = useMemo(() => {
     if (isMobile) return 'drawer';
@@ -25,7 +32,7 @@ export const useSidebar = (): SidebarState => {
 
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
-  const toggleExpanded = useCallback(() => setExpanded((prev) => !prev), []);
+  const toggleExpanded = useCallback(() => setSidebarPinned(!getSidebarPinned()), []);
 
   return {
     isDrawerOpen: drawerOpen,

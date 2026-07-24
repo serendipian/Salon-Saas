@@ -10,8 +10,6 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
-  PanelLeftClose,
-  PanelLeftOpen,
   Scissors,
   Search,
   Settings,
@@ -35,6 +33,7 @@ import { BottomTabBar } from './BottomTabBar';
 import type { CommandItem } from './CommandPalette';
 import { CommandPalette } from './CommandPalette';
 import { ConnectionBanner, ConnectionStatusDot } from './ConnectionStatus';
+import { NotificationPanel } from './NotificationPanel';
 import { PreviewBanner } from './PreviewBanner';
 import { MobileDrawer } from './MobileDrawer';
 
@@ -67,6 +66,10 @@ interface SidebarItemProps {
   hasSubmenu?: boolean;
   submenuOpen?: boolean;
   onSubmenuToggle?: (e: React.MouseEvent) => void;
+  /** Small node pinned to the right of the label, revealed with it (e.g. a ⌘K hint). */
+  trailing?: React.ReactNode;
+  /** Shorter row for the utility group, so the main nav keeps its vertical room. */
+  compact?: boolean;
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -85,10 +88,13 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   hasSubmenu,
   submenuOpen,
   onSubmenuToggle,
+  trailing,
+  compact,
 }) => (
   <div
     className={`
-      group relative flex items-center w-full h-11 rounded-xl transition-colors duration-150
+      group relative flex items-center w-full rounded-xl transition-colors duration-150
+      ${compact ? 'h-9' : 'h-11'}
       ${active ? 'bg-blue-50/70' : 'hover:bg-slate-50/80'}
     `}
   >
@@ -106,11 +112,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       aria-current={active ? 'page' : undefined}
     >
       <Icon
-        size={20}
+        size={compact ? 18 : 20}
         strokeWidth={active ? 2 : 1.6}
         className={`shrink-0 transition-colors duration-150 ${
-          active ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-700'
-        }`}
+          compact ? 'ml-[1px]' : ''
+        } ${active ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-700'}`}
       />
       <span
         className={`
@@ -122,6 +128,15 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       >
         {label}
       </span>
+      {trailing && (
+        <span
+          className={`ml-auto shrink-0 transition-opacity duration-200 ${
+            isOpen ? 'opacity-100 delay-100' : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          {trailing}
+        </span>
+      )}
     </button>
     {hasSubmenu && (
       <button
@@ -146,7 +161,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 );
 
 const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate }) => {
-  const { setSlot, count: pageHeaderCount } = usePageHeaderSlot();
+  const { setSlot, setActionsSlot, count: pageHeaderCount } = usePageHeaderSlot();
   const { profile, activeSalon, role, memberships, switchSalon, signOut } = useAuth();
   const { can } = useSalonPermissions();
   const { isMobile, isTabletPortrait } = useMediaQuery();
@@ -155,13 +170,13 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
   const [showSalonMenu, setShowSalonMenu] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Pin/hover state. The rail is the default; users can hover to peek, or click the
-  // topbar toggle to pin it open. Tablet-portrait forces collapsed (no pin), but
+  // Pin/hover state. The rail is the default; users hover to peek, and pin it open
+  // from Réglages → Apparence. Tablet-portrait forces collapsed (no pin), but
   // hover-peek still works for that breakpoint.
   const isPinned = sidebar.isExpanded;
-  const canPin = !isMobile && !isTabletPortrait;
   const [isHovering, setIsHovering] = useState(false);
   const enterTimer = useRef<number | null>(null);
   const leaveTimer = useRef<number | null>(null);
@@ -446,15 +461,7 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
           <div className="mx-3 h-px bg-gradient-to-r from-transparent via-slate-200/70 to-transparent" />
 
           {/* Main navigation. */}
-          <nav className="flex-1 overflow-y-auto overflow-x-hidden pt-4 pb-2 px-3 custom-scrollbar">
-            <div
-              className={`h-4 mb-2 pl-[14px] text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 transition-opacity duration-200 ${
-                isOpen ? 'opacity-100 delay-100' : 'opacity-0'
-              }`}
-            >
-              Menu principal
-            </div>
-
+          <nav className="flex-1 overflow-y-auto overflow-x-hidden pt-3 pb-2 px-3 custom-scrollbar">
             <ul className="space-y-0.5">
               {visibleMainNav.map((item) => {
                 const isActive =
@@ -520,18 +527,9 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
 
           </nav>
 
-          {/* Footer — Gestion group (management items + Settings), anchored to bottom. */}
-          {(visibleMgmtNav.length > 0 || canViewSettings) && (
-            <div className="shrink-0 px-3 pt-3 pb-2 border-t border-slate-100/80">
-              <div
-                className={`overflow-hidden transition-[max-height,opacity] duration-200 ${
-                  isOpen ? 'max-h-6 opacity-100 delay-100' : 'max-h-0 opacity-0'
-                }`}
-              >
-                <div className="h-4 mb-2 pl-[14px] text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                  Gestion
-                </div>
-              </div>
+          {/* Footer — management group, anchored above the utility group. */}
+          {visibleMgmtNav.length > 0 && (
+            <div className="shrink-0 px-3 pt-2 pb-2 border-t border-slate-100/80">
               <ul className="space-y-0.5">
                 {visibleMgmtNav.map((item) => (
                   <li key={item.id}>
@@ -544,122 +542,93 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
                     />
                   </li>
                 ))}
-                {canViewSettings && (
-                  <li>
-                    <SidebarItem
-                      icon={Settings}
-                      label="Réglages"
-                      active={activeModule === 'settings' || activeModule.startsWith('settings/')}
-                      isOpen={isOpen}
-                      onClick={() => onNavigate('settings')}
-                    />
-                  </li>
-                )}
               </ul>
             </div>
           )}
-        </aside>
-      )}
 
-      {/* Main Content Wrapper */}
-      <div id="main-content" className="flex-1 flex flex-col min-w-0 bg-[#f8fafc]">
-        {/* Single top bar — the page title/actions (portaled in by <PageHeader>) and the
-            global controls share one 56px row. Previously these were two stacked bars
-            costing 124px of vertical chrome. */}
-        <header
-          className="h-14 bg-white/85 backdrop-blur-md border-b border-slate-200/60 flex items-center gap-2 sm:gap-3 px-3 md:px-6 shrink-0"
-          style={{ zIndex: 'var(--z-topbar)' }}
-        >
-          {/* Leading control: hamburger on mobile, sidebar pin on desktop. */}
-          {isMobile ? (
-            <button
-              onClick={sidebar.openDrawer}
-              className="shrink-0 -ml-1 p-2 rounded-lg text-slate-600 hover:bg-slate-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="Ouvrir le menu"
-            >
-              <Menu size={22} strokeWidth={1.5} />
-            </button>
-          ) : (
-            canPin && (
-              <button
-                onClick={sidebar.toggleExpanded}
-                className="shrink-0 -ml-1 p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
-                aria-label={isPinned ? 'Replier le menu' : 'Épingler le menu'}
-                title={isPinned ? 'Replier le menu' : 'Épingler le menu'}
-              >
-                {isPinned ? (
-                  <PanelLeftClose size={20} strokeWidth={1.5} />
-                ) : (
-                  <PanelLeftOpen size={20} strokeWidth={1.5} />
-                )}
-              </button>
-            )
-          )}
-
-          {/* Page title + page actions land here via portal. Falls back to the salon
-              name on the rare route that mounts no <PageHeader>. */}
-          <div
-            ref={setSlot}
-            className={
-              pageHeaderCount > 0 ? 'flex-1 min-w-0 h-full flex items-center' : 'hidden'
-            }
-          />
-          {pageHeaderCount === 0 && (
-            <span className="flex-1 min-w-0 font-bold text-base sm:text-lg text-slate-900 tracking-tight truncate">
-              {activeSalon?.name || 'BeautyFlow'}
-            </span>
-          )}
-
-          {/* Global controls. */}
-          <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
-            <button
-              onClick={() => setShowCommandPalette(true)}
-              aria-label="Rechercher (Ctrl+K)"
-              title="Rechercher  ⌘K"
-              className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
-            >
-              <Search size={19} strokeWidth={1.6} />
-            </button>
-            <button
-              aria-label="Notifications"
-              className="relative p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all"
-            >
-              <Bell size={19} strokeWidth={1.6} />
-            </button>
-            <div className="px-1.5 flex items-center">
-              <ConnectionStatusDot />
+          {/* Utility group — global controls that used to live in the top bar.
+              Keeping them here leaves the top bar purely contextual (page title
+              + page actions), which is what makes it feel light. */}
+          <div className="shrink-0 px-3 pt-1.5 pb-2 border-t border-slate-100/80 space-y-px">
+            <div className="relative">
+              <span data-notification-trigger>
+                <SidebarItem
+                  compact
+                  icon={Bell}
+                  label="Notifications"
+                  active={showNotifications}
+                  isOpen={isOpen}
+                  onClick={() => setShowNotifications((v) => !v)}
+                />
+              </span>
+              {showNotifications && (
+                <NotificationPanel
+                  onClose={() => setShowNotifications(false)}
+                  className="absolute bottom-0 left-full ml-2"
+                />
+              )}
             </div>
+            {canViewSettings && (
+              <SidebarItem
+                compact
+                icon={Settings}
+                label="Réglages"
+                active={activeModule === 'settings' || activeModule.startsWith('settings/')}
+                isOpen={isOpen}
+                onClick={() => onNavigate('settings')}
+              />
+            )}
 
-            <div className="h-6 w-px bg-slate-200 mx-1 sm:mx-1.5" />
-
+            {/* Account — avatar replaces the icon, so it aligns on the same
+                optical axis as the 20px icons above (pl 10 + 14 = pl 14 + 10). */}
             <div className="relative" ref={profileMenuRef}>
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 aria-label="Menu du compte"
                 aria-expanded={showProfileMenu}
-                className="flex items-center gap-1 p-0.5 rounded-full hover:bg-slate-50 transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
+                title={!isOpen ? displayName : undefined}
+                className={`group relative flex items-center w-full h-9 rounded-xl pl-[11px] pr-2 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60 ${
+                  showProfileMenu ? 'bg-slate-100/70' : 'hover:bg-slate-50/80'
+                }`}
               >
                 {profile?.avatar_url ? (
                   <img
                     src={profile.avatar_url}
                     alt=""
-                    className="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200"
+                    className="w-[26px] h-[26px] rounded-[7px] object-cover shrink-0 ring-1 ring-slate-200"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center ring-1 ring-slate-900/10">
-                    <span className="font-bold text-[11px]">{initials}</span>
+                  <div className="w-[26px] h-[26px] rounded-[7px] bg-slate-900 text-white flex items-center justify-center shrink-0 ring-1 ring-slate-900/10">
+                    <span className="font-bold text-[10px]">{initials}</span>
                   </div>
                 )}
-                <ChevronDown
-                  size={13}
-                  className={`hidden sm:block text-slate-400 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`}
-                />
+                <span
+                  className={`ml-[13px] flex-1 min-w-0 text-left leading-tight transition-[opacity,transform] duration-200 ${
+                    isOpen
+                      ? 'opacity-100 translate-x-0 delay-75'
+                      : 'opacity-0 -translate-x-1 pointer-events-none'
+                  }`}
+                >
+                  <span className="block text-[13px] font-semibold text-slate-800 truncate">
+                    {displayName}
+                  </span>
+                  <span className="block text-[10.5px] font-medium text-slate-400 truncate">
+                    {roleLabel}
+                  </span>
+                </span>
+                <span
+                  className={`shrink-0 mr-1 transition-opacity duration-200 ${
+                    isOpen ? 'opacity-100 delay-100' : 'opacity-0'
+                  }`}
+                >
+                  <ConnectionStatusDot />
+                </span>
               </button>
 
               {showProfileMenu && (
                 <div
-                  className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200/60 py-2"
-                  style={{ zIndex: 'var(--z-dropdown, 50)' }}
+                  className="absolute bottom-0 left-full ml-2 w-64 bg-white rounded-xl shadow-[0_20px_48px_-16px_rgba(15,23,42,0.22),0_8px_16px_-8px_rgba(15,23,42,0.08)] border border-slate-200/70 py-2"
+                  style={{ zIndex: 'var(--z-drawer-panel)' }}
                 >
                   <div className="px-4 py-3 border-b border-slate-100">
                     <p className="text-sm font-semibold text-slate-900">{displayName}</p>
@@ -702,6 +671,83 @@ const LayoutInner: React.FC<LayoutProps> = ({ children, activeModule, onNavigate
                 </div>
               )}
             </div>
+
+          </div>
+        </aside>
+      )}
+
+      {/* Main Content Wrapper */}
+      <div id="main-content" className="flex-1 flex flex-col min-w-0 bg-[#f8fafc]">
+        {/* Top bar — contextual only. The page title/actions portal in here; every
+            global control (search, notifications, account, pin) lives in the rail.
+            Mobile has no rail, so it keeps the hamburger plus search/notifications. */}
+        <header
+          className="h-14 bg-white/85 backdrop-blur-md border-b border-slate-200/60 flex items-center gap-2 sm:gap-3 px-3 md:px-6 shrink-0"
+          style={{ zIndex: 'var(--z-topbar)' }}
+        >
+          {isMobile && (
+            <button
+              onClick={sidebar.openDrawer}
+              className="shrink-0 -ml-1 p-2 rounded-lg text-slate-600 hover:bg-slate-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Ouvrir le menu"
+            >
+              <Menu size={22} strokeWidth={1.5} />
+            </button>
+          )}
+
+          {/* Page title + page actions land here via portal. Falls back to the salon
+              name on the rare route that mounts no <PageHeader>. */}
+          <div
+            ref={setSlot}
+            className={
+              pageHeaderCount > 0 ? 'flex-1 min-w-0 h-full flex items-center' : 'hidden'
+            }
+          />
+          {pageHeaderCount === 0 && (
+            <span className="flex-1 min-w-0 font-bold text-base sm:text-lg text-slate-900 tracking-tight truncate">
+              {activeSalon?.name || 'BeautyFlow'}
+            </span>
+          )}
+
+          <div className="flex items-center gap-0.5 shrink-0">
+            {/* Search sits immediately left of the page actions, which portal into
+                the slot right after it. */}
+            <button
+              onClick={() => setShowCommandPalette(true)}
+              aria-label="Rechercher (Ctrl+K)"
+              title="Rechercher  ⌘K"
+              className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
+            >
+              <Search size={19} strokeWidth={1.6} />
+            </button>
+
+            <div ref={setActionsSlot} className="flex items-center gap-2 shrink-0 ml-1.5" />
+
+            {/* Mobile has no rail, so notifications and connection stay in the bar. */}
+            {isMobile && (
+              <>
+                <div className="relative">
+                  <button
+                    data-notification-trigger
+                    onClick={() => setShowNotifications((v) => !v)}
+                    aria-label="Notifications"
+                    aria-expanded={showNotifications}
+                    className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all"
+                  >
+                    <Bell size={19} strokeWidth={1.6} />
+                  </button>
+                  {showNotifications && (
+                    <NotificationPanel
+                      onClose={() => setShowNotifications(false)}
+                      className="absolute top-full right-0 mt-2"
+                    />
+                  )}
+                </div>
+                <div className="pl-1.5 pr-0.5 flex items-center">
+                  <ConnectionStatusDot />
+                </div>
+              </>
+            )}
           </div>
         </header>
 

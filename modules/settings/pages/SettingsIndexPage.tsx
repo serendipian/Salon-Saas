@@ -5,6 +5,7 @@ import {
   Clock,
   CreditCard,
   Globe,
+  LayoutDashboard,
   MapPin,
   Shield,
   Smartphone,
@@ -87,6 +88,12 @@ const sections = [
     icon: Globe,
     title: 'Réservation en ligne',
     description: 'Widget et apparence.',
+  },
+  {
+    id: 'appearance',
+    icon: LayoutDashboard,
+    title: 'Apparence',
+    description: 'Menu latéral et affichage.',
   },
   { id: 'security', icon: Shield, title: 'Sécurité', description: 'Mot de passe et accès.' },
 ];

@@ -36,12 +36,13 @@ export const ClientCard: React.FC<ClientCardProps> = ({
           `${client.firstName?.[0] ?? ''}${client.lastName?.[0] ?? ''}`.toUpperCase();
 
         return (
-          <button
+          // Card is a plain container, not a <button>: the action buttons at the
+          // bottom are interactive, and a <button> may not contain a <button>.
+          // The name button below stretches over the whole card via its ::after,
+          // which keeps "click anywhere on the card" working with valid markup.
+          <div
             key={client.id}
-            type="button"
-            onClick={() => onViewDetails(client.id)}
-            aria-label={`Voir le profil de ${formatName(client.firstName)} ${formatName(client.lastName)}`}
-            className="bg-white rounded-xl border border-slate-200 p-4 text-left transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
+            className="relative bg-white rounded-xl border border-slate-200 p-4 text-left transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-slate-900 focus-within:ring-offset-2"
           >
             {/* Header: avatar + name + status */}
             <div className="flex items-center gap-3 mb-3">
@@ -49,11 +50,16 @@ export const ClientCard: React.FC<ClientCardProps> = ({
                 {initials}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="font-semibold text-slate-900 text-sm truncate">
+                <button
+                  type="button"
+                  onClick={() => onViewDetails(client.id)}
+                  aria-label={`Voir le profil de ${formatName(client.firstName)} ${formatName(client.lastName)}`}
+                  className="block w-full text-left font-semibold text-slate-900 text-sm truncate outline-none after:absolute after:inset-0 after:rounded-xl after:content-['']"
+                >
                   {[formatName(client.firstName), formatName(client.lastName)]
                     .filter(Boolean)
                     .join(' ')}
-                </div>
+                </button>
                 <div className="mt-0.5">
                   {client.status === 'VIP' && (
                     <span className="px-2 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded text-xs font-bold">
@@ -100,11 +106,9 @@ export const ClientCard: React.FC<ClientCardProps> = ({
               </div>
             </div>
 
-            {/* Actions */}
-            <div
-              className="flex items-center gap-2 pt-3 border-t border-slate-100"
-              onClick={(e) => e.stopPropagation()}
-            >
+            {/* Actions — `relative` lifts these above the name button's ::after
+                overlay so they stay clickable. */}
+            <div className="relative flex items-center gap-2 pt-3 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => onViewDetails(client.id)}
@@ -140,7 +144,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
                 </button>
               )}
             </div>
-          </button>
+          </div>
         );
       })}
     </div>

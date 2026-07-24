@@ -2,6 +2,7 @@ import type React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DateRangePicker } from '../../../components/DateRangePicker';
+import { useMediaQuery } from '../../../context/MediaQueryContext';
 import type { ServiceCategory, StaffMember } from '../../../types';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
 import { useServices } from '../../services/hooks/useServices';
@@ -29,6 +30,13 @@ const TeamPerformanceTab: React.FC<{
 }> = ({ allStaff, ...listProps }) => {
   const { performances, dateRange, setDateRange, totalRevenue, isLoadingPii } =
     useTeamPerformance(allStaff);
+  const { isMobile } = useMediaQuery();
+
+  // The date picker is too wide to share the title bar with the page title on
+  // phones (it squeezes "Équipe" to zero width and overlaps the header buttons),
+  // so on mobile it moves out of the bar and sits above the content instead —
+  // same trade-off as the dashboard and the finances pages.
+  const dateRangePicker = <DateRangePicker dateRange={dateRange} onChange={setDateRange} />;
 
   return (
     <TeamList
@@ -36,13 +44,16 @@ const TeamPerformanceTab: React.FC<{
       team={[]}
       appointments={[]}
       onSelect={() => {}}
-      performanceActions={<DateRangePicker dateRange={dateRange} onChange={setDateRange} />}
+      performanceActions={!isMobile && dateRangePicker}
       performanceContent={
-        <TeamPerformance
-          performances={performances}
-          totalRevenue={totalRevenue}
-          isLoadingPii={isLoadingPii}
-        />
+        <>
+          {isMobile && <div className="mb-4">{dateRangePicker}</div>}
+          <TeamPerformance
+            performances={performances}
+            totalRevenue={totalRevenue}
+            isLoadingPii={isLoadingPii}
+          />
+        </>
       }
     />
   );

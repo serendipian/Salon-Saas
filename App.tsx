@@ -58,6 +58,7 @@ import { ProductsModule } from './modules/products/ProductsModule';
 import { ServiceSettingsPage } from './modules/services/ServiceSettingsPage';
 import { ServicesModule } from './modules/services/ServicesModule';
 import { AccountingSettings } from './modules/settings/components/AccountingSettings';
+import { AppearanceSettings } from './modules/settings/components/AppearanceSettings';
 import { GeneralSettings } from './modules/settings/components/GeneralSettings';
 import { OpeningHoursSettings } from './modules/settings/components/OpeningHoursSettings';
 import { TeamPermissionsSettings } from './modules/settings/components/TeamPermissionsSettings';
@@ -214,6 +215,7 @@ const AppContent = () => {
           <Route path="billing" element={<BillingModule />} />
           <Route path="schedule" element={<OpeningHoursSettings />} />
           <Route path="accounting" element={<AccountingSettings />} />
+          <Route path="appearance" element={<AppearanceSettings />} />
           <Route path="team" element={<TeamPermissionsSettings />} />
           <Route path=":section" element={<SettingsPlaceholderPage />} />
         </Route>
