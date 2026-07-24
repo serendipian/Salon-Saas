@@ -43,6 +43,7 @@ import { FreshnessIndicator } from '../../components/FreshnessIndicator';
 import { PageHeader } from '../../components/PageHeader';
 import { SafeResponsiveContainer as ResponsiveContainer } from '../../components/SafeResponsiveContainer';
 import { useAuth } from '../../context/AuthContext';
+import { useMediaQuery } from '../../context/MediaQueryContext';
 import { useFreshness } from '../../hooks/useFreshness';
 import { useRealtimeSync } from '../../hooks/useRealtimeSync';
 import { useSalonPermissions } from '../../hooks/useSalonPermissions';
@@ -175,6 +176,7 @@ const EXPENSE_METHOD_COLORS: Record<string, string> = {
 export const DashboardModule: React.FC = () => {
   const navigate = useNavigate();
   const { activeSalon } = useAuth();
+  const { isMobile } = useMediaQuery();
   const { can } = useSalonPermissions();
   const salonId = activeSalon?.id ?? '';
   const salonTimezone = activeSalon?.timezone ?? 'Europe/Paris';
@@ -697,6 +699,17 @@ export const DashboardModule: React.FC = () => {
     return { rate, bookedMinutes, totalAvailableMinutes };
   }, [data.current.appointments, allStaff, dateRange]);
 
+  // The date picker is too wide to share the title bar with the page title on
+  // phones (it squeezes "Tableau de Bord" down to an ellipsis), so on mobile it
+  // moves out of the bar and sits above the content instead.
+  const dateRangePicker = (
+    <DateRangePicker
+      dateRange={dateRange}
+      onChange={setDateRange}
+      minDate={canViewPastDates ? undefined : startOfDayInSalon(new Date(), salonTimezone)}
+    />
+  );
+
   return (
     <div className="w-full space-y-8">
       <PageHeader
@@ -708,11 +721,7 @@ export const DashboardModule: React.FC = () => {
         }
         actions={
           <>
-            <DateRangePicker
-              dateRange={dateRange}
-              onChange={setDateRange}
-              minDate={canViewPastDates ? undefined : startOfDayInSalon(new Date(), salonTimezone)}
-            />
+            {!isMobile && dateRangePicker}
             <button
               onClick={() => navigate('/calendar/new')}
               className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors shadow-sm"
@@ -723,6 +732,8 @@ export const DashboardModule: React.FC = () => {
           </>
         }
       />
+
+      {isMobile && <div>{dateRangePicker}</div>}
 
       {/* Revenue / Expenses / Bonus / Résultat Net Cards */}
       {canViewFinancials && (

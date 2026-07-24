@@ -6,6 +6,7 @@ import { DateRangePicker } from '../../components/DateRangePicker';
 import { FreshnessIndicator } from '../../components/FreshnessIndicator';
 import { PageHeader } from '../../components/PageHeader';
 import { useAuth } from '../../context/AuthContext';
+import { useMediaQuery } from '../../context/MediaQueryContext';
 import { useFreshness } from '../../hooks/useFreshness';
 import { useAccounting } from './hooks/useAccounting';
 
@@ -24,6 +25,7 @@ export type FinancesOutletContext = ReturnType<typeof useAccounting> & {
 export const FinancesLayout: React.FC = () => {
   const location = useLocation();
   const { activeSalon } = useAuth();
+  const { isMobile } = useMediaQuery();
   const salonId = activeSalon?.id ?? '';
   const accounting = useAccounting();
   const [revenueTab, setRevenueTab] = useState<RevenueTab>('SERVICES');
@@ -53,6 +55,13 @@ export const FinancesLayout: React.FC = () => {
     pageTitle = 'Annulations & Remboursements';
   }
 
+  // Too wide to share the title bar with the page title on phones (long titles
+  // like "Annulations & Remboursements" get truncated to an ellipsis), so on
+  // mobile the picker moves out of the bar and sits above the content.
+  const dateRangePicker = (
+    <DateRangePicker dateRange={accounting.dateRange} onChange={accounting.setDateRange} />
+  );
+
   return (
     <div className="w-full relative">
       <PageHeader
@@ -66,7 +75,7 @@ export const FinancesLayout: React.FC = () => {
         }
         actions={
           <>
-            <DateRangePicker dateRange={accounting.dateRange} onChange={accounting.setDateRange} />
+            {!isMobile && dateRangePicker}
             {isDepenses && expenseTab === 'COURANTES' && newExpenseHandler && (
               <button
                 onClick={newExpenseHandler}
@@ -79,6 +88,8 @@ export const FinancesLayout: React.FC = () => {
           </>
         }
       />
+
+      {isMobile && <div className="mb-4">{dateRangePicker}</div>}
 
       {(isRevenus || isDepenses) && (
         <div className="mb-6">
